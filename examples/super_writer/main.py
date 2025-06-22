@@ -2,536 +2,150 @@
 """
 SuperWriter - Advanced Research Report Generation System
 
-A comprehensive multi-agent system for generating long-form research reports.
-Supports autonomous research, writing, and review cycles with real-time monitoring
-and human intervention capabilities.
-
-Features:
-- Autonomous multi-agent collaboration (Planner → Researcher → Writer → Reviewer)
-- Long-form content generation (50+ pages, 50k+ words)
-- Real-time artifact monitoring via observability platform
-- Human-in-the-loop intervention during generation
-- Structured report compilation with sections, references, and appendices
-- Progress tracking and quality assurance
+A streamlined multi-agent system for generating comprehensive research reports.
+Uses AgentX framework's start_task for step-by-step execution.
 """
 
 import asyncio
 import argparse
-import os
 import sys
 from pathlib import Path
-from typing import Dict, Any, Optional
-import logging
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# Load environment variables
 project_root = Path(__file__).parent.parent.parent
 load_dotenv(project_root / ".env")
 
-# Add the src directory to Python path
+# Add src to path
 sys.path.insert(0, str(project_root / "src"))
 
-import agentx
-from agentx.core.team import Team
-from agentx.core.orchestrator import Orchestrator
-from agentx.utils.logger import get_logger
-
-# Set up detailed logging
-logging.basicConfig(
-    level=logging.INFO,  # Changed from DEBUG to INFO to reduce log noise
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('superwriter_debug.log')
-    ]
-)
-
-# Disable LiteLLM verbose logging to reduce console noise
-import litellm
-litellm.set_verbose = False  # Changed from True to False
-
-logger = get_logger(__name__)
-logger.setLevel(logging.INFO)  # Changed from DEBUG to INFO
+from agentx.core.task import start_task
 
 
-class SuperWriter:
-    """Advanced research report generation system."""
+async def run_super_writer(topic: str, config_path: str, interactive: bool = False):
+    """Run the SuperWriter research report generation."""
     
-    def __init__(self, config_path: str = None):
-        self.config_path = config_path or str(Path(__file__).parent / "config" / "team.yaml")
-        self.team: Optional[Team] = None
-        self.orchestrator: Optional[Orchestrator] = None
-        self.workspace_dir = Path(__file__).parent / "workspace"
-        
-    async def initialize(self):
-        """Initialize the SuperWriter system."""
-        # Initialize AgentX framework
-        agentx.initialize()
-        
-        # Load team configuration
-        self.team = Team.from_config(self.config_path)
-        
-        # Create orchestrator with workspace
-        self.orchestrator = Orchestrator(self.team, max_rounds=150, timeout=10800)
-        
-        logger.info(f"SuperWriter initialized with team: {self.team.name}")
-        logger.info(f"Workspace directory: {self.workspace_dir}")
-        logger.info("Built-in context and planning tools automatically available to all agents")
+    print(f"🚀 SuperWriter: Generating comprehensive research report on '{topic}'")
+    print(f"📁 Using config: {config_path}")
+    print("=" * 60)
     
-    async def generate_research_report(
-        self, 
-        topic: str, 
-        target_length: str = "50+ pages",
-        streaming: bool = True,
-        allow_intervention: bool = True
-    ) -> Dict[str, Any]:
-        """
-        Generate a comprehensive research report on the given topic.
-        
-        Args:
-            topic: Research topic (e.g., "Tesla auto driving")
-            target_length: Target report length (e.g., "50+ pages", "50k+ words")
-            streaming: Enable real-time streaming output
-            allow_intervention: Allow human intervention during generation
-            
-        Returns:
-            Dict with generation results and metadata
-        """
-        if not self.orchestrator:
-            await self.initialize()
-        
-        # Create comprehensive research prompt
-        research_prompt = self._create_research_prompt(topic, target_length)
-        
-        print("🚀 SuperWriter Research Report Generation")
-        print("=" * 60)
-        print(f"📝 Topic: {topic}")
-        print(f"📏 Target Length: {target_length}")
-        print(f"🔄 Streaming: {'Enabled' if streaming else 'Disabled'}")
-        print(f"👤 Human Intervention: {'Allowed' if allow_intervention else 'Disabled'}")
-        print(f"📁 Workspace: {self.workspace_dir}")
-        print()
-        
-        # Create and start the task
-        task = self.orchestrator.create_task(research_prompt)
-        task_id = task.task_id
-        
-        logger.debug(f"Created task: {task_id}")
-        
-        if streaming:
-            return await self._stream_execution(task, allow_intervention)
-        else:
-            return await self._execute_autonomous(task)
-    
-    def _create_research_prompt(self, topic: str, target_length: str) -> str:
-        """Create a comprehensive research prompt for the given topic."""
-        return f"""
-# Research Report Generation Task
+    # Create a focused task that demands concrete deliverables
+    task_description = f"""
+Create a comprehensive research report on: {topic}
 
-## Topic
-{topic}
+DELIVERABLE REQUIREMENTS:
+1. Create a complete research report document (minimum 2000 words)
+2. Save the final report as 'research_report.md' in the workspace
+3. Include proper sections: Executive Summary, Introduction, Main Content, Analysis, Conclusions
+4. Use credible information and provide insights
+5. Format with proper markdown structure
 
-## Objective
-Generate a comprehensive, professional research report that provides deep insights, analysis, and actionable information about {topic}.
-
-## Requirements
-
-### Content Requirements
-- **Length**: {target_length} (approximately 50,000+ words)
-- **Depth**: Comprehensive coverage with multiple perspectives
-- **Quality**: Professional, well-researched, and authoritative
-- **Structure**: Clear organization with logical flow
-- **Sources**: Credible, recent, and diverse references
-
-### Report Structure
-1. **Executive Summary** (2-3 pages)
-2. **Introduction and Background** (5-7 pages)
-3. **Current State Analysis** (8-10 pages)
-4. **Technical Deep Dive** (10-15 pages)
-5. **Market Analysis** (8-10 pages)
-6. **Competitive Landscape** (6-8 pages)
-7. **Challenges and Limitations** (5-7 pages)
-8. **Future Outlook and Trends** (8-10 pages)
-9. **Recommendations** (3-5 pages)
-10. **Conclusion** (2-3 pages)
-11. **References and Bibliography**
-12. **Appendices** (technical details, data tables, etc.)
-
-### Quality Standards
-- Each section should be thoroughly researched and well-documented
-- Include relevant data, statistics, and expert opinions
-- Maintain professional tone and academic rigor
-- Ensure factual accuracy and cite all sources
-- Create visual elements where appropriate (tables, charts, diagrams)
-
-### Collaboration Workflow
-1. **Planner**: Create detailed research plan and section outlines
-2. **Researcher**: Conduct comprehensive research for each section
-3. **Writer**: Draft sections with proper structure and flow
-4. **Reviewer**: Quality assurance, fact-checking, and refinement
-
-### Artifacts to Generate
-- Research plan and methodology
-- Section-by-section outlines
-- Research notes and source compilation
-- Draft sections for review
-- Final compiled report
-- Executive summary
-- Reference bibliography
-- Supporting appendices
-
-## Success Criteria
-- Report meets or exceeds target length requirement
-- All sections are well-researched and professionally written
-- Sources are credible, recent, and properly cited
-- Content provides actionable insights and recommendations
-- Report structure is logical and easy to navigate
-- Quality meets professional publication standards
-
-Begin with comprehensive planning and research methodology development.
+The report must be saved as an actual file that can be read and reviewed.
+Start by researching the topic thoroughly, then write the complete report.
 """
     
-    async def _stream_execution(
-        self, 
-        task: Task, 
-        allow_intervention: bool
-    ) -> Dict[str, Any]:
-        """Execute the task with real-time streaming and optional intervention."""
+    try:
+        # Start the task and get executor
+        executor = start_task(
+            prompt=task_description,
+            config_path=config_path
+        )
         
-        # Track progress metrics
-        metrics = {
-            "total_chunks": 0,
-            "agent_responses": {},
-            "handoffs": [],
-            "artifacts_created": [],
-            "sections_completed": [],
-            "word_count": 0,
-            "intervention_points": []
-        }
+        # Print task information including task ID and workspace path
+        task_id = executor.task.task_id
+        workspace_path = executor.task.workspace_dir
+        print(f"\n📋 Task ID: {task_id}")
+        print(f"📁 Workspace: {workspace_path}")
+        print(f"🔗 Full path: {workspace_path.absolute()}")
+        print("-" * 60)
         
-        print("📊 Real-time Progress Monitoring:")
-        print("   • Agent responses will stream in real-time")
-        print("   • Artifacts will be saved to workspace/")
-        print("   • Monitor via observability platform")
-        if allow_intervention:
-            print("   • Type 'INTERVENE: <message>' to provide guidance")
-        print()
-        print("🔄 Starting autonomous research and writing process...")
-        print("=" * 60)
-        
-        try:
-            # Execute with streaming
-            async for update in task.execute(stream=True):
-                update_type = update.get("type")
+        if interactive:
+            print("\n🎮 Interactive Mode - Press Enter to continue each step, 'q' to quit")
+            step_count = 0
+            
+            while not executor.is_complete:
+                step_count += 1
+                print(f"\n--- Step {step_count} ---")
                 
-                if update_type == "agent_start":
-                    agent_name = update["agent_name"]
-                    print(f"\n🤖 {agent_name.upper()} is working...")
-                    print(f"💭 ", end="", flush=True)
-                    metrics["agent_responses"][agent_name] = ""
-                    
-                elif update_type == "content":
-                    chunk = update["content"]
-                    agent_name = update["agent"]
-                    
-                    # Print chunk in real-time (this is the actual content, not debug logs)
-                    print(chunk, end="", flush=True)
-                    
-                    # Track metrics
-                    if agent_name not in metrics["agent_responses"]:
-                        metrics["agent_responses"][agent_name] = ""
-                    metrics["agent_responses"][agent_name] += chunk
-                    metrics["total_chunks"] += 1
-                    metrics["word_count"] += len(chunk.split())
-                    
-                elif update_type == "agent_complete":
-                    agent_name = update["agent_name"]
-                    response_length = update["response_length"]
-                    print(f"\n\n✅ {agent_name} completed ({response_length:,} characters)")
-                    
-                    # Check for artifacts
-                    if task.artifacts:
-                        new_artifacts = [name for name in task.artifacts.keys() 
-                                       if name not in metrics["artifacts_created"]]
-                        if new_artifacts:
-                            metrics["artifacts_created"].extend(new_artifacts)
-                            print(f"📎 New artifacts: {', '.join(new_artifacts)}")
-                    
-                    # Show progress
-                    self._show_progress_update(metrics)
-                    
-                elif update_type == "handoff":
-                    from_agent = update["from_agent"]
-                    to_agent = update["to_agent"]
-                    handoff_desc = f"{from_agent} → {to_agent}"
-                    metrics["handoffs"].append(handoff_desc)
-                    
-                    print(f"\n🔄 HANDOFF: {handoff_desc}")
-                    print("=" * 50)
-                    
-                    # Check for intervention opportunity
-                    if allow_intervention:
-                        print("💡 Intervention opportunity - type 'INTERVENE: <message>' or press Enter to continue")
-                        # Note: In a real implementation, you'd handle async input here
-                    
-                elif update_type == "routing_decision":
-                    action = update["action"]
-                    if action == "complete":
-                        print(f"\n🎉 Research report generation completed!")
-                        break
-                    
-                elif update_type == "error":
-                    error = update["error"]
-                    print(f"\n❌ Error: {error}")
-                    return {"success": False, "error": error, "metrics": metrics}
-            
-            # Final summary
-            return await self._generate_completion_summary(task, metrics)
-            
-        except Exception as e:
-            logger.exception("Streaming execution failed")
-            print(f"\n💥 Generation failed: {e}")
-            return {"success": False, "error": str(e), "metrics": metrics}
-    
-    async def _execute_autonomous(self, task: Task) -> Dict[str, Any]:
-        """Execute the task autonomously without streaming."""
-        print("🤖 Running in autonomous mode...")
-        logger.debug(f"Starting autonomous execution for task: {task.task_id}")
-        
-        try:
-            # Execute task to completion
-            logger.debug("Calling task.execute()...")
-            await task.execute()
-            logger.debug(f"Task execution completed. Final state: {task}")
-            
-            # Output the conversation in chat format
-            print("\n" + "="*80)
-            print("📝 CONVERSATION HISTORY")
-            print("="*80)
-            
-            for i, step in enumerate(task.history, 1):
-                print(f"\n🤖 {step.agent_name.upper()} (Step {i}):")
-                print("-" * 40)
-                for part in step.parts:
-                    if hasattr(part, 'text'):
-                        # Format the text nicely
-                        text = part.text.strip()
-                        if text:
-                            # Truncate very long responses for readability
-                            if len(text) > 2000:
-                                print(text[:2000] + "\n... [truncated for display] ...")
-                            else:
-                                print(text)
-                print()
-            
-            # Generate summary
-            metrics = {
-                "total_steps": len(task.history),
-                "artifacts_created": list(task.artifacts.keys()),
-                "word_count": self._estimate_word_count(task),
-                "completion_status": "success" if task.is_complete else "incomplete"
-            }
-            
-            print("="*80)
-            print("📊 EXECUTION SUMMARY")
-            print("="*80)
-            print(f"✅ Total Steps: {metrics['total_steps']}")
-            print(f"📎 Artifacts: {len(metrics['artifacts_created'])}")
-            print(f"📝 Estimated Words: {metrics['word_count']}")
-            print(f"🎯 Status: {metrics['completion_status']}")
-            if metrics['artifacts_created']:
-                print(f"📁 Created: {', '.join(metrics['artifacts_created'])}")
-            print("="*80)
-            
-            logger.debug(f"Generated metrics: {metrics}")
-            return {"success": True, "task_id": task.task_id, "metrics": metrics}
-            
-        except Exception as e:
-            logger.exception("Autonomous execution failed")
-            print(f"❌ Generation failed: {e}")
-            return {"success": False, "error": str(e)}
-    
-    def _show_progress_update(self, metrics: Dict[str, Any]):
-        """Show current progress metrics."""
-        word_count = metrics["word_count"]
-        target_words = 50000  # 50k words target
-        progress_pct = min(100, (word_count / target_words) * 100)
-        
-        print(f"📈 Progress: {word_count:,} words ({progress_pct:.1f}% of 50k target)")
-        print(f"📊 Agents active: {len(metrics['agent_responses'])}")
-        print(f"🔄 Handoffs: {len(metrics['handoffs'])}")
-        print(f"📎 Artifacts: {len(metrics['artifacts_created'])}")
-    
-    async def _generate_completion_summary(
-        self, 
-        task: Task, 
-        metrics: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Generate a comprehensive completion summary."""
-        
-        print("\n" + "=" * 60)
-        print("🎊 RESEARCH REPORT GENERATION COMPLETE!")
-        print("=" * 60)
-        print()
-        
-        print("📊 Generation Summary:")
-        print(f"   • Total words: {metrics['word_count']:,}")
-        print(f"   • Total chunks: {metrics['total_chunks']:,}")
-        print(f"   • Agents participated: {len(metrics['agent_responses'])}")
-        print(f"   • Handoffs executed: {len(metrics['handoffs'])}")
-        print(f"   • Artifacts created: {len(metrics['artifacts_created'])}")
-        print()
-        
-        if metrics["artifacts_created"]:
-            print("📎 Generated Artifacts:")
-            for artifact in metrics["artifacts_created"]:
-                print(f"   • {artifact}")
-            print()
-        
-        print("🔄 Collaboration Flow:")
-        for i, handoff in enumerate(metrics["handoffs"], 1):
-            print(f"   {i}. {handoff}")
-        print()
-        
-        print("📈 Agent Contributions:")
-        for agent, response in metrics["agent_responses"].items():
-            word_count = len(response.split())
-            print(f"   • {agent}: {word_count:,} words")
-        print()
-        
-        print(f"📁 Workspace: {self.workspace_dir}")
-        print(f"🌐 View details: http://localhost:8506/tasks/{task.task_id}")
-        print()
-        
-        # Check if target was met
-        target_met = metrics["word_count"] >= 50000
-        if target_met:
-            print("✅ TARGET ACHIEVED: Report meets 50k+ word requirement!")
+                # Get user input
+                user_input = input("Press Enter to continue (or 'q' to quit): ").strip()
+                if user_input.lower() == 'q':
+                    print("Stopping execution...")
+                    break
+                
+                # Execute one step
+                await executor.step()
+                
+                # Check for artifacts in the correct workspace
+                if workspace_path.exists():
+                    files = list(workspace_path.glob("*"))
+                    if files:
+                        print(f"📄 Files created: {[f.name for f in files]}")
         else:
-            remaining = 50000 - metrics["word_count"]
-            print(f"⚠️  Target not fully met: {remaining:,} words remaining for 50k target")
+            print("\n🤖 Autonomous Mode - Running to completion...")
+            
+            # Run to completion using _execute since task is already started
+            await executor._execute()
+            
+            print(f"\n✅ Task completed!")
         
-        return {
-            "success": True,
-            "task_id": task.task_id,
-            "metrics": metrics,
-            "target_met": target_met,
-            "workspace": str(self.workspace_dir)
-        }
-    
-    def _estimate_word_count(self, task_state) -> int:
-        """Estimate total word count from task state."""
-        total_words = 0
-        for step in task_state.history:
-            for part in step.parts:
-                if hasattr(part, 'text'):
-                    total_words += len(part.text.split())
-        return total_words
-    
-    # Context and planning are now handled by built-in tools
-    # All agents automatically have access to:
-    # - update_context() - Update project context with flexible JSON
-    # - get_context() - Query context with natural language  
-    # - create_plan() - Create execution plans with phases and tasks
-    # - update_task_status() - Update task progress
-    # - get_plan_status() - Get plan progress and status
-
-
-def check_environment():
-    """Check if required environment variables are set."""
-    required_vars = ["OPENAI_API_KEY", "DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY"]
-    found_keys = []
-    
-    print("🔍 Checking API keys...")
-    for var in required_vars:
-        if os.getenv(var):
-            print(f"✅ Found {var}")
-            found_keys.append(var)
+        # Check final output in the correct workspace
+        report_path = workspace_path / "research_report.md"
+        
+        if report_path.exists():
+            print(f"\n📊 SUCCESS: Research report created!")
+            print(f"📁 Location: {report_path}")
+            print(f"📏 Size: {report_path.stat().st_size} bytes")
+            
+            # Show first few lines
+            with open(report_path, 'r') as f:
+                preview = f.read(500)
+                print(f"\n📖 Preview:\n{preview}...")
         else:
-            print(f"❌ Missing {var}")
+            print(f"\n❌ WARNING: No research report found at {report_path}")
+            print("Available files:")
+            if workspace_path.exists():
+                for file in workspace_path.glob("*"):
+                    print(f"  - {file.name}")
+            
+            # Also check subdirectories
+            print("\nChecking subdirectories:")
+            for subdir in ["artifacts", "logs", "history"]:
+                subdir_path = workspace_path / subdir
+                if subdir_path.exists():
+                    files = list(subdir_path.glob("*"))
+                    if files:
+                        print(f"  📁 {subdir}/: {[f.name for f in files]}")
     
-    if found_keys:
-        print(f"✅ Environment ready with {len(found_keys)} API key(s)")
-        return True
-    else:
-        print("❌ No API keys found. Please check your .env file.")
-        return False
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 
-async def main():
-    """Main function with argument parsing."""
-    parser = argparse.ArgumentParser(
-        description="SuperWriter - Advanced Research Report Generation System",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python main.py "Tesla auto driving technology"
-  python main.py "AI in healthcare" --length "100 pages"
-  python main.py "Climate change solutions" --no-streaming
-  python main.py "Quantum computing" --no-intervention
-        """
-    )
-    
-    parser.add_argument(
-        "topic", 
-        help="Research topic for report generation"
-    )
-    parser.add_argument(
-        "--length", 
-        default="50+ pages", 
-        help="Target report length (default: 50+ pages)"
-    )
-    parser.add_argument(
-        "--no-streaming", 
-        action="store_true", 
-        help="Disable real-time streaming output"
-    )
-    parser.add_argument(
-        "--no-intervention", 
-        action="store_true", 
-        help="Disable human intervention capabilities"
-    )
-    parser.add_argument(
-        "--config", 
-        help="Path to team configuration file"
-    )
+def main():
+    """Main entry point."""
+    parser = argparse.ArgumentParser(description="SuperWriter - Advanced Research Report Generation")
+    parser.add_argument("--topic", "-t", type=str, 
+                       default="The Future of Artificial Intelligence in Healthcare",
+                       help="Research topic for report generation")
+    parser.add_argument("--config", "-c", type=str, 
+                       help="Path to team configuration file")
+    parser.add_argument("--interactive", "-i", action="store_true", 
+                       help="Run in interactive step-by-step mode")
     
     args = parser.parse_args()
     
-    # Check environment
-    if not check_environment():
-        return
+    # Default config path
+    config_path = args.config or str(Path(__file__).parent / "config" / "team.yaml")
     
-    # Create SuperWriter instance
-    superwriter = SuperWriter(config_path=args.config)
+    # Ensure workspace directory exists
+    workspace_path = Path(__file__).parent / "workspace"
+    workspace_path.mkdir(exist_ok=True)
     
-    try:
-        # Generate research report
-        result = await superwriter.generate_research_report(
-            topic=args.topic,
-            target_length=args.length,
-            streaming=not args.no_streaming,
-            allow_intervention=not args.no_intervention
-        )
-        
-        if result["success"]:
-            print("\n🎉 Research report generation completed successfully!")
-            if result.get("target_met"):
-                print("🏆 Target length requirement achieved!")
-        else:
-            print(f"\n❌ Generation failed: {result.get('error', 'Unknown error')}")
-            return 1
-            
-    except KeyboardInterrupt:
-        print("\n🛑 Generation interrupted by user")
-        return 1
-    except Exception as e:
-        print(f"\n💥 Unexpected error: {e}")
-        logger.exception("Main execution error")
-        return 1
-    
-    return 0
+    # Run the super writer
+    asyncio.run(run_super_writer(args.topic, config_path, args.interactive))
 
 
 if __name__ == "__main__":
-    exit(asyncio.run(main())) 
+    main()

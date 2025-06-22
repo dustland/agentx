@@ -208,7 +208,28 @@ class Orchestrator:
                 messages=[{"role": "user", "content": prompt}]
             )
             
-            decision = json.loads(brain_response.content)
+            # Debug: print what we actually got
+            print(f"🔍 DEBUG - Brain response content: '{brain_response.content}'")
+            print(f"🔍 DEBUG - Brain response type: {type(brain_response.content)}")
+            
+            # Strip markdown code blocks if present
+            content = brain_response.content.strip()
+            if content.startswith('```json'):
+                # Remove ```json at start and ``` at end
+                content = content[7:]  # Remove ```json
+                if content.endswith('```'):
+                    content = content[:-3]  # Remove ```
+                content = content.strip()
+            elif content.startswith('```'):
+                # Remove generic ``` blocks
+                content = content[3:]
+                if content.endswith('```'):
+                    content = content[:-3]
+                content = content.strip()
+            
+            print(f"🔍 DEBUG - Cleaned content: '{content}'")
+            
+            decision = json.loads(content)
             return {
                 "action": decision.get("action", "CONTINUE"),
                 "next_agent": decision.get("next_agent", current_agent),
@@ -239,20 +260,25 @@ class Orchestrator:
         """
         all_agents = list(self.task.agents.keys())
         
-        prompt = f"""
+        prompt = f"""You are a routing coordinator for a multi-agent team. Based on the current agent's response, decide the next action.
+
 Current agent: {current_agent}
 Last response: "{last_response[:400] if last_response else 'No response'}"
 
-All agents: {all_agents}
+Available agents: {all_agents}
 Possible handoffs: {filtered_handoffs}
 
-Based on the current agent's response, decide:
+DECISION OPTIONS:
 - CONTINUE: Keep working with {current_agent}
 - HANDOFF: Switch to another agent (specify which one)
 - COMPLETE: Task is finished
 
-Return JSON: {{"action": "CONTINUE|HANDOFF|COMPLETE", "next_agent": "agent_name"}}
-"""
+IMPORTANT: Return ONLY a valid JSON object with no markdown formatting, no code blocks, no extra text.
+
+Example format:
+{{"action": "HANDOFF", "next_agent": "researcher"}}
+
+Your JSON response:"""
         return prompt
 
 
