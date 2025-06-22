@@ -81,9 +81,24 @@ class Agent:
     
     def get_tools_json(self) -> List[Dict[str, Any]]:
         """Get the JSON schemas for the tools available to this agent."""
-        if not self.tools or not self.tool_manager:
+        if not self.tool_manager:
             return []
-        return self.tool_manager.get_tool_schemas(self.tools)
+        
+        # Always include all builtin tools for this agent
+        builtin_tools = self.tool_manager.get_builtin_tools()
+        
+        # Add custom tools from agent config (if any)
+        tools_to_include = builtin_tools.copy()
+        if self.tools:
+            for tool_name in self.tools:
+                if tool_name not in tools_to_include:
+                    # Only add if it's actually registered
+                    all_available = self.tool_manager.list_tools()
+                    if tool_name in all_available:
+                        tools_to_include.append(tool_name)
+        
+        # Return schemas for all included tools
+        return self.tool_manager.get_tool_schemas(tools_to_include)
 
     # ============================================================================
     # PUBLIC AGENT INTERFACE - Same as Brain interface for consistency

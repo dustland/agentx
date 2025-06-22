@@ -1,0 +1,34 @@
+# Simple Store Agent Configuration
+# Minimal single-agent setup for testing file storage
+
+name: "Simple Store Agent"
+description: "Single agent for testing file storage functionality"
+
+agents:
+  - name: storer
+    description: "Simple agent that creates and stores files"
+    prompt_template: "prompts/storer.md"
+    llm_config:
+      model: deepseek/deepseek-chat
+      temperature: 0.1
+      max_tokens: 1024
+
+# No handoffs needed - single agent
+handoffs: []
+
+# Minimal orchestrator configuration
+orchestrator:
+  max_rounds: 5
+  timeout: 300
+  brain_config:
+    model: deepseek/deepseek-chat
+    temperature: 0.0
+    max_tokens: 50
+    timeout: 10
+
+# Execution configuration
+execution:
+  mode: "autonomous"
+  max_rounds: 5
+  timeout_seconds: 300
+  initial_agent: "storer"

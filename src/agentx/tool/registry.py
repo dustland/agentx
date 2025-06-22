@@ -28,16 +28,23 @@ class ToolRegistry:
         """Initialize empty tool registry."""
         self.tools: Dict[str, ToolFunction] = {}
         self.tool_objects: Dict[str, Tool] = {}
+        self.builtin_tools: set[str] = set()  # Track builtin tool names
     
-    def register_tool(self, tool: Tool) -> None:
+    def register_tool(self, tool: Tool, is_builtin: bool = None) -> None:
         """
         Register a tool instance and all its callable methods.
         
         Args:
             tool: Tool instance to register
+            is_builtin: Whether this is a builtin tool (auto-detected if None)
         """
         tool_name = tool.__class__.__name__
         logger.debug(f"Registering tool: {tool_name}")
+        
+        # Auto-detect if tool is builtin based on module path
+        if is_builtin is None:
+            module = tool.__class__.__module__
+            is_builtin = module.startswith('agentx.builtin_tools')
         
         # Store the tool object
         self.tool_objects[tool_name] = tool
@@ -55,15 +62,21 @@ class ToolRegistry:
             )
             
             self.tools[method_name] = tool_function
-            logger.debug(f"Registered tool function: {method_name}")
+            
+            # Track if this is a builtin tool
+            if is_builtin:
+                self.builtin_tools.add(method_name)
+            
+            logger.debug(f"Registered tool function: {method_name} (builtin: {is_builtin})")
     
-    def register_function(self, func: Callable, name: Optional[str] = None) -> None:
+    def register_function(self, func: Callable, name: Optional[str] = None, is_builtin: bool = False) -> None:
         """
         Register a standalone function as a tool.
         
         Args:
             func: Function to register
             name: Optional name override (defaults to function name)
+            is_builtin: Whether this is a builtin tool
         """
         tool_name = name or func.__name__
         logger.debug(f"Registering function tool: {tool_name}")
@@ -76,6 +89,10 @@ class ToolRegistry:
         )
         
         self.tools[tool_name] = tool_function
+        
+        # Track if this is a builtin tool
+        if is_builtin:
+            self.builtin_tools.add(tool_name)
     
     def get_tool_function(self, name: str) -> Optional[ToolFunction]:
         """
@@ -92,6 +109,15 @@ class ToolRegistry:
     def list_tools(self) -> List[str]:
         """Get list of all registered tool names."""
         return list(self.tools.keys())
+    
+    def get_builtin_tools(self) -> List[str]:
+        """Get list of all builtin tool names."""
+        return list(self.builtin_tools)
+    
+    def get_custom_tools(self) -> List[str]:
+        """Get list of all custom (non-builtin) tool names."""
+        all_tools = set(self.tools.keys())
+        return list(all_tools - self.builtin_tools)
     
     def get_tool_schemas(self, tool_names: List[str] = None) -> List[Dict[str, Any]]:
         """
@@ -224,6 +250,7 @@ class ToolRegistry:
         """Clear all registered tools."""
         self.tools.clear()
         self.tool_objects.clear()
+        self.builtin_tools.clear()
         logger.debug("Tool registry cleared")
 
 

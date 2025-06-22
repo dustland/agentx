@@ -13,7 +13,7 @@ from .context_tools import *
 from .planning_tools import *
 from .search_tools import *
 from .web_tools import *
-from .registry import register_builtin_tools
+from .registry import register_builtin_tools, get_builtin_tool_names
 
 # Export tool classes for direct use if needed
 __all__ = [
@@ -21,5 +21,6 @@ __all__ = [
     "PlanningTool",
     "SearchTool",
     "WebTool",
-    "register_builtin_tools"
+    "register_builtin_tools",
+    "get_builtin_tool_names"
 ] 

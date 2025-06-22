@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""
+Simple Store Example - Testing File Storage Functionality
+
+A minimal example focused on testing agent file storage capabilities.
+"""
+
+import asyncio
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+project_root = Path(__file__).parent.parent.parent
+load_dotenv(project_root / ".env")
+
+# Add src to path
+sys.path.insert(0, str(project_root / "src"))
+
+from agentx.core.task import start_task
+
+async def test_storage():
+    """Test basic file storage functionality."""
+    
+    print("🗄️ Simple Store Test - Testing File Storage")
+    print("=" * 50)
+    
+    # Simple, direct prompt that should result in file creation
+    prompt = """
+Create a simple text file called 'hello.txt' with the content 'Hello, World!' 
+Store this file in the workspace.
+"""
+    
+    try:
+        # Start the task with minimal config
+        executor = start_task(
+            prompt=prompt,
+            config_path="config/simple_agent.yaml"
+        )
+        
+        # Print task information
+        task_id = executor.task.task_id
+        workspace_path = executor.task.workspace_dir
+        print(f"📋 Task ID: {task_id}")
+        print(f"📁 Workspace: {workspace_path}")
+        
+        # Run one step
+        print("\n🤖 Running storage test...")
+        async for step_result in executor.step():
+            print(f"Agent response: {step_result['response']}")
+            break
+        
+        # Check if file was created
+        hello_file = workspace_path / "hello.txt"
+        if hello_file.exists():
+            print(f"\n✅ SUCCESS: hello.txt created!")
+            content = hello_file.read_text()
+            print(f"📄 Content: '{content}'")
+        else:
+            print(f"\n❌ FAILED: hello.txt not found")
+            
+        # List all files created
+        print(f"\n📁 All files in workspace:")
+        if workspace_path.exists():
+            for f in workspace_path.rglob("*"):
+                if f.is_file() and not f.name.startswith('.'):
+                    print(f"  📄 {f.relative_to(workspace_path)}")
+                    
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+
+if __name__ == "__main__":
+    asyncio.run(test_storage()) 

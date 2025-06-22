@@ -55,6 +55,14 @@ class ToolManager:
         """Get a tool function by name."""
         return self.registry.get_tool_function(name)
     
+    def get_builtin_tools(self) -> List[str]:
+        """Get list of all builtin tool names."""
+        return self.registry.get_builtin_tools()
+    
+    def get_custom_tools(self) -> List[str]:
+        """Get list of all custom (non-builtin) tool names."""
+        return self.registry.get_custom_tools()
+    
     # Executor methods (delegation)
     async def execute_tool(self, tool_name: str, agent_name: str = "default", **kwargs) -> ToolResult:
         """Execute a single tool."""

@@ -4,6 +4,25 @@ Built-in tools registry for AgentX framework.
 This module handles registration of all built-in tools with tool registries.
 """
 
+def get_builtin_tool_names(workspace_path: str = None, memory_system=None) -> list[str]:
+    """
+    Get the list of all builtin tool names that would be registered.
+    
+    Args:
+        workspace_path: Optional workspace path for storage tools
+        memory_system: Optional memory system for memory tools
+        
+    Returns:
+        List of builtin tool names
+    """
+    # Import here to avoid circular imports
+    from ..tool.registry import ToolRegistry
+    
+    # Create a temporary registry to get tool names
+    temp_registry = ToolRegistry()
+    register_builtin_tools(temp_registry, workspace_path, memory_system)
+    return temp_registry.list_tools()
+
 def register_builtin_tools(registry, workspace_path: str = None, memory_system=None):
     """
     Register all built-in tools with a specific registry.
