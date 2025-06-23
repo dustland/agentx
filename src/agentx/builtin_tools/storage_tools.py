@@ -14,45 +14,46 @@ logger = get_logger(__name__)
 
 
 class StorageTool(Tool):
-    """Storage tools that use the storage layer for clean file operations."""
+    """Simple storage tool with artifacts as default location and temp when requested."""
     
     def __init__(self, workspace_storage: WorkspaceStorage):
         super().__init__()
         self.workspace = workspace_storage
         logger.info(f"StorageTool initialized with workspace: {self.workspace.get_workspace_path()}")
     
-    @tool(description="Read the contents of a file")
-    async def read_file(
+    @tool(description="Get the temp directory path for temporary files")
+    async def get_temp_dir(
         self,
         task_id: str,
-        agent_id: str,
-        path: Annotated[str, "Path to the file to read (relative to workspace)"]
+        agent_id: str
     ) -> str:
-        """Read file contents safely within workspace."""
+        """Get the temp directory path for temporary files (automatically cleaned up)."""
+        # Ensure temp directory exists
         try:
-            content = await self.workspace.file_storage.read_text(path)
-            logger.info(f"Read file: {path}")
-            return f"📄 Contents of {path}:\n\n{content}"
-            
-        except FileNotFoundError:
-            return f"❌ File not found: {path}"
-        except IsADirectoryError:
-            return f"❌ Path is not a file: {path}"
-        except PermissionError as e:
-            return f"❌ Permission denied: {str(e)}"
+            result = await self.workspace.file_storage.create_directory("temp")
+            if result.success:
+                logger.info("Temp directory ready")
+            return "temp"
         except Exception as e:
-            return f"❌ Error reading file: {str(e)}"
+            logger.warning(f"Could not ensure temp directory exists: {e}")
+            return "temp"
     
-    @tool(description="Write content to a file")
+    @tool(description="Write content to a file (saves to artifacts by default)")
     async def write_file(
         self,
         task_id: str,
         agent_id: str,
-        path: Annotated[str, "Path to the file to write (relative to workspace)"],
+        filename: Annotated[str, "Name of the file (e.g., 'requirements.md', 'temp/script.sh')"],
         content: Annotated[str, "Content to write to the file"]
     ) -> str:
-        """Write content to file safely within workspace."""
+        """Write content to file. Uses artifacts/ by default unless path specifies temp/."""
         try:
+            # If path doesn't specify a directory, default to artifacts/
+            if '/' not in filename:
+                path = f"artifacts/{filename}"
+            else:
+                path = filename
+            
             result = await self.workspace.file_storage.write_text(path, content)
             
             if result.success:
@@ -66,37 +67,42 @@ class StorageTool(Tool):
         except Exception as e:
             return f"❌ Error writing file: {str(e)}"
     
-    @tool(description="Append content to a file")
-    async def append_file(
+    @tool(description="Read the contents of a file")
+    async def read_file(
         self,
         task_id: str,
         agent_id: str,
-        path: Annotated[str, "Path to the file to append to (relative to workspace)"],
-        content: Annotated[str, "Content to append to the file"]
+        filename: Annotated[str, "Name of the file to read (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
-        """Append content to file safely within workspace."""
+        """Read file contents. Looks in artifacts/ by default unless path specifies otherwise."""
         try:
-            result = await self.workspace.file_storage.append_text(path, content)
-            
-            if result.success:
-                logger.info(f"Appended to file: {path}")
-                return f"✅ Successfully appended {len(content)} characters to {path} (total size: {result.size} bytes)"
+            # If path doesn't specify a directory, default to artifacts/
+            if '/' not in filename:
+                path = f"artifacts/{filename}"
             else:
-                return f"❌ Failed to append to file: {result.error}"
+                path = filename
                 
+            content = await self.workspace.file_storage.read_text(path)
+            logger.info(f"Read file: {path}")
+            return f"📄 Contents of {path}:\n\n{content}"
+            
+        except FileNotFoundError:
+            return f"❌ File not found: {path}"
+        except IsADirectoryError:
+            return f"❌ Path is not a file: {path}"
         except PermissionError as e:
             return f"❌ Permission denied: {str(e)}"
         except Exception as e:
-            return f"❌ Error appending to file: {str(e)}"
+            return f"❌ Error reading file: {str(e)}"
     
     @tool(description="List the contents of a directory")
     async def list_directory(
         self,
         task_id: str,
         agent_id: str,
-        path: Annotated[str, "Directory path to list (relative to workspace)"] = "."
+        path: Annotated[str, "Directory path to list (defaults to artifacts)"] = "artifacts"
     ) -> str:
-        """List directory contents safely within workspace."""
+        """List directory contents. Defaults to artifacts/ directory."""
         try:
             files = await self.workspace.file_storage.list_directory(path)
             
@@ -125,10 +131,16 @@ class StorageTool(Tool):
         self,
         task_id: str,
         agent_id: str,
-        path: Annotated[str, "Path to check (relative to workspace)"]
+        filename: Annotated[str, "Name of the file to check (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
-        """Check if a file or directory exists within workspace."""
+        """Check if a file exists. Looks in artifacts/ by default unless path specifies otherwise."""
         try:
+            # If path doesn't specify a directory, default to artifacts/
+            if '/' not in filename:
+                path = f"artifacts/{filename}"
+            else:
+                path = filename
+                
             exists = await self.workspace.file_storage.exists(path)
             
             if exists:
@@ -178,10 +190,16 @@ class StorageTool(Tool):
         self,
         task_id: str,
         agent_id: str,
-        path: Annotated[str, "Path to the file to delete (relative to workspace)"]
+        filename: Annotated[str, "Name of the file to delete (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
-        """Delete a file safely within workspace."""
+        """Delete a file. Looks in artifacts/ by default unless path specifies otherwise."""
         try:
+            # If path doesn't specify a directory, default to artifacts/
+            if '/' not in filename:
+                path = f"artifacts/{filename}"
+            else:
+                path = filename
+                
             result = await self.workspace.file_storage.delete(path)
             
             if result.success:
@@ -196,158 +214,31 @@ class StorageTool(Tool):
             return f"❌ Error deleting file: {str(e)}"
 
 
-class ArtifactTool(Tool):
-    """Artifact management tools for versioned content storage."""
-    
-    def __init__(self, workspace_storage: WorkspaceStorage):
-        super().__init__()
-        self.workspace = workspace_storage
-        logger.info(f"ArtifactTool initialized with workspace: {self.workspace.get_workspace_path()}")
-    
-    @tool(description="Store content as a versioned artifact")
-    async def store_artifact(
-        self,
-        task_id: str,
-        agent_id: str,
-        name: Annotated[str, "Name of the artifact"],
-        content: Annotated[str, "Content to store"],
-        description: Annotated[str, "Description of the artifact"] = ""
-    ) -> str:
-        """Store content as a versioned artifact."""
-        try:
-            metadata = {
-                "description": description,
-                "created_by": agent_id,
-                "task_id": task_id
-            }
-            
-            result = await self.workspace.store_artifact(name, content, "text/plain", metadata)
-            
-            if result.success:
-                logger.info(f"Stored artifact: {name}")
-                version = result.data.get("version", "unknown")
-                return f"✅ Artifact '{name}' stored successfully (version: {version}, size: {result.size} bytes)"
-            else:
-                return f"❌ Failed to store artifact: {result.error}"
-                
-        except Exception as e:
-            return f"❌ Error storing artifact: {str(e)}"
-    
-    @tool(description="Retrieve an artifact by name")
-    async def get_artifact(
-        self,
-        task_id: str,
-        agent_id: str,
-        name: Annotated[str, "Name of the artifact"],
-        version: Annotated[str, "Specific version to retrieve (optional)"] = ""
-    ) -> str:
-        """Retrieve an artifact by name and optional version."""
-        try:
-            version_param = version if version else None
-            content = await self.workspace.get_artifact(name, version_param)
-            
-            if content is not None:
-                version_info = f" (version: {version})" if version else " (latest version)"
-                logger.info(f"Retrieved artifact: {name}{version_info}")
-                return f"📄 Artifact '{name}'{version_info}:\n\n{content}"
-            else:
-                return f"❌ Artifact not found: {name}"
-                
-        except Exception as e:
-            return f"❌ Error retrieving artifact: {str(e)}"
-    
-    @tool(description="List all stored artifacts")
-    async def list_artifacts(
-        self,
-        task_id: str,
-        agent_id: str
-    ) -> str:
-        """List all stored artifacts with their metadata."""
-        try:
-            artifacts = await self.workspace.list_artifacts()
-            
-            if not artifacts:
-                return "📂 No artifacts found in workspace"
-            
-            items = []
-            for artifact in artifacts:
-                name = artifact.get("name", "unknown")
-                version = artifact.get("version", "unknown")
-                size = artifact.get("size", 0)
-                created_at = artifact.get("created_at", "unknown")
-                description = artifact.get("metadata", {}).get("description", "")
-                
-                item = f"📄 {name} (v{version}, {size} bytes, {created_at[:10]})"
-                if description:
-                    item += f" - {description}"
-                items.append(item)
-            
-            logger.info("Listed artifacts")
-            return f"📂 Stored artifacts ({len(artifacts)} total):\n\n" + "\n".join(items)
-            
-        except Exception as e:
-            return f"❌ Error listing artifacts: {str(e)}"
-    
-    @tool(description="Get all versions of an artifact")
-    async def get_artifact_versions(
-        self,
-        task_id: str,
-        agent_id: str,
-        name: Annotated[str, "Name of the artifact"]
-    ) -> str:
-        """Get all versions of an artifact."""
-        try:
-            versions = await self.workspace.get_artifact_versions(name)
-            
-            if not versions:
-                return f"❌ No versions found for artifact: {name}"
-            
-            logger.info(f"Retrieved versions for artifact: {name}")
-            return f"📋 Versions of '{name}': {', '.join(versions)}"
-            
-        except Exception as e:
-            return f"❌ Error getting artifact versions: {str(e)}"
-    
-    @tool(description="Delete an artifact or specific version")
-    async def delete_artifact(
-        self,
-        task_id: str,
-        agent_id: str,
-        name: Annotated[str, "Name of the artifact"],
-        version: Annotated[str, "Specific version to delete (optional, deletes all if not specified)"] = ""
-    ) -> str:
-        """Delete an artifact or specific version."""
-        try:
-            version_param = version if version else None
-            result = await self.workspace.delete_artifact(name, version_param)
-            
-            if result.success:
-                if version:
-                    logger.info(f"Deleted version {version} of artifact: {name}")
-                    return f"✅ Successfully deleted version {version} of artifact '{name}'"
-                else:
-                    logger.info(f"Deleted artifact: {name}")
-                    return f"✅ Successfully deleted artifact '{name}' (all versions)"
-            else:
-                return f"❌ Failed to delete artifact: {result.error}"
-                
-        except Exception as e:
-            return f"❌ Error deleting artifact: {str(e)}"
-
-
-def create_storage_tools(workspace_path: str) -> tuple[StorageTool, ArtifactTool]:
+def create_storage_tool(workspace_path: str) -> StorageTool:
     """
-    Create storage tools for a workspace.
+    Create a storage tool for workspace file operations.
     
     Args:
         workspace_path: Path to the workspace directory
         
     Returns:
-        Tuple of (StorageTool, ArtifactTool)
+        StorageTool instance
     """
     workspace = StorageFactory.create_workspace_storage(workspace_path)
     storage_tool = StorageTool(workspace)
-    artifact_tool = ArtifactTool(workspace)
     
-    logger.info(f"Created storage tools for workspace: {workspace_path}")
-    return storage_tool, artifact_tool 
+    logger.info(f"Created storage tool for workspace: {workspace_path}")
+    return storage_tool
+
+
+# Legacy factory functions for backward compatibility
+def create_intent_based_storage_tools(workspace_path: str) -> tuple[StorageTool, StorageTool]:
+    """Legacy function - returns the same StorageTool twice for backward compatibility."""
+    tool = create_storage_tool(workspace_path)
+    return tool, tool
+
+
+def create_storage_tools(workspace_path: str) -> tuple[StorageTool, StorageTool]:
+    """Legacy function - returns the same StorageTool twice for backward compatibility.""" 
+    tool = create_storage_tool(workspace_path)
+    return tool, tool 

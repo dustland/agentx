@@ -8,11 +8,10 @@ import asyncio
 import sys
 import os
 from pathlib import Path
-import logging
 
-# Set up verbose logging
-logging.basicConfig(level=logging.DEBUG)
-os.environ['AGENTX_VERBOSE'] = '1'
+# Framework will handle clean logging automatically
+# Uncomment below if you need extra verbose framework details
+# os.environ['AGENTX_VERBOSE'] = '1'
 
 # Add the src directory to Python path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -54,7 +53,7 @@ async def main():
     
     # Save test config
     import yaml
-    config_path = "test_consultant_config.yaml"
+    config_path = "config/consultant.yaml"
     with open(config_path, 'w') as f:
         yaml.dump(test_config, f, default_flow_style=False)
     
@@ -76,10 +75,17 @@ async def main():
         
         print(f"\n🔍 Task completed. Status: Complete={executor.task.is_complete}, Rounds={executor.task.round_count}")
         
-        # Check if requirements.md was created
-        requirements_file = Path(executor.task.workspace_dir) / "requirements.md"
-        if requirements_file.exists():
-            print("✅ SUCCESS: requirements.md file was created!")
+        # Check if requirements document was created (should be in artifacts folder)
+        artifacts_dir = Path(executor.task.workspace_dir) / "artifacts"
+        requirements_files = []
+        if artifacts_dir.exists():
+            # Look for requirements documents in artifacts
+            requirements_files = list(artifacts_dir.glob("*requirements*"))
+        
+        if requirements_files:
+            requirements_file = requirements_files[0]  # Take the first match
+            print(f"✅ SUCCESS: Requirements document was created in artifacts!")
+            print(f"📄 File: {requirements_file.name}")
             print(f"📄 File size: {requirements_file.stat().st_size} bytes")
             print("\n📝 Content preview:")
             print("-" * 40)
@@ -87,7 +93,13 @@ async def main():
                 content = f.read()
                 print(content[:500] + "..." if len(content) > 500 else content)
         else:
-            print("❌ FAILED: requirements.md file was not created")
+            print("❌ FAILED: Requirements document was not created in artifacts folder")
+            # Also check workspace root for backward compatibility
+            root_requirements = Path(executor.task.workspace_dir) / "requirements.md"
+            if root_requirements.exists():
+                print("⚠️  NOTE: Found requirements.md in workspace root (should be in artifacts/)")
+            else:
+                print("   No requirements document found anywhere in workspace")
             
         # List all files in workspace
         print(f"\n📂 Files in workspace ({executor.task.workspace_dir}):")

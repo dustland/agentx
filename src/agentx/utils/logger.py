@@ -68,18 +68,19 @@ def configure_logging(level: str = "INFO", format_string: Optional[str] = None):
 def setup_clean_chat_logging():
     """
     Configure logging for clean chat experience.
-    Suppresses noisy logs unless verbose mode is enabled.
+    Suppresses noisy logs while preserving important messages.
     """
     verbose = _is_verbose_mode()
     
     if verbose:
+        # Verbose mode - show all AgentX logs
         configure_logging(level="INFO")
     else:
-        # Clean chat mode - only show warnings and errors
-        configure_logging(level="WARNING")
+        # Clean chat mode - show important messages but suppress noise
+        configure_logging(level="INFO")  # Keep INFO level for AgentX logs
         
-        # Suppress specific noisy loggers
-        _suppress_noisy_loggers()
+        # Suppress specific noisy loggers to ERROR level
+        _suppress_noisy_loggers(level="ERROR")
         
         # Suppress Pydantic warnings
         warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
@@ -142,6 +143,7 @@ def _suppress_noisy_loggers(level: str = "ERROR"):
     """Suppress specific noisy loggers."""
     noisy_loggers = [
         "LiteLLM",
+        "litellm",
         "browser_use.telemetry.service", 
         "browser_use",
         "httpx",
@@ -149,7 +151,10 @@ def _suppress_noisy_loggers(level: str = "ERROR"):
         "urllib3",
         "requests.packages.urllib3",
         "selenium",
-        "asyncio"
+        "asyncio",
+        "httpcore",
+        "openai",
+        "anthropic"
     ]
     
     log_level = getattr(logging, level.upper())
