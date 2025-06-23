@@ -20,6 +20,10 @@ import {
   GraduationCap,
   Bot,
   DollarSign,
+  PenTool,
+  Code,
+  Cog,
+  Terminal,
 } from "lucide-react";
 
 // Floating particles animation
@@ -73,9 +77,9 @@ const IconWrapper = ({
   className?: string;
 }) => <div className={`inline-flex ${className}`}>{children}</div>;
 
-// Optimized typewriter with minimal flickering and single line layout
+// Optimized typewriter with Vibe-X focused words
 const AnimatedText = () => {
-  const words = ["autonomous", "supervised", "low-cost"];
+  const words = ["Writing", "Coding", "Operating"];
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -89,17 +93,17 @@ const AnimatedText = () => {
       // Typing
       timeout = setTimeout(() => {
         setCurrentText(currentWord.slice(0, currentText.length + 1));
-      }, 100);
+      }, 150);
     } else if (!isDeleting && currentText.length === currentWord.length) {
       // Pause before deleting
       timeout = setTimeout(() => {
         setIsDeleting(true);
-      }, 2000);
+      }, 3000);
     } else if (isDeleting && currentText.length > 0) {
       // Deleting
       timeout = setTimeout(() => {
         setCurrentText(currentText.slice(0, -1));
-      }, 50);
+      }, 75);
     } else if (isDeleting && currentText.length === 0) {
       // Move to next word
       setIsDeleting(false);
@@ -119,23 +123,226 @@ const AnimatedText = () => {
     return () => clearInterval(cursorInterval);
   }, []);
 
-  // Calculate the width needed for the longest word to prevent layout shifts
-  const maxWidth = Math.max(...words.map((word) => word.length)) * 0.6; // Approximate character width in em
-
   return (
     <div className="flex items-center h-full">
-      {/* Fixed width container based on longest word to prevent layout shifts */}
-      <div className="flex items-center" style={{ minWidth: `${maxWidth}em` }}>
-        <span className="text-white font-mono whitespace-nowrap">
-          {currentText}
-        </span>
-        <span
-          className={`inline-block w-0.5 ml-1 bg-emerald-400 transition-opacity duration-150 ${
-            showCursor ? "opacity-100" : "opacity-0"
-          }`}
-          style={{ height: "1em" }}
-        />
+      <span className="text-emerald-400 font-mono">Vibe-</span>
+      <span className="text-white font-mono whitespace-nowrap">
+        {currentText}
+      </span>
+      <span
+        className={`inline-block w-0.5 ml-1 bg-emerald-400 transition-opacity duration-150 ${
+          showCursor ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ height: "1em" }}
+      />
+    </div>
+  );
+};
+
+// Interactive Bootstrap Tabs Component
+const BootstrapTabs = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const workflows = [
+    {
+      id: "writing",
+      title: "Writing",
+      icon: PenTool,
+      color: "blue",
+      description: "Research → Draft → Edit workflow",
+      command: "agentx init --template writing --model deepseek",
+      features: [
+        "Research automation",
+        "Content structuring",
+        "Quality review",
+      ],
+      agents: ["Researcher", "Writer", "Editor"],
+    },
+    {
+      id: "coding",
+      title: "Coding",
+      icon: Code,
+      color: "purple",
+      description: "Plan → Build → Test workflow",
+      command: "agentx init --template coding --model deepseek",
+      features: [
+        "Code generation",
+        "Testing automation",
+        "Architecture design",
+      ],
+      agents: ["Architect", "Developer", "Tester"],
+    },
+    {
+      id: "operating",
+      title: "Operating",
+      icon: Cog,
+      color: "emerald",
+      description: "Analyze → Execute → Monitor workflow",
+      command: "agentx init --template operating --model deepseek",
+      features: [
+        "System automation",
+        "Real-world actions",
+        "Impact monitoring",
+      ],
+      agents: ["Analyst", "Operator", "Monitor"],
+    },
+  ];
+
+  const getColorClasses = (
+    color: string,
+    variant: "bg" | "text" | "border" | "ring"
+  ) => {
+    const colorMap = {
+      blue: {
+        bg: "bg-blue-500",
+        text: "text-blue-600",
+        border: "border-blue-200",
+        ring: "ring-blue-500/20",
+      },
+      purple: {
+        bg: "bg-purple-500",
+        text: "text-purple-600",
+        border: "border-purple-200",
+        ring: "ring-purple-500/20",
+      },
+      emerald: {
+        bg: "bg-emerald-500",
+        text: "text-emerald-600",
+        border: "border-emerald-200",
+        ring: "ring-emerald-500/20",
+      },
+    };
+    return colorMap[color]?.[variant] || "";
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Tab Navigation */}
+      <div className="flex justify-center">
+        <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
+          {workflows.map((workflow, index) => (
+            <button
+              key={workflow.id}
+              onClick={() => setActiveTab(index)}
+              className={`
+                relative flex items-center px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                ${
+                  activeTab === index
+                    ? `${getColorClasses(
+                        workflow.color,
+                        "bg"
+                      )} text-white shadow-lg`
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }
+              `}
+            >
+              <workflow.icon className="w-4 h-4 mr-2" />
+              {workflow.title}
+            </button>
+          ))}
+        </div>
       </div>
+
+      {/* Tab Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="space-y-6"
+        >
+          {/* Command Terminal with Team Display */}
+          <motion.div
+            className="rounded-lg bg-slate-950 dark:bg-slate-950 p-6 shadow-inner"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center mb-4">
+              <div className="flex space-x-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              </div>
+              <span className="ml-4 text-xs text-slate-400">Terminal</span>
+            </div>
+
+            <code className="text-sm text-emerald-400 font-mono block text-left">
+              $ pip install agentx-py
+            </code>
+            <code className="text-sm text-emerald-400 font-mono block text-left">
+              $ {workflows[activeTab].command}
+            </code>
+            <code className="text-sm text-slate-400 font-mono block text-left mt-2">
+              # Creates optimized {workflows[activeTab].title.toLowerCase()}{" "}
+              workflow with 3 specialized agents
+            </code>
+
+            {/* Team Members Row */}
+            <div className="mt-6 pt-4 border-t border-slate-700">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400 font-mono">
+                  Generated Team:
+                </span>
+                <div className="flex items-center space-x-4">
+                  {workflows[activeTab].agents.map((agent, i) => (
+                    <div key={i} className="flex items-center space-x-2">
+                      <div
+                        className={`w-8 h-8 ${getColorClasses(
+                          workflows[activeTab].color,
+                          "bg"
+                        )} rounded-full flex items-center justify-center`}
+                      >
+                        <Users className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="text-xs text-slate-300 font-mono">
+                        {agent}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Workflow Description */}
+          <div
+            className={`p-6 rounded-xl border-2 ${getColorClasses(
+              workflows[activeTab].color,
+              "border"
+            )} bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900`}
+          >
+            <h3
+              className={`text-xl font-bold mb-3 ${getColorClasses(
+                workflows[activeTab].color,
+                "text"
+              )} dark:text-white`}
+            >
+              {workflows[activeTab].title}
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300 mb-4">
+              {workflows[activeTab].description}
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              {workflows[activeTab].features.map((feature, i) => (
+                <div
+                  key={i}
+                  className="flex items-center text-sm text-slate-600 dark:text-slate-400"
+                >
+                  <span
+                    className={`w-1.5 h-1.5 ${getColorClasses(
+                      workflows[activeTab].color,
+                      "bg"
+                    )} rounded-full mr-2`}
+                  ></span>
+                  {feature}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
@@ -202,10 +409,49 @@ export default function HomePage() {
     },
   ];
 
-  const useCases = [
+  const vibeXWorkflows = [
+    {
+      icon: PenTool,
+      title: "Vibe-Writing",
+      description:
+        "From idea to polished document. Collaborative research, drafting, and editing workflows with intelligent content generation and human oversight.",
+      color: "blue",
+      features: [
+        "Research automation",
+        "Content structuring",
+        "Quality review",
+      ],
+    },
+    {
+      icon: Code,
+      title: "Vibe-Coding",
+      description:
+        "From requirement to application. AI-assisted development with architecture planning, implementation, and testing in seamless collaboration.",
+      color: "purple",
+      features: [
+        "Code generation",
+        "Testing automation",
+        "Architecture design",
+      ],
+    },
+    {
+      icon: Cog,
+      title: "Vibe-Operating",
+      description:
+        "From insight to real-world impact. Agents that don't just analyze but act on digital and physical systems with human-defined boundaries.",
+      color: "emerald",
+      features: [
+        "System automation",
+        "Real-world actions",
+        "Impact monitoring",
+      ],
+    },
+  ];
+
+  const realWorldScenarios = [
     {
       icon: Bot,
-      title: "Agentic Apps",
+      title: "Agentic Applications",
       description:
         "Build intelligent applications where AI agents autonomously handle complex workflows while maintaining human oversight for critical decisions.",
     },
@@ -217,9 +463,9 @@ export default function HomePage() {
     },
     {
       icon: ChartColumnStacked,
-      title: "Operational Excellence",
+      title: "Enterprise Operations",
       description:
-        "Streamline enterprise operations through intelligent automation, real-time monitoring, and adaptive process optimization at scale.",
+        "Streamline business operations through intelligent automation, real-time monitoring, and adaptive process optimization at scale.",
     },
     {
       icon: Rocket,
@@ -268,13 +514,12 @@ export default function HomePage() {
                 />
                 <span className="relative flex items-center gap-2">
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Open source multi-agent framework.
+                  Introducing Vibe-X: Human-AI Collaboration Philosophy
                   <Link
-                    href="https://github.com/dustland/agentx"
+                    href="/docs/design/vibe-x-philosophy"
                     className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                   >
-                    Star on GitHub{" "}
-                    <ArrowRight className="w-3 h-3 ml-1 inline" />
+                    Learn More <ArrowRight className="w-3 h-3 ml-1 inline" />
                   </Link>
                 </span>
               </motion.div>
@@ -283,47 +528,40 @@ export default function HomePage() {
             {/* Main Title */}
             <motion.h1
               variants={itemVariants}
-              className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl font-mono lg:text-5xl"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-white text-center leading-tight max-w-4xl mx-auto whitespace-nowrap"
             >
-              <div className="flex flex-col items-center gap-6">
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 flex-wrap">
-                  <span>Build</span>
-                  <div className="relative inline-block">
-                    <div className="px-4 py-2 bg-slate-950 dark:bg-slate-900 border border-slate-700 dark:border-slate-600 rounded-md font-mono text-2xl sm:text-3xl lg:text-4xl min-w-[280px] h-[60px] flex items-center justify-start shadow-inner">
-                      <span className="text-emerald-400 mr-2">$</span>
-                      <AnimatedText />
-                    </div>
-                    {/* Terminal cursor indicator */}
-                    <div className="absolute top-1 right-2 w-2 h-2 bg-emerald-300 rounded-full animate-pulse opacity-80"></div>
-                  </div>
-                  <span>Agentic AI</span>
-                </div>
-                <motion.div
-                  className="text-2xl sm:text-3xl lg:text-4xl"
-                  animate={{
-                    backgroundPosition: ["0%", "100%", "0%"],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent bg-[length:200%] animate-gradient">
-                    with Multi-Agent Intelligence
-                  </span>
-                </motion.div>
-              </div>
+              <span>Build </span>
+              <span className="inline-block bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-2 border border-slate-600/30 mx-1 sm:mx-2">
+                <AnimatedText />
+              </span>
+              <span> Apps</span>
             </motion.h1>
+
+            <motion.div
+              variants={itemVariants}
+              className="text-2xl sm:text-3xl lg:text-4xl mt-8"
+              animate={{
+                backgroundPosition: ["0%", "100%", "0%"],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "linear",
+              }}
+            >
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent bg-[length:200%] animate-gradient">
+                with Human-AI Collaboration
+              </span>
+            </motion.div>
 
             {/* Subtitle */}
             <motion.p
               variants={itemVariants}
               className="mt-6 text-xl leading-8 text-slate-600 dark:text-slate-300 sm:text-2xl max-w-3xl mx-auto"
             >
-              Orchestrate sophisticated multi-agent systems with intelligent
-              task distribution, human-in-the-loop control, and cost-optimized
-              model integration
+              The framework that embodies the perfect balance: AI autonomy with
+              human oversight, transparent processes, and cost-optimized
+              intelligence for professional workflows
             </motion.p>
 
             {/* CTA Buttons */}
@@ -337,11 +575,11 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="/docs/getting-started"
+                  href="/docs/tutorials/0-bootstrap"
                   className="group relative inline-flex items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-purple-500/25 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700"
                 >
-                  <Sparkles className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                  Get Started
+                  <Terminal className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
+                  Quick Start
                   <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </motion.div>
@@ -352,11 +590,11 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="https://github.com/dustland/agentx"
+                  href="/docs/design/vibe-x-philosophy"
                   className="group inline-flex items-center rounded-xl bg-white/10 dark:bg-slate-800/50 backdrop-blur-xl border border-white/20 dark:border-slate-700/50 px-8 py-4 text-lg font-semibold text-slate-700 dark:text-white shadow-xl hover:bg-white/20 dark:hover:bg-slate-700/50 transition-all duration-300"
                 >
-                  <Github className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                  View on GitHub
+                  <Brain className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
+                  Explore Vibe-X
                   <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
                 </Link>
               </motion.div>
@@ -365,68 +603,7 @@ export default function HomePage() {
         </div>
       </motion.div>
 
-      {/* Quick Install Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="relative z-10 py-16"
-      >
-        <div className="mx-auto max-w-4xl px-4">
-          <motion.div
-            className="rounded-2xl bg-white/80 backdrop-blur-xl p-8 shadow-2xl ring-1 ring-slate-900/5 dark:bg-slate-900/80 dark:ring-slate-800"
-            whileHover={{ y: -5 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="text-center mb-6">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Quick Install
-              </h2>
-              <p className="mt-2 text-slate-600 dark:text-slate-400">
-                Get started with AgentX in seconds
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              <motion.div
-                className="rounded-lg bg-slate-950 dark:bg-slate-950 p-4 shadow-inner"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <code className="text-sm text-emerald-400 font-mono block text-left">
-                  $ pip install agentx-py
-                </code>
-                <code className="text-sm text-emerald-400 font-mono block text-left">
-                  $ agentx init
-                </code>
-                <code className="text-sm text-slate-400 font-mono block text-left mt-2">
-                  # Interactive wizard creates your optimized workflow
-                </code>
-              </motion.div>
-
-              <div className="text-center">
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  Choose from three optimized templates:
-                </p>
-                <div className="flex justify-center gap-4 text-sm">
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-                    📝 Writing
-                  </span>
-                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
-                    💻 Coding
-                  </span>
-                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
-                    🎛️ Operating
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </motion.div>
-
-      {/* The Perfect Balance Section - Moved before Features */}
+      {/* Vibe-X Philosophy Section - Enhanced */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -474,18 +651,18 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white text-center mb-6">
-              Autonomous AI + Human Oversight
+              The Vibe-X Philosophy
             </h2>
             <p className="text-2xl text-slate-700 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              The future of intelligent automation — where AI autonomy
-              capabilities seamlessly integrate with human expertise for optimal
-              decision-making
+              Beyond automation towards augmentation — where AI capabilities
+              seamlessly integrate with human expertise for optimal
+              collaboration
             </p>
           </motion.div>
 
           {/* Three Core Pillars with Glass Effect */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Multi-Agent Autonomy */}
+            {/* Transparent Processes */}
             <motion.div
               className="group relative p-10 h-full min-h-[400px] flex flex-col backdrop-blur-xl shadow-2xl"
               style={{
@@ -514,11 +691,12 @@ export default function HomePage() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-center text-slate-800 dark:text-white">
-                  Multi-Agent Autonomy
+                  Transparent Processes
                 </h3>
                 <p className="text-slate-700 dark:text-slate-200 leading-relaxed text-center flex-grow opacity-90">
-                  Intelligent orchestration of self-organizing agent networks
-                  that coordinate workloads and scale operations autonomously.
+                  Real-time visibility into AI decision-making with
+                  interruptible workflows. See what agents think, intervene when
+                  needed, and maintain full control.
                 </p>
               </div>
             </motion.div>
@@ -555,14 +733,14 @@ export default function HomePage() {
                   Human in the Loop
                 </h3>
                 <p className="text-slate-700 dark:text-slate-200 leading-relaxed text-center flex-grow opacity-90">
-                  Governance frameworks with human intervention at critical
-                  decision points. Define workflows, compliance boundaries, and
-                  ethical standards.
+                  Strategic human oversight with AI execution. Define
+                  boundaries, approve critical decisions, and maintain ethical
+                  standards while AI handles the toil.
                 </p>
               </div>
             </motion.div>
 
-            {/* Cost Efficiency */}
+            {/* Cost-Aware Intelligence */}
             <motion.div
               className="group relative p-10 h-full min-h-[400px] flex flex-col backdrop-blur-xl shadow-2xl"
               style={{
@@ -591,12 +769,12 @@ export default function HomePage() {
                   />
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-center text-slate-800 dark:text-white">
-                  Cost Efficiency
+                  Cost-Aware Intelligence
                 </h3>
                 <p className="text-slate-700 dark:text-slate-200 leading-relaxed text-center flex-grow opacity-90">
-                  Native support for high-performance, low-cost models like
-                  DeepSeek, Claude Haiku, and Gemini Flash. Up to 90% cost
-                  reduction with intelligent optimization.
+                  Intelligent model routing that balances capability with cost.
+                  Use DeepSeek for routine tasks, Claude for complex reasoning —
+                  economically sustainable AI.
                 </p>
               </div>
             </motion.div>
@@ -621,10 +799,10 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white text-center mb-6">
-              Key Features
+              Enterprise-Grade Features
             </h2>
             <p className="text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              Enterprise-grade capabilities for building sophisticated
+              Production-ready capabilities for building sophisticated
               multi-agent architectures
             </p>
           </motion.div>
@@ -676,18 +854,18 @@ export default function HomePage() {
               Ready to understand how it all works together?
             </p>
             <Link
-              href="/architecture"
+              href="/docs/design"
               className="inline-flex items-center bg-slate-500 dark:bg-white/20 hover:bg-slate-300 dark:hover:bg-white/30 text-white font-semibold px-8 py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               <Sparkles className="mr-3 h-5 w-5" />
-              Explore the Architecture
+              Explore the Design
               <ArrowRight className="ml-3 h-5 w-5" />
             </Link>
           </div>
         </div>
       </motion.div>
 
-      {/* Suitable For Section - Added after Features */}
+      {/* Real-World Applications - Beautiful floating card layout restored */}
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -704,17 +882,17 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white text-center mb-6">
-              Suitable For
+              Real-World Applications
             </h2>
             <p className="text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
-              Engineered for diverse applications across industries and research
-              domains
+              See how AgentX transforms work across industries with intelligent
+              automation and human collaboration
             </p>
           </motion.div>
 
-          {/* Floating Card Layout */}
-          <div className="relative max-w-7xl mx-auto min-h-[600px]">
-            {useCases.map((useCase, index) => {
+          {/* Floating Card Layout - Desktop Only */}
+          <div className="hidden lg:block relative max-w-7xl mx-auto min-h-[600px]">
+            {realWorldScenarios.map((scenario, index) => {
               const positions = [
                 { top: "5%", left: "10%", rotate: "-3deg", zIndex: 4 },
                 { top: "20%", right: "5%", rotate: "2deg", zIndex: 3 },
@@ -761,7 +939,7 @@ export default function HomePage() {
 
               return (
                 <motion.div
-                  key={useCase.title}
+                  key={scenario.title}
                   className="absolute w-96 h-80"
                   style={{
                     top: positions[index].top,
@@ -862,7 +1040,7 @@ export default function HomePage() {
 
                     {/* Engraved Icon */}
                     <div className="mb-6">
-                      <useCase.icon
+                      <scenario.icon
                         className="w-12 h-12 opacity-70"
                         style={{
                           color:
@@ -887,10 +1065,10 @@ export default function HomePage() {
 
                     {/* Content with glass-friendly colors */}
                     <h3 className="text-2xl font-bold mb-4 text-slate-800 dark:text-white">
-                      {useCase.title}
+                      {scenario.title}
                     </h3>
                     <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed opacity-90">
-                      {useCase.description}
+                      {scenario.description}
                     </p>
 
                     {/* Glass decorative dots */}
@@ -919,6 +1097,67 @@ export default function HomePage() {
               );
             })}
           </div>
+
+          {/* Mobile List Layout */}
+          <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {realWorldScenarios.map((scenario, index) => {
+              const colors = [
+                {
+                  bg: "from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20",
+                  border: "border-blue-200 dark:border-blue-700",
+                  text: "text-blue-900 dark:text-blue-100",
+                  accent: "bg-blue-500",
+                },
+                {
+                  bg: "from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20",
+                  border: "border-purple-200 dark:border-purple-700",
+                  text: "text-purple-900 dark:text-purple-100",
+                  accent: "bg-purple-500",
+                },
+                {
+                  bg: "from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20",
+                  border: "border-emerald-200 dark:border-emerald-700",
+                  text: "text-emerald-900 dark:text-emerald-100",
+                  accent: "bg-emerald-500",
+                },
+                {
+                  bg: "from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20",
+                  border: "border-orange-200 dark:border-orange-700",
+                  text: "text-orange-900 dark:text-orange-100",
+                  accent: "bg-orange-500",
+                },
+              ];
+
+              return (
+                <motion.div
+                  key={scenario.title}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className={`p-6 rounded-2xl bg-gradient-to-br ${colors[index].bg} border ${colors[index].border} hover:shadow-lg transition-all duration-300`}
+                >
+                  <div className="flex items-start space-x-4">
+                    <div
+                      className={`flex-shrink-0 w-12 h-12 ${colors[index].accent} rounded-xl flex items-center justify-center`}
+                    >
+                      <scenario.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3
+                        className={`text-xl font-bold mb-2 ${colors[index].text}`}
+                      >
+                        {scenario.title}
+                      </h3>
+                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                        {scenario.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </motion.div>
 
@@ -937,11 +1176,12 @@ export default function HomePage() {
             transition={{ duration: 0.3 }}
           >
             <h2 className="text-4xl font-bold text-white mb-4">
-              Ready to Deploy Intelligent Agents?
+              Ready to Experience Vibe-X?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join industry leaders building the next generation of AI systems
-              with true autonomy
+              Join the next generation of human-AI collaboration with
+              transparent, cost-efficient, and truly collaborative intelligent
+              systems
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.div
@@ -949,10 +1189,10 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="/docs/getting-started"
+                  href="/docs/tutorials/0-bootstrap"
                   className="inline-flex items-center bg-white text-blue-600 font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-50 transition-colors duration-200"
                 >
-                  Read the Docs
+                  Start Building
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </motion.div>
