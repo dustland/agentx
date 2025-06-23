@@ -22,11 +22,7 @@ class StorageTool(Tool):
         logger.info(f"StorageTool initialized with workspace: {self.workspace.get_workspace_path()}")
     
     @tool(description="Get the temp directory path for temporary files")
-    async def get_temp_dir(
-        self,
-        task_id: str,
-        agent_id: str
-    ) -> str:
+    async def get_temp_dir(self) -> str:
         """Get the temp directory path for temporary files (automatically cleaned up)."""
         # Ensure temp directory exists
         try:
@@ -41,8 +37,6 @@ class StorageTool(Tool):
     @tool(description="Write content to a file (saves to artifacts by default)")
     async def write_file(
         self,
-        task_id: str,
-        agent_id: str,
         filename: Annotated[str, "Name of the file (e.g., 'requirements.md', 'temp/script.sh')"],
         content: Annotated[str, "Content to write to the file"]
     ) -> str:
@@ -70,8 +64,6 @@ class StorageTool(Tool):
     @tool(description="Read the contents of a file")
     async def read_file(
         self,
-        task_id: str,
-        agent_id: str,
         filename: Annotated[str, "Name of the file to read (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
         """Read file contents. Looks in artifacts/ by default unless path specifies otherwise."""
@@ -98,8 +90,6 @@ class StorageTool(Tool):
     @tool(description="List the contents of a directory")
     async def list_directory(
         self,
-        task_id: str,
-        agent_id: str,
         path: Annotated[str, "Directory path to list (defaults to artifacts)"] = "artifacts"
     ) -> str:
         """List directory contents. Defaults to artifacts/ directory."""
@@ -129,8 +119,6 @@ class StorageTool(Tool):
     @tool(description="Check if a file or directory exists")
     async def file_exists(
         self,
-        task_id: str,
-        agent_id: str,
         filename: Annotated[str, "Name of the file to check (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
         """Check if a file exists. Looks in artifacts/ by default unless path specifies otherwise."""
@@ -162,8 +150,6 @@ class StorageTool(Tool):
     @tool(description="Create a directory")
     async def create_directory(
         self,
-        task_id: str,
-        agent_id: str,
         path: Annotated[str, "Directory path to create (relative to workspace)"]
     ) -> str:
         """Create a directory safely within workspace."""
@@ -188,8 +174,6 @@ class StorageTool(Tool):
     @tool(description="Delete a file")
     async def delete_file(
         self,
-        task_id: str,
-        agent_id: str,
         filename: Annotated[str, "Name of the file to delete (e.g., 'requirements.md', 'temp/script.sh')"]
     ) -> str:
         """Delete a file. Looks in artifacts/ by default unless path specifies otherwise."""

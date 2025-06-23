@@ -1,0 +1,31 @@
+name: "Simple Research Demo"
+description: "Demonstrates effective use of web research methodology"
+
+agents:
+  - name: researcher
+    description: "Research specialist who demonstrates proper web research methodology"
+    prompt_template: "prompts/researcher.md"
+    llm_config:
+      model: deepseek/deepseek-chat
+      temperature: 0.1
+      max_tokens: 2000
+    # No tools specified - builtin tools are automatically registered
+
+# Single agent - no handoffs needed
+handoffs: []
+
+# Orchestrator configuration
+orchestrator:
+  max_rounds: 10
+  timeout: 1800
+  brain_config:
+    model: deepseek/deepseek-chat
+    temperature: 0.0
+    max_tokens: 100
+
+# Execution configuration
+execution:
+  mode: "autonomous"
+  max_rounds: 10
+  timeout_seconds: 1800
+  initial_agent: "researcher"

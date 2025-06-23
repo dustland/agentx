@@ -150,7 +150,8 @@ class Brain:
         return formatted_messages
 
     def _prepare_call_params(self, messages: List[Dict[str, Any]], temperature: Optional[float] = None, 
-                           tools: Optional[List[Dict[str, Any]]] = None, stream: bool = False) -> Dict[str, Any]:
+                           tools: Optional[List[Dict[str, Any]]] = None, stream: bool = False, 
+                           json_mode: bool = False) -> Dict[str, Any]:
         """Prepare parameters for LLM API call."""
         # Handle model name - if it already includes provider prefix, use as-is
         model_name = self.config.model
@@ -175,6 +176,10 @@ class Brain:
             call_params["api_key"] = self.config.api_key
         if self.config.base_url:
             call_params["api_base"] = self.config.base_url
+        
+        # Add JSON mode if requested
+        if json_mode:
+            call_params["response_format"] = {"type": "json_object"}
             
         # Add tools if model supports native function calling
         if tools and self.config.supports_function_calls:
@@ -195,6 +200,7 @@ class Brain:
         system_prompt: Optional[str] = None,
         temperature: Optional[float] = None,
         tools: Optional[List[Dict[str, Any]]] = None,
+        json_mode: bool = False,
     ) -> BrainResponse:
         """
         Generate a single response from the LLM.
@@ -217,7 +223,7 @@ class Brain:
 
         
         formatted_messages = self._format_messages(messages, system_prompt)
-        call_params = self._prepare_call_params(formatted_messages, temperature, tools, stream=False)
+        call_params = self._prepare_call_params(formatted_messages, temperature, tools, stream=False, json_mode=json_mode)
         
         try:
             logger.debug(f"Making LLM call with {len(formatted_messages)} messages")

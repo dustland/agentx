@@ -7,8 +7,8 @@ import aiohttp
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from agentx import get_logger
-from agentx.tool.base import Tool
+from agentx.utils.logger import get_logger
+from agentx import Tool, tool
 
 logger = get_logger(__name__)
 
@@ -22,15 +22,19 @@ class WeatherTool(Tool):
         self.weather_url = "https://api.open-meteo.com/v1/forecast"
         logger.info("Custom Weather Tool initialized with Open-Meteo API")
         
+    @tool(
+        description="Get weather forecast for a specific location using Open-Meteo API",
+        return_description="A formatted string containing the weather forecast"
+    )
     async def get_weather(self, location: str) -> str:
         """
-        Get tomorrow's weather forecast for a specific location using Open-Meteo API.
+        Get weather forecast for a specific location using Open-Meteo API.
         
         Args:
             location: The city and state/country, e.g., "San Francisco, CA" or "Paris, France".
             
         Returns:
-            A formatted string containing tomorrow's weather forecast.
+            A formatted string containing the weather forecast.
         """
         try:
             # Get coordinates for the location
@@ -43,10 +47,10 @@ class WeatherTool(Tool):
             if not weather_data:
                 return f"Sorry, I couldn't get the weather forecast for {location}. Please try again later."
             
-            tomorrow = datetime.now() + timedelta(days=1)
-            tomorrow_date = tomorrow.strftime("%B %d, %Y")
+            today = datetime.now()
+            today_date = today.strftime("%B %d, %Y")
             
-            return self._format_weather_response(location, tomorrow_date, weather_data, coordinates)
+            return self._format_weather_response(location, today_date, weather_data, coordinates)
             
         except Exception as e:
             logger.error(f"Error getting weather forecast: {e}")
@@ -95,17 +99,17 @@ class WeatherTool(Tool):
                 async with session.get(self.weather_url, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
-                        if data.get("daily") and len(data["daily"]["time"]) >= 2:
-                            # Get tomorrow's data (index 1)
+                        if data.get("daily") and len(data["daily"]["time"]) >= 1:
+                            # Get today's data (index 0)
                             daily = data["daily"]
                             return {
-                                "date": daily["time"][1],
-                                "temp_max": daily["temperature_2m_max"][1],
-                                "temp_min": daily["temperature_2m_min"][1],
-                                "weather_code": daily["weathercode"][1],
-                                "precipitation": daily["precipitation_sum"][1],
-                                "wind_speed": daily["windspeed_10m_max"][1],
-                                "wind_direction": daily["winddirection_10m_dominant"][1],
+                                "date": daily["time"][0],
+                                "temp_max": daily["temperature_2m_max"][0],
+                                "temp_min": daily["temperature_2m_min"][0],
+                                "weather_code": daily["weathercode"][0],
+                                "precipitation": daily["precipitation_sum"][0],
+                                "wind_speed": daily["windspeed_10m_max"][0],
+                                "wind_direction": daily["winddirection_10m_dominant"][0],
                                 "timezone": data.get("timezone", "UTC")
                             }
                     return None
@@ -170,7 +174,7 @@ class WeatherTool(Tool):
         wind_speed_mph = round(weather["wind_speed"] * 0.621371)  # Convert km/h to mph
         precipitation_in = round(weather["precipitation"] * 0.0393701, 2)  # Convert mm to inches
         
-        response = f"""Tomorrow's Weather Forecast for {location_name} ({date}):
+        response = f"""Weather Forecast for {location_name} ({date}):
 
 🌡️ Temperature: High {temp_max_f}°F ({weather['temp_max']:.1f}°C), Low {temp_min_f}°F ({weather['temp_min']:.1f}°C)
 ☁️ Conditions: {weather_desc}

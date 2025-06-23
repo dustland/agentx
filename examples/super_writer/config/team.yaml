@@ -41,11 +41,11 @@ agents:
 handoffs:
   - from_agent: "consultant"
     to_agent: "researcher"
-    condition: "requirements are clear and research is needed"
+    condition: "requirements document is complete and says 'ready for research' or 'begin research phase'"
 
   - from_agent: "researcher"
     to_agent: "writer"
-    condition: "research is complete and writing should begin"
+    condition: "researcher explicitly states 'all research tasks completed' or 'research phase complete'"
 
   - from_agent: "writer"
     to_agent: "reviewer"

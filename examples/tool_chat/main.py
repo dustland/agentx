@@ -18,8 +18,8 @@ from weather_tool import WeatherTool
 
 async def main():
     """Main function to run the tool chat example."""
-    print("🔧 Tool Chat Example")
-    print("This example uses built-in search tools and a custom weather tool.")
+    print("🔧 Tool Chat Example - Multiple Tool Calls Test")
+    print("This example tests multiple weather tool calls in one conversation.")
     print("-" * 60)
     
     # Check if DeepSeek supports function calling
@@ -27,8 +27,8 @@ async def main():
     supports_fc = litellm.supports_function_calling(model=model_name)
     print(f"🔍 Function calling support for {model_name}: {supports_fc}")
     
-    # Use a default test question to avoid manual input during testing
-    user_prompt = "what is the weather in shanghai tomorrow?"
+    # Test multiple cities to see parallel tool execution
+    user_prompt = "What's the weather like in New York, London, Tokyo, and Sydney? Please get the current weather for all four cities."
     print(f"Test question: {user_prompt}")
     print()
 
@@ -70,11 +70,16 @@ async def main():
                 content = result.get("content", "")
                 if success:
                     print(f"\n✅ Tool {name} completed")
+                    # Show a preview of the result
+                    if isinstance(content, str) and len(content) > 100:
+                        print(f"   Preview: {content[:100]}...")
+                    else:
+                        print(f"   Result: {content}")
                 else:
                     print(f"\n❌ Tool {name} failed: {content}")
             elif chunk_type == "tool_calls_start":
                 count = result.get("count", 0)
-                print(f"\n🔧 Executing {count} tool(s)...")
+                print(f"\n🔧 Executing {count} tool(s) in parallel...")
             elif chunk_type == "routing_decision":
                 action = result.get("action")
                 if action == "COMPLETE":

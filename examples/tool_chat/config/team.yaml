@@ -9,10 +9,6 @@ agents:
     prompt_template: "prompts/assistant.md"
     tools:
       - get_weather
-      - web_search
-      - store_artifact
-      - read_file
-      - write_file
     llm_config:
       model: deepseek/deepseek-chat
       temperature: 0.3

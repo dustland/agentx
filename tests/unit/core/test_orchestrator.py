@@ -67,7 +67,7 @@ class TestOrchestratorInitialization:
         orchestrator = Orchestrator(mock_task)
 
         assert orchestrator.task == mock_task
-        assert orchestrator.routing_brain is not None  # Brain is now mandatory for tasks
+        # Brain is initialized lazily when needed
 
     def test_orchestrator_without_task(self):
         """Test orchestrator initialization without task."""
@@ -94,6 +94,8 @@ class TestOrchestratorInitialization:
         
         orchestrator = Orchestrator(task)
         
+        # Brain is initialized lazily, so we need to trigger it
+        orchestrator._ensure_routing_brain()
         assert orchestrator.routing_brain == mock_brain
         mock_brain_class.from_config.assert_called_once_with(brain_config)
 
@@ -101,24 +103,26 @@ class TestAgentRouting:
     """Test agent routing functionality."""
     
     @pytest.mark.asyncio
-    async def test_get_next_agent_single_agent(self, mock_single_agent_task):
-        """Test get_next_agent with single agent task."""
+    async def test_decide_next_step_single_agent_task(self, mock_single_agent_task):
+        """Test decide_next_step with single agent task."""
         orchestrator = Orchestrator(mock_single_agent_task)
         
         context = {"current_agent": "solo_agent"}
-        next_agent = await orchestrator.get_next_agent(context)
+        decision = await orchestrator.decide_next_step(context)
         
-        assert next_agent == "solo_agent"
+        assert decision["action"] == "COMPLETE"
+        assert decision["next_agent"] == "solo_agent"
     
     @pytest.mark.asyncio
-    async def test_get_next_agent_no_task(self):
-        """Test get_next_agent without task."""
+    async def test_decide_next_step_no_task_context(self):
+        """Test decide_next_step without task."""
         orchestrator = Orchestrator()
         
         context = {"current_agent": "default"}
-        next_agent = await orchestrator.get_next_agent(context)
+        decision = await orchestrator.decide_next_step(context)
         
-        assert next_agent == "default"
+        assert decision["action"] == "COMPLETE"
+        assert decision["reason"] == "No task configured"
     
     @pytest.mark.asyncio
     async def test_decide_next_step_no_task(self):
@@ -139,8 +143,8 @@ class TestAgentRouting:
         context = {}
         decision = await orchestrator.decide_next_step(context)
         
-        assert decision["action"] == "CONTINUE"
-        assert decision["reason"] == "Single agent"
+        assert decision["action"] == "COMPLETE"
+        assert decision["reason"] == "Single agent task complete"
     
     @pytest.mark.asyncio
     async def test_decide_next_step_max_rounds(self, mock_task):
@@ -188,6 +192,9 @@ class TestAgentRouting:
         mock_brain.generate_response = AsyncMock()
         mock_brain.generate_response.return_value = mock_response
         
+        # Set up task with proper team config
+        mock_task.team_config.handoffs = []  # No explicit handoffs, will use intelligent routing
+        
         # Set up task with brain
         orchestrator = Orchestrator(mock_task)
         orchestrator.routing_brain = mock_brain
@@ -199,7 +206,7 @@ class TestAgentRouting:
         }
         last_response = "I need to hand this off to agent2."
         
-        decision = await orchestrator.determine_handoff(context, last_response)
+        decision = await orchestrator.decide_next_step(context, last_response)
         
         assert decision["action"] == "HANDOFF"
         assert decision["next_agent"] == "agent2"

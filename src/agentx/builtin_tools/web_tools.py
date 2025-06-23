@@ -83,22 +83,93 @@ class WebTool(Tool):
         except Exception as e:
             logger.error(f"Failed to initialize browser-use: {e}")
     
+    # @tool(
+    #     description="Extract clean content from any URL using Firecrawl",
+    #     return_description="ToolResult containing extracted web content with title, content, and markdown"
+    # )
+    # async def extract_content(self, url: str, include_tags: Optional[List[str]] = None, 
+    #                         exclude_tags: Optional[List[str]] = None) -> ToolResult:
+    #     """
+    #     Extract content from a URL using Firecrawl.
+    #     
+    #     Args:
+    #         url: The URL to extract content from (required)
+    #         include_tags: HTML tags to include in extraction (optional)
+    #         exclude_tags: HTML tags to exclude from extraction (optional)
+    #         
+    #     Returns:
+    #         ToolResult with WebContent containing extracted data
+    #     """
+    #     if not self._firecrawl_client:
+    #         return ToolResult(
+    #             success=False,
+    #             result=None,
+    #             error="Firecrawl client not available"
+    #         )
+    #     
+    #     try:
+    #         # Use the correct Firecrawl API call format
+    #         result = self._firecrawl_client.scrape_url(
+    #             url, 
+    #             formats=["markdown", "html"],
+    #             include_tags=include_tags or ["title", "meta"],
+    #             exclude_tags=exclude_tags or ["nav", "footer", "aside"],
+    #             wait_for=2000  # Wait for JS to load
+    #         )
+    #         
+    #         # Handle the ScrapeResponse object (Pydantic model with attributes)
+    #         if result.success:
+    #             web_content = WebContent(
+    #                 url=url,
+    #                 title=result.metadata.get("title", "") if result.metadata else "",
+    #                 content=result.markdown or "",
+    #                 markdown=result.markdown or "",
+    #                 metadata=result.metadata or {},
+    #                 success=True
+    #             )
+    #             
+    #             return ToolResult(
+    #                 success=True,
+    #                 result=web_content,
+    #                 metadata={"url": url, "extraction_method": "firecrawl"}
+    #             )
+    #         else:
+    #             error_msg = result.error or "Unknown error occurred"
+    #             return ToolResult(
+    #                 success=False,
+    #                 error=f"Firecrawl extraction failed: {error_msg}",
+    #                 metadata={"url": url}
+    #             )
+    #             
+    #     except Exception as e:
+    #         logger.error(f"Content extraction failed for {url}: {e}")
+    #         return ToolResult(
+    #             success=False,
+    #             result=None,
+    #             error=str(e)
+    #         )
+    
     @tool(
-        description="Extract clean content from any URL using Firecrawl",
-        return_description="ToolResult containing extracted web content with title, content, and markdown"
+        description="Extract content and data from URLs using Firecrawl Extract API with LLM processing",
+        return_description="ToolResult containing extracted content and data based on the prompt"
     )
-    async def extract_content(self, url: str, include_tags: Optional[List[str]] = None, 
-                            exclude_tags: Optional[List[str]] = None) -> ToolResult:
+    async def extract_content(self, urls: Union[str, List[str]], prompt: str, 
+                            enable_web_search: bool = False, 
+                            schema: Optional[Dict[str, Any]] = None) -> ToolResult:
         """
-        Extract content from a URL using Firecrawl.
+        Extract content and data from one or multiple URLs using LLM-powered extraction.
+        
+        This is the primary content extraction method that uses Firecrawl's Extract API
+        with LLM processing to intelligently extract relevant information based on your prompt.
         
         Args:
-            url: The URL to extract content from (required)
-            include_tags: HTML tags to include in extraction (optional)
-            exclude_tags: HTML tags to exclude from extraction (optional)
+            urls: Single URL string or list of URLs to extract from (required)
+            prompt: Natural language prompt describing what content/data to extract (required)
+            enable_web_search: Whether to expand search beyond provided URLs, defaults to False
+            schema: Optional JSON schema for structured output format (optional)
             
         Returns:
-            ToolResult with WebContent containing extracted data
+            ToolResult with extracted content and data
         """
         if not self._firecrawl_client:
             return ToolResult(
@@ -108,47 +179,44 @@ class WebTool(Tool):
             )
         
         try:
-            # Use the correct Firecrawl API call format
-            result = self._firecrawl_client.scrape_url(
-                url, 
-                formats=["markdown", "html"],
-                include_tags=include_tags or ["title", "meta"],
-                exclude_tags=exclude_tags or ["nav", "footer", "aside"],
-                wait_for=2000  # Wait for JS to load
+            # Convert single URL to list
+            url_list = [urls] if isinstance(urls, str) else urls
+            
+            # Use Extract API with LLM processing
+            result = self._firecrawl_client.extract(
+                urls=url_list,
+                prompt=prompt,
+                schema=schema,
+                enable_web_search=enable_web_search
             )
             
-            # Handle the ScrapeResponse object (Pydantic model with attributes)
             if result.success:
-                web_content = WebContent(
-                    url=url,
-                    title=result.metadata.get("title", "") if result.metadata else "",
-                    content=result.markdown or "",
-                    markdown=result.markdown or "",
-                    metadata=result.metadata or {},
-                    success=True
-                )
-                
                 return ToolResult(
                     success=True,
-                    result=web_content,
-                    metadata={"url": url, "extraction_method": "firecrawl"}
+                    result=result.data,
+                    metadata={
+                        "urls": url_list,
+                        "extraction_method": "firecrawl_extract",
+                        "prompt": prompt,
+                        "web_search_enabled": enable_web_search
+                    }
                 )
             else:
                 error_msg = result.error or "Unknown error occurred"
                 return ToolResult(
                     success=False,
                     error=f"Firecrawl extraction failed: {error_msg}",
-                    metadata={"url": url}
+                    metadata={"urls": url_list, "prompt": prompt}
                 )
                 
         except Exception as e:
-            logger.error(f"Content extraction failed for {url}: {e}")
+            logger.error(f"Structured data extraction failed for {urls}: {e}")
             return ToolResult(
                 success=False,
                 result=None,
                 error=str(e)
             )
-    
+
     @tool(
         description="Crawl multiple pages from a website using Firecrawl",
         return_description="ToolResult containing list of WebContent objects from crawled pages"

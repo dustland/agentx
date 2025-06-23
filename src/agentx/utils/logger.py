@@ -8,6 +8,11 @@ import warnings
 from typing import Optional
 import os
 
+# Immediately suppress browser_use telemetry on import
+logging.getLogger("browser_use.telemetry.service").setLevel(logging.ERROR)
+logging.getLogger("browser_use.telemetry").setLevel(logging.ERROR)
+logging.getLogger("browser_use").setLevel(logging.ERROR)
+
 
 def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
     """
@@ -145,6 +150,7 @@ def _suppress_noisy_loggers(level: str = "ERROR"):
         "LiteLLM",
         "litellm",
         "browser_use.telemetry.service", 
+        "browser_use.telemetry",
         "browser_use",
         "httpx",
         "urllib3.connectionpool",

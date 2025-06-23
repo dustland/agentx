@@ -219,6 +219,8 @@ class OrchestratorConfig(BaseModel):
     enable_agent_handoff: bool = True
     require_explicit_handoff: bool = False
     
+
+    
     # Termination conditions
     auto_terminate: bool = True
     termination_keywords: List[str] = Field(default_factory=lambda: ["DONE", "COMPLETE", "FINISHED"])

@@ -283,7 +283,7 @@ export default function HomePage() {
             {/* Main Title */}
             <motion.h1
               variants={itemVariants}
-              className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl"
+              className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl font-mono lg:text-5xl"
             >
               <div className="flex flex-col items-center gap-6">
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 flex-wrap">
@@ -294,7 +294,7 @@ export default function HomePage() {
                       <AnimatedText />
                     </div>
                     {/* Terminal cursor indicator */}
-                    <div className="absolute top-1 right-2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse opacity-80"></div>
+                    <div className="absolute top-1 right-2 w-2 h-2 bg-emerald-300 rounded-full animate-pulse opacity-80"></div>
                   </div>
                   <span>Agentic AI</span>
                 </div>
@@ -338,7 +338,7 @@ export default function HomePage() {
               >
                 <Link
                   href="/docs/getting-started"
-                  className="group relative inline-flex items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-purple-500/25 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700"
+                  className="group relative inline-flex items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-purple-500/25 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700"
                 >
                   <Sparkles className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                   Get Started
@@ -394,26 +394,11 @@ export default function HomePage() {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <code className="text-sm text-emerald-400 font-mono block text-center">
-                  pip install agentx-py
+                <code className="text-sm text-emerald-400 font-mono block text-left">
+                  $ pip install agentx-py
                 </code>
-              </motion.div>
-
-              <div className="text-center">
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  Or install from source:
-                </span>
-              </div>
-
-              <motion.div
-                className="rounded-lg bg-slate-950 dark:bg-slate-950 p-4 shadow-inner"
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.2 }}
-              >
-                <code className="text-sm text-emerald-400 font-mono block text-center">
-                  git clone https://github.com/dustland/agentx.git
-                  <br />
-                  cd agentx && pip install -e .
+                <code className="text-sm text-emerald-400 font-mono block text-left">
+                  $ agentx start
                 </code>
               </motion.div>
             </div>
@@ -672,7 +657,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/architecture"
-              className="inline-flex items-center bg-slate-900 dark:bg-white/20 hover:bg-slate-800 dark:hover:bg-white/30 text-white font-semibold px-8 py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center bg-slate-500 dark:bg-white/20 hover:bg-slate-300 dark:hover:bg-white/30 text-white font-semibold px-8 py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               <Sparkles className="mr-3 h-5 w-5" />
               Explore the Architecture
@@ -944,7 +929,7 @@ export default function HomePage() {
                 whileTap={{ scale: 0.95 }}
               >
                 <Link
-                  href="/architecture"
+                  href="/docs/getting-started"
                   className="inline-flex items-center bg-white text-blue-600 font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-50 transition-colors duration-200"
                 >
                   Read the Docs
@@ -957,6 +942,7 @@ export default function HomePage() {
               >
                 <Link
                   href="https://github.com/dustland/agentx/tree/main/examples"
+                  target="_blank"
                   className="inline-flex items-center text-white font-semibold py-3 px-8 rounded-lg border border-white/20 hover:bg-white/10 transition-colors duration-200"
                 >
                   View Examples

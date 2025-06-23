@@ -168,7 +168,7 @@ class TaskExecutor:
         self._create_agents()
         
         # Initialize orchestrator AFTER agents are created
-        self.orchestrator = Orchestrator(self.task, memory_system=self.memory)
+        self.orchestrator = Orchestrator(self.task)
         
         # Setup clean logging for better chat experience
         setup_clean_chat_logging()
@@ -425,6 +425,9 @@ class TaskExecutor:
                 yield chunk
         else:
             await self._execute()
+            # Ensure this is always a generator by yielding nothing at the end
+            return
+            yield  # Unreachable but makes function a generator
     
     async def step(self, user_input: str = None, stream: bool = False):
         """Execute one step (for step-by-step execution)."""
@@ -525,6 +528,9 @@ class TaskExecutor:
         context = self.task.get_context()
         routing_decision = await self.orchestrator.decide_next_step(context, response)
         
+        # Always show orchestrator decision
+        print(f"🎯 ORCHESTRATOR DECISION | Action: {routing_decision['action']} | Current: {self.task.current_agent} | Next: {routing_decision.get('next_agent', 'N/A')} | Reason: {routing_decision.get('reason', 'N/A')}")
+        
         result = {
             "status": "continue",
             "agent": self.task.current_agent,
@@ -538,10 +544,12 @@ class TaskExecutor:
         if routing_decision["action"] == "COMPLETE":
             self.task.complete_task()
             result["status"] = "complete"
+            print(f"🏁 TASK COMPLETED")
         elif routing_decision["action"] == "HANDOFF":
             old_agent = self.task.current_agent
             self.task.set_current_agent(routing_decision["next_agent"])
             result["handoff"] = {"from": old_agent, "to": routing_decision["next_agent"]}
+            print(f"🔄 HANDOFF | From: {old_agent} → To: {routing_decision['next_agent']}")
         
         return result
     
@@ -900,16 +908,25 @@ async def execute_task(prompt: str, config_path: str, initial_agent: str = None,
         initial_agent: Optional initial agent name
         stream: Whether to stream responses
     
-    Yields:
-        Stream chunks if stream=True, or completes silently if stream=False
+    Returns:
+        None if stream=False, or async generator if stream=True
     """
-    task_executor = TaskExecutor(config_path)
-    
     if stream:
-        async for chunk in task_executor.execute_task(prompt, initial_agent, stream=True):
-            yield chunk
+        return _execute_task_streaming(prompt, config_path, initial_agent)
     else:
-        await task_executor.execute_task(prompt, initial_agent, stream=False)
+        return await _execute_task_non_streaming(prompt, config_path, initial_agent)
+
+async def _execute_task_non_streaming(prompt: str, config_path: str, initial_agent: str = None):
+    """Execute task without streaming - returns None when complete."""
+    task_executor = TaskExecutor(config_path)
+    async for _ in task_executor.execute_task(prompt, initial_agent, stream=False):
+        pass
+
+async def _execute_task_streaming(prompt: str, config_path: str, initial_agent: str = None):
+    """Execute task with streaming - yields chunks."""
+    task_executor = TaskExecutor(config_path)
+    async for chunk in task_executor.execute_task(prompt, initial_agent, stream=True):
+        yield chunk
 
 def start_task(prompt: str, config_path: str, initial_agent: str = None) -> 'TaskExecutor':
     """

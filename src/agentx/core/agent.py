@@ -191,12 +191,19 @@ class Agent:
         conversation = messages.copy()
         
         for round_num in range(max_tool_rounds):
+            # Always show conversation state
+            print(f"🧠 AGENT ROUND {round_num + 1} | Agent: {self.name} | Messages: {len(conversation)}")
+            
             # Get response from brain
             llm_response = await self.brain.generate_response(
                 messages=conversation,
                 system_prompt=system_prompt,
                 tools=self.get_tools_json()
             )
+            
+            # Always show LLM response
+            if llm_response.content:
+                print(f"💬 AGENT RESPONSE | Agent: {self.name} | Content: {llm_response.content[:200]}{'...' if len(llm_response.content) > 200 else ''}")
             
             # Check if brain wants to call tools
             if llm_response.tool_calls:

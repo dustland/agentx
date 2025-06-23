@@ -52,7 +52,7 @@ The heart of this tutorial is building a custom tool. Create `weather_tool.py`:
 ```python
 import aiohttp
 from typing import Dict, Any
-from agentx.tool.base import Tool
+from agentx import Tool, tool
 
 class WeatherTool(Tool):
     """Custom weather tool using Open-Meteo API (no API key required)."""
@@ -62,6 +62,10 @@ class WeatherTool(Tool):
         self.base_url = "https://api.open-meteo.com/v1/forecast"
         self.geocoding_url = "https://geocoding-api.open-meteo.com/v1/search"
 
+    @tool(
+        description="Get current weather for a specific location",
+        return_description="Weather information as a formatted string"
+    )
     async def get_weather(self, location: str) -> str:
         """
         Get current weather for a location.
@@ -460,12 +464,15 @@ You can add multiple methods to a single tool:
 
 ```python
 class WeatherTool(Tool):
+    @tool(description="Get current weather for a location")
     async def get_weather(self, location: str) -> str:
         # Current weather
 
+    @tool(description="Get multi-day weather forecast")
     async def get_forecast(self, location: str, days: int = 5) -> str:
         # Multi-day forecast
 
+    @tool(description="Get weather warnings and alerts")
     async def get_weather_alerts(self, location: str) -> str:
         # Weather warnings and alerts
 ```
@@ -497,6 +504,7 @@ tools:
 
 **Tool not being called?**
 
+- **CRITICAL**: Ensure all tool methods have the `@tool` decorator
 - Check the agent's tools list includes your tool name
 - Verify the prompt mentions when to use the tool
 - Ensure the tool is properly configured in team.yaml
