@@ -1,6 +1,17 @@
 @import "tailwindcss";
 @import "nextra-theme-docs/style.css";
 
+/* Override Nextra's default max-width constraints for full-width layout */
+:root {
+  --nextra-content-width: 100vw !important;
+  --nextra-sidebar-width: 320px !important;
+}
+
+/* Simplified sidebar width override */
+aside[data-nextra-sidebar] {
+  width: 320px !important;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
@@ -63,3 +74,4 @@ pre {
     font-size: 3rem;
   }
 }
+
