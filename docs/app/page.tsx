@@ -398,9 +398,29 @@ export default function HomePage() {
                   $ pip install agentx-py
                 </code>
                 <code className="text-sm text-emerald-400 font-mono block text-left">
-                  $ agentx start
+                  $ agentx init
+                </code>
+                <code className="text-sm text-slate-400 font-mono block text-left mt-2">
+                  # Interactive wizard creates your optimized workflow
                 </code>
               </motion.div>
+
+              <div className="text-center">
+                <p className="text-slate-600 dark:text-slate-400 mb-4">
+                  Choose from three optimized templates:
+                </p>
+                <div className="flex justify-center gap-4 text-sm">
+                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
+                    📝 Writing
+                  </span>
+                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">
+                    💻 Coding
+                  </span>
+                  <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
+                    🎛️ Operating
+                  </span>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

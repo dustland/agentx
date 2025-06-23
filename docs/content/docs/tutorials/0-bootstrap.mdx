@@ -1,0 +1,307 @@
+# Tutorial 0: Bootstrap Your First Project
+
+**Get started with AgentX in under 2 minutes using our intelligent project wizard.**
+
+The AgentX bootstrap wizard embodies the Vibe-X philosophy by providing optimized templates for the three core workflows of knowledge work. Instead of starting with a blank slate, you get a working system tailored to your specific use case.
+
+---
+
+## Quick Start
+
+The fastest way to get started is with the interactive wizard:
+
+```bash
+pip install agentx-py
+agentx init
+```
+
+This launches an intelligent wizard that:
+
+- 🎯 **Identifies your workflow type** (Writing, Coding, or Operating)
+- 🤖 **Selects optimal models** for cost and performance
+- 🏗️ **Generates complete project structure** with working agents
+- 📚 **Provides comprehensive documentation** and examples
+
+---
+
+## The Three Core Templates
+
+### 📝 Writing Template - Vibe-Writing
+
+Perfect for **document creation, research, and content workflows**.
+
+```bash
+agentx init my-research-project --template writing
+```
+
+**What you get:**
+
+- **Researcher Agent**: Gathers comprehensive information and credible sources
+- **Writer Agent**: Creates compelling, well-structured content
+- **Editor Agent**: Provides quality assurance and polish
+
+**Ideal for:**
+
+- Research papers and academic writing
+- Technical documentation and guides
+- Marketing content and reports
+- Blog posts and articles
+
+### 💻 Coding Template - Vibe-Coding
+
+Optimized for **software development and technical implementation**.
+
+```bash
+agentx init my-app-project --template coding
+```
+
+**What you get:**
+
+- **Architect Agent**: Plans system design and technical approach
+- **Developer Agent**: Implements clean, maintainable code
+- **Tester Agent**: Ensures quality through comprehensive testing
+
+**Ideal for:**
+
+- Web applications and APIs
+- Libraries and frameworks
+- Bug fixes and refactoring
+- Code reviews and optimization
+
+### 🎛️ Operating Template - Vibe-Operating
+
+Designed for **automation, API integration, and real-world actions**.
+
+```bash
+agentx init my-automation-project --template operating
+```
+
+**What you get:**
+
+- **Analyst Agent**: Understands requirements and plans operations
+- **Operator Agent**: Executes real-world actions and API calls
+- **Monitor Agent**: Validates results and provides feedback
+
+**Ideal for:**
+
+- API integrations and automation
+- Data processing pipelines
+- System administration tasks
+- Real-world operations and monitoring
+
+---
+
+## Interactive Wizard Demo
+
+Let's walk through creating a writing project:
+
+```bash
+$ agentx init
+
+🚀 AgentX Project Bootstrap
+===================================
+Welcome to the AgentX project wizard!
+Let's create your optimized AI workflow.
+
+📁 Project name: my-research-assistant
+
+🎯 Choose your workflow type:
+1. 📝 Writing - Document creation, research papers, content
+2. 💻 Coding - Software development, debugging, testing
+3. 🎛️  Operating - Automation, API calls, real-world actions
+4. 🔧 Custom - Start with basic setup
+
+Select (1-4): 1
+
+🤖 Default LLM provider (current: deepseek):
+1. DeepSeek (fast, cost-effective)
+2. OpenAI (GPT-4, reliable)
+3. Claude (Anthropic, excellent reasoning)
+4. Gemini (Google, multimodal)
+
+Select (1-4) or press Enter for deepseek:
+
+🏗️  Creating project 'my-research-assistant' with writing template...
+✅ Project 'my-research-assistant' created successfully!
+```
+
+---
+
+## What Gets Generated
+
+Every bootstrap project includes:
+
+### 📁 Complete Project Structure
+
+```
+my-research-assistant/
+├── config/
+│   ├── team.yaml          # Agent configuration
+│   └── prompts/           # Agent behavior definitions
+├── workspace/             # Project workspace (auto-generated)
+├── main.py               # Ready-to-run application
+├── .env.example          # Environment template
+└── README.md            # Comprehensive documentation
+```
+
+### 🤖 Pre-configured Agents
+
+Each template includes 3 specialized agents with:
+
+- **Optimized prompts** for their specific roles
+- **Appropriate tool access** for their responsibilities
+- **Clear handoff protocols** between agents
+- **Quality standards** and best practices
+
+### 🔧 Smart Defaults
+
+- **Cost-effective model selection** (DeepSeek by default)
+- **Collaborative execution mode** with intelligent routing
+- **Memory enabled** for context retention
+- **Essential tools** pre-configured (search, storage, memory)
+
+### 📚 Production-Ready Code
+
+- **Streaming interface** for real-time interaction
+- **Error handling** and graceful degradation
+- **Task tracking** with unique IDs
+- **Workspace management** for organized output
+
+---
+
+## Running Your Project
+
+After bootstrap completes:
+
+```bash
+cd my-research-assistant
+cp .env.example .env
+# Edit .env with your API keys
+python main.py
+```
+
+You'll get an interactive session:
+
+```
+🚀 Starting my-research-assistant
+==================================================
+
+📋 Task ID: task_abc123
+📁 Workspace: /path/to/workspace/task_abc123
+
+🤖 AI agents are ready! What would you like to work on?
+
+👤 You: Research and write a comprehensive guide on renewable energy trends
+
+🤖 AI: I'll help you create a comprehensive guide on renewable energy trends.
+Let me start by researching the latest developments and data...
+
+[Researcher Agent activates, searches for information, saves findings]
+[Writer Agent takes over, creates structured content]
+[Editor Agent reviews and polishes the final document]
+```
+
+---
+
+## Model Selection Guide
+
+Choose the right model for your needs:
+
+| Provider     | Model            | Strengths                             | Best For                          |
+| ------------ | ---------------- | ------------------------------------- | --------------------------------- |
+| **DeepSeek** | deepseek-chat    | Fast, cost-effective, good quality    | Most workflows, high-volume usage |
+| **OpenAI**   | gpt-4o-mini      | Reliable, well-tested, good reasoning | Production systems, complex tasks |
+| **Claude**   | claude-3-haiku   | Excellent reasoning, ethical, helpful | Research, analysis, writing       |
+| **Gemini**   | gemini-1.5-flash | Multimodal, fast, Google integration  | Creative tasks, data analysis     |
+
+You can always change models later by editing `config/team.yaml`.
+
+---
+
+## Customization Options
+
+### Command Line Flags
+
+```bash
+# Non-interactive mode with specific template
+agentx init my-project --template coding --model openai --no-interactive
+
+# Interactive mode (default)
+agentx init
+
+# Specify project name upfront
+agentx init my-awesome-project
+```
+
+### Template Customization
+
+After generation, you can customize:
+
+1. **Agent Prompts**: Edit files in `config/prompts/`
+2. **Tool Configuration**: Modify `tools` section in `config/team.yaml`
+3. **Model Settings**: Adjust `llm_config` for each agent
+4. **Execution Parameters**: Change `max_rounds`, `timeout_seconds`, etc.
+
+---
+
+## Cost Optimization
+
+Bootstrap projects are configured for cost-effective operation:
+
+- **DeepSeek by default**: Up to 90% cost savings vs GPT-4
+- **Efficient prompting**: Agents designed for minimal token usage
+- **Smart tool selection**: Only necessary tools are loaded
+- **Collaborative mode**: Agents work together to minimize redundant work
+
+**Estimated costs** (per 1000 user interactions):
+
+- DeepSeek: ~$2-5
+- OpenAI GPT-4o-mini: ~$10-20
+- Claude Haiku: ~$8-15
+- Gemini Flash: ~$3-8
+
+---
+
+## Next Steps
+
+Once you have a working project:
+
+1. **Experiment**: Try different prompts and see how agents respond
+2. **Customize**: Modify agent behavior by editing prompt files
+3. **Scale**: Add more agents or upgrade to more powerful models
+4. **Deploy**: Use `agentx start` to run as a service
+5. **Learn**: Explore [Tutorial 1: Your First Agent](/docs/tutorials/1-first-agent) for deeper concepts
+
+---
+
+## Troubleshooting
+
+**"Directory already exists" error?**
+
+- Choose a different project name or remove the existing directory
+
+**Agents not responding?**
+
+- Check your API keys in `.env`
+- Verify internet connection
+- Try `agentx status` to check configuration
+
+**Want to start over?**
+
+- Delete the project directory and run `agentx init` again
+- Or modify the existing configuration files
+
+---
+
+## Philosophy: Fast Start, Full Control
+
+The bootstrap wizard embodies AgentX's core philosophy:
+
+- **Fast Start**: Get productive immediately with working templates
+- **Full Control**: Every file is editable, nothing is hidden or locked
+- **Best Practices**: Templates encode proven patterns and optimizations
+- **Escape Hatches**: You can always customize or completely rewrite
+
+This is the "Vibe-X" approach: intelligent defaults that get you started, with complete transparency and control as you grow.
+
+**Ready to build something amazing?** Run `agentx init` and let's get started! 🚀
