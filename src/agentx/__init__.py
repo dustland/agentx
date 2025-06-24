@@ -17,7 +17,7 @@ from .tool.models import Tool, tool
 # No configuration loading needed - users pass config paths to start_task/execute_task
 
 # Logging utilities
-from .utils.logger import setup_clean_chat_logging, set_log_level
+from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 
 __version__ = "0.12.1"
 
@@ -33,4 +33,5 @@ __all__ = [
     # Logging utilities
     "setup_clean_chat_logging",
     "set_log_level",
+    "get_logger",
 ]

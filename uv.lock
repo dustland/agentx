@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "agentx-py"
-version = "0.11.2"
+version = "0.12.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -67,6 +67,8 @@ web-automation = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "toml" },
 ]
 
@@ -115,7 +117,11 @@ requires-dist = [
 provides-extras = ["dev", "code-execution", "web-automation", "all"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "toml", specifier = ">=0.10.2" }]
+dev = [
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-asyncio", specifier = ">=1.0.0" },
+    { name = "toml", specifier = ">=0.10.2" },
+]
 
 [[package]]
 name = "aiofiles"

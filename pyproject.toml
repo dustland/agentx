@@ -16,7 +16,11 @@ name = "Dustland Team"
 email = "hi@dustland.ai"
 
 [dependency-groups]
-dev = [ "toml>=0.10.2",]
+dev = [
+ "pytest>=8.3.5",
+ "pytest-asyncio>=1.0.0",
+ "toml>=0.10.2",
+]
 
 [project.optional-dependencies]
 dev = [ "pytest", "pytest-cov", "pytest-asyncio", "uv",]

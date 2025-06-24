@@ -162,7 +162,7 @@ class TeamLoader:
     
     def _create_agent_config(self, agent_data: Dict[str, Any]) -> Any:
         """Create AgentConfig from raw agent data."""
-        from .models import AgentConfig, BrainConfig
+        from .models import AgentConfig, BrainConfig, LLMProviderConfig
         
         # Required fields
         name = agent_data.get('name')
@@ -216,24 +216,44 @@ class TeamLoader:
         
         # First check for agent-level llm_config
         if 'llm_config' in agent_data:
-            llm_config = agent_data['llm_config']
+            llm_config_data = agent_data['llm_config']
+            llm_config = LLMProviderConfig(
+                provider=llm_config_data.get('provider', 'openai'),
+                model=llm_config_data.get('model', 'gpt-4o-mini'),
+                temperature=llm_config_data.get('temperature', 0.7),
+                max_tokens=llm_config_data.get('max_tokens'),
+                api_key=llm_config_data.get('api_key'),
+                base_url=llm_config_data.get('base_url'),
+                timeout=llm_config_data.get('timeout', 60),
+                max_retries=llm_config_data.get('max_retries', 3)
+            )
             brain_config = BrainConfig(
-                provider=llm_config.get('provider', 'deepseek'),
-                model=llm_config.get('model', 'deepseek-chat'),
-                temperature=llm_config.get('temperature', 0.7),
-                max_tokens=llm_config.get('max_tokens', 4000),
-                api_key=llm_config.get('api_key'),
-                base_url=llm_config.get('base_url'),
-                timeout=llm_config.get('timeout', 30),
-                supports_function_calls=llm_config.get('supports_function_calls', True)
+                llm_config=llm_config,
+                system_message=prompt_template
             )
         # Fallback to team-level llm_provider
         elif hasattr(self, 'team_config') and self.team_config and hasattr(self.team_config, 'llm_provider') and self.team_config.llm_provider:
             llm_provider = self.team_config.llm_provider
-            brain_config = BrainConfig(
-                model=llm_provider.model or "deepseek-chat",
+            llm_config = LLMProviderConfig(
+                provider="openai",
+                model=llm_provider.model or "gpt-4o-mini",
                 api_key=llm_provider.api_key,
-                base_url=llm_provider.base_url or "https://api.deepseek.com"
+                base_url=llm_provider.base_url
+            )
+            brain_config = BrainConfig(
+                llm_config=llm_config,
+                system_message=prompt_template
+            )
+        else:
+            # Create default brain config
+            default_llm_config = LLMProviderConfig(
+                provider="openai",
+                model="gpt-4o-mini",
+                temperature=0.7
+            )
+            brain_config = BrainConfig(
+                llm_config=default_llm_config,
+                system_message=prompt_template
             )
         
         # Create AgentConfig

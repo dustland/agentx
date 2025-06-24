@@ -8,7 +8,7 @@ import pytest
 import asyncio
 import json
 
-from weather_tool import WeatherTool
+from .weather_tool import WeatherTool
 from agentx.tool.manager import ToolManager
 from agentx.core.brain import Brain, BrainConfig
 

@@ -126,7 +126,7 @@ const AnimatedText = () => {
   return (
     <div className="flex items-center h-full">
       <span className="text-emerald-400 font-mono">Vibe-</span>
-      <span className="text-white font-mono whitespace-nowrap">
+      <span className="text-slate-900 dark:text-white font-mono whitespace-nowrap">
         {currentText}
       </span>
       <span
@@ -528,13 +528,15 @@ export default function HomePage() {
             {/* Main Title */}
             <motion.h1
               variants={itemVariants}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-white text-center leading-tight max-w-4xl mx-auto whitespace-nowrap"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-slate-900 dark:text-white text-center leading-tight max-w-4xl mx-auto"
             >
-              <span>Build </span>
-              <span className="inline-block bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-2 border border-slate-600/30 mx-1 sm:mx-2">
-                <AnimatedText />
-              </span>
-              <span> Apps</span>
+              <div className="flex flex-col items-center gap-2">
+                <span>Build</span>
+                <span className="inline-block bg-slate-800/50 dark:bg-slate-800/50 backdrop-blur-sm rounded-2xl px-4 sm:px-6 py-2 border border-slate-600/30">
+                  <AnimatedText />
+                </span>
+                <span>Apps</span>
+              </div>
             </motion.h1>
 
             <motion.div
@@ -576,11 +578,21 @@ export default function HomePage() {
               >
                 <Link
                   href="/docs/tutorials/0-bootstrap"
-                  className="group relative inline-flex items-center overflow-hidden rounded-xl bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-2xl transition-all duration-300 hover:shadow-purple-500/25 hover:from-blue-700 hover:via-purple-700 hover:to-indigo-700"
+                  className="group relative inline-flex items-center overflow-hidden rounded-xl px-8 py-4 text-lg font-bold shadow-2xl transition-all duration-300 hover:shadow-lg"
                 >
-                  <Terminal className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                  Quick Start
-                  <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  {/* Gradient border overlay */}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 p-[2px]">
+                    <div className="w-full h-full bg-white dark:bg-slate-900 rounded-[10px]"></div>
+                  </div>
+
+                  {/* Content with proper z-index */}
+                  <div className="relative z-10 flex items-center">
+                    <Terminal className="mr-3 h-5 w-5 group-hover:rotate-12 transition-transform duration-300 text-blue-600" />
+                    <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent font-bold">
+                      Quick Start
+                    </span>
+                    <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300 text-indigo-600" />
+                  </div>
                 </Link>
               </motion.div>
 
@@ -782,6 +794,36 @@ export default function HomePage() {
         </div>
       </motion.div>
 
+      {/* Bootstrap/Terminal Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="relative z-10 py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900"
+      >
+        <div className="mx-auto max-w-7xl px-4">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white text-center mb-6">
+              Get Started in Seconds
+            </h2>
+            <p className="text-2xl text-slate-600 dark:text-slate-300 max-w-4xl mx-auto leading-relaxed">
+              Choose your workflow template and launch a complete AI team
+              instantly
+            </p>
+          </motion.div>
+
+          {/* Bootstrap Tabs Component */}
+          <BootstrapTabs />
+        </div>
+      </motion.div>
+
       {/* Features Section */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -855,7 +897,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/docs/design"
-              className="inline-flex items-center bg-slate-500 dark:bg-white/20 hover:bg-slate-300 dark:hover:bg-white/30 text-white font-semibold px-8 py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
+              className="inline-flex items-center bg-blue-600 dark:bg-white/20 hover:bg-blue-700 dark:hover:bg-white/30 text-white dark:text-white font-semibold px-8 py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               <Sparkles className="mr-3 h-5 w-5" />
               Explore the Design
@@ -1213,6 +1255,152 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Footer */}
+      <footer className="relative z-10 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+        <div className="mx-auto max-w-7xl px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Company Info */}
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center mb-4">
+                <img
+                  src="/logo.png"
+                  alt="AgentX Logo"
+                  className="w-8 h-8 mr-3"
+                />
+                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                  AgentX
+                </span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 mb-4 max-w-md">
+                Vibe-X philosophy in action. Build transparent, cost-efficient,
+                and truly collaborative AI systems with full control and instant
+                productivity.
+              </p>
+              <div className="flex space-x-4">
+                <Link
+                  href="https://github.com/dustland/agentx"
+                  target="_blank"
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+
+            {/* Documentation */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Documentation
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/docs"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    Getting Started
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/tutorials/0-bootstrap"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    Quick Start
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/api"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    API Reference
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/design"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    Design Philosophy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Resources
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="https://github.com/dustland/agentx/tree/main/examples"
+                    target="_blank"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    Examples
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://github.com/dustland/agentx"
+                    target="_blank"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    GitHub
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://pypi.org/project/agentx-py/"
+                    target="_blank"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    PyPI Package
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="https://github.com/dustland/agentx/issues"
+                    target="_blank"
+                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                  >
+                    Report Issues
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <div className="text-slate-500 dark:text-slate-400 text-sm mb-4 md:mb-0">
+                © {new Date().getFullYear()} AgentX. Built with Vibe-X
+                philosophy.
+              </div>
+              <div className="flex items-center justify-center text-sm">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Made with{" "}
+                  <span className="text-red-500" style={{ color: "red" }}>
+                    ♥
+                  </span>{" "}
+                  for AI builders
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

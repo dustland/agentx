@@ -6,7 +6,7 @@ to verify that the weather tool schema is generated correctly.
 """
 
 import pytest
-from weather_tool import WeatherTool
+from .weather_tool import WeatherTool
 from agentx.tool.registry import ToolRegistry
 
 
