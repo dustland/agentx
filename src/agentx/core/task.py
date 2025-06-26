@@ -878,7 +878,7 @@ class TaskExecutor:
             from ..builtin_tools.storage_tools import create_storage_tools
             storage_tools = create_storage_tools(self.workspace_storage)
             for tool in storage_tools:
-                register_tool(tool)
+                self.tool_manager.register_tool(tool)
             
             logger.debug(f"Registered {len(storage_tools)} storage tools")
         except ImportError as e:

@@ -64,6 +64,21 @@ pre {
   border-width: 1px;
 }
 
+/* Remove underlines from all links */
+a {
+  text-decoration: none !important;
+}
+
+/* Specifically target button-style links */
+a.inline-flex {
+  text-decoration: none !important;
+}
+
+/* Override Nextra link styles */
+.nextra-content a {
+  text-decoration: none !important;
+}
+
 /* Responsive improvements */
 @media (max-width: 768px) {
   .text-5xl {
