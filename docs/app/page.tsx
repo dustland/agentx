@@ -230,9 +230,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero Section */}
-      <section className="relative py-20 lg:py-32">
+      <section className="relative py-20 lg:py-32 overflow-hidden">
         {/* Subtle background decoration */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900"></div>
+
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:60px_60px] opacity-40"></div>
 
         {/* Subtle decorative elements */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"></div>
@@ -410,8 +413,57 @@ export default function HomePage() {
       </section>
 
       {/* Use Cases */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4">
+      <section className="relative py-20">
+        {/* Subtle diagonal lines decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full">
+            <svg
+              className="absolute top-10 left-10 w-32 h-32 text-slate-100 dark:text-slate-800 opacity-50"
+              viewBox="0 0 100 100"
+            >
+              <defs>
+                <pattern
+                  id="diagonalLines"
+                  patternUnits="userSpaceOnUse"
+                  width="10"
+                  height="10"
+                >
+                  <path
+                    d="M 0,10 l 10,-10 M -2.5,2.5 l 5,-5 M 7.5,12.5 l 5,-5"
+                    stroke="currentColor"
+                    strokeWidth="0.5"
+                  />
+                </pattern>
+              </defs>
+              <rect width="100" height="100" fill="url(#diagonalLines)" />
+            </svg>
+            <svg
+              className="absolute bottom-20 right-20 w-24 h-24 text-slate-100 dark:text-slate-800 opacity-30"
+              viewBox="0 0 100 100"
+            >
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.5"
+                strokeDasharray="5,5"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r="30"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="0.5"
+                strokeDasharray="3,3"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               Real-World Applications
