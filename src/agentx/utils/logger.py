@@ -7,6 +7,7 @@ import sys
 import warnings
 from typing import Optional
 import os
+from pathlib import Path
 
 # Immediately suppress browser_use telemetry on import
 logging.getLogger("browser_use.telemetry.service").setLevel(logging.ERROR)
@@ -184,4 +185,53 @@ def _get_default_log_level() -> str:
 
 def _is_verbose_mode() -> bool:
     """Check if verbose mode is enabled via environment variable."""
-    return os.getenv("AGENTX_VERBOSE", "").lower() in ("1", "true", "yes") 
+    return os.getenv("AGENTX_VERBOSE", "").lower() in ("1", "true", "yes")
+
+
+def setup_task_file_logging(log_file_path: str) -> None:
+    """
+    Set up file logging for a specific task.
+    This adds a file handler to the root logger to capture all AgentX logs.
+    
+    Args:
+        log_file_path: Path to the log file
+    """
+    try:
+        log_file = Path(log_file_path)
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Create file handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        
+        # Create formatter
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        file_handler.setFormatter(formatter)
+        
+        # Add to root logger to capture everything
+        root_logger = logging.getLogger()
+        
+        # Remove any existing file handlers to avoid duplicates
+        for handler in root_logger.handlers[:]:
+            if isinstance(handler, logging.FileHandler):
+                root_logger.removeHandler(handler)
+        
+        # Add our file handler
+        root_logger.addHandler(file_handler)
+        
+        # Ensure root logger level allows INFO
+        if root_logger.level == logging.NOTSET or root_logger.level > logging.INFO:
+            root_logger.setLevel(logging.INFO)
+        
+        # Test that it works
+        logger = get_logger(__name__)
+        logger.info(f"Task file logging initialized: {log_file}")
+        
+        # Force flush to ensure it's written
+        file_handler.flush()
+        
+    except Exception as e:
+        print(f"Failed to setup task file logging: {e}") 

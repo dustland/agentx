@@ -1,0 +1,30 @@
+# Research Synthesizer Test Configuration
+name: "Research Synthesizer Test"
+description: "Configuration for testing research synthesizer only"
+output_dir: "workspace"
+
+agents:
+  - name: research_synthesizer
+    description: "Research synthesis specialist for testing"
+    class: agentx.core.agents.Agent
+    prompt_template: "prompts/research_synthesizer.md"
+    llm_config:
+      model: deepseek/deepseek-reasoner
+      temperature: 0.3
+      max_tokens: 6144
+    tools:
+      - read_file
+      - write_file
+
+# No handoffs - single agent only
+handoffs: []
+
+# Team-level configuration
+after_work_behavior: "return_to_user"
+
+# Execution configuration
+execution:
+  mode: "autonomous"
+  max_rounds: 3
+  timeout_seconds: 180
+  initial_agent: "research_synthesizer"

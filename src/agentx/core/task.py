@@ -167,11 +167,14 @@ class TaskExecutor:
         # Create agents with task-level tool manager
         self._create_agents()
         
+        # Setup clean logging for better chat experience FIRST
+        setup_clean_chat_logging()
+        
         # Initialize orchestrator AFTER agents are created
         self.orchestrator = Orchestrator(self.task)
         
-        # Setup clean logging for better chat experience
-        setup_clean_chat_logging()
+        # Setup workspace and task-specific logging AFTER clean logging
+        self._setup_workspace()
         
         logger.info(f"✅ TaskExecutor initialized for task {self.task.task_id}")
 
@@ -778,31 +781,15 @@ class TaskExecutor:
             logger.warning(f"Failed to setup workspace: {e}")
     
     def _setup_task_logging(self) -> None:
-        """Set up task-specific logging."""
+        """Set up task-specific logging to persist all AgentX logs to logs/ folder."""
         try:
-            import logging
+            from ..utils.logger import setup_task_file_logging
             
-            # Create task-specific logger
-            task_logger = logging.getLogger(f"agentx.task.{self.task.task_id}")
-            task_logger.setLevel(logging.INFO)
-            
-            # Create file handler for task logs
+            # Create log file path
             log_file = self.task.workspace_dir / "logs" / "task.log"
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setLevel(logging.INFO)
             
-            # Create formatter
-            formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            )
-            file_handler.setFormatter(formatter)
-            
-            # Add handler to logger
-            if not task_logger.handlers:
-                task_logger.addHandler(file_handler)
-            
-            # Log task initialization
-            task_logger.info(f"Task {self.task.task_id} initialized")
+            # Use the dedicated function for task file logging
+            setup_task_file_logging(str(log_file))
             
         except Exception as e:
             logger.warning(f"Failed to setup task logging: {e}")
@@ -898,7 +885,7 @@ class TaskExecutor:
             logger.warning(f"Failed to import storage tools: {e}")
 
 
-async def execute_task(prompt: str, config_path: str, initial_agent: str = None, stream: bool = False):
+async def execute_task(prompt: str, config_path: str, initial_agent: str = None, stream: bool = False, task_id: str = None):
     """
     Execute a task to completion (one-shot execution).
     
@@ -907,28 +894,29 @@ async def execute_task(prompt: str, config_path: str, initial_agent: str = None,
         config_path: Path to team configuration file
         initial_agent: Optional initial agent name
         stream: Whether to stream responses
+        task_id: Optional task ID for resuming existing tasks
     
     Returns:
         None if stream=False, or async generator if stream=True
     """
     if stream:
-        return _execute_task_streaming(prompt, config_path, initial_agent)
+        return _execute_task_streaming(prompt, config_path, initial_agent, task_id)
     else:
-        return await _execute_task_non_streaming(prompt, config_path, initial_agent)
+        return await _execute_task_non_streaming(prompt, config_path, initial_agent, task_id)
 
-async def _execute_task_non_streaming(prompt: str, config_path: str, initial_agent: str = None):
+async def _execute_task_non_streaming(prompt: str, config_path: str, initial_agent: str = None, task_id: str = None):
     """Execute task without streaming - returns None when complete."""
-    task_executor = TaskExecutor(config_path)
+    task_executor = TaskExecutor(config_path, task_id=task_id)
     async for _ in task_executor.execute_task(prompt, initial_agent, stream=False):
         pass
 
-async def _execute_task_streaming(prompt: str, config_path: str, initial_agent: str = None):
+async def _execute_task_streaming(prompt: str, config_path: str, initial_agent: str = None, task_id: str = None):
     """Execute task with streaming - yields chunks."""
-    task_executor = TaskExecutor(config_path)
+    task_executor = TaskExecutor(config_path, task_id=task_id)
     async for chunk in task_executor.execute_task(prompt, initial_agent, stream=True):
         yield chunk
 
-def start_task(prompt: str, config_path: str, initial_agent: str = None) -> 'TaskExecutor':
+def start_task(prompt: str, config_path: str, initial_agent: str = None, task_id: str = None) -> 'TaskExecutor':
     """
     Start a task for step-by-step interactive execution.
     
@@ -936,10 +924,11 @@ def start_task(prompt: str, config_path: str, initial_agent: str = None) -> 'Tas
         prompt: Initial task prompt
         config_path: Path to team configuration file  
         initial_agent: Optional initial agent name
+        task_id: Optional task ID for resuming existing tasks
     
     Returns:
         TaskExecutor instance ready for step() calls
     """
-    task_executor = TaskExecutor(config_path)
+    task_executor = TaskExecutor(config_path, task_id=task_id)
     task_executor.start_task(prompt, initial_agent)
     return task_executor
