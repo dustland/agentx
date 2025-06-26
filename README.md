@@ -62,8 +62,8 @@ This demonstrates a basic multi-agent collaboration:
 # Navigate to an example directory
 cd examples/simple_team
 
-# Run the demo script
-python demo.py
+# Run the main script
+python main.py
 ```
 
 #### Using the CLI
@@ -71,8 +71,8 @@ python demo.py
 The framework includes a powerful CLI for managing your agent system:
 
 ```bash
-# Start the API server
-agentx start
+# Bootstrap a new project with interactive wizard
+agentx init
 
 # Monitor tasks and events in your terminal
 agentx monitor
@@ -80,8 +80,8 @@ agentx monitor
 # Launch the web dashboard for rich observability
 agentx monitor --web
 
-# Run a named example directly
-agentx example superwriter
+# List available tools
+agentx tools list
 ```
 
 #### Using the Python API
@@ -93,17 +93,24 @@ import asyncio
 from agentx import execute_task
 
 async def main():
-    # Execute a task with a simple prompt
-    result = await execute_task("Write a brief report on renewable energy trends")
-
-    print(f"Success: {result.success}")
-    print(f"Summary: {result.summary}")
-    print(f"Conversation rounds: {len(result.conversation_history)}")
+    # Execute a task with a simple prompt (completes when done)
+    await execute_task(
+        prompt="Write a brief report on renewable energy trends",
+        config_path="config/team.yaml"
+    )
+    print("Task completed!")
 
 asyncio.run(main())
 ```
 
 _The script above shows a simple autonomous run. For more advanced patterns like message streaming and interactive sessions, please see the complete scripts in the `/examples` directory._
+
+### Example Projects
+
+- **[simple_writer](examples/simple_writer/)** - Single intelligent agent for both creative writing and market research
+- **[simple_team](examples/simple_team/)** - Multi-agent writer/reviewer collaboration
+- **[simple_chat](examples/simple_chat/)** - Interactive chat with an AI assistant
+- **[auto_writer](examples/auto_writer/)** - Advanced multi-agent writing system
 
 ## 📊 Observability & Monitoring
 
@@ -127,51 +134,15 @@ You can also use the observability features in CLI mode without the option `--we
 
 ## 🛠️ Tech Stack
 
-AgentX is built on a robust foundation of modern Python technologies and AI services:
+AgentX is built on a robust foundation of modern Python technologies:
 
-### 🧠 **AI & LLM Integration**
-
-- **[LiteLLM](https://github.com/BerriAI/litellm)** - Unified interface for 100+ LLM providers (OpenAI, Anthropic, DeepSeek, etc.)
-- **[Pydantic](https://pydantic.dev/)** - Data validation and settings management with type hints
-
-### 🧠 **Memory & Knowledge**
-
-- **[Mem0](https://github.com/mem0ai/mem0)** - Intelligent memory layer for long-term context retention
-- **[ChromaDB](https://www.trychroma.com/)** - Vector database for semantic search and embeddings
-
-### 🔧 **Core Framework**
-
-- **[FastAPI](https://fastapi.tiangolo.com/)** - Modern web framework for APIs and observability dashboard
-- **[Asyncio](https://docs.python.org/3/library/asyncio.html)** - Asynchronous programming for concurrent agent execution
-- **[YAML](https://pyyaml.org/)** - Human-readable configuration files for teams and agents
-
-### 🛡️ **Security & Isolation**
-
-- **[Docker](https://www.docker.com/)** - Containerized execution environment for secure tool execution
-- **[Subprocess](https://docs.python.org/3/library/subprocess.html)** - Isolated process execution with security controls
-
-### 📊 **Observability & Monitoring**
-
-- **[Preline UI](https://preline.co/)** - Modern UI components for the web dashboard
-- **[Jinja2](https://jinja.palletsprojects.com/)** - Template engine for dynamic web interfaces
-- **Event-driven architecture** - Real-time streaming and monitoring capabilities
-
-### 🔍 **Search & Web**
-
+- **[LiteLLM](https://github.com/BerriAI/litellm)** - Unified interface for 100+ LLM providers
+- **[Pydantic](https://pydantic.dev/)** - Data validation and settings management
+- **[Mem0](https://github.com/mem0ai/mem0)** - Intelligent memory layer for long-term context
+- **[ChromaDB](https://www.trychroma.com/)** - Vector database for semantic search
+- **[FastAPI](https://fastapi.tiangolo.com/)** - Modern web framework for APIs and dashboard
+- **[Docker](https://www.docker.com/)** - Containerized execution for secure tool execution
 - **[SerpAPI](https://serpapi.com/)** - Web search capabilities for agents
-- **[BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)** - Web scraping and content extraction
-
-### 📦 **Development & Packaging**
-
-- **[UV](https://github.com/astral-sh/uv)** - Fast Python package installer and resolver
-- **[Pytest](https://pytest.org/)** - Testing framework with comprehensive test coverage
-
-You can discover more architectural details in our documentation:
-
-- **[System Architecture](docs/arch/01-architecture.md)** - Overall design and system architecture
-- **[State and Context Management](docs/arch/02-state-and-context.md)** - State and Context management
-- **[Tool Calling](docs/arch/03-tool-call.md)** - Invoke tools for actual tasks
-- **[Communication and Message](docs/arch/04-communication.md)** - Message format for composite content and streaming
 
 ## 🤝 Contributing
 

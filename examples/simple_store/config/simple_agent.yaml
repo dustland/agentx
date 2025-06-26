@@ -10,7 +10,6 @@ agents:
     prompt_template: "prompts/storer.md"
     # No need to specify builtin tools - they're automatically available
     # Only specify custom/external tools here
-    tools: []
     llm_config:
       model: deepseek/deepseek-chat
       temperature: 0.1

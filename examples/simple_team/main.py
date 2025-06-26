@@ -27,8 +27,9 @@ async def main():
     print("🎬 Starting collaboration...\n")
     
     try:
-        # Execute with streaming
-        async for update in execute_task(prompt, config_path, stream=True):
+        # Execute with streaming - need to await the generator first
+        stream_generator = await execute_task(prompt, config_path, stream=True)
+        async for update in stream_generator:
             update_type = update.get("type")
             
             if update_type == "content":

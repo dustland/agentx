@@ -172,8 +172,21 @@ class Brain:
             call_params["stream_options"] = {"include_usage": True}
         
         # Add API credentials and base URL
-        if self.config.api_key:
-            call_params["api_key"] = self.config.api_key
+        api_key = self.config.api_key
+        if not api_key:
+            # Auto-detect API key from environment based on provider
+            provider = getattr(self.config, 'provider', None)
+            if provider == 'openai':
+                api_key = os.getenv('OPENAI_API_KEY')
+            elif provider == 'deepseek':
+                api_key = os.getenv('DEEPSEEK_API_KEY')
+            elif provider == 'anthropic':
+                api_key = os.getenv('ANTHROPIC_API_KEY')
+            elif provider == 'google':
+                api_key = os.getenv('GOOGLE_API_KEY')
+        
+        if api_key:
+            call_params["api_key"] = api_key
         if self.config.base_url:
             call_params["api_base"] = self.config.base_url
         

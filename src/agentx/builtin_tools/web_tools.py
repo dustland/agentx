@@ -218,6 +218,118 @@ class WebTool(Tool):
             )
 
     @tool(
+        description="Enhanced content extraction with visual data capture using Firecrawl's advanced features",
+        return_description="ToolResult containing comprehensive content including data from charts, graphs, and visual elements"
+    )
+    async def extract_content_with_visuals(self, url: str, prompt: str,
+                                         capture_screenshot: bool = True,
+                                         enable_web_search: bool = False) -> ToolResult:
+        """
+        Enhanced content extraction that captures both textual and visual data from web pages.
+        This method is specifically designed to extract data from charts, graphs, infographics,
+        and other visual elements that traditional text extraction might miss.
+        
+        Args:
+            url: Single URL to extract content from (required)
+            prompt: Detailed prompt describing what to extract, including visual elements (required)
+            capture_screenshot: Whether to capture full-page screenshot for visual analysis, defaults to True
+            enable_web_search: Whether to expand search beyond the URL, defaults to False
+            
+        Returns:
+            ToolResult with comprehensive extracted content including visual data
+        """
+        if not self._firecrawl_client:
+            return ToolResult(
+                success=False,
+                result=None,
+                error="Firecrawl client not available"
+            )
+        
+        try:
+            # Enhanced prompt that specifically requests visual data extraction
+            enhanced_prompt = f"""
+            {prompt}
+            
+            CRITICAL: Pay special attention to extracting data from visual elements including:
+            - All statistics, percentages, and numbers shown in charts and graphs
+            - Data from pie charts, bar charts, line graphs, and trend visualizations
+            - Information from infographics, dashboards, and data visualizations
+            - Table data with specific numbers and comparisons
+            - Map data showing regional/geographic statistics
+            - Timeline data from visual timelines and roadmaps
+            - Competitive analysis data from comparison charts
+            - Financial data from financial charts and projections
+            
+            Do not summarize visual data - extract the complete detailed information including
+            all specific numbers, percentages, company names, dates, and quantified metrics
+            visible in any visual elements on the page.
+            """
+            
+            # Use both Extract API and Scrape API for comprehensive data capture
+            extract_result = self._firecrawl_client.extract(
+                urls=[url],
+                prompt=enhanced_prompt,
+                enable_web_search=enable_web_search
+            )
+            
+            visual_data = None
+            if capture_screenshot:
+                try:
+                    # Also capture with screenshot for visual analysis
+                    scrape_result = self._firecrawl_client.scrape_url(
+                        url,
+                        formats=["markdown", "screenshot@fullPage"],
+                        wait_for=3000  # Wait for dynamic content to load
+                    )
+                    
+                    if scrape_result.success and hasattr(scrape_result, 'screenshot'):
+                        visual_data = {
+                            "screenshot_url": scrape_result.screenshot,
+                            "markdown_content": scrape_result.markdown
+                        }
+                except Exception as e:
+                    logger.warning(f"Screenshot capture failed for {url}: {e}")
+            
+            if extract_result.success:
+                result_data = extract_result.data
+                
+                # Combine extracted data with visual data if available
+                if visual_data:
+                    if isinstance(result_data, dict):
+                        result_data["visual_analysis"] = visual_data
+                    else:
+                        result_data = {
+                            "extracted_content": result_data,
+                            "visual_analysis": visual_data
+                        }
+                
+                return ToolResult(
+                    success=True,
+                    result=result_data,
+                    metadata={
+                        "url": url,
+                        "extraction_method": "firecrawl_enhanced_visual",
+                        "screenshot_captured": capture_screenshot and visual_data is not None,
+                        "web_search_enabled": enable_web_search
+                    }
+                )
+            else:
+                error_msg = extract_result.error or "Unknown error occurred"
+                return ToolResult(
+                    success=False,
+                    error=f"Enhanced extraction failed: {error_msg}",
+                    metadata={"url": url}
+                )
+                
+        except Exception as e:
+            logger.error(f"Enhanced visual extraction failed for {url}: {e}")
+            return ToolResult(
+                success=False,
+                result=None,
+                error=str(e)
+            )
+
+    @tool(
         description="Crawl multiple pages from a website using Firecrawl",
         return_description="ToolResult containing list of WebContent objects from crawled pages"
     )

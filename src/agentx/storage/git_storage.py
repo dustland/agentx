@@ -72,12 +72,7 @@ class GitArtifactStorage:
                 config.set_value("user", "name", "AgentX")
                 config.set_value("user", "email", "agentx@dustland.ai")
             
-            # Create initial commit
-            gitignore_path = self.artifacts_path / ".gitignore"
-            gitignore_path.write_text("# AgentX Artifacts Repository\n*.tmp\n*.log\n")
-            
-            repo.index.add([".gitignore"])
-            repo.index.commit("Initial commit: AgentX artifacts repository")
+            # Git repository initialized - no initial commit needed
             
             logger.info("Initialized new Git repository for artifacts")
             return repo

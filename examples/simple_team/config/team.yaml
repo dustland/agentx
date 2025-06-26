@@ -38,9 +38,6 @@ handoffs:
 # Team-level configuration
 after_work_behavior: "return_to_user"
 
-# No explicit tools - using natural language handoff detection
-tools: []
-
 # Orchestrator configuration for natural language handoff
 orchestrator:
   max_rounds: 8

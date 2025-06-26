@@ -4,5 +4,6 @@ export default {
   },
   "getting-started": "Getting Started",
   tutorials: "Tutorials", 
-  design: "Design"
+  design: "Design",
+  reference: "Reference"
 } 

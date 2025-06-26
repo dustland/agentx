@@ -6,7 +6,6 @@ agents:
   - name: "assistant"
     description: "Helpful AI assistant"
     prompt_template: "prompts/assistant.md"
-    tools: []
     llm_config:
       provider: "deepseek"
       model: "deepseek-chat"
@@ -15,9 +14,6 @@ agents:
       max_tokens: 4000
       supports_function_calls: true # DeepSeek supports native function calling
       # api_key will be read from DEEPSEEK_API_KEY environment variable
-
-# Tools configuration
-tools: []
 
 # Execution configuration
 execution:
