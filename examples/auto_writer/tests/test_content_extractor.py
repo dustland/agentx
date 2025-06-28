@@ -25,10 +25,13 @@ Use the extract_content tool to get detailed information about AI in healthcare 
 
 Save your extraction results as 'content_extraction_test.md'."""
 
+    # Construct the absolute path to the config file
+    config_path = os.path.join(os.path.dirname(__file__), "content_extractor_config.yaml")
+
     try:
         await execute_task(
             prompt=test_prompt,
-            config_path="tests/content_extractor_config.yaml", 
+            config_path=config_path, 
             stream=False
         )
         

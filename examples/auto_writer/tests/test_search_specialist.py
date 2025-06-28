@@ -22,10 +22,13 @@ Search for information about: "artificial intelligence healthcare applications"
 
 Use web_search to find authoritative sources and save your search results as 'search_results_test.md'."""
 
+    # Construct the absolute path to the config file
+    config_path = os.path.join(os.path.dirname(__file__), "single_agent_config.yaml")
+
     try:
         await execute_task(
             prompt=test_prompt,
-            config_path="tests/single_agent_config.yaml",
+            config_path=config_path,
             stream=False
         )
         

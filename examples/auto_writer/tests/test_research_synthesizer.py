@@ -16,6 +16,10 @@ async def test_research_synthesizer():
     print("🧪 Testing Research Synthesizer Agent...")
     print("=" * 50)
     
+    test_dir = os.path.dirname(__file__)
+    content1_path = os.path.join(test_dir, "content_extraction_1.md")
+    content2_path = os.path.join(test_dir, "content_extraction_2.md")
+
     # Create mock extracted content files
     content1 = """# Content Extraction: Remote Work Productivity Studies
 
@@ -33,21 +37,23 @@ async def test_research_synthesizer():
 - Case Study: Twitter remote policy - mixed results on team cohesion
 """
     
-    with open("content_extraction_1.md", "w") as f:
+    with open(content1_path, "w") as f:
         f.write(content1)
-    with open("content_extraction_2.md", "w") as f:
+    with open(content2_path, "w") as f:
         f.write(content2)
     
-    test_prompt = """You are the Research Synthesizer Agent.
+    test_prompt = f"""You are the Research Synthesizer Agent.
 
-Read the content extraction files (content_extraction_1.md and content_extraction_2.md) and synthesize the findings into a comprehensive research synthesis.
+Read the content extraction files ({content1_path} and {content2_path}) and synthesize the findings into a comprehensive research synthesis.
 
 Save your synthesis as 'research_synthesis.md'."""
+
+    config_path = os.path.join(test_dir, "research_synthesizer_config.yaml")
 
     try:
         await execute_task(
             prompt=test_prompt,
-            config_path="tests/research_synthesizer_config.yaml",
+            config_path=config_path,
             stream=False
         )
         
@@ -82,9 +88,9 @@ Save your synthesis as 'research_synthesis.md'."""
     
     finally:
         # Cleanup
-        for file in ["content_extraction_1.md", "content_extraction_2.md"]:
-            if os.path.exists(file):
-                os.remove(file)
+        for file_path in [content1_path, content2_path]:
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
 if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(__file__), ".."))

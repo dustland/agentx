@@ -16,6 +16,9 @@ async def test_content_reasoner():
     print("🧪 Testing Content Reasoner Agent...")
     print("=" * 50)
     
+    test_dir = os.path.dirname(__file__)
+    synthesis_path = os.path.join(test_dir, "research_synthesis.md")
+
     # Create mock synthesis file
     synthesis_content = """# Research Synthesis: Remote Work Impact
 
@@ -31,28 +34,37 @@ async def test_content_reasoner():
 - Work-life balance becomes more complex
 """
     
-    with open("research_synthesis.md", "w") as f:
+    with open(synthesis_path, "w") as f:
         f.write(synthesis_content)
     
-    test_prompt = """You are the Content Reasoner Agent.
+    test_prompt = f"""You are the Content Reasoner Agent.
 
-Read the research synthesis file (research_synthesis.md) and perform deep analytical reasoning to generate insights, implications, and recommendations.
+Read the research synthesis file ({synthesis_path}) and perform deep analytical reasoning to generate insights, implications, and recommendations.
 
 Save your analytical reasoning as 'content_analysis.md'."""
+
+    config_path = os.path.join(test_dir, "..", "config", "team.yaml")
 
     try:
         await execute_task(
             prompt=test_prompt,
-            config_path="config/team.yaml",
+            config_path=config_path,
             stream=False
         )
         
         print("\n" + "=" * 50)
         print("Test Results:")
         print("=" * 50)
+
+        analysis_files = []
+        for root, dirs, files in os.walk("workspace"):
+            for file in files:
+                if file == "content_analysis.md":
+                    analysis_files.append(os.path.join(root, file))
         
-        if os.path.exists("content_analysis.md"):
-            with open("content_analysis.md", "r") as f:
+        if analysis_files:
+            latest_file = max(analysis_files, key=os.path.getctime)
+            with open(latest_file, "r") as f:
                 content = f.read()
                 print(f"✅ Content analysis created ({len(content)} chars)")
                 
@@ -70,8 +82,8 @@ Save your analytical reasoning as 'content_analysis.md'."""
     
     finally:
         # Cleanup
-        if os.path.exists("research_synthesis.md"):
-            os.remove("research_synthesis.md")
+        if os.path.exists(synthesis_path):
+            os.remove(synthesis_path)
 
 if __name__ == "__main__":
     os.chdir(os.path.join(os.path.dirname(__file__), ".."))

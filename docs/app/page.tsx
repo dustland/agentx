@@ -23,6 +23,12 @@ import {
   Github,
   DollarSign,
 } from "lucide-react";
+import Image from "next/image";
+
+const basePath =
+  process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
+    ? "/agentx"
+    : "";
 
 // Simple typewriter for header - only essential animation
 const TypewriterText = () => {
@@ -534,7 +540,13 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="md:col-span-2">
               <div className="flex items-center mb-4">
-                <img src="/logo.png" alt="AgentX" className="w-8 h-8 mr-3" />
+                <Image
+                  src={`${basePath}/logo.png`}
+                  alt="AgentX"
+                  className="w-8 h-8 mr-3"
+                  width={32}
+                  height={32}
+                />
                 <span className="text-xl font-bold text-slate-900 dark:text-white">
                   AgentX
                 </span>
@@ -631,7 +643,7 @@ export default function HomePage() {
 
           <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center">
             <div className="text-slate-500 dark:text-slate-400 text-sm">
-              © {new Date().getFullYear()} AgentX. Built with Vibe-X philosophy.
+              © {new Date().getFullYear()} Dustland.
             </div>
             <div className="text-slate-500 dark:text-slate-400 text-sm mt-2 md:mt-0">
               Made with ♥ for AI builders

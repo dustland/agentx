@@ -22,10 +22,13 @@ Create a comprehensive research plan for: "Impact of remote work on employee pro
 
 Generate 6-8 focused sub-queries and save your research plan as 'research_plan.md'."""
 
+    # Construct the absolute path to the config file
+    config_path = os.path.join(os.path.dirname(__file__), "single_agent_config.yaml")
+
     try:
         await execute_task(
             prompt=test_prompt,
-            config_path="tests/single_agent_config.yaml",
+            config_path=config_path,
             stream=False
         )
         
