@@ -453,7 +453,22 @@ class Agent:
 
     def build_system_prompt(self, context: Dict[str, Any] = None) -> str:
         """Build the system prompt for the agent, including dynamic context and tool definitions."""
-        base_prompt = self.config.prompt_template
+        # Load base prompt from file or use system_message
+        base_prompt = ""
+        if hasattr(self.config, 'prompt_file') and self.config.prompt_file:
+            try:
+                with open(self.config.prompt_file, 'r') as f:
+                    base_prompt = f.read()
+            except Exception as e:
+                logger.warning(f"Failed to load prompt file {self.config.prompt_file}: {e}")
+                base_prompt = getattr(self.config, 'system_message', "You are a helpful AI assistant.")
+        elif hasattr(self.config, 'prompt_template'):
+            # Legacy support for prompt_template
+            base_prompt = self.config.prompt_template
+        elif hasattr(self.config, 'system_message') and self.config.system_message:
+            base_prompt = self.config.system_message
+        else:
+            base_prompt = "You are a helpful AI assistant."
         
         if not context:
             return base_prompt
@@ -464,7 +479,6 @@ class Agent:
 Here is some context for the current task:
 - Current date and time: {current_datetime}
 - Task ID: {context.get('task_id', 'N/A')}
-- Round: {context.get('round_count', 0)}
 - Workspace: {context.get('workspace_dir', 'N/A')}
 """
         

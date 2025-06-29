@@ -19,6 +19,10 @@ from .tool.models import Tool, tool
 # Logging utilities
 from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 
+from agentx.core.agent import Agent
+from agentx.core.task import Task, TaskExecutor
+from agentx.core.lead import BaseLead
+
 __version__ = "0.13.3"
 
 __all__ = [
@@ -34,4 +38,9 @@ __all__ = [
     "setup_clean_chat_logging",
     "set_log_level",
     "get_logger",
+
+    "Agent",
+    "Task",
+    "TaskExecutor",
+    "BaseLead",
 ]

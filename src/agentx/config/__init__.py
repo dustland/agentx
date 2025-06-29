@@ -11,8 +11,8 @@ Recommended usage:
     result = execute_task("config_dir", "Your task here")
 """
 
-from .models import MemoryConfig, TeamConfig
 from .team_loader import load_team_config
+from .models import TeamConfig
 
 # Note: AgentConfig imported in individual modules to avoid circular imports
 

@@ -1,0 +1,24 @@
+# Test configuration for the Researcher agent
+
+name: "Test Researcher Team"
+output_dir: "workspace"
+
+agents:
+  - name: Researcher
+    description: "Plans research, gathers sources, and synthesizes findings into a research brief."
+    class: agentx.core.agents.Agent
+    prompt_template: "../prompts/researcher.md"
+    llm_config:
+      model: deepseek/deepseek-chat
+      temperature: 0.1
+      max_tokens: 4096
+    tools:
+      - web_search
+      - extract_content
+      - write_file
+      - read_file
+
+execution:
+  mode: "autonomous"
+  max_rounds: 15 # Increased for the multi-step research process
+  initial_agent: "Researcher"

@@ -8,6 +8,7 @@ Built-in integrations:
 
 from ..utils.logger import get_logger
 from ..tool.models import Tool, tool, ToolResult
+from ..core.exceptions import ConfigurationError
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
 
@@ -64,7 +65,11 @@ class WebTool(Tool):
                 self._firecrawl_client = FirecrawlApp(api_key=self.firecrawl_api_key)
                 logger.info("Firecrawl client initialized")
             else:
-                logger.warning("Firecrawl API key not found. Set FIRECRAWL_API_KEY environment variable.")
+                raise ConfigurationError(
+                    "Firecrawl API key not found. The web_search and extract_content tools "
+                    "require a Firecrawl API key. Please get a key from https://firecrawl.dev "
+                    "and set it as the FIRECRAWL_API_KEY environment variable."
+                )
                 
         except ImportError:
             logger.warning("Firecrawl not installed. Install with: pip install firecrawl-py")
@@ -150,26 +155,26 @@ class WebTool(Tool):
     #         )
     
     @tool(
-        description="Extract content and data from URLs using Firecrawl Extract API with LLM processing",
+        description="Extract structured data from one or more URLs based on a prompt.",
         return_description="ToolResult containing extracted content and data based on the prompt"
     )
     async def extract_content(self, urls: Union[str, List[str]], prompt: str, 
                             enable_web_search: bool = False, 
                             schema: Optional[Dict[str, Any]] = None) -> ToolResult:
         """
-        Extract content and data from one or multiple URLs using LLM-powered extraction.
+        Extract structured data from one or more URLs based on a prompt.
         
-        This is the primary content extraction method that uses Firecrawl's Extract API
-        with LLM processing to intelligently extract relevant information based on your prompt.
+        This is the primary content extraction method. It uses an LLM to intelligently 
+        extract information from web pages based on your specific instructions.
         
         Args:
-            urls: Single URL string or list of URLs to extract from (required)
-            prompt: Natural language prompt describing what content/data to extract (required)
-            enable_web_search: Whether to expand search beyond provided URLs, defaults to False
-            schema: Optional JSON schema for structured output format (optional)
+            urls: A single URL or a list of URLs to extract content from.
+            prompt: CRITICAL: A detailed, natural language prompt describing exactly what to extract. This is not optional.
+            enable_web_search: Allow the tool to search the web if the URLs don't contain the answer.
+            schema: An optional JSON schema to structure the output.
             
         Returns:
-            ToolResult with extracted content and data
+            ToolResult with the extracted data.
         """
         if not self._firecrawl_client:
             return ToolResult(

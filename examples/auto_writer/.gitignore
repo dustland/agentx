@@ -9,11 +9,9 @@ workspace/
 *.sqlite3
 
 # Generated documents and outputs
-*.md
 *.pdf
 *.docx
 !README.md
-!ITERATIVE_WORKFLOW.md
 
 # Temporary configuration files
 temp_*.yaml

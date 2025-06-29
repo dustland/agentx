@@ -40,17 +40,17 @@ Event-driven communication architecture, message passing patterns, and how agent
 
 The primary workflow engine that owns the end-to-end lifecycle of tasks, manages workspace provisioning, and coordinates agent invocations.
 
-### Orchestrator
+### Lead
 
-Centralized service for tool management and validation. Handles tool-call requests, schema validation, and secure dispatch to the ToolExecutor.
+The stateful "Project Manager" of the task. Creates a plan, assigns micro-tasks to specialist agents, and tracks progress to drive the workflow forward. Ships with a default implementation that uses LLM-based intelligent routing.
 
-### Agent & Brain
+### Specialist Agents
 
-Specialized agents with private reasoning capabilities. Each agent encapsulates a role and uses its Brain (LLM) for autonomous decision-making.
+Stateless, single-purpose experts defined by prompt files. Each agent has one clear responsibility (planning, research, writing, etc.) and is invoked by the Lead to perform specific micro-tasks. AgentX includes a standard library of common agents.
 
-### Platform Services
+### Agent Brain
 
-Shared, pluggable services including the Event Bus, Memory System, Configuration Management, and Observability infrastructure.
+The reasoning engine that powers each agent. Handles LLM interactions, tool calling, and response generation with streaming support.
 
 ## 🔄 Execution Modes
 

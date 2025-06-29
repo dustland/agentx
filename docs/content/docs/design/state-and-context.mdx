@@ -40,18 +40,47 @@ The **Memory System** is not merely a passive query layer but a sophisticated, m
   - **Learning from Feedback**: It learns from iterative feedback to codify developer or user preferences. When a developer says, _"You should never create a `requirements.txt` file; use `pyproject.toml` instead,"_ the Memory System flags this as a permanent rule for all future file operations in that workspace. This prevents the agent from repeating mistakes or asking redundant questions.
   - **Tracking Hot-Issues**: It maintains a "working memory" of transient problems. For instance, if a unit test fails, the Memory System flags it as a "hot issue" that is automatically surfaced in the agent's context on every subsequent step until it is resolved. This prevents critical blockers from being lost in a long history.
 
-## 3. Example Workflow: Solving Problems in Practice
+## 3. Example Workflow: Lead-Driven, State-Aware Collaboration
 
-Consider the workflow of an agent tasked with adding a feature to a large, existing codebase, but this time using the full power of the intelligent Memory System.
+Consider the workflow of an agent team tasked with writing a research report. The process is managed by a `Lead` agent, which directs a `Researcher` and a `Writer`. This example shows how the `Lead` uses the `Workspace` and `Memory System` to orchestrate a complex task with simple, stateless agents.
 
-1.  **Challenge - Capturing Constraints**: The user starts by saying, _"I'm getting a strange bug related to caching, so for now, please add a `@disable_cache` decorator to any new data-fetching functions you write."_ The Memory System logs **`Rule: Must add '@disable_cache' to new data-fetching functions.`**
-2.  **Challenge - Navigating the Workspace**: The agent doesn't know the code structure. It asks, **`summarize_directory_purpose(path='/src/api')`**. The Memory System synthesizes a description, and also surfaces the active rule about caching.
-3.  **Challenge - Processing Long-Form Content**: The agent identifies a large `services.py` file and uses **`search_memory(query='Find functions in services.py related to user data')`** to get the relevant snippets.
-4.  **Challenge - Quality Assessment & Hot-Issue Tracking**: After writing a new function to the file, the agent calls `run_unit_tests_tool()`. The test fails. The Memory System detects this and creates a high-priority "hot issue": **`Critical: Unit test 'test_new_feature' is failing.`**
-5.  **Focused Iteration**: On the agent's next reasoning cycle, two items are injected into its context: the **Rule** about the decorator and the **Hot-Issue** about the failing test. The agent sees the code it wrote is missing the decorator. It adds it, confident this will fix the issue.
-6.  **Resolution**: The agent runs the tests again. They pass. The Memory System sees the success event, automatically resolves and removes the "hot issue," and the task proceeds. The rule about the decorator remains active.
+1.  **Phase 1: Planning (Lead)**
 
-This workflow, grounded in a state and context architecture powered by an intelligent knowledge base, demonstrates how AgentX provides a practical and scalable solution to the core challenges of building sophisticated, stateful AI agents.
+    - The user provides the initial prompt: "Create a research report on the future of renewable energy."
+    - The `Lead` agent is invoked. Its first responsibility is to create a plan. It calls its internal `create_plan` function and writes the output to the workspace: **`artifacts/plan.md`**.
+    - The plan might look like this:
+
+      ```markdown
+      # Research Report Plan
+
+      - [ ] **Phase 1: Research**
+        - [ ] Generate initial search queries.
+        - [ ] Execute web search for each query.
+        - [ ] Extract content from top 5 URLs.
+      - [ ] **Phase 2: Drafting**
+        - [ ] Draft introduction based on extracted content.
+        - [ ] ...
+      ```
+
+2.  **Phase 2: Execution (Lead orchestrating Researcher)**
+
+    - The `Lead` reads `plan.md` and sees the first incomplete task: "Generate initial search queries."
+    - The `Lead` invokes the `Researcher` agent with a very simple, specific instruction: _"Based on the goal 'Create a research report on the future of renewable energy', generate 5 diverse search queries."_
+    - The `Researcher` agent doesn't need to know about the plan. It executes its simple task and returns a list of queries.
+    - The `Lead` receives the result, writes it to a new file **`artifacts/queries.json`**, and updates the plan:
+      ```markdown
+      - [x] Generate initial search queries.
+      - [ ] Execute web search for each query.
+      ```
+    - This loop continues. The `Lead` proceeds to the next item, "Execute web search," and again calls the `Researcher` with another simple command, feeding it the contents of `queries.json`. The results are saved to `artifacts/search_results.json`, and the plan is marked complete.
+
+3.  **Phase 3: Leveraging Memory for De-duplication**
+    - The `Researcher` agent, when extracting content from URLs, is given a simple prompt by the Lead: _"Extract the key findings from the provided text. Before you begin, use the memory to check if this content has already been processed to avoid duplication."_
+    - The `Researcher`'s prompt directs it to call a `check_memory_for_duplicate` tool. This tool queries the **Memory System**, which has been automatically indexing all artifacts.
+    - If the Memory returns `True`, the agent can immediately report back to the `Lead` that the content is a duplicate, saving time and tokens.
+    - If `False`, the agent performs the extraction, and the new content is saved to the workspace, where the Memory System will then index it for future checks.
+
+This workflow, grounded in a stateful plan managed by the `Lead` and an intelligent Memory System, demonstrates how AgentX provides a practical and scalable solution to the core challenges of building sophisticated, stateful AI agents, without overburdening the LLM with complex logic.
 
 ## 4. System Design and Implementation
 

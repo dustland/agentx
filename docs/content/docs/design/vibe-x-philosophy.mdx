@@ -1,6 +1,28 @@
-# Vibe-X: The Design Philosophy of AgentX
+# The Vibe-X Philosophy
 
-_A framework for building human-in-the-loop AI systems that are collaborative, transparent, and economically sustainable._
+**"Start-of-the-art with the art of state"**
+
+AgentX embodies a philosophy we call **Vibe-X**: delivering immediate productivity through intelligent defaults while maintaining complete transparency and customization capability.
+
+### Fast Start, Full Control
+
+**Batteries Included, Brain Engaged:**
+
+- Ship with a complete standard library: default `Lead` + specialist agents (planner, researcher, writer, reviewer)
+- Enable powerful multi-agent workflows with zero custom code
+- Provide a foundation that works out-of-the-box for common use cases
+
+**The Art of State:**
+
+- Stateful Lead maintains progress in `plan.md` for full transparency
+- Durable workspace with version control for task resumption
+- Clear separation between orchestration logic (Python) and domain expertise (prompts)
+
+**Complete Transparency:**
+
+- Every decision, message, and artifact is observable and debuggable
+- No black boxes - you can see exactly how the Lead routes tasks
+- Full control to customize or replace any component when needed
 
 ---
 
@@ -110,6 +132,14 @@ A professional-grade framework cannot ignore economics. Vibe-X is architected ar
 - **Complex Reasoning** (e.g., architectural planning, strategic analysis) is escalated to high-capability models like **Claude** or **GPT-4**.
 
 This dynamic, cost-aware routing makes continuous, long-term AI collaboration economically viable, transforming it from a novelty into a sustainable business process.
+
+### **Pillar 4: The Default Lead & Standard Agents — The "Batteries-Included" Workflow**
+
+To truly accelerate development, a framework must do more than just provide patterns; it must provide a working implementation of those patterns. The default **`Lead`** is a pre-built, intelligent orchestrator that ships with AgentX. It is designed to manage a standard library of **Standard Agents** (`Planner`, `Researcher`, `Writer`, `Coder`, etc.).
+
+This enables developers to bootstrap a capable, multi-agent system with minimal configuration, often without writing a single prompt. A user can simply specify `lead: default` in their configuration to get an intelligent workflow manager out of the box.
+
+This embodies the principle of **"fast start, full control."** Developers can be productive in minutes using the default system. When their needs become more specific, they can seamlessly "eject" from the standard library, either by providing a custom prompt for a single agent or by implementing their own specialized Lead (e.g., `class MyLead(BaseLead)`) to handle unique, domain-specific logic.
 
 ---
 

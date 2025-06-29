@@ -489,3 +489,36 @@ Now that you have AgentX installed and running, here are some suggested next ste
 ---
 
 Ready to dive deeper? Start with the [Tutorials](/tutorials) to build your first multi-agent system! 🚀
+
+## Quick Start: Your First Multi-Agent Workflow
+
+**1. Create a minimal team.yaml:**
+
+```yaml
+name: "AI Research Team"
+agents:
+  - "standard:planner"
+  - "standard:researcher"
+  - "standard:writer"
+lead: default
+```
+
+**2. Run a task:**
+
+```python
+from agentx import execute_task
+
+result = await execute_task(
+    prompt="Write a 500-word report on recent breakthroughs in AI",
+    config_path="team.yaml"
+)
+```
+
+**3. What happens:**
+
+- Lead assigns planning to the `planner` agent
+- Planner creates a step-by-step plan in `plan.md`
+- Lead routes research steps to the `researcher` agent
+- Lead routes writing steps to the `writer` agent
+- All artifacts saved to versioned workspace
+- Full execution trace available for debugging
