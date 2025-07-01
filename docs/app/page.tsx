@@ -240,7 +240,7 @@ export default function HomePage() {
         {/* Subtle background decoration */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900"></div>
 
-        {/* Subtle grid pattern */}
+        {/* Simple grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:60px_60px] opacity-40"></div>
 
         {/* Subtle decorative elements */}
@@ -285,25 +285,30 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Vibe-X Philosophy */}
-      <section className="relative py-20 bg-slate-50 dark:bg-slate-800/50">
-        {/* Subtle curve decoration */}
-        <div className="absolute top-0 left-0 w-full overflow-hidden">
+        {/* Curve decoration - part of hero section so grid extends through it */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden z-10">
           <svg
             className="relative block w-full h-12"
             viewBox="0 0 1200 120"
             preserveAspectRatio="none"
           >
             <path
-              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z"
-              fill="currentColor"
-              className="text-white dark:text-slate-900"
-            ></path>
+              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V120H0V0Z"
+              fill="rgb(248, 250, 252)"
+              className="dark:hidden"
+            />
+            <path
+              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V120H0V0Z"
+              fill="rgba(30, 41, 59, 0.5)"
+              className="hidden dark:block"
+            />
           </svg>
         </div>
+      </section>
 
+      {/* Vibe-X Philosophy */}
+      <section className="relative py-20 bg-slate-50 dark:bg-slate-800/50">
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
