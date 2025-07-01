@@ -27,7 +27,7 @@ from agentx.core.agent import Agent
 from agentx.core.task import Task, TaskExecutor
 from agentx.core.lead import BaseLead
 
-__version__ = "0.13.4"
+__version__ = "0.13.5"
 
 __all__ = [
     # Main API - primary entry points
