@@ -1,5 +1,5 @@
 """
-Logging utilities for AgentX.
+Simple streaming-aware logging for AgentX.
 """
 
 import logging
@@ -9,15 +9,29 @@ from typing import Optional
 import os
 from pathlib import Path
 
-# Immediately suppress browser_use telemetry on import
+# Suppress noisy loggers immediately
 logging.getLogger("browser_use.telemetry.service").setLevel(logging.ERROR)
 logging.getLogger("browser_use.telemetry").setLevel(logging.ERROR)
 logging.getLogger("browser_use").setLevel(logging.ERROR)
+
+# Global state
+_streaming_mode = False
+_task_file_handler = None
+
+
+def set_streaming_mode(enabled: bool):
+    """Enable/disable streaming mode to control console output."""
+    global _streaming_mode
+    _streaming_mode = enabled
 
 
 def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
     """
     Get a configured logger instance.
+    
+    Simple rule:
+    - If streaming mode is active: AgentX loggers go to file only, others suppressed
+    - If streaming mode is off: All loggers go to both console and file
     
     Args:
         name: Logger name (usually __name__)
@@ -30,168 +44,34 @@ def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
     
     # Only configure if not already configured
     if not logger.handlers:
-        # Create console handler
-        handler = logging.StreamHandler(sys.stdout)
+        global _task_file_handler
         
-        # Create formatter
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        handler.setFormatter(formatter)
+        # Always add file handler if available
+        if _task_file_handler and name.startswith('agentx'):
+            logger.addHandler(_task_file_handler)
+            logger.setLevel(logging.INFO)
+            logger.propagate = False
         
-        # Add handler to logger
-        logger.addHandler(handler)
-        
-        # Set level based on environment or default
-        log_level = level or _get_default_log_level()
-        logger.setLevel(log_level)
-        
-        # Prevent propagation to avoid duplicate logs
-        logger.propagate = False
+        # Add console handler only if not in streaming mode OR for important messages
+        if not _streaming_mode or not name.startswith('agentx'):
+            handler = logging.StreamHandler(sys.stdout)
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            
+            log_level = level or _get_default_log_level()
+            logger.setLevel(getattr(logging, log_level.upper()))
+            logger.propagate = False
     
     return logger
-
-
-def configure_logging(level: str = "INFO", format_string: Optional[str] = None):
-    """
-    Configure global logging settings.
-    
-    Args:
-        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        format_string: Optional custom format string
-    """
-    log_format = format_string or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    
-    logging.basicConfig(
-        level=getattr(logging, level.upper()),
-        format=log_format,
-        datefmt='%Y-%m-%d %H:%M:%S',
-        stream=sys.stdout
-    )
-
-
-def setup_clean_chat_logging():
-    """
-    Configure logging for clean chat experience.
-    Suppresses noisy logs while preserving important messages.
-    """
-    verbose = _is_verbose_mode()
-    
-    if verbose:
-        # Verbose mode - show all AgentX logs
-        configure_logging(level="INFO")
-    else:
-        # Clean chat mode - show important messages but suppress noise
-        configure_logging(level="INFO")  # Keep INFO level for AgentX logs
-        
-        # Suppress specific noisy loggers to ERROR level
-        _suppress_noisy_loggers(level="ERROR")
-        
-        # Suppress Pydantic warnings
-        warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
-
-
-def set_log_level(level: str):
-    """
-    Set log level for the entire application.
-    
-    This is the main function to control logging throughout AgentX.
-    It intelligently handles different log levels:
-    - DEBUG: Shows everything including external library logs
-    - INFO: Shows AgentX logs but suppresses noisy external libraries  
-    - WARNING: Shows only warnings and errors, suppresses most noise
-    - ERROR: Shows only errors and critical issues
-    - CRITICAL: Shows only critical errors
-    
-    Args:
-        level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    """
-    # Force AgentX verbose mode off initially
-    os.environ['AGENTX_VERBOSE'] = '0'
-    
-    level_upper = level.upper()
-    log_level = getattr(logging, level_upper)
-    
-    # Configure root logging
-    logging.basicConfig(
-        level=log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s' if level_upper in ['DEBUG', 'INFO'] else '%(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        stream=sys.stdout,
-        force=True  # Override existing configuration
-    )
-    
-    if level_upper == 'DEBUG':
-        # DEBUG: Show everything, including external libraries
-        logging.getLogger().setLevel(logging.DEBUG)
-        # Don't suppress anything in debug mode
-        
-    elif level_upper == 'INFO':
-        # INFO: Show AgentX logs, suppress noisy external libraries
-        logging.getLogger().setLevel(logging.INFO)
-        _suppress_noisy_loggers(level="WARNING")
-        
-    elif level_upper == 'WARNING':
-        # WARNING: Clean mode - only warnings and errors
-        logging.getLogger().setLevel(logging.WARNING)
-        _suppress_noisy_loggers(level="ERROR")
-        _suppress_warnings()
-        
-    elif level_upper in ['ERROR', 'CRITICAL']:
-        # ERROR/CRITICAL: Minimal logging
-        logging.getLogger().setLevel(log_level)
-        _suppress_noisy_loggers(level="CRITICAL")
-        _suppress_warnings()
-
-
-def _suppress_noisy_loggers(level: str = "ERROR"):
-    """Suppress specific noisy loggers."""
-    noisy_loggers = [
-        "LiteLLM",
-        "litellm",
-        "browser_use.telemetry.service", 
-        "browser_use.telemetry",
-        "browser_use",
-        "httpx",
-        "urllib3.connectionpool",
-        "urllib3",
-        "requests.packages.urllib3",
-        "selenium",
-        "asyncio",
-        "httpcore",
-        "openai",
-        "anthropic"
-    ]
-    
-    log_level = getattr(logging, level.upper())
-    for logger_name in noisy_loggers:
-        logging.getLogger(logger_name).setLevel(log_level)
-
-
-def _suppress_warnings():
-    """Suppress common warnings that clutter output."""
-    warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-
-
-def _get_default_log_level() -> str:
-    """Get default log level based on environment."""
-    if _is_verbose_mode():
-        return "INFO"
-    else:
-        return "WARNING"
-
-
-def _is_verbose_mode() -> bool:
-    """Check if verbose mode is enabled via environment variable."""
-    return os.getenv("AGENTX_VERBOSE", "").lower() in ("1", "true", "yes")
 
 
 def setup_task_file_logging(log_file_path: str) -> None:
     """
     Set up file logging for a specific task.
-    This adds a file handler to the root logger to capture all AgentX logs.
     
     Args:
         log_file_path: Path to the log file
@@ -204,34 +84,74 @@ def setup_task_file_logging(log_file_path: str) -> None:
         file_handler = logging.FileHandler(log_file)
         file_handler.setLevel(logging.INFO)
         
-        # Create formatter
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         file_handler.setFormatter(formatter)
         
-        # Add to root logger to capture everything
-        root_logger = logging.getLogger()
-        
-        # Remove any existing file handlers to avoid duplicates
-        for handler in root_logger.handlers[:]:
-            if isinstance(handler, logging.FileHandler):
-                root_logger.removeHandler(handler)
-        
-        # Add our file handler
-        root_logger.addHandler(file_handler)
-        
-        # Ensure root logger level allows INFO
-        if root_logger.level == logging.NOTSET or root_logger.level > logging.INFO:
-            root_logger.setLevel(logging.INFO)
+        # Store globally
+        global _task_file_handler
+        _task_file_handler = file_handler
         
         # Test that it works
-        logger = get_logger(__name__)
-        logger.info(f"Task file logging initialized: {log_file}")
-        
-        # Force flush to ensure it's written
-        file_handler.flush()
+        print(f"Task file logging initialized: {log_file}")
         
     except Exception as e:
-        print(f"Failed to setup task file logging: {e}") 
+        print(f"Failed to setup task file logging: {e}")
+
+
+def setup_clean_chat_logging():
+    """Configure logging for clean chat experience."""
+    verbose = _is_verbose_mode()
+    
+    if verbose:
+        configure_logging(level="INFO")
+    else:
+        configure_logging(level="INFO")
+        _suppress_noisy_loggers(level="ERROR")
+        warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
+
+def configure_logging(level: str = "INFO", format_string: Optional[str] = None):
+    """Configure global logging settings."""
+    log_format = format_string or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    
+    logging.basicConfig(
+        level=getattr(logging, level.upper()),
+        format=log_format,
+        datefmt='%Y-%m-%d %H:%M:%S',
+        stream=sys.stdout
+    )
+
+
+def _suppress_noisy_loggers(level: str = "ERROR"):
+    """Suppress specific noisy loggers."""
+    noisy_loggers = [
+        "LiteLLM", "litellm", "browser_use.telemetry.service", 
+        "browser_use.telemetry", "browser_use", "httpx",
+        "urllib3.connectionpool", "urllib3", "requests.packages.urllib3",
+        "selenium", "asyncio", "httpcore", "openai", "anthropic"
+    ]
+    
+    log_level = getattr(logging, level.upper())
+    for logger_name in noisy_loggers:
+        logging.getLogger(logger_name).setLevel(log_level)
+
+
+def _get_default_log_level() -> str:
+    """Get default log level based on environment."""
+    return "INFO" if _is_verbose_mode() else "WARNING"
+
+
+def _is_verbose_mode() -> bool:
+    """Check if verbose mode is enabled via environment variable."""
+    return os.getenv("AGENTX_VERBOSE", "").lower() in ("1", "true", "yes")
+
+
+# Legacy functions for backward compatibility
+def set_log_level(level: str):
+    """Set log level for the entire application."""
+    configure_logging(level=level)
+    if level.upper() != 'DEBUG':
+        _suppress_noisy_loggers() 

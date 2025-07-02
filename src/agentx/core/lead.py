@@ -52,18 +52,51 @@ class BaseLead(ABC):
 
     def _update_plan(self, step: str, result: str):
         """Marks a step as complete and appends the result."""
-        with open(self.plan_path, "r+") as f:
+        with open(self.plan_path, "r") as f:
             content = f.read()
-            pattern = re.compile(r"(-\s*\[\s*\]\s*" + re.escape(step) + r")")
-            new_content, count = pattern.subn(f"- [x] {step}", content, 1)
-
-            if count > 0:
-                new_content += f"\n\n**Result for '{step}':**\n{result}\n---"
-                f.seek(0)
+        
+        # More flexible regex that handles variations in whitespace and formatting
+        # Look for the step text anywhere in an unchecked checkbox line
+        step_escaped = re.escape(step.strip())
+        pattern = re.compile(r"^(\s*-\s*\[\s*\]\s*.*?" + step_escaped + r".*?)$", re.MULTILINE | re.IGNORECASE)
+        
+        match = pattern.search(content)
+        if match:
+            # Replace the unchecked box with a checked one
+            old_line = match.group(1)
+            new_line = re.sub(r"\[\s*\]", "[x]", old_line)
+            new_content = content.replace(old_line, new_line, 1)
+            
+            # Append the result at the end, but avoid duplicating results
+            if f"**Result for '{step}':**" not in new_content:
+                new_content += f"\n\n**Result for '{step}':**\n{result}\n---\n"
+            
+            with open(self.plan_path, "w") as f:
                 f.write(new_content)
-                f.truncate()
-            else:
-                print(f"Warning: Could not find step '{step}' to mark as complete in the plan.")
+        else:
+            print(f"Warning: Could not find step '{step}' to mark as complete in the plan.")
+            # Debug: show what we're looking for vs what's in the file
+            print(f"Looking for step: '{step}'")
+            incomplete_tasks = re.findall(r"-\s*\[\s*\]\s*(.*)", content)
+            print(f"Available incomplete steps: {incomplete_tasks[:3]}...")  # Show first 3
+
+    def _create_step_prompt(self, step: str, agent: Agent) -> str:
+        """Create a contextual prompt for the agent based on the step and overall goal."""
+        context = f"""
+OVERALL GOAL: {self.task.initial_prompt}
+
+CURRENT STEP: {step}
+
+INSTRUCTIONS: 
+- This is ONE STEP in a larger project, not the entire project
+- Complete this specific step and save your work using appropriate tools
+- Do not create a new plan - there's already a plan being followed
+- Focus on executing this step thoroughly and professionally
+- Save any content, research, or outputs to files in the workspace
+
+Your task is to complete this specific step: {step}
+"""
+        return context
 
     @abstractmethod
     async def _get_worker_for_step(self, step: str) -> Agent:
@@ -79,10 +112,13 @@ class BaseLead(ABC):
             print(f"Executing step: {step}")
             
             worker_agent = await self._get_worker_for_step(step)
+            
+            # Create a contextual prompt instead of just sending the step
+            step_prompt = self._create_step_prompt(step, worker_agent)
 
             result = await self.task.executor.run_agent(
                 agent=worker_agent,
-                prompt=step
+                prompt=step_prompt
             )
             
             self._update_plan(step, str(result))

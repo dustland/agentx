@@ -256,22 +256,22 @@ class ToolExecutor:
                 # Parse tool arguments
                 tool_args = json.loads(tool_call.function.arguments)
                 
-                # Always show tool call start
-                print(f"🔧 TOOL CALL START | ID: {tool_call_id} | Tool: {tool_name} | Agent: {agent_name}")
-                print(f"📝 TOOL ARGS | {safe_json_dumps(tool_args, indent=2)}")
+                # Log tool call (framework logging - respects streaming mode)
+                logger.info(f"🔧 TOOL CALL START | ID: {tool_call_id} | Tool: {tool_name} | Agent: {agent_name}")
+                logger.info(f"📝 TOOL ARGS | {safe_json_dumps(tool_args, indent=2)}")
                 
                 # Execute the tool
                 start_time = time.time()
                 result = await self.execute_tool(tool_name, agent_name, **tool_args)
                 execution_time = time.time() - start_time
                 
-                # Always show tool call result
+                # Log tool call result (framework logging - respects streaming mode)
                 if result.success:
-                    print(f"✅ TOOL CALL SUCCESS | ID: {tool_call_id} | Tool: {tool_name} | Time: {execution_time:.2f}s")
-                    print(f"📤 TOOL RESULT | {safe_json_dumps(result.result, indent=2)[:500]}{'...' if len(str(result.result)) > 500 else ''}")
+                    logger.info(f"✅ TOOL CALL SUCCESS | ID: {tool_call_id} | Tool: {tool_name} | Time: {execution_time:.2f}s")
+                    logger.info(f"📤 TOOL RESULT | {safe_json_dumps(result.result)}")
                 else:
-                    print(f"❌ TOOL CALL FAILED | ID: {tool_call_id} | Tool: {tool_name} | Error: {result.error}")
-                    print(f"⏱️  TOOL TIME | {execution_time:.2f}s")
+                    logger.info(f"❌ TOOL CALL FAILED | ID: {tool_call_id} | Tool: {tool_name} | Error: {result.error}")
+                    logger.info(f"⏱️  TOOL TIME | {execution_time:.2f}s")
                 
                 # Format result for LLM using safe serialization
                 if result.success:

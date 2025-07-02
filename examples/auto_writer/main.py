@@ -37,7 +37,10 @@ async def main():
     final_result = await executor.execute_task(prompt, planner_agent="Planner")
 
     print("\n--- TASK COMPLETE ---")
-    print("Final Result:", final_result.output)
+    print(f"Task ID: {final_result.task_id}")
+    print(f"Task Status: {'Complete' if final_result.is_complete else 'In Progress'}")
+    print(f"Workspace: {final_result.workspace_dir}")
+    print(f"Artifacts: {list(final_result.artifacts.keys())}")
     print("Check the workspace for the full report and artifacts.")
 
 if __name__ == "__main__":

@@ -48,3 +48,33 @@ __all__ = [
     "TaskExecutor",
     "BaseLead",
 ]
+
+# Load environment variables automatically on import
+try:
+    from dotenv import load_dotenv
+    import os
+    from pathlib import Path
+    
+    # Try to find .env file in current directory or parent directories
+    current_dir = Path.cwd()
+    env_file = None
+    
+    # Look for .env file up to 3 levels up
+    for i in range(4):
+        potential_env = current_dir / ".env"
+        if potential_env.exists():
+            env_file = potential_env
+            break
+        current_dir = current_dir.parent
+        if current_dir == current_dir.parent:  # reached root
+            break
+    
+    if env_file:
+        load_dotenv(env_file)
+    
+except ImportError:
+    # python-dotenv not available, skip
+    pass
+except Exception:
+    # Any other error, skip silently
+    pass

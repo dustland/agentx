@@ -143,6 +143,7 @@ AgentX is built on a robust foundation of modern Python technologies:
 - **[FastAPI](https://fastapi.tiangolo.com/)** - Modern web framework for APIs and dashboard
 - **[Docker](https://www.docker.com/)** - Containerized execution for secure tool execution
 - **[SerpAPI](https://serpapi.com/)** - Web search capabilities for agents
+- **[FireCrawl](https://www.firecrawl.dev/)** - Web content extraction
 
 ## 🤝 Contributing
 

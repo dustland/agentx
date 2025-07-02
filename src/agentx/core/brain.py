@@ -302,11 +302,10 @@ class Brain:
         try:
             logger.debug(f"Making streaming LLM call with {len(formatted_messages)} messages")
             
-            # Debug: Log the exact tool schemas being sent
+            # Debug: Log tool count and names only (not full schemas)
             if tools:
-                logger.info(f"[BRAIN] Sending {len(tools)} tools to LLM:")
-                for i, tool in enumerate(tools):
-                    logger.info(f"[BRAIN] Tool {i+1}: {tool}")
+                tool_names = [tool.get('function', {}).get('name', 'unknown') for tool in tools]
+                logger.info(f"[BRAIN] Sending {len(tools)} tools to LLM: {', '.join(tool_names)}")
             else:
                 logger.info(f"[BRAIN] No tools being sent to LLM")
             
@@ -363,9 +362,9 @@ class Brain:
             
             # Handle tool calls (structured data from native function calling)
             if hasattr(delta, 'tool_calls') and delta.tool_calls:
-                logger.info(f"[BRAIN] Received tool calls delta: {delta.tool_calls}")
+                logger.debug(f"[BRAIN] Received tool calls delta: {delta.tool_calls}")
                 for tool_call_delta in delta.tool_calls:
-                    logger.info(f"[BRAIN] Processing tool call delta: {tool_call_delta}")
+                    logger.debug(f"[BRAIN] Processing tool call delta: {tool_call_delta}")
                     tool_call_id = getattr(tool_call_delta, 'id', None)
                     
                     if tool_call_id:
@@ -379,19 +378,19 @@ class Brain:
                                     'arguments': ''
                                 }
                             }
-                            logger.info(f"[BRAIN] Initialized tool call: {tool_call_id}")
+                            logger.debug(f"[BRAIN] Initialized tool call: {tool_call_id}")
                         
                         # Accumulate function name and arguments for this specific tool call
                         if hasattr(tool_call_delta, 'function'):
                             func = tool_call_delta.function
                             if hasattr(func, 'name') and func.name:
                                 accumulated_tool_calls[tool_call_id]['function']['name'] = func.name
-                                logger.info(f"[BRAIN] Set function name: {func.name}")
+                                logger.debug(f"[BRAIN] Set function name: {func.name}")
                             if hasattr(func, 'arguments') and func.arguments is not None:
                                 accumulated_tool_calls[tool_call_id]['function']['arguments'] += func.arguments
-                                logger.info(f"[BRAIN] Added arguments: '{func.arguments}' -> Total: '{accumulated_tool_calls[tool_call_id]['function']['arguments']}'")
+                                logger.debug(f"[BRAIN] Added arguments: '{func.arguments}' -> Total: '{accumulated_tool_calls[tool_call_id]['function']['arguments']}'")
                             else:
-                                logger.info(f"[BRAIN] No arguments in this delta")
+                                logger.debug(f"[BRAIN] No arguments in this delta")
                     
                     elif hasattr(tool_call_delta, 'function') and accumulated_tool_calls:
                         # Handle chunks without ID - accumulate to the most recent tool call
@@ -401,12 +400,12 @@ class Brain:
                         
                         if hasattr(func, 'name') and func.name:
                             accumulated_tool_calls[most_recent_id]['function']['name'] = func.name
-                            logger.info(f"[BRAIN] Set function name (no ID): {func.name}")
+                            logger.debug(f"[BRAIN] Set function name (no ID): {func.name}")
                         if hasattr(func, 'arguments') and func.arguments is not None:
                             accumulated_tool_calls[most_recent_id]['function']['arguments'] += func.arguments
-                            logger.info(f"[BRAIN] Added arguments (no ID): '{func.arguments}' -> Total: '{accumulated_tool_calls[most_recent_id]['function']['arguments']}'")
+                            logger.debug(f"[BRAIN] Added arguments (no ID): '{func.arguments}' -> Total: '{accumulated_tool_calls[most_recent_id]['function']['arguments']}'")
                         else:
-                            logger.info(f"[BRAIN] No arguments in this delta (no ID)")
+                            logger.debug(f"[BRAIN] No arguments in this delta (no ID)")
             
             # Handle finish reason - emit complete tool calls
             if hasattr(choice, 'finish_reason') and choice.finish_reason:

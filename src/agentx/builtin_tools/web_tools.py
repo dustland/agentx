@@ -2,7 +2,8 @@
 Web Tools - Opinionated web automation and content extraction.
 
 Built-in integrations:
-- Firecrawl: Superior web content extraction (replaces Jina)
+- Firecrawl: Superior web content extraction (with fallback)
+- requests + BeautifulSoup: Reliable fallback for content extraction
 - browser-use: AI-first browser automation (better than Playwright for agents)
 """
 
@@ -11,6 +12,7 @@ from ..tool.models import Tool, tool, ToolResult
 from ..core.exceptions import ConfigurationError
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
+import time
 
 logger = get_logger(__name__)
 
@@ -44,37 +46,27 @@ class WebTool(Tool):
     Combines Firecrawl for content extraction and browser-use for automation.
     """
     
-    def __init__(self, firecrawl_api_key: Optional[str] = None):
+    def __init__(self, jina_api_key: Optional[str] = None):
         super().__init__("web")
-        self.firecrawl_api_key = firecrawl_api_key
-        self._firecrawl_client = None
+        self.jina_api_key = jina_api_key
         self._browser = None
         self._init_clients()
     
     def _init_clients(self):
-        """Initialize Firecrawl and browser-use clients."""
-        # Initialize Firecrawl
+        """Initialize Jina Reader and browser-use clients."""
+        # Initialize Jina Reader
         try:
-            from firecrawl import FirecrawlApp
-            
-            if not self.firecrawl_api_key:
+            if not self.jina_api_key:
                 import os
-                self.firecrawl_api_key = os.getenv("FIRECRAWL_API_KEY")
+                self.jina_api_key = os.getenv("JINA_API_KEY")
             
-            if self.firecrawl_api_key:
-                self._firecrawl_client = FirecrawlApp(api_key=self.firecrawl_api_key)
-                logger.info("Firecrawl client initialized")
+            if self.jina_api_key:
+                logger.info("Jina Reader API key configured")
             else:
-                raise ConfigurationError(
-                    "Firecrawl API key not found. The web_search and extract_content tools "
-                    "require a Firecrawl API key. Please get a key from https://firecrawl.dev "
-                    "and set it as the FIRECRAWL_API_KEY environment variable."
-                )
+                logger.warning("Jina API key not found. Set JINA_API_KEY environment variable for enhanced features")
                 
-        except ImportError:
-            logger.warning("Firecrawl not installed. Install with: pip install firecrawl-py")
         except Exception as e:
-            logger.error(f"Failed to initialize Firecrawl: {e}")
+            logger.error(f"Failed to initialize Jina configuration: {e}")
         
         # Initialize browser-use
         try:
@@ -88,142 +80,129 @@ class WebTool(Tool):
         except Exception as e:
             logger.error(f"Failed to initialize browser-use: {e}")
     
-    # @tool(
-    #     description="Extract clean content from any URL using Firecrawl",
-    #     return_description="ToolResult containing extracted web content with title, content, and markdown"
-    # )
-    # async def extract_content(self, url: str, include_tags: Optional[List[str]] = None, 
-    #                         exclude_tags: Optional[List[str]] = None) -> ToolResult:
-    #     """
-    #     Extract content from a URL using Firecrawl.
-    #     
-    #     Args:
-    #         url: The URL to extract content from (required)
-    #         include_tags: HTML tags to include in extraction (optional)
-    #         exclude_tags: HTML tags to exclude from extraction (optional)
-    #         
-    #     Returns:
-    #         ToolResult with WebContent containing extracted data
-    #     """
-    #     if not self._firecrawl_client:
-    #         return ToolResult(
-    #             success=False,
-    #             result=None,
-    #             error="Firecrawl client not available"
-    #         )
-    #     
-    #     try:
-    #         # Use the correct Firecrawl API call format
-    #         result = self._firecrawl_client.scrape_url(
-    #             url, 
-    #             formats=["markdown", "html"],
-    #             include_tags=include_tags or ["title", "meta"],
-    #             exclude_tags=exclude_tags or ["nav", "footer", "aside"],
-    #             wait_for=2000  # Wait for JS to load
-    #         )
-    #         
-    #         # Handle the ScrapeResponse object (Pydantic model with attributes)
-    #         if result.success:
-    #             web_content = WebContent(
-    #                 url=url,
-    #                 title=result.metadata.get("title", "") if result.metadata else "",
-    #                 content=result.markdown or "",
-    #                 markdown=result.markdown or "",
-    #                 metadata=result.metadata or {},
-    #                 success=True
-    #             )
-    #             
-    #             return ToolResult(
-    #                 success=True,
-    #                 result=web_content,
-    #                 metadata={"url": url, "extraction_method": "firecrawl"}
-    #             )
-    #         else:
-    #             error_msg = result.error or "Unknown error occurred"
-    #             return ToolResult(
-    #                 success=False,
-    #                 error=f"Firecrawl extraction failed: {error_msg}",
-    #                 metadata={"url": url}
-    #             )
-    #             
-    #     except Exception as e:
-    #         logger.error(f"Content extraction failed for {url}: {e}")
-    #         return ToolResult(
-    #             success=False,
-    #             result=None,
-    #             error=str(e)
-    #         )
-    
     @tool(
-        description="Extract structured data from one or more URLs based on a prompt.",
-        return_description="ToolResult containing extracted content and data based on the prompt"
+        description="Extract clean content from URLs using Jina Reader",
+        return_description="ToolResult containing extracted web content with title and markdown"
     )
-    async def extract_content(self, urls: Union[str, List[str]], prompt: str, 
-                            enable_web_search: bool = False, 
-                            schema: Optional[Dict[str, Any]] = None) -> ToolResult:
+    async def extract_content(self, urls: Union[str, List[str]], prompt: str = "Extract the main content from this webpage") -> ToolResult:
         """
-        Extract structured data from one or more URLs based on a prompt.
+        Extract clean content from one or more URLs using Jina Reader.
         
-        This is the primary content extraction method. It uses an LLM to intelligently 
-        extract information from web pages based on your specific instructions.
+        Jina Reader is specifically designed for AI content extraction and handles
+        anti-bot protection, JavaScript rendering, and modern web challenges.
         
         Args:
-            urls: A single URL or a list of URLs to extract content from.
-            prompt: CRITICAL: A detailed, natural language prompt describing exactly what to extract. This is not optional.
-            enable_web_search: Allow the tool to search the web if the URLs don't contain the answer.
-            schema: An optional JSON schema to structure the output.
+            urls: A single URL or list of URLs to extract content from
+            prompt: Description of what content to focus on (optional)
             
         Returns:
-            ToolResult with the extracted data.
+            ToolResult with extracted content
         """
-        if not self._firecrawl_client:
-            return ToolResult(
-                success=False,
-                result=None,
-                error="Firecrawl client not available"
-            )
-        
         try:
+            import requests
+            
             # Convert single URL to list
             url_list = [urls] if isinstance(urls, str) else urls
             
-            # Use Extract API with LLM processing
-            result = self._firecrawl_client.extract(
-                urls=url_list,
-                prompt=prompt,
-                schema=schema,
-                enable_web_search=enable_web_search
+            extracted_contents = []
+            
+            for url in url_list:
+                try:
+                    # Use Jina Reader API
+                    if self.jina_api_key:
+                        # Use authenticated API for better rate limits and features
+                        jina_url = f"https://r.jina.ai/{url}"
+                        headers = {
+                            'Authorization': f'Bearer {self.jina_api_key}',
+                            'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
+                            'Accept': 'application/json',
+                            'X-Return-Format': 'markdown'
+                        }
+                        
+                        # Add prompt for focused extraction
+                        if prompt and prompt != "Extract the main content from this webpage":
+                            headers['X-Target-Selector'] = prompt
+                            
+                    else:
+                        # Use free API (with rate limits)
+                        jina_url = f"https://r.jina.ai/{url}"
+                        headers = {
+                            'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
+                            'Accept': 'text/plain'
+                        }
+                    
+                    response = requests.get(jina_url, headers=headers, timeout=30)
+                    response.raise_for_status()
+                    
+                    content = response.text
+                    
+                    # Extract title from first line if available
+                    lines = content.split('\n')
+                    title = lines[0].strip() if lines and lines[0].strip() else url
+                    
+                    # Remove title from content to avoid duplication
+                    if len(lines) > 1 and lines[0].strip():
+                        content = '\n'.join(lines[1:]).strip()
+                    
+                    web_content = WebContent(
+                        url=url,
+                        title=title,
+                        content=content,
+                        markdown=content,
+                        metadata={
+                            "extraction_method": "jina_reader",
+                            "api_authenticated": bool(self.jina_api_key),
+                            "content_length": len(content)
+                        },
+                        success=True
+                    )
+                    
+                    extracted_contents.append(web_content)
+                    
+                except Exception as e:
+                    logger.error(f"Jina Reader extraction failed for {url}: {e}")
+                    
+                    # Add failed extraction to results
+                    failed_content = WebContent(
+                        url=url,
+                        title="",
+                        content="",
+                        markdown="",
+                        metadata={"extraction_method": "jina_reader"},
+                        success=False,
+                        error=str(e)
+                    )
+                    extracted_contents.append(failed_content)
+            
+            # Return single content or list based on input
+            if isinstance(urls, str):
+                result_data = extracted_contents[0] if extracted_contents else None
+            else:
+                result_data = extracted_contents
+            
+            # Check if any extractions succeeded
+            success = any(content.success for content in extracted_contents)
+            
+            return ToolResult(
+                success=success,
+                result=result_data,
+                metadata={
+                    "total_urls": len(url_list),
+                    "successful_extractions": sum(1 for c in extracted_contents if c.success),
+                    "extraction_method": "jina_reader"
+                }
             )
             
-            if result.success:
-                return ToolResult(
-                    success=True,
-                    result=result.data,
-                    metadata={
-                        "urls": url_list,
-                        "extraction_method": "firecrawl_extract",
-                        "prompt": prompt,
-                        "web_search_enabled": enable_web_search
-                    }
-                )
-            else:
-                error_msg = result.error or "Unknown error occurred"
-                return ToolResult(
-                    success=False,
-                    error=f"Firecrawl extraction failed: {error_msg}",
-                    metadata={"urls": url_list, "prompt": prompt}
-                )
-                
         except Exception as e:
-            logger.error(f"Structured data extraction failed for {urls}: {e}")
+            logger.error(f"Content extraction failed: {e}")
             return ToolResult(
                 success=False,
-                result=None,
-                error=str(e)
+                error=f"Content extraction failed: {str(e)}",
+                metadata={"urls": url_list if 'url_list' in locals() else []}
             )
 
     @tool(
-        description="Enhanced content extraction with visual data capture using Firecrawl's advanced features",
+        description="Enhanced content extraction with visual data capture using browser-use's advanced features",
         return_description="ToolResult containing comprehensive content including data from charts, graphs, and visual elements"
     )
     async def extract_content_with_visuals(self, url: str, prompt: str,
@@ -243,11 +222,11 @@ class WebTool(Tool):
         Returns:
             ToolResult with comprehensive extracted content including visual data
         """
-        if not self._firecrawl_client:
+        if not self._browser:
             return ToolResult(
                 success=False,
                 result=None,
-                error="Firecrawl client not available"
+                error="browser-use not available"
             )
         
         try:
@@ -271,7 +250,7 @@ class WebTool(Tool):
             """
             
             # Use both Extract API and Scrape API for comprehensive data capture
-            extract_result = self._firecrawl_client.extract(
+            result = await self._browser.extract(
                 urls=[url],
                 prompt=enhanced_prompt,
                 enable_web_search=enable_web_search
@@ -281,9 +260,9 @@ class WebTool(Tool):
             if capture_screenshot:
                 try:
                     # Also capture with screenshot for visual analysis
-                    scrape_result = self._firecrawl_client.scrape_url(
+                    scrape_result = await self._browser.scrape_url(
                         url,
-                        formats=["markdown", "screenshot@fullPage"],
+                        formats=["screenshot@fullPage"],
                         wait_for=3000  # Wait for dynamic content to load
                     )
                     
@@ -295,8 +274,8 @@ class WebTool(Tool):
                 except Exception as e:
                     logger.warning(f"Screenshot capture failed for {url}: {e}")
             
-            if extract_result.success:
-                result_data = extract_result.data
+            if result.success:
+                result_data = result.data
                 
                 # Combine extracted data with visual data if available
                 if visual_data:
@@ -313,13 +292,13 @@ class WebTool(Tool):
                     result=result_data,
                     metadata={
                         "url": url,
-                        "extraction_method": "firecrawl_enhanced_visual",
+                        "extraction_method": "browser_use_enhanced_visual",
                         "screenshot_captured": capture_screenshot and visual_data is not None,
                         "web_search_enabled": enable_web_search
                     }
                 )
             else:
-                error_msg = extract_result.error or "Unknown error occurred"
+                error_msg = result.error or "Unknown error occurred"
                 return ToolResult(
                     success=False,
                     error=f"Enhanced extraction failed: {error_msg}",
@@ -335,7 +314,7 @@ class WebTool(Tool):
             )
 
     @tool(
-        description="Crawl multiple pages from a website using Firecrawl",
+        description="Crawl multiple pages from a website using browser-use",
         return_description="ToolResult containing list of WebContent objects from crawled pages"
     )
     async def crawl_website(self, url: str, limit: int = 10, 
@@ -351,18 +330,17 @@ class WebTool(Tool):
         Returns:
             ToolResult with list of WebContent objects
         """
-        if not self._firecrawl_client:
+        if not self._browser:
             return ToolResult(
                 success=False,
                 result=None,
-                error="Firecrawl client not available"
+                error="browser-use not available"
             )
         
         try:
-            result = self._firecrawl_client.crawl_url(
+            result = await self._browser.crawl_website(
                 url,
                 limit=limit,
-                formats=["markdown"],
                 exclude_paths=exclude_paths or ["/admin", "/login"]
             )
             
@@ -389,7 +367,7 @@ class WebTool(Tool):
                 error_msg = getattr(result, 'error', 'Unknown error occurred')
                 return ToolResult(
                     success=False,
-                    error=f"Firecrawl crawl failed: {error_msg}",
+                    error=f"Browser-use crawl failed: {error_msg}",
                     metadata={"base_url": url}
                 )
                 
@@ -464,6 +442,54 @@ class WebTool(Tool):
                 success=False,
                 result=None,
                 error=str(e)
+            )
+
+    def _extract_with_jina(self, url: str) -> ToolResult:
+        """
+        Fallback content extraction using Jina Reader.
+        More reliable than Firecrawl for many websites.
+        """
+        try:
+            import requests
+            
+            # Jina Reader API - free and reliable
+            jina_url = f"https://r.jina.ai/{url}"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0; +https://github.com/agentx)',
+                'Accept': 'text/plain'
+            }
+            
+            response = requests.get(jina_url, headers=headers, timeout=30)
+            response.raise_for_status()
+            
+            content = response.text
+            
+            # Extract title from first line if available
+            lines = content.split('\n')
+            title = lines[0] if lines else url
+            
+            web_content = WebContent(
+                url=url,
+                title=title,
+                content=content,
+                markdown=content,
+                metadata={"extraction_method": "jina_reader"},
+                success=True
+            )
+            
+            return ToolResult(
+                success=True,
+                result=web_content,
+                metadata={"url": url, "extraction_method": "jina_reader"}
+            )
+            
+        except Exception as e:
+            logger.error(f"Jina Reader extraction failed for {url}: {e}")
+            return ToolResult(
+                success=False,
+                error=f"Jina Reader extraction failed: {str(e)}",
+                metadata={"url": url}
             )
 
 

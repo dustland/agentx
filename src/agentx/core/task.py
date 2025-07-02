@@ -25,7 +25,7 @@ from .config import TeamConfig, AgentConfig, BrainConfig
 from ..config.team_loader import load_team_config
 from ..config.agent_loader import load_agents_config
 from ..config.prompt_loader import PromptLoader
-from ..utils.logger import get_logger, setup_clean_chat_logging
+from ..utils.logger import get_logger, setup_clean_chat_logging, setup_task_file_logging, set_streaming_mode
 from ..utils.id import generate_short_id
 from ..tool.manager import ToolManager
 
@@ -393,11 +393,14 @@ class TaskExecutor:
             logs_dir = Path(self.task.workspace_dir) / "logs"
             logs_dir.mkdir(parents=True, exist_ok=True)
             
-            # Note: Due to framework logging architecture issues, 
-            # task logs currently only go to console
-            # See memory about logging system bugs
+            # Setup file logging for this task
+            log_file_path = logs_dir / "task.log"
+            setup_task_file_logging(str(log_file_path))
             
-            logger.debug(f"Task logging configured for {self.task.task_id}")
+            # Enable streaming mode for clean console output
+            set_streaming_mode(True)
+            
+            logger.info(f"Task logging configured for {self.task.task_id} -> {log_file_path}")
             
         except Exception as e:
             logger.warning(f"Failed to setup task logging: {e}")

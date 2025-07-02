@@ -479,7 +479,13 @@ class Agent:
 Here is some context for the current task:
 - Current date and time: {current_datetime}
 - Task ID: {context.get('task_id', 'N/A')}
-- Workspace: {context.get('workspace_dir', 'N/A')}
+
+IMPORTANT - File Storage Guidelines:
+- All storage tools (write_file, read_file, etc.) work within your task workspace automatically
+- Use RELATIVE paths only: "report.md", "data/results.json", "temp/script.sh"
+- DO NOT use absolute paths or workspace prefixes like "workspace/task_id/file.md"
+- Files save to artifacts/ by default, or specify "temp/" for temporary files
+- Examples: write_file("report.md", content) → saves to artifacts/report.md
 """
         
         # Add tool information with explicit instructions
