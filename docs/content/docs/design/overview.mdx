@@ -8,14 +8,14 @@ AgentX is an open-source backbone for building secure, observable, and fully aut
 
 ### 2.1 Project Vision
 
-AgentX enables organisations to decompose complex goals into collaborative **Teams** of agents, each focusing on a well-defined role. A stateful **Lead** governs the workflow, assigns tasks to agents, and executes tools on the agents' behalf, while a **Task Executor** drives the lifecycle of the task itself. The result is a flexible framework that elevates individual agent capabilities into a cohesive, self-optimising system that can learn, adapt, and scale with minimal human intervention.
+AgentX enables organisations to decompose complex goals into collaborative **Teams** of agents, each focusing on a well-defined role. A stateful **Orchestrator** governs the workflow, assigns tasks to agents, and executes tools on the agents' behalf, while a **Task Executor** drives the lifecycle of the task itself. The result is a flexible framework that elevates individual agent capabilities into a cohesive, self-optimising system that can learn, adapt, and scale with minimal human intervention.
 
 ### 2.2 Architectural Principles
 
 The architecture rests on the following foundational principles:
 
 - **Separation of Concerns**: Each subsystem has a single, well-defined responsibility, which reduces coupling and simplifies maintenance.
-- **Lead-Driven Orchestration**: A stateful Lead governs coordination, planning, and task assignment.
+- **Orchestrator-Driven Orchestration**: A stateful Orchestrator governs coordination, planning, and task assignment.
 - **Agent Autonomy**: Agents manage their own reasoning loops and private Brains, delegating only cross-cutting concerns upward.
 - **Event-Driven Coordination**: Asynchronous, structured events enable scalable, loosely-coupled communication among subsystems.
 - **Configuration-Driven Behaviour**: Teams, agents, and workflows are defined declaratively, allowing rapid iteration without code changes.
@@ -60,7 +60,7 @@ The AgentX architecture follows a **clean dependency inversion principle** with 
 
 - **Consumer Modules**: User-facing interfaces that depend on core in a single direction. Includes CLI tools, REST/WebSocket APIs, and observability dashboards. These modules can freely import from core without creating circular dependencies.
 
-- **Core Framework**: The central layer containing `TaskExecutor`, `Lead`, `Agent`, and `Brain` components. Core imports FROM subsystems rather than the other way around, implementing true dependency inversion.
+- **Core Framework**: The central layer containing `TaskExecutor`, `Orchestrator`, `Agent`, and `Brain` components. Core imports FROM subsystems rather than the other way around, implementing true dependency inversion.
 
 - **Self-Contained Subsystems**: Independent modules that never import from core, each with their own `models.py` for data types. Includes `tool/`, `memory/`, `event/`, `config/`, `storage/`, and `builtin_tools/`. This design eliminates circular imports and enables independent development and testing.
 
@@ -89,7 +89,7 @@ graph TD
     end
 
     subgraph "Core Framework"
-        TE["core/<br/>• task.py (TaskExecutor)<br/>• lead.py<br/>• agent.py<br/>• brain.py"]
+        TE["core/<br/>• task.py (TaskExecutor)<br/>• orchestrator.py<br/>• agent.py<br/>• brain.py"]
     end
 
     subgraph "Self-Contained Subsystems"
@@ -152,26 +152,26 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 
 ### 4.1 Key Roles
 
-**Lead (The Project Manager)**
+**Orchestrator (The Project Manager)**
 
 - **Stateful:** Maintains task progress in `plan.md` and workspace files
 - **Orchestrates:** Decides which agent handles each step
 - **Persistent:** Survives across multiple turns and can resume interrupted tasks
 - **Two implementations:**
-  - `BaseLead`: Abstract class for custom orchestration logic
-  - `Lead`: Default implementation with LLM-based intelligent routing
+  - `BaseOrchestrator`: Abstract class for custom orchestration logic
+  - `Orchestrator`: Default implementation with LLM-based intelligent routing
 
 **Specialist Agents (The Workers)**
 
 - **Stateless:** No memory between invocations
 - **Focused:** Each agent has one clear expertise (defined by prompt file)
-- **Reusable:** Same agent can be used by different Leads for different tasks
+- **Reusable:** Same agent can be used by different Orchestrators for different tasks
 - **Standard Library:** Framework provides common agents (planner, researcher, writer, reviewer)
 
 **TaskExecutor (The Runtime)**
 
 - **Lifecycle Manager:** Handles workspace setup, tool management, streaming
-- **Lead Invoker:** Calls the Lead and provides it with agents and tools
+- **Orchestrator Invoker:** Calls the Orchestrator and provides it with agents and tools
 - **Stateless:** Creates new instances per task execution
 
 ### 4.2 Execution Modes
@@ -180,13 +180,13 @@ AgentX supports two primary modes of execution, offering a trade-off between aut
 
 **1. Autonomous Execution (`execute_task`)**
 
-This "fire-and-forget" mode is ideal for production. A client submits a task and waits for a final result, while the `Task Executor` runs the entire multi-agent collaboration, driven by the `Lead`.
+This "fire-and-forget" mode is ideal for production. A client submits a task and waits for a final result, while the `Task Executor` runs the entire multi-agent collaboration, driven by the `Orchestrator`.
 
 ```mermaid
 sequenceDiagram
     participant C as Client
     participant TX as TaskExecutor
-    participant L as Lead
+    participant L as Orchestrator
     participant AG as Agent
 
     C->>TX: execute task with prompt
@@ -195,7 +195,7 @@ sequenceDiagram
     L-->>TX: Plan created, ready for first step
 
     loop Autonomous Loop (driven by TaskExecutor)
-        TX->>L: invoke Lead for next step
+        TX->>L: invoke Orchestrator for next step
         L->>L: read_plan_and_find_next_task()
         L->>AG: assign specific micro-task
         AG-->>L: return task result
@@ -214,7 +214,7 @@ For debugging or human-in-the-loop workflows, a client can call `start_task` to 
 sequenceDiagram
     participant C as Client
     participant TX as TaskExecutor
-    participant L as Lead
+    participant L as Orchestrator
     participant AG as Agent
 
     C->>TX: start task with prompt
@@ -222,7 +222,7 @@ sequenceDiagram
 
     loop Interactive Steps
         C->>TX: call task.step()
-        TX->>L: invoke Lead for one step
+        TX->>L: invoke Orchestrator for one step
         L->>AG: assign micro-task
         AG-->>L: return task result
         L-->>TX: return step result
@@ -230,11 +230,11 @@ sequenceDiagram
     end
 ```
 
-### 4.3 Lead vs Specialist Agents: A Key Distinction
+### 4.3 Orchestrator vs Specialist Agents: A Key Distinction
 
 The AgentX architecture makes a crucial distinction between two types of intelligence:
 
-**The Lead (Project Manager)**
+**The Orchestrator (Project Manager)**
 
 - A stateful Python class that owns the entire workflow
 - Orchestrates the task from start to finish
@@ -246,17 +246,17 @@ The AgentX architecture makes a crucial distinction between two types of intelli
 
 - Stateless, single-purpose experts defined by prompt files
 - Each has one clear responsibility (planning, research, writing, etc.)
-- Invoked by the Lead to perform specific micro-tasks
+- Invoked by the Orchestrator to perform specific micro-tasks
 - Return results and forget - no state management
 
 **Example Flow:**
 
-1. Lead receives: "Write a report on AI trends"
-2. Lead delegates to Planner Agent: "Create a step-by-step plan"
+1. Orchestrator receives: "Write a report on AI trends"
+2. Orchestrator delegates to Planner Agent: "Create a step-by-step plan"
 3. Planner creates `plan.md` with checklist
-4. Lead reads plan, assigns "Research AI trends" to Researcher Agent
-5. Lead assigns "Write introduction" to Writer Agent
-6. Lead continues until all steps complete
+4. Orchestrator reads plan, assigns "Research AI trends" to Researcher Agent
+5. Orchestrator assigns "Write introduction" to Writer Agent
+6. Orchestrator continues until all steps complete
 
 This separation ensures that complex orchestration logic lives in robust Python code, while domain expertise lives in easily-editable prompts.
 
@@ -387,10 +387,10 @@ agents:
   - "writer"
   - "reviewer"
 
-lead: default # Uses the built-in Lead class
+lead: default # Uses the built-in Orchestrator class
 ```
 
-**The Default Lead Workflow:**
+**The Default Orchestrator Workflow:**
 
 1. Delegates planning to the `planner` agent
 2. Uses LLM-based routing to assign each step to the best specialist
@@ -485,4 +485,4 @@ AgentX is designed as a production-ready backbone, which means it must be extens
 
 ## 11. The Future of AgentX
 
-AgentX will continue to evolve along three pillars: performance, interoperability, and safety. Upcoming priorities include native support for streaming multimodal models, tighter integration with external knowledge graphs to improve grounding, and progressive guardrail policies that adapt to organisational compliance requirements. We also plan to continue enhancing the default **Lead** and **Standard Agent** library to make the framework even more powerful out of the box.
+AgentX will continue to evolve along three pillars: performance, interoperability, and safety. Upcoming priorities include native support for streaming multimodal models, tighter integration with external knowledge graphs to improve grounding, and progressive guardrail policies that adapt to organisational compliance requirements. We also plan to continue enhancing the default **Orchestrator** and **Standard Agent** library to make the framework even more powerful out of the box.

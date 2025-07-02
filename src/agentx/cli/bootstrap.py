@@ -60,10 +60,11 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         print(f"🏗️  Creating project: {project_name}")
         project_path.mkdir()
         
-        # Create config directory and files
+        # Create config directory
         config_dir = project_path / "config"
         config_dir.mkdir()
         
+        # Create prompts directory (will be removed since we use preset agents)
         prompts_dir = config_dir / "prompts"
         prompts_dir.mkdir()
         
@@ -76,11 +77,10 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         team_config = generate_template_config(template, model)
         (config_dir / "team.yaml").write_text(team_config)
         
-        # Generate prompt files
-        print("📝 Creating agent prompts...")
-        prompts = generate_template_prompts(template)
-        for filename, content in prompts.items():
-            (prompts_dir / filename).write_text(content)
+        # No custom prompts needed - using preset agents!
+        print("📝 Using preset agent system (no custom prompts needed)...")
+        # Remove the prompts directory since we don't need it
+        prompts_dir.rmdir()
         
         # Generate main.py
         print("🐍 Creating main.py...")

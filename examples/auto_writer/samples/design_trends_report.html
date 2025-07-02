@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2024-2025年平面设计趋势报告</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Echarts图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 引入字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <style>
+        /* 基础样式 */
+        :root {
+            --primary-color: #6F4E37; /* 摩卡慕斯 */
+            --secondary-color: #A67B5B;
+            --light-color: #F4F3EE;
+            --dark-color: #2D2926;
+            --accent-color: #8A2BE2;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #FAFAFA;
+            color: var(--dark-color);
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        /* 滚动动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 导航菜单样式 */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        /* 趋势卡片样式 */
+        .trend-card {
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .trend-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        /* 磨砂玻璃效果 */
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        /* 色彩卡片样式 */
+        .color-card {
+            height: 120px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .color-card:hover {
+            transform: scale(1.05);
+        }
+        
+        /* 故障艺术效果 */
+        .glitch-effect {
+            position: relative;
+            animation: glitch 1s linear infinite alternate;
+        }
+        
+        .glitch-effect::before,
+        .glitch-effect::after {
+            content: "故障艺术";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch-effect::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch 2s linear infinite alternate-reverse;
+        }
+        
+        .glitch-effect::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff9;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch 1s linear infinite alternate;
+        }
+        
+        @keyframes glitch {
+            0% {
+                clip: rect(41px, 9999px, 26px, 0);
+            }
+            20% {
+                clip: rect(33px, 9999px, 72px, 0);
+            }
+            40% {
+                clip: rect(56px, 9999px, 23px, 0);
+            }
+            60% {
+                clip: rect(82px, 9999px, 17px, 0);
+            }
+            80% {
+                clip: rect(28px, 9999px, 65px, 0);
+            }
+            100% {
+                clip: rect(12px, 9999px, 42px, 0);
+            }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header id="header" class="sticky top-0 z-50 glassmorphism">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <h1 class="text-2xl font-bold text-primary">2024-2025年平面设计趋势报告</h1>
+            </div>
+            <nav class="flex flex-wrap justify-center gap-2 md:gap-6">
+                <a href="#overview" class="nav-link px-2 py-1 text-sm md:text-base">概述</a>
+                <a href="#visual-styles" class="nav-link px-2 py-1 text-sm md:text-base">视觉风格</a>
+                <a href="#colors" class="nav-link px-2 py-1 text-sm md:text-base">色彩趋势</a>
+                <a href="#typography" class="nav-link px-2 py-1 text-sm md:text-base">排版设计</a>
+                <a href="#illustration" class="nav-link px-2 py-1 text-sm md:text-base">插画风格</a>
+                <a href="#ui-ux" class="nav-link px-2 py-1 text-sm md:text-base">UI/UX设计</a>
+                <a href="#sustainability" class="nav-link px-2 py-1 text-sm md:text-base">可持续设计</a>
+                <a href="#technology" class="nav-link px-2 py-1 text-sm md:text-base">新技术应用</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 占位符 - 将在后续步骤中添加内容 -->
+        <section id="hero" class="py-16 md:py-24 text-center relative overflow-hidden">
+            <div class="absolute inset-0 -z-10">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-[#6F4E37]/10 to-[#8A2BE2]/5"></div>
+                <div class="absolute top-20 left-20 w-40 h-40 rounded-full bg-[#6F4E37]/20 blur-3xl"></div>
+                <div class="absolute bottom-20 right-20 w-60 h-60 rounded-full bg-[#8A2BE2]/10 blur-3xl"></div>
+            </div>
+            <div class="max-w-4xl mx-auto px-4 fade-in">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">2024-2025年<br>平面设计趋势报告</h1>
+                <p class="text-xl md:text-2xl mb-8 text-gray-700 max-w-2xl mx-auto">探索未来设计的视觉语言、色彩趋势和创新技术，为您的创意工作提供前瞻性指导</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#visual-styles" class="px-6 py-3 bg-[#6F4E37] text-white rounded-full hover:bg-[#5d4130] transition-all">探索视觉趋势</a>
+                    <a href="#overview" class="px-6 py-3 border border-[#6F4E37] text-[#6F4E37] rounded-full hover:bg-[#6F4E37]/10 transition-all">阅读报告概述</a>
+                </div>
+            </div>
+            <div class="mt-16 flex justify-center">
+                <div class="animate-bounce">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <section id="overview" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">报告概述</h2>
+                <div class="bg-white rounded-xl p-6 md:p-8 shadow-md">
+                    <p class="mb-6 text-lg">本报告基于多个权威来源和专业平台的信息，汇总了2024-2025年平面设计领域的主要趋势和新兴风格。报告覆盖视觉风格、色彩趋势、排版设计、插画风格、UI/UX设计、可持续设计以及新技术应用等多个方面。</p>
+                    
+                    <h3 class="text-xl font-bold mb-4">研究领域</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#6F4E37] mr-2"></span>
+                                视觉风格和美学趋势
+                            </h4>
+                            <p class="text-gray-700">大胆极简主义、极繁主义、奇幻前沿、时间扭曲等风格的分析与应用</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#A67B5B] mr-2"></span>
+                                色彩趋势和配色方案
+                            </h4>
+                            <p class="text-gray-700">Pantone 2025年度色"摩卡慕斯"、自然色彩、复杂渐变等色彩趋势</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#8A2BE2] mr-2"></span>
+                                排版和字体设计趋势
+                            </h4>
+                            <p class="text-gray-700">变量字体、复古衬线字体、3D排版、动态排版等创新应用</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#008B8B] mr-2"></span>
+                                插画和图像处理风格
+                            </h4>
+                            <p class="text-gray-700">AI生成插画、3D插画、超现实主义、混合媒体等新兴风格</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#FFD700] mr-2"></span>
+                                UI/UX设计趋势
+                            </h4>
+                            <p class="text-gray-700">Bento盒式布局、磨砂玻璃效果、微交互、AR/VR体验等界面设计趋势</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#4CAF50] mr-2"></span>
+                                可持续和环保设计
+                            </h4>
+                            <p class="text-gray-700">生命周期设计、环保材料应用、循环经济设计等可持续实践</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#00BCD4] mr-2"></span>
+                                新技术应用趋势
+                            </h4>
+                            <p class="text-gray-700">生成式AI设计、3D设计普及、AR增强体验、沉浸式体验设计等</p>
+                        </div>
+                        <div class="trend-card p-5">
+                            <h4 class="font-bold text-lg mb-2 flex items-center">
+                                <span class="inline-block w-6 h-6 rounded-full bg-[#9C27B0] mr-2"></span>
+                                全球趋势预测
+                            </h4>
+                            <p class="text-gray-700">Adobe、Pantone、JLL、YANG DESIGN等机构的设计趋势预测</p>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold mb-4">信息来源</h3>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <ul class="list-disc pl-5 grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <li>Adobe 2025年创意趋势报告</li>
+                            <li>Pantone 2025年色彩趋势报告</li>
+                            <li>GraphicDesignJunction设计趋势分析</li>
+                            <li>DigitalSynopsis平面设计趋势</li>
+                            <li>站酷(ZCOOL)视觉设计趋势分析</li>
+                            <li>知乎专业设计师文章</li>
+                            <li>小红书设计趋势分享</li>
+                            <li>Dribbble平台最新设计作品分析</li>
+                            <li>JLL 2025全球设计趋势预测</li>
+                            <li>YANG DESIGN趋势研究报告</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="visual-styles" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">当前流行的平面设计视觉风格</h2>
+                
+                <!-- Adobe创意趋势报告四大方向 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">Adobe创意趋势报告四大方向</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="trend-card group cursor-pointer" data-trend="fantastic-frontiers">
+                            <div class="h-48 bg-gradient-to-br from-indigo-500 to-purple-700 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-2xl font-bold text-white">奇幻前沿</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2">奇幻前沿 (Fantastic Frontiers)</h4>
+                                <p class="text-gray-700">融合科幻和超现实主义元素，探索未知领域的设计风格，创造出超越现实的视觉体验。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-gray-600 text-sm">这一趋势鼓励设计师打破常规，创造出超越物理世界限制的奇幻视觉。通过融合未来科技与神秘元素，创造出引人入胜的视觉叙事。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-card group cursor-pointer" data-trend="levity-laughter">
+                            <div class="h-48 bg-gradient-to-br from-yellow-400 to-orange-500 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-2xl font-bold text-white">轻松与笑声</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2">轻松与笑声 (Levity and Laughter)</h4>
+                                <p class="text-gray-700">强调幽默、趣味和乐观主义设计，通过活泼的视觉元素传递积极情绪。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-gray-600 text-sm">在严肃的全球环境下，这一趋势反映了人们对轻松、幽默内容的渴望。设计中融入俏皮色彩、卡通风格和幽默元素，为用户带来愉悦体验。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-card group cursor-pointer" data-trend="time-warp">
+                            <div class="h-48 bg-gradient-to-br from-teal-400 to-emerald-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-2xl font-bold text-white">时间扭曲</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2">时间扭曲 (Time Warp)</h4>
+                                <p class="text-gray-700">混合不同时代的设计元素，创造怀旧与现代融合的复古风格。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-gray-600 text-sm">这一趋势反映了人们对过去的怀念与对未来的期待。通过将不同时代的设计元素巧妙混合，创造出既熟悉又新鲜的视觉体验，引发情感共鸣。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-card group cursor-pointer" data-trend="immersive-appeal">
+                            <div class="h-48 bg-gradient-to-br from-rose-400 to-red-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-2xl font-bold text-white">沉浸式体验</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-xl font-bold mb-2">沉浸式体验 (Immersive Appeal)</h4>
+                                <p class="text-gray-700">创造多感官、立体和交互式的设计体验，增强用户参与感和沉浸感。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-gray-600 text-sm">这一趋势关注如何通过设计创造出引人入胜的沉浸式体验。结合动效、声音和交互元素，打造出能够吸引用户全方位感官的设计作品。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 十大视觉设计风格趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">十大视觉设计风格趋势</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 趋势1: 大胆的极简主义 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">1</span>
+                                <h4 class="text-lg font-bold mb-2">大胆的极简主义</h4>
+                                <p class="text-gray-700">简约设计与大胆元素的结合，注重留白和关键视觉元素，创造强烈视觉冲击力。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势2: 金属质感 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">2</span>
+                                <h4 class="text-lg font-bold mb-2">金属质感</h4>
+                                <p class="text-gray-700">闪亮、反光的金属效果在品牌和包装设计中的应用，增添高级感和未来感。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势3: 像素艺术 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">3</span>
+                                <h4 class="text-lg font-bold mb-2">像素艺术</h4>
+                                <p class="text-gray-700">复古游戏美学的回归，像素风格在现代设计中的创新应用，唤起怀旧情绪。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势4: 大胆的形状 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">4</span>
+                                <h4 class="text-lg font-bold mb-2">大胆的形状</h4>
+                                <p class="text-gray-700">几何形状和有机形态的创造性组合，打破常规布局，创造动态视觉效果。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势5: 纹理颗粒感 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">5</span>
+                                <h4 class="text-lg font-bold mb-2">纹理颗粒感</h4>
+                                <p class="text-gray-700">增加设计深度和触感的颗粒纹理效果，为数字设计增添真实质感。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势6: 极繁主义插画 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">6</span>
+                                <h4 class="text-lg font-bold mb-2">极繁主义插画</h4>
+                                <p class="text-gray-700">详细、复杂且充满故事性的插画风格，与极简主义形成鲜明对比。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势7: 复古衬线字体 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">7</span>
+                                <h4 class="text-lg font-bold mb-2">复古衬线字体</h4>
+                                <p class="text-gray-700">传统排版与现代元素的结合，赋予设计历史感和权威感。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势8: 哥特风格的徽章 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">8</span>
+                                <h4 class="text-lg font-bold mb-2">哥特风格的徽章</h4>
+                                <p class="text-gray-700">复古徽标和印章设计的现代演绎，增添品牌的历史感和可信度。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势9: 手工制作元素 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">9</span>
+                                <h4 class="text-lg font-bold mb-2">手工制作元素</h4>
+                                <p class="text-gray-700">手绘、拼贴和纸质效果的数字呈现，为设计增添温暖和人情味。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 趋势10: AI驱动的设计 -->
+                        <div class="trend-card">
+                            <div class="p-6">
+                                <span class="inline-block w-10 h-10 rounded-full bg-gray-100 mb-4 flex items-center justify-center font-bold text-gray-700">10</span>
+                                <h4 class="text-lg font-bold mb-2">AI驱动的设计</h4>
+                                <p class="text-gray-700">人工智能辅助创作的设计风格，开创新的创意可能性和效率。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 中国市场特有的设计趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">中国市场特有的设计趋势</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="trend-card bg-gradient-to-b from-red-50 to-white">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">新中式设计</h4>
+                                <p class="text-gray-700">传统文化元素的现代演绎，融合东方美学与现代设计语言，创造具有文化底蕴的视觉表达。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-card bg-gradient-to-b from-red-50 to-white">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">国潮风设计</h4>
+                                <p class="text-gray-700">中国传统美学与现代设计语言的融合，在年轻消费群体中广受欢迎的设计风格。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-card bg-gradient-to-b from-red-50 to-white">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">"须臾"设计哲学</h4>
+                                <p class="text-gray-700">源自中国传统文化，强调当下体验的设计理念，注重创造即时的情感连接和体验。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="colors" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">2024-2025年色彩趋势</h2>
+                
+                <!-- Pantone 2025年色彩趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">Pantone 2025年度代表色</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                            <div class="w-full md:w-1/3">
+                                <div class="color-card" style="background-color: #6F4E37;" id="mocha-mousse">
+                                    <div class="h-full flex items-end p-4">
+                                        <div class="bg-white/80 backdrop-blur-sm p-3 rounded-lg">
+                                            <h4 class="font-bold">摩卡慕斯 (Mocha Mousse)</h4>
+                                            <p class="text-sm text-gray-700">#6F4E37</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-full md:w-2/3">
+                                <h4 class="text-xl font-bold mb-3">摩卡慕斯 (Mocha Mousse)</h4>
+                                <p class="mb-4">Pantone选定的2025年度代表色是"摩卡慕斯"，这是一种温暖、丰富的棕色调，代表着回归自然、稳定性和舒适感。这一选择反映了当代设计对真实性和可持续性的追求。</p>
+                                <p class="text-gray-700">这种色调可以与多种配色方案搭配，特别适合与自然色彩、柔和色调和对比色彩组合使用，为设计增添温暖感和质感。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 春夏季色彩趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">春夏季色彩趋势</h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        <div class="color-card-interactive" style="background-color: #8A56AC;" data-color="Crocus" data-hex="#8A56AC">
+                            <div class="color-info p-3 opacity-0 hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm h-full flex flex-col justify-end rounded-lg">
+                                <h5 class="font-bold">Crocus紫色</h5>
+                                <p class="text-xs">#8A56AC</p>
+                            </div>
+                        </div>
+                        <div class="color-card-interactive" style="background-color: #C5E384;" data-color="Lime Cream" data-hex="#C5E384">
+                            <div class="color-info p-3 opacity-0 hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm h-full flex flex-col justify-end rounded-lg">
+                                <h5 class="font-bold">Lime Cream浅绿色</h5>
+                                <p class="text-xs">#C5E384</p>
+                            </div>
+                        </div>
+                        <div class="color-card-interactive" style="background-color: #B5E0E3;" data-color="Limpet Shell" data-hex="#B5E0E3">
+                            <div class="color-info p-3 opacity-0 hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm h-full flex flex-col justify-end rounded-lg">
+                                <h5 class="font-bold">Limpet Shell蓝色</h5>
+                                <p class="text-xs">#B5E0E3</p>
+                            </div>
+                        </div>
+                        <div class="color-card-interactive" style="background-color: #D6E878;" data-color="White Grape" data-hex="#D6E878">
+                            <div class="color-info p-3 opacity-0 hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm h-full flex flex-col justify-end rounded-lg">
+                                <h5 class="font-bold">White Grape黄绿色</h5>
+                                <p class="text-xs">#D6E878</p>
+                            </div>
+                        </div>
+                        <div class="color-card-interactive" style="background-color: #264E36;" data-color="Kashmir" data-hex="#264E36">
+                            <div class="color-info p-3 opacity-0 hover:opacity-100 transition-opacity bg-white/80 backdrop-blur-sm h-full flex flex-col justify-end rounded-lg">
+                                <h5 class="font-bold">Kashmir深绿色</h5>
+                                <p class="text-xs">#264E36</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 流行配色方案 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">流行配色方案</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 单色渐变 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 bg-gradient-to-r from-[#6F4E37]/30 via-[#6F4E37]/70 to-[#6F4E37]"></div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">单色渐变</h4>
+                                <p class="text-gray-700">同一色调的不同饱和度和明度变化，创造深度和层次感。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 复杂渐变 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 bg-gradient-to-r from-[#8A2BE2] via-[#FF7F50] to-[#FFD700]"></div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">复杂渐变</h4>
+                                <p class="text-gray-700">多种色彩的流畅过渡，创造视觉冲击力和现代感。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 自然色彩 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 flex">
+                                <div class="flex-1 bg-[#8B4513]"></div>
+                                <div class="flex-1 bg-[#556B2F]"></div>
+                                <div class="flex-1 bg-[#4682B4]"></div>
+                                <div class="flex-1 bg-[#F5DEB3]"></div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">自然色彩</h4>
+                                <p class="text-gray-700">受自然界启发的有机色彩组合，传达可持续性和环保意识。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 柔和色调 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 flex">
+                                <div class="flex-1 bg-[#E6E6FA]"></div>
+                                <div class="flex-1 bg-[#F0E6FF]"></div>
+                                <div class="flex-1 bg-[#E6F0FF]"></div>
+                                <div class="flex-1 bg-[#FFF0E6]"></div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">柔和色调</h4>
+                                <p class="text-gray-700">温和、低饱和度的色彩组合，创造舒适和谐的视觉体验。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 大胆对比 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 flex">
+                                <div class="flex-1 bg-[#FF6B6B]"></div>
+                                <div class="flex-1 bg-[#4ECDC4]"></div>
+                                <div class="flex-1 bg-[#FFE66D]"></div>
+                                <div class="flex-1 bg-[#1A535C]"></div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">大胆对比</h4>
+                                <p class="text-gray-700">互补色的强烈对比，创造视觉张力和吸引力。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 数字霓虹 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-24 flex bg-[#121212]">
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="w-8 h-8 rounded-full bg-[#FF00FF] shadow-[0_0_15px_rgba(255,0,255,0.7)]"></div>
+                                </div>
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="w-8 h-8 rounded-full bg-[#00FFFF] shadow-[0_0_15px_rgba(0,255,255,0.7)]"></div>
+                                </div>
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="w-8 h-8 rounded-full bg-[#FFFF00] shadow-[0_0_15px_rgba(255,255,0,0.7)]"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">数字霓虹</h4>
+                                <p class="text-gray-700">鲜艳的数字视觉色彩，特别适合在暗色背景下创造未来感。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 色彩应用趋势 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">色彩应用趋势</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="text-lg font-bold mb-3">情感化色彩</h4>
+                            <p class="text-gray-700 mb-2">色彩不再仅仅是视觉元素，而是传达特定情感和氛围的工具。设计师越来越注重色彩心理学，通过精心选择的色彩组合来唤起用户的特定情绪反应。</p>
+                            <p class="text-gray-600 text-sm">应用场景：品牌传播、用户体验设计、情绪营销</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-bold mb-3">色彩分区</h4>
+                            <p class="text-gray-700 mb-2">使用不同色彩区分内容和创建视觉层次，帮助用户更直观地理解信息架构和导航系统，提升用户体验。</p>
+                            <p class="text-gray-600 text-sm">应用场景：网页设计、应用界面、信息图表</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-bold mb-3">色彩与品牌认同</h4>
+                            <p class="text-gray-700 mb-2">独特色彩组合作为品牌识别的关键元素，越来越多的品牌开发专属色彩系统，以在视觉嘈杂的环境中脱颖而出。</p>
+                            <p class="text-gray-600 text-sm">应用场景：品牌设计、营销材料、包装设计</p>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-bold mb-3">包容性色彩设计</h4>
+                            <p class="text-gray-700 mb-2">考虑色盲和视觉障碍用户的色彩应用，确保设计对所有用户都具有可访问性，体现设计的社会责任。</p>
+                            <p class="text-gray-600 text-sm">应用场景：公共信息设计、应用界面、教育材料</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 交互式色板展示器 -->
+                <div class="mt-12 p-6 bg-white rounded-xl shadow-md">
+                    <h3 class="text-xl font-bold mb-4">交互式色板展示</h3>
+                    <p class="mb-4">点击下方色彩创建自定义配色方案，探索2025年流行色彩组合。</p>
+                    
+                    <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-6" id="color-palette">
+                        <!-- 色彩选项将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <div class="h-24 mb-4 rounded-lg overflow-hidden" id="color-scheme-preview">
+                        <div class="flex h-full" id="selected-colors">
+                            <!-- 选中的颜色将在这里显示 -->
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2" id="selected-color-codes">
+                        <!-- 选中颜色的代码将在这里显示 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="typography" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">现代排版和字体设计趋势</h2>
+                
+                <!-- 字体类型趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">字体类型趋势</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- 变量字体 -->
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h4 class="text-xl font-bold mb-4">变量字体</h4>
+                            <p class="mb-4">单一字体文件中包含多种风格变化，提供无限的设计可能性和灵活性。</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="mb-3">
+                                    <span class="font-light text-xl">轻盈</span>
+                                    <span class="font-normal text-xl mx-2">标准</span>
+                                    <span class="font-bold text-xl">加粗</span>
+                                    <span class="font-black text-xl ml-2">黑体</span>
+                                </div>
+                                <p class="text-sm text-gray-600">变量字体允许在单个字体文件中调整多个参数，如字重、宽度、倾斜度等。</p>
+                            </div>
+                            <div class="mt-4 text-gray-700">
+                                <p>推荐字体：Roboto Flex、Source Sans Variable、Recursive、Amstelvar</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 复古衬线字体 -->
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h4 class="text-xl font-bold mb-4">复古衬线字体</h4>
+                            <p class="mb-4">传统印刷字体的现代演绎，增加设计深度和历史感。</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="mb-3">
+                                    <span class="text-xl" style="font-family: 'Noto Serif SC', serif;">经典优雅的衬线字体</span>
+                                </div>
+                                <p class="text-sm text-gray-600">复古衬线字体为现代设计增添了传统印刷的优雅和权威感。</p>
+                            </div>
+                            <div class="mt-4 text-gray-700">
+                                <p>推荐字体：GT Sectra、Canela、Freight Text、Roslindale</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 表现力与俏皮排版 -->
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h4 class="text-xl font-bold mb-4">表现力与俏皮排版</h4>
+                            <p class="mb-4">具有个性和情感表达的字体，为品牌传达独特气质。</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="mb-3">
+                                    <span class="text-xl italic">活泼</span>
+                                    <span class="text-xl ml-2" style="letter-spacing: 2px;">有趣</span>
+                                    <span class="text-xl ml-2" style="text-decoration: underline wavy;">俏皮</span>
+                                </div>
+                                <p class="text-sm text-gray-600">这类字体打破常规，表达品牌个性和情感态度。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 粗体和大型字体 -->
+                        <div class="bg-white rounded-xl p-6 shadow-md">
+                            <h4 class="text-xl font-bold mb-4">粗体和大型字体</h4>
+                            <p class="mb-4">强调视觉冲击力的大胆排版，作为核心设计元素。</p>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div class="mb-3">
+                                    <span class="text-3xl font-black">大胆宣言</span>
+                                </div>
+                                <p class="text-sm text-gray-600">粗体大字体能够立即吸引注意力，传达强烈信息。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 排版设计创新趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">排版设计创新趋势</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 动态排版 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">动态排版</h4>
+                                <p class="text-gray-700 mb-4">动画和交互式文字排版，增强用户体验和信息传达效果。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="dynamic-text-demo h-10 flex items-center justify-center overflow-hidden">
+                                        <span class="inline-block animate-pulse">动态文字效果</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 3D排版 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">3D排版</h4>
+                                <p class="text-gray-700 mb-4">立体文字效果，增加设计维度和深度，创造沉浸感。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="text-center">
+                                        <span class="inline-block text-xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">3D文字效果</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 实验性排版 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">实验性排版</h4>
+                                <p class="text-gray-700 mb-4">打破传统规则的创新排版，挑战阅读习惯和视觉感知。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="text-center">
+                                        <span class="inline-block" style="writing-mode: vertical-rl;">垂直文本</span>
+                                        <span class="inline-block ml-2" style="letter-spacing: -3px;">紧凑文本</span>
+                                        <span class="inline-block ml-2" style="letter-spacing: 5px;">扩展文本</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 响应式排版 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">响应式排版</h4>
+                                <p class="text-gray-700 mb-4">适应不同设备尺寸的智能排版，确保最佳阅读体验。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="flex items-center justify-center">
+                                        <div class="w-6 h-10 border border-gray-300 mr-2 flex items-center justify-center">
+                                            <span class="text-xs">A</span>
+                                        </div>
+                                        <div class="w-8 h-12 border border-gray-300 mr-2 flex items-center justify-center">
+                                            <span class="text-sm">A</span>
+                                        </div>
+                                        <div class="w-10 h-14 border border-gray-300 flex items-center justify-center">
+                                            <span class="text-base">A</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 多语言排版 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">多语言排版</h4>
+                                <p class="text-gray-700 mb-4">支持多种语言的通用设计系统，适应全球化需求。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="flex flex-col">
+                                        <span>中文设计</span>
+                                        <span>English Design</span>
+                                        <span>дизайн</span>
+                                        <span>デザイン</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI生成字体 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">AI生成字体</h4>
+                                <p class="text-gray-700 mb-4">人工智能创建的独特字体，打开字体设计的新可能性。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <div class="text-center">
+                                        <span class="inline-block italic">AI创造的独特字体风格</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 字体配对和组合趋势 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">字体配对和组合趋势</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">对比配对</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                                    <h5 class="font-serif text-xl mb-2">衬线标题</h5>
+                                    <p class="font-sans">无衬线正文创造清晰的层次结构和视觉对比，增强可读性和设计张力。</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">同系列配对</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                                    <h5 class="font-bold text-xl mb-2">粗体标题</h5>
+                                    <p class="font-normal">常规字重正文，同一字体家族不同权重的组合，保持统一性的同时创造层次。</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">超级字体家族</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                                    <p class="mb-1">包含多种风格的综合字体系统，满足各种设计需求。</p>
+                                    <p class="text-sm text-gray-600">例如：Roboto家族（包含Roboto、Roboto Condensed、Roboto Mono等）</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">图文融合</h4>
+                                <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                                    <div class="flex items-center">
+                                        <span class="text-4xl font-bold mr-2">T</span>
+                                        <div class="w-8 h-8 bg-gray-300 rounded-full"></div>
+                                        <span class="text-xl ml-1">字体与图形元素的无缝结合</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="illustration" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">插画和图像处理的新兴风格</h2>
+                
+                <!-- 插画风格趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">插画风格趋势</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- AI生成插画 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-purple-500 to-pink-500 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">AI生成插画</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">人工智能创作或辅助创作的插画风格，融合多种风格特点，创造独特视觉效果。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>代表工具：Midjourney、DALL-E、Stable Diffusion</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 极繁主义插画 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-amber-500 to-orange-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">极繁主义插画</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">细节丰富、复杂精细的插画风格，与极简主义形成鲜明对比，展现丰富叙事。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>特点：细节密集、多层次、复杂构图</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 3D插画 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-blue-500 to-cyan-500 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">3D插画</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">立体感强的三维插画，与平面元素结合，增强视觉深度和沉浸感。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>代表工具：Blender、Cinema 4D、Spline</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 几何抽象插画 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-indigo-500 to-blue-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">几何抽象插画</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">基于简化几何形状的插画风格，强调形式美感和视觉平衡。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>特点：简化形式、色块组合、精准构图</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 手绘风格 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-green-500 to-emerald-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">手绘风格</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">保留手工绘制痕迹的数字插画，增添温暖、人情味和独特性。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>工具：Procreate、Adobe Fresco、Wacom数位板</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 涂鸦与街头艺术 -->
+                        <div class="trend-card h-full">
+                            <div class="h-44 bg-gradient-to-br from-red-500 to-pink-600 relative overflow-hidden">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">涂鸦与街头艺术</h4>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <p class="text-gray-700 mb-3">受街头文化启发的自由风格，打破传统规则，展现活力和叛逆精神。</p>
+                                <div class="text-sm text-gray-600">
+                                    <p>特点：自由表达、大胆用色、文化符号</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图像处理技术和风格 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">图像处理技术和风格</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="h-40 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">超现实主义</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">创造超越现实的梦幻场景，结合不可能的元素组合，挑战观者的认知。这种风格常见于概念艺术、品牌营销和创意摄影中。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="h-40 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 relative">
+                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">渐变与色调映射</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">创造性的色彩处理技术，通过调整色相、饱和度和明度，创造独特的视觉氛围和情感体验，广泛应用于摄影后期和品牌视觉。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="h-40 relative">
+                                <div class="absolute inset-0 bg-gray-800 flex items-center justify-center">
+                                    <div class="w-full h-full opacity-80" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzMzMzMzMyIgZmlsbC1vcGFjaXR5PSIwLjMiLz48cmVjdCB4PSI1MCIgeT0iNTAiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgZmlsbD0iIzQ0NDQ0NCIgZmlsbC1vcGFjaXR5PSIwLjMiLz48cmVjdCB4PSIwIiB5PSI1MCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBmaWxsPSIjNTU1NTU1IiBmaWxsLW9wYWNpdHk9IjAuMyIvPjwvc3ZnPg==');"></div>
+                                    <h4 class="text-xl font-bold text-white absolute">纹理叠加</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">增加图像深度和质感的处理技术，通过添加纹理层来创造复古效果、增强真实感或添加艺术气息，常用于品牌视觉和印刷设计。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl overflow-hidden shadow-md">
+                            <div class="h-40 bg-gray-800 flex items-center justify-center relative">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="glitch-effect text-white text-2xl font-bold">故障艺术</div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">有意为之的数字"错误"效果，通过像素错位、色彩分离和噪点等元素创造未来感和实验性视觉，在音乐、科技和前卫时尚领域广受欢迎。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 混合媒体和拼贴艺术 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">混合媒体和拼贴艺术</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <p class="mb-6">混合媒体设计融合了多种艺术形式和技术，创造出丰富多样的视觉效果。这种趋势反映了设计师突破传统边界、探索新表达方式的愿望。</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">数字与传统媒介混合</h4>
+                                <p class="text-gray-700">手绘与数字技术的结合，保留手工艺术的温度，同时利用数字技术的精确性和灵活性。</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">照片与插画融合</h4>
+                                <p class="text-gray-700">摄影作品与绘画元素的混合，创造超现实或增强的视觉效果，丰富叙事可能性。</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">纹理实验</h4>
+                                <p class="text-gray-700">多层次纹理的创新应用，通过物理纹理扫描、数字生成和手工制作纹理的组合，增强视觉深度。</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">媒体碰撞</h4>
+                                <p class="text-gray-700">不同艺术形式的创意结合，如绘画、摄影、印刷、拼贴和数字艺术的融合，创造独特视觉语言。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ui-ux" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">UI/UX设计中的视觉设计趋势</h2>
+                
+                <!-- UI/UX设计趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">UI/UX设计趋势</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- AI驱动的个性化 -->
+                        <div class="trend-card group cursor-pointer overflow-hidden">
+                            <div class="h-40 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">AI驱动的个性化</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">根据用户行为自动调整的界面，提供定制化体验。AI算法分析用户偏好和行为模式，动态调整内容展示、布局和交互方式。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-sm text-gray-600">应用案例：Netflix的个性化推荐界面、Spotify的动态播放列表、电商平台的个性化产品展示</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AR/VR沉浸式体验 -->
+                        <div class="trend-card group cursor-pointer overflow-hidden">
+                            <div class="h-40 bg-gradient-to-r from-emerald-500 to-teal-600 relative">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">AR/VR沉浸式体验</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">增强现实和虚拟现实在界面设计中的应用，创造身临其境的用户体验。打破传统二维界面限制，将数字内容与现实世界或虚拟环境融合。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-sm text-gray-600">应用案例：IKEA Place家具AR预览、虚拟展厅体验、沉浸式教育应用</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 可持续UI/UX设计 -->
+                        <div class="trend-card group cursor-pointer overflow-hidden">
+                            <div class="h-40 bg-gradient-to-r from-green-500 to-lime-600 relative">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">可持续UI/UX设计</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">节能和环保理念的界面设计，减少数字碳足迹。优化资源使用，减少能耗，同时通过设计传达可持续发展理念。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-sm text-gray-600">应用案例：暗色模式、低数据消耗的轻量级应用、碳足迹跟踪界面</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 包容性和无障碍设计 -->
+                        <div class="trend-card group cursor-pointer overflow-hidden">
+                            <div class="h-40 bg-gradient-to-r from-amber-500 to-orange-600 relative">
+                                <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                    <h4 class="text-xl font-bold text-white">包容性和无障碍设计</h4>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p class="text-gray-700">考虑各类用户需求的通用设计，确保所有人都能平等访问和使用数字产品。关注色盲友好、屏幕阅读器兼容和多种交互方式。</p>
+                                <div class="mt-4 overflow-hidden max-h-0 group-hover:max-h-40 transition-all duration-500">
+                                    <p class="text-sm text-gray-600">应用案例：高对比度模式、可调整文字大小、语音控制、简化界面选项</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 移动应用和网页设计趋势 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">移动应用和网页设计趋势</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Bento盒式布局 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">Bento盒式布局</h4>
+                                <div class="grid grid-cols-2 gap-2 mb-4">
+                                    <div class="bg-gray-100 rounded p-2 h-12"></div>
+                                    <div class="bg-gray-100 rounded p-2 h-12"></div>
+                                    <div class="bg-gray-100 rounded p-2 h-16 col-span-2"></div>
+                                    <div class="bg-gray-100 rounded p-2 h-12"></div>
+                                    <div class="bg-gray-100 rounded p-2 h-12"></div>
+                                </div>
+                                <p class="text-gray-700">模块化的信息展示方式，提高内容组织效率，允许用户快速浏览和访问不同类型的内容。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 磨砂玻璃效果 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">磨砂玻璃效果</h4>
+                                <div class="relative h-32 mb-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg overflow-hidden">
+                                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4 h-16 bg-white/30 backdrop-blur-md rounded-lg border border-white/40 flex items-center justify-center">
+                                        <span class="text-white font-medium">Glassmorphism</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-700">半透明层次感的界面设计，创造深度和空间感，同时保持视觉轻盈。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 微交互 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-3">微交互</h4>
+                                <div class="flex justify-center mb-4">
+                                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transform hover:scale-105 transition-all duration-300">
+                                        点击我
+                                    </button>
+                                </div>
+                                <p class="text-gray-700">细微但重要的交互反馈设计，提升用户体验和参与感，引导用户完成操作。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 响应式设计和跨平台设计 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">响应式设计和跨平台设计</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex flex-col md:flex-row gap-6 mb-8">
+                            <div class="w-full md:w-1/2">
+                                <h4 class="text-lg font-bold mb-3">响应式设计的重要性</h4>
+                                <p class="mb-4">随着设备多样化，响应式设计已从选项变为必需。现代设计需要在手机、平板、桌面和可穿戴设备等多种屏幕上提供一致的用户体验。</p>
+                                <p class="text-gray-700">关键原则包括流动布局、灵活的图像和媒体、CSS媒体查询以及移动优先的设计思维。</p>
+                            </div>
+                            
+                            <div class="w-full md:w-1/2">
+                                <div class="flex justify-center items-end h-48">
+                                    <div class="mx-2 h-48 w-16 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                                        <div class="text-xs text-gray-500">移动端</div>
+                                    </div>
+                                    <div class="mx-2 h-40 w-24 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                                        <div class="text-xs text-gray-500">平板</div>
+                                    </div>
+                                    <div class="mx-2 h-32 w-40 border-2 border-gray-300 rounded-lg flex items-center justify-center">
+                                        <div class="text-xs text-gray-500">桌面</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-lg font-bold mb-3">响应式设计趋势</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">基于网格的响应式布局</h5>
+                                <p class="text-sm text-gray-700">灵活适应各种屏幕尺寸的网格系统，确保内容在不同设备上保持一致的视觉结构。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">断点系统的精细化设计</h5>
+                                <p class="text-sm text-gray-700">为不同设备优化的界面表现，通过精确的断点控制布局变化，提供最佳用户体验。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">混合布局方式</h5>
+                                <p class="text-sm text-gray-700">固定+流式、流式+吸附等组合布局方式，灵活应对复杂内容结构的响应式需求。</p>
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-lg font-bold mb-3">统一设计系统</h4>
+                        <p class="text-gray-700">跨平台一致的视觉语言和交互模式，确保用户在不同设备间切换时体验连贯。设计系统包含组件库、设计规范和交互模式，提高开发效率和产品一致性。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sustainability" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">可持续和环保设计趋势</h2>
+                
+                <!-- 可持续设计理念 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">可持续设计理念</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 生命周期设计思维 -->
+                        <div class="trend-card bg-gradient-to-b from-green-50 to-white">
+                            <div class="p-6">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">生命周期设计思维</h4>
+                                <p class="text-gray-700">考虑产品全生命周期的环境影响，从原材料获取、生产制造、使用阶段到最终处理，全面评估设计决策的可持续性。</p>
+                                <ul class="mt-4 text-sm text-gray-600 list-disc pl-5">
+                                    <li>设计便于回收和拆解的产品结构</li>
+                                    <li>选择可再生或可回收的材料</li>
+                                    <li>延长产品使用寿命的设计策略</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 减少数字碳足迹 -->
+                        <div class="trend-card bg-gradient-to-b from-green-50 to-white">
+                            <div class="p-6">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">减少数字碳足迹</h4>
+                                <p class="text-gray-700">优化数字产品能源消耗的设计策略，降低网站、应用和数字服务的环境影响。</p>
+                                <ul class="mt-4 text-sm text-gray-600 list-disc pl-5">
+                                    <li>优化图像和媒体文件大小</li>
+                                    <li>减少不必要的动画和自动播放内容</li>
+                                    <li>设计低能耗的暗色主题</li>
+                                    <li>精简代码和减少HTTP请求</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 循环经济设计 -->
+                        <div class="trend-card bg-gradient-to-b from-green-50 to-white">
+                            <div class="p-6">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">循环经济设计</h4>
+                                <p class="text-gray-700">从线性经济向循环经济转型的设计方法，通过再利用、再制造和回收，减少资源消耗和废物产生。</p>
+                                <ul class="mt-4 text-sm text-gray-600 list-disc pl-5">
+                                    <li>模块化设计便于维修和升级</li>
+                                    <li>闭环生产系统的产品设计</li>
+                                    <li>废物转化为资源的创新设计</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 真实可持续性 -->
+                        <div class="trend-card bg-gradient-to-b from-green-50 to-white">
+                            <div class="p-6">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">真实可持续性</h4>
+                                <p class="text-gray-700">避免"漂绿"，追求实质性环保效果，确保可持续主张有真实数据和行动支持。</p>
+                                <ul class="mt-4 text-sm text-gray-600 list-disc pl-5">
+                                    <li>透明的材料来源和生产信息</li>
+                                    <li>可量化的环境影响评估</li>
+                                    <li>真实的环保认证和标准</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 环保材料和实践 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">环保材料和实践</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div>
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFQkY1RUIiIHJ4PSI4Ii8+PHBhdGggZmlsbD0iIzRDQUY1MCIgZD0iTTg2LjUgNjBDNjIuNTMgNjAgNDMgNzkuNTMgNDMgMTAzLjVTNjIuNTMgMTQ3IDg2LjUgMTQ3SDExNGMxNy42NyAwIDMyLTE0LjMzIDMyLTMyIDAtMTUuNDYtMTAuOTMtMjguMzctMjUuNS0zMS4zOEMxMTguMTggNzAuMDYgMTAzLjc2IDYwIDg2LjUgNjBabTAgMTJjMTIuMTUgMCAyMi41IDcuOTYgMjYuMDYgMTguOTRsMS42NCA1LjAyIDUuMjQuMzdDMTMwLjk3IDk3LjAyIDE0MCAxMDUuNDMgMTQwIDExNWMwIDExLjYtOS40IDIxLTIxIDIxSDg2LjVjLTE3LjkyIDAtMzIuNS0xNC41OC0zMi41LTMyLjVTNjguNTggNzIgODYuNSA3MloiLz48cGF0aCBmaWxsPSIjNENBRjUwIiBkPSJNMTU3IDYwLjVjMC0uMjgtLjIyLS41LS41LS41cy0uNS4yMi0uNS41di43NWgtLjc1Yy0uMjggMC0uNS4yMi0uNS41cy4yMi41LjUuNWguNzV2Ljc1YzAgLjI4LjIyLjUuNS41cy41LS4yMi41LS41di0uNzVoLjc1Yy4yOCAwIC41LS4yMi41LS41cy0uMjItLjUtLjUtLjVoLS43NXYtLjc1ek0xNDcgNjMuNWMwLS4yOC0uMjItLjUtLjUtLjVzLS41LjIyLS41LjV2Ljc1aC0uNzVjLS4yOCAwLS41LjIyLS41LjVzLjIyLjUuNS41aC43NXYuNzVjMCAuMjguMjIuNS41LjVzLjUtLjIyLjUtLjV2LS43NWguNzVjLjI4IDAgLjUtLjIyLjUtLjVzLS4yMi0uNS0uNS0uNWgtLjc1di0uNzV6TTE1Mi41IDY5Yy0uODMgMC0xLjUuNjctMS41IDEuNXMuNjcgMS41IDEuNSAxLjUgMS41LS42NyAxLjUtMS41LS42Ny0xLjUtMS41LTEuNXoiLz48L3N2Zz4=" alt="环保材料" class="w-full rounded-lg mb-3">
+                                <h4 class="text-lg font-bold mb-2">可回收和可生物降解材料</h4>
+                                <p class="text-gray-700">在印刷和包装设计中的应用，减少环境负担的同时保持产品质量。</p>
+                            </div>
+                            
+                            <div>
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFQkY1RUIiIHJ4PSI4Ii8+PHBhdGggZmlsbD0iIzRDQUY1MCIgZD0iTTExNSA2MGMtMjQuODUgMC00NSAyMC4xNS00NSA0NXMyMC4xNSA0NSA0NSA0NSA0NS0yMC4xNSA0NS00NS0yMC4xNS00NS00NS00NVptMCA4MGMtMTkuMzMgMC0zNS0xNS42Ny0zNS0zNXMxNS42Ny0zNSAzNS0zNSAzNSAxNS42NyAzNSAzNS0xNS42NyAzNS0zNSAzNVoiLz48cGF0aCBmaWxsPSIjNENBRjUwIiBkPSJNMTI3LjUgOTVoLTIwYy0xLjM4IDAtMi41IDEuMTItMi41IDIuNXMxLjEyIDIuNSAyLjUgMi41aDIwYzEuMzggMCAyLjUtMS4xMiAyLjUtMi41cy0xLjEyLTIuNS0yLjUtMi41Wk0xMTcuNSAxMDVoLTIwYy0xLjM4IDAtMi41IDEuMTItMi41IDIuNXMxLjEyIDIuNSAyLjUgMi41aDIwYzEuMzggMCAyLjUtMS4xMiAyLjUtMi41cy0xLjEyLTIuNS0yLjUtMi41Wk0xMjcuNSAxMTVoLTIwYy0xLjM4IDAtMi41IDEuMTItMi41IDIuNXMxLjEyIDIuNSAyLjUgMi41aDIwYzEuMzggMCAyLjUtMS4xMiAyLjUtMi41cy0xLjEyLTIuNS0yLjUtMi41Wk03Ny41IDkwYy0xLjM4IDAtMi41IDEuMTItMi41IDIuNXYyNWMwIDEuMzggMS4xMiAyLjUgMi41IDIuNWgxMGMxLjM4IDAgMi41LTEuMTIgMi41LTIuNXYtMjVjMC0xLjM4LTEuMTItMi41LTIuNS0yLjVoLTEwWm01IDVoNXYyMGgtMTBWOTVoNVoiLz48L3N2Zz4=" alt="数字优先策略" class="w-full rounded-lg mb-3">
+                                <h4 class="text-lg font-bold mb-2">数字优先策略</h4>
+                                <p class="text-gray-700">减少实体材料使用的设计方法，通过数字化减少资源消耗和废物产生。</p>
+                            </div>
+                            
+                            <div>
+                                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSJub25lIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFQkY1RUIiIHJ4PSI4Ii8+PHBhdGggZmlsbD0iIzRDQUY1MCIgZD0iTTcwIDY1djcwaDYwVjY1SDcwWm01MCAxMEg4MHY1MGg0MFY3NVptLTQwIDYwVjEzNWg0MHYtMTBIODBaIi8+PHBhdGggZmlsbD0iIzRDQUY1MCIgZD0iTTExNSA4NXYzMGgtMzBWODVoMzBabS0xMCAxMEg5NXYxMGgxMFY5NVoiLz48L3N2Zz4=" alt="模块化设计" class="w-full rounded-lg mb-3">
+                                <h4 class="text-lg font-bold mb-2">模块化设计</h4>
+                                <p class="text-gray-700">便于维修和升级的产品设计，延长使用寿命，减少整体资源消耗。</p>
+                            </div>
+                        </div>
+                        
+                        <p class="mb-6">环保材料和实践不仅仅是减少环境影响，更是创新设计的催化剂。通过探索可持续材料和工艺，设计师能够发现新的美学可能性和功能解决方案。</p>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-bold mb-2">可持续设计的商业价值</h4>
+                            <ul class="list-disc pl-5 text-gray-700">
+                                <li>提升品牌声誉和消费者信任</li>
+                                <li>满足日益增长的环保消费需求</li>
+                                <li>降低长期资源和能源成本</li>
+                                <li>促进创新和差异化竞争</li>
+                                <li>满足不断严格的环保法规要求</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 可持续品牌设计案例 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">可持续品牌设计案例</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Patagonia案例 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-40 bg-[#5A7559] flex items-center justify-center">
+                                <span class="text-white text-2xl font-bold">Patagonia</span>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">Patagonia: 环保理念融入品牌核心</h4>
+                                <p class="text-gray-700 mb-3">Patagonia将环保理念深入品牌DNA，从产品设计到营销传播，始终坚持可持续发展原则。</p>
+                                <p class="text-sm text-gray-600">设计特点：简约实用的视觉风格、透明的环保信息传达、注重耐用性的产品设计</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Allbirds案例 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-40 bg-[#EFEEE9] flex items-center justify-center">
+                                <span class="text-gray-800 text-2xl font-bold">Allbirds</span>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">Allbirds: 可持续材料创新</h4>
+                                <p class="text-gray-700 mb-3">Allbirds通过创新材料应用（如美利奴羊毛、桉树纤维和甘蔗）创造环保时尚产品。</p>
+                                <p class="text-sm text-gray-600">设计特点：简洁现代的品牌形象、材料故事的视觉化表达、透明的碳足迹计算</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 环保包装设计 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-40 bg-[#E7DDC9] flex items-center justify-center relative">
+                                <div class="w-24 h-24 bg-[#D9CDB8] absolute"></div>
+                                <div class="w-20 h-20 border-2 border-[#8A7E63] absolute"></div>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">环保包装设计</h4>
+                                <p class="text-gray-700 mb-3">减少包装材料并提高可回收性的创新设计，同时保持产品保护和品牌表达功能。</p>
+                                <p class="text-sm text-gray-600">设计特点：最小化材料使用、单一材料设计、可生物降解材料、多功能包装</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 中国本土环保品牌案例 -->
+                        <div class="trend-card overflow-hidden">
+                            <div class="h-40 bg-gradient-to-r from-[#E8F5E9] to-[#C8E6C9] flex items-center justify-center">
+                                <span class="text-[#2E7D32] text-2xl font-bold">本土环保品牌</span>
+                            </div>
+                            <div class="p-6">
+                                <h4 class="text-lg font-bold mb-2">中国本土环保品牌案例</h4>
+                                <p class="text-gray-700 mb-3">融合东方美学的可持续设计，将传统文化元素与现代环保理念结合。</p>
+                                <p class="text-sm text-gray-600">设计特点：传统工艺现代化应用、自然材质强调、文化符号与环保叙事结合</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="technology" class="py-12 fade-in">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center">数字平面设计中的新技术应用</h2>
+                
+                <!-- 3D设计和动效 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">3D设计和动效</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">3D设计工具普及</h4>
+                                <p class="mb-4">Adobe Illustrator等传统平面设计软件扩展了3D功能，使更多设计师能够创建立体视觉效果，而无需专业3D建模技能。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-700">主流工具：Adobe Dimension、Blender、Spline、Cinema 4D</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">低门槛3D创作</h4>
+                                <p class="mb-4">AI辅助工具降低了3D设计的学习曲线，使设计师能够快速创建复杂的3D场景和元素，大幅提高工作效率。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-700">新兴工具：Luma AI、Polycam、ClipDrop 3D</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">动态标识</h5>
+                                <div class="h-24 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg mb-2 flex items-center justify-center">
+                                    <div class="w-12 h-12 bg-white rounded-full animate-pulse"></div>
+                                </div>
+                                <p class="text-sm text-gray-700">移动和变化的品牌标识设计，适应数字环境的动态展示需求。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">3D排版</h5>
+                                <div class="h-24 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg mb-2 flex items-center justify-center">
+                                    <span class="text-white text-2xl font-bold" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">3D文字</span>
+                                </div>
+                                <p class="text-sm text-gray-700">立体文字在平面设计中的应用，创造深度感和视觉冲击力。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">动态社交媒体内容</h5>
+                                <div class="h-24 bg-gradient-to-r from-pink-500 to-orange-500 rounded-lg mb-2 flex items-center justify-center">
+                                    <div class="w-16 h-16 border-4 border-white rounded-full flex items-center justify-center">
+                                        <div class="w-12 h-12 bg-white rounded-full animate-ping opacity-75"></div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700">为社交平台优化的动态设计，提高内容吸引力和用户参与度。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AR/VR在设计中的应用 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">AR/VR在设计中的应用</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 增强现实包装 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center relative">
+                                    <div class="w-24 h-32 border-2 border-gray-300 rounded flex items-center justify-center">
+                                        <span class="text-sm text-gray-500">产品包装</span>
+                                    </div>
+                                    <div class="absolute top-4 right-4 w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center animate-pulse">
+                                        <div class="w-12 h-12 bg-blue-500/40 rounded-full"></div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">增强现实包装</h4>
+                                <p class="text-gray-700">通过AR扩展实体包装的体验，使静态包装变为交互式内容入口，增强品牌体验和产品信息传达。</p>
+                                <p class="mt-2 text-sm text-gray-600">应用案例：扫描包装查看产品故事、虚拟试用、游戏化互动体验</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 虚拟展示空间 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-48 bg-gradient-to-b from-purple-100 to-indigo-100 rounded-lg flex items-center justify-center relative">
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div class="w-12 h-16 bg-white/50 rounded"></div>
+                                        <div class="w-12 h-16 bg-white/50 rounded"></div>
+                                        <div class="w-12 h-16 bg-white/50 rounded"></div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">虚拟展示空间</h4>
+                                <p class="text-gray-700">VR环境中的设计展示，创造不受物理限制的沉浸式体验，为作品展示提供新的可能性。</p>
+                                <p class="mt-2 text-sm text-gray-600">应用案例：虚拟画廊、数字展览、沉浸式品牌体验</p>
+                            </div>
+                        </div>
+                        
+                        <!-- AR导视系统 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center relative">
+                                    <div class="absolute w-full h-full flex items-center justify-center">
+                                        <div class="w-32 h-1 bg-blue-500"></div>
+                                        <div class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white">i</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">AR导视系统</h4>
+                                <p class="text-gray-700">增强现实技术应用于空间导航设计，提供动态、情境化的指引信息，优化用户体验。</p>
+                                <p class="mt-2 text-sm text-gray-600">应用案例：博物馆导览、商场导航、城市探索应用</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 混合现实营销材料 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-48 bg-gradient-to-r from-green-100 to-blue-100 rounded-lg flex items-center justify-center relative">
+                                    <div class="w-32 h-20 border border-gray-300 bg-white/70 rounded">
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <span class="text-xs text-gray-500">实体材料</span>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-0 right-0 bottom-0 left-1/3 bg-blue-500/10 rounded-r-lg flex items-center justify-center">
+                                        <span class="text-xs text-blue-800">虚拟层</span>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">混合现实营销材料</h4>
+                                <p class="text-gray-700">结合实体和虚拟元素的设计，通过数字层扩展传统营销材料的表现力和互动性。</p>
+                                <p class="mt-2 text-sm text-gray-600">应用案例：互动宣传册、增强现实名片、动态产品目录</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 生成式AI在设计中的应用 -->
+                <div class="mb-12">
+                    <h3 class="text-2xl font-bold mb-6">生成式AI在设计中的应用</h3>
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <p class="mb-6">生成式AI正在彻底改变设计工作流程，从创意发想到执行，AI工具正成为设计师的得力助手。这不是对设计师的替代，而是对创造力的增强和工作效率的提升。</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">AI辅助创意发想</h4>
+                                <p class="text-gray-700 mb-3">使用AI工具进行创意头脑风暴，探索新的设计方向和可能性，突破创意瓶颈。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-600">工具示例：Midjourney、DALL-E、Adobe Firefly</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">自动化设计流程</h4>
+                                <p class="text-gray-700 mb-3">AI处理重复性设计任务，如图像处理、排版调整、色彩方案生成等，让设计师专注于创意决策。</p>
+                                <div class="bg-gray-50 p-3 rounded-lg">
+                                    <p class="text-sm text-gray-600">工具示例：Adobe Sensei、Canva Magic Studio、Designs.ai</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">个性化设计生成</h5>
+                                <p class="text-sm text-gray-700">基于用户数据的定制设计，实现大规模个性化视觉内容，满足不同受众需求。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">风格迁移与变异</h5>
+                                <p class="text-sm text-gray-700">AI创造的设计风格融合，将一种视觉风格应用到另一种内容上，创造新的美学可能性。</p>
+                            </div>
+                            
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <h5 class="font-bold mb-2">设计师与AI协作</h5>
+                                <p class="text-sm text-gray-700">人机协作的新工作流程，设计师负责创意方向和质量控制，AI提供技术支持和效率提升。</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h4 class="font-bold mb-2">AI设计伦理考量</h4>
+                            <ul class="list-disc pl-5 text-gray-700">
+                                <li>确保AI生成内容的版权和知识产权清晰</li>
+                                <li>避免过度依赖AI，保持设计师的创意主导权</li>
+                                <li>关注AI生成内容中可能存在的偏见和代表性问题</li>
+                                <li>平衡技术效率与设计真实性和人情味</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 交互式设计和沉浸式体验 -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">交互式设计和沉浸式体验</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 交互式数据可视化 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <div id="data-viz-demo" class="w-full h-full"></div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">交互式数据可视化</h4>
+                                <p class="text-gray-700">用户可探索的数据呈现，将复杂信息转化为直观、可交互的视觉形式，增强理解和参与度。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 沉浸式故事叙述 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-40 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 rounded-lg flex items-center justify-center relative">
+                                    <div class="absolute w-full h-full flex items-center justify-center">
+                                        <div class="w-4/5 h-1/2 bg-white/50 rounded flex items-center justify-center">
+                                            <span class="text-sm text-gray-700">沉浸式故事体验</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">沉浸式故事叙述</h4>
+                                <p class="text-gray-700">多感官设计体验，通过视觉、声音和交互元素创造引人入胜的叙事环境，增强情感连接。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 游戏化设计元素 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center mb-2">
+                                            <span class="text-white font-bold text-xl">+10</span>
+                                        </div>
+                                        <div class="w-32 h-4 bg-gray-200 rounded-full">
+                                            <div class="w-3/4 h-full bg-green-500 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">游戏化设计元素</h4>
+                                <p class="text-gray-700">借鉴游戏机制的交互设计，通过成就、进度和奖励系统增强用户参与度和忠诚度。</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 多感官设计 -->
+                        <div class="trend-card h-full">
+                            <div class="p-6">
+                                <div class="mb-4 h-40 bg-gradient-to-r from-red-100 via-amber-100 to-green-100 rounded-lg flex items-center justify-center">
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div class="w-12 h-12 bg-red-200 rounded-full flex items-center justify-center">
+                                            <span class="text-xs text-red-800">视觉</span>
+                                        </div>
+                                        <div class="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+                                            <span class="text-xs text-blue-800">听觉</span>
+                                        </div>
+                                        <div class="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                                            <span class="text-xs text-green-800">触觉</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-bold mb-2">多感官设计</h4>
+                                <p class="text-gray-700">结合视觉、听觉、触觉的设计体验，创造全方位的感官刺激，增强信息传达和情感共鸣。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-100 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>报告编制日期：2025年4月25日</p>
+            <p class="mt-2 text-sm text-gray-600">本研究报告仅供设计参考，具体设计应用应结合品牌需求和目标受众特点。</p>
+            <p class="mt-4"><a href="https://www.letsmagic.cn" class="text-primary hover:underline" target="_blank">由超级麦吉提供支持</a></p>
+        </div>
+    </footer>
+
+    <!-- JavaScript 代码 -->
+    <script>
+        // 滚动动画
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加滚动监听
+            const fadeElements = document.querySelectorAll('.fade-in');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                observer.observe(element);
+            });
+            
+            // 导航菜单激活状态
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 200) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // 交互式色板
+            setupColorPalette();
+            
+            // 数据可视化示例
+            setupDataVisualization();
+        });
+        
+        // 交互式色板功能
+        function setupColorPalette() {
+            const colorPalette = document.getElementById('color-palette');
+            const selectedColors = document.getElementById('selected-colors');
+            const selectedColorCodes = document.getElementById('selected-color-codes');
+            
+            // 2025年趋势色彩
+            const trendColors = [
+                { name: "摩卡慕斯", hex: "#6F4E37" },
+                { name: "Crocus紫色", hex: "#8A56AC" },
+                { name: "Lime Cream", hex: "#C5E384" },
+                { name: "Limpet Shell", hex: "#B5E0E3" },
+                { name: "White Grape", hex: "#D6E878" },
+                { name: "Kashmir", hex: "#264E36" },
+                { name: "自然棕", hex: "#A67B5B" },
+                { name: "柔和米", hex: "#DCD0C0" },
+                { name: "浅灰", hex: "#F4F3EE" },
+                { name: "深灰", hex: "#2D2926" },
+                { name: "紫罗兰", hex: "#8A2BE2" },
+                { name: "珊瑚红", hex: "#FF7F50" },
+                { name: "青绿", hex: "#008B8B" },
+                { name: "金色", hex: "#FFD700" },
+                { name: "深蓝", hex: "#00008B" },
+                { name: "粉色", hex: "#FFC0CB" },
+                { name: "鲜红", hex: "#FF6B6B" },
+                { name: "青绿", hex: "#4ECDC4" },
+                { name: "柠檬黄", hex: "#FFE66D" },
+                { name: "深青", hex: "#1A535C" }
+            ];
+            
+            // 生成色彩选项
+            trendColors.forEach(color => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'w-full h-8 rounded cursor-pointer transition-transform hover:scale-110';
+                colorDiv.style.backgroundColor = color.hex;
+                colorDiv.setAttribute('data-color', color.name);
+                colorDiv.setAttribute('data-hex', color.hex);
+                colorDiv.title = `${color.name} (${color.hex})`;
+                
+                colorDiv.addEventListener('click', function() {
+                    addSelectedColor(color);
+                });
+                
+                colorPalette.appendChild(colorDiv);
+            });
+            
+            // 已选颜色数组
+            let selectedColorArray = [];
+            
+            // 添加选中的颜色
+            function addSelectedColor(color) {
+                // 限制最多选择5种颜色
+                if (selectedColorArray.length >= 5) {
+                    selectedColorArray.shift(); // 移除第一个
+                }
+                
+                selectedColorArray.push(color);
+                updateSelectedColors();
+            }
+            
+            // 更新已选颜色显示
+            function updateSelectedColors() {
+                selectedColors.innerHTML = '';
+                selectedColorCodes.innerHTML = '';
+                
+                selectedColorArray.forEach(color => {
+                    // 添加颜色块
+                    const colorDiv = document.createElement('div');
+                    colorDiv.className = 'flex-1 h-full';
+                    colorDiv.style.backgroundColor = color.hex;
+                    selectedColors.appendChild(colorDiv);
+                    
+                    // 添加颜色代码
+                    const codeSpan = document.createElement('span');
+                    codeSpan.className = 'px-2 py-1 bg-gray-100 rounded text-sm';
+                    codeSpan.textContent = `${color.name}: ${color.hex}`;
+                    selectedColorCodes.appendChild(codeSpan);
+                });
+            }
+            
+            // 初始化默认颜色方案
+            addSelectedColor(trendColors[0]); // 摩卡慕斯
+            addSelectedColor(trendColors[7]); // 柔和米
+            addSelectedColor(trendColors[2]); // Lime Cream
+        }
+        
+        // 数据可视化示例
+        function setupDataVisualization() {
+            const dataVizElement = document.getElementById('data-viz-demo');
+            
+            if (dataVizElement && window.echarts) {
+                const chart = echarts.init(dataVizElement);
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '3%',
+                        containLabel: true
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: ['极简', '3D', 'AI', '环保', '复古'],
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '趋势热度',
+                            type: 'bar',
+                            barWidth: '60%',
+                            data: [
+                                {value: 78, itemStyle: {color: '#6F4E37'}},
+                                {value: 92, itemStyle: {color: '#8A56AC'}},
+                                {value: 95, itemStyle: {color: '#008B8B'}},
+                                {value: 82, itemStyle: {color: '#4CAF50'}},
+                                {value: 70, itemStyle: {color: '#A67B5B'}}
+                            ]
+                        }
+                    ]
+                };
+                
+                chart.setOption(option);
+                
+                // 响应窗口大小变化
+                window.addEventListener('resize', function() {
+                    chart.resize();
+                });
+            }
+        }
+    </script>
+</body>
+</html>

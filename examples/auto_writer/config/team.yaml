@@ -1,10 +1,14 @@
-name: "AutoWriter Standard Team"
-lead: default
+name: "AutoWriter Enhanced Team"
+description: "Professional multi-agent research system producing consulting-quality reports"
+
+# Enhanced orchestrator with language detection
+orchestrator:
+  max_rounds: 15
+  timeout: 1800
+
+# All agents are presets - no custom configuration needed!
 agents:
-  - "standard:planner"
-  - "standard:researcher" 
-  - "standard:writer"
-  - "standard:reviewer"
-tools:
-  - "storage_tools"
-  - "web_tools"
+  - "researcher" # Market intelligence and data gathering
+  - "writer" # Strategic content creation and business analysis
+  - "reviewer" # Quality assurance and final optimization
+  - "document_formatter" # Universal formatting: HTML, PDF, Word, PowerPoint+

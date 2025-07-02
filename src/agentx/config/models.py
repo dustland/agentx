@@ -11,7 +11,6 @@ from pathlib import Path
 from pydantic import BaseModel, Field, validator
 from enum import Enum
 
-from agentx.core.lead import BaseLead
 from agentx.core.config import BrainConfig  # Use the canonical BrainConfig
 
 
@@ -80,7 +79,7 @@ class TeamConfig(BaseModel):
     agents: List[AgentConfig] = []
     tool_modules: List[str] = []
     max_rounds: int = 10
-    lead: Optional[Type[BaseLead]] = None
+    orchestrator_config: Optional[Dict] = None
 
 
 class FrameworkConfig(BaseModel):

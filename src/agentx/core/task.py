@@ -18,7 +18,7 @@ import json
 import time
 
 from .agent import Agent
-from .lead import Lead
+from .orchestrator import Orchestrator
 from .message import TaskStep, TextPart, ToolCallPart, ToolResultPart, Artifact
 from .tool import ToolCall
 from .config import TeamConfig, AgentConfig, BrainConfig
@@ -137,9 +137,6 @@ class TaskExecutor:
         # Load team configuration
         self.config_path = Path(config_path)
         self.team_config = load_team_config(str(self.config_path))
-        
-        # Always create Lead (no conditional logic)
-        self.lead_class = self.team_config.lead or Lead  # Default to framework Lead
         
         self.task = Task(
             team_config=self.team_config,
@@ -294,7 +291,7 @@ class TaskExecutor:
         self.task.initial_prompt = prompt
         
         # Create Lead instance
-        lead_instance = self.lead_class(self.task)
+        lead_instance = Orchestrator(self.task)
         
         logger.info(f"🚀 Starting Lead-driven execution for task {self.task.task_id}")
         
@@ -308,11 +305,11 @@ class TaskExecutor:
         self.task.initial_prompt = prompt
         
         # Create Lead instance
-        lead_instance = self.lead_class(self.task)
+        lead_instance = Orchestrator(self.task)
         
         logger.info(f"🚀 Starting Lead-driven execution for task {self.task.task_id}")
         
-        yield {"type": "start", "task_id": self.task.task_id, "lead": self.lead_class.__name__}
+        yield {"type": "start", "task_id": self.task.task_id, "lead": Orchestrator.__name__}
         
         # Lead execution (would need to be enhanced for streaming)
         await lead_instance.run(planner_agent_name=planner_agent)
