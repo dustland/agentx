@@ -6,12 +6,12 @@ architectural rule that subsystems should be self-contained and not import from 
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, Any, Union, Literal, Type
+from typing import Dict, List, Optional, Any, Union, Literal
 from pathlib import Path
 from pydantic import BaseModel, Field, validator
 from enum import Enum
 
-from agentx.core.config import BrainConfig  # Use the canonical BrainConfig
+from agentx.core.config import BrainConfig, AgentConfig  # Use canonical models from core
 
 
 class ConfigurationError(Exception):
@@ -38,45 +38,11 @@ class AgentRole(str, Enum):
     SPECIALIST = "specialist"
 
 
-class AgentConfig(BaseModel):
-    """Configuration for individual agents."""
-    name: str
-    description: Optional[str] = None
-    role: AgentRole = AgentRole.SPECIALIST
-    brain_config: BrainConfig
-    prompt_file: Optional[str] = None
-    tools: List[str] = []
-    # New fields to replace top-level ones
-    system_message: Optional[str] = None
-    llm_config: Optional[LLMProviderConfig] = None
-    
-    @validator('brain_config', pre=True, always=True)
-    def assemble_brain_config(cls, v, values):
-        if v:
-            return v
-        
-        if 'llm_config' not in values or 'system_message' not in values:
-            raise ValueError("brain_config is missing and cannot be assembled")
-        
-        llm_config = values['llm_config']
-        return BrainConfig(
-            provider=llm_config.provider,
-            model=llm_config.model,
-            temperature=llm_config.temperature,
-            max_tokens=llm_config.max_tokens,
-            supports_function_calls=True,
-            streaming=True
-        )
-        
-    class Config:
-        use_enum_values = True
-
-
 class TeamConfig(BaseModel):
     """Main configuration for agent teams."""
     name: str
     description: Optional[str] = None
-    agents: List[AgentConfig] = []
+    agents: List[AgentConfig] = []  # Use canonical AgentConfig from core
     tool_modules: List[str] = []
     max_rounds: int = 10
     orchestrator_config: Optional[Dict] = None

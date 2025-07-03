@@ -5,7 +5,8 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Type
 
-from .models import ConfigurationError, AgentConfig, TeamConfig, BrainConfig, LLMProviderConfig
+from .models import ConfigurationError, TeamConfig, LLMProviderConfig
+from agentx.core.config import AgentConfig, BrainConfig  # Use canonical models from core
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -63,13 +64,11 @@ class TeamLoader:
         # Parse orchestrator configuration parameters (no class loading)
         orchestrator_config = data.get("orchestrator") or data.get("lead", {})  # Support both names
         
-        agent_configs_for_team = [ac.model_dump() for ac in agent_configs]
-
         team_config = TeamConfig(
             name=data.get("name"),
             description=data.get("description"),
             tool_modules=data.get("tool_modules", []),
-            agents=agent_configs_for_team,
+            agents=agent_configs,  # Keep as AgentConfig objects for type safety
             orchestrator_config=orchestrator_config
         )
         
@@ -86,29 +85,42 @@ class TeamLoader:
         preset_config = preset_configs[agent_name]
         
         # Check for local override in config/agents/ first
-        local_override_path = self.config_dir / "agents" / f"{agent_name}.md"
-        if local_override_path.exists():
-            preset_config['prompt_file'] = str(local_override_path)
-            logger.info(f"Using local override for preset agent '{agent_name}': {local_override_path}")
+        if self.config_dir:
+            local_override_path = self.config_dir / "agents" / f"{agent_name}.md"
+            if local_override_path.exists():
+                prompt_template = str(local_override_path)
+                logger.info(f"Using local override for preset agent '{agent_name}': {local_override_path}")
+            else:
+                # Use framework prompt file
+                prompt_file = preset_config.get('prompt_file')
+                if prompt_file:
+                    prompt_path = self.standard_agents_dir / prompt_file
+                    if not prompt_path.exists():
+                        raise ConfigurationError(f"Prompt file for preset agent '{agent_name}' not found at {prompt_path}")
+                    prompt_template = str(prompt_path)
+                else:
+                    prompt_template = ""
         else:
-            # Use framework prompt file
+            # Use framework prompt file  
             prompt_file = preset_config.get('prompt_file')
             if prompt_file:
                 prompt_path = self.standard_agents_dir / prompt_file
                 if not prompt_path.exists():
                     raise ConfigurationError(f"Prompt file for preset agent '{agent_name}' not found at {prompt_path}")
-                preset_config['prompt_file'] = str(prompt_path)
+                prompt_template = str(prompt_path)
+            else:
+                prompt_template = ""
         
         # Extract brain configuration
         brain_config_data = preset_config.get('brain_config', {})
         brain_config = BrainConfig(**brain_config_data)
         
+        # Create canonical AgentConfig object
         return AgentConfig(
             name=agent_name,
             description=preset_config.get('description', f"Preset {agent_name} agent from AgentX framework"),
-            role=preset_config.get('role', 'specialist'),
+            prompt_template=prompt_template,  # Use canonical field name
             brain_config=brain_config,
-            prompt_file=preset_config.get('prompt_file'),
             tools=preset_config.get('tools', [])
         )
 
@@ -120,7 +132,6 @@ class TeamLoader:
                 if not prompt_path.exists():
                     raise ConfigurationError(f"Standard agent '{agent_name}' not found at {prompt_path}")
                 
-                default_llm_config = LLMProviderConfig(provider="deepseek", model="deepseek/deepseek-coder")
                 default_brain_config = BrainConfig(
                     provider="deepseek",
                     model="deepseek/deepseek-coder",
@@ -132,25 +143,42 @@ class TeamLoader:
 
                 return AgentConfig(
                     name=agent_name.capitalize(),
-                    role='specialist',
+                    description=f"Standard {agent_name} agent",
+                    prompt_template=str(prompt_path),  # Use canonical field name
                     brain_config=default_brain_config,
-                    prompt_file=str(prompt_path),
                     tools=[]
                 )
             else:
                 raise ConfigurationError(f"Invalid agent string definition: '{agent_config_data}'. Must start with 'standard:'.")
         
-        # Resolve relative paths for custom agents defined with dicts
+        # Handle custom agent configuration (dict)
+        # Resolve relative paths for prompt files
+        prompt_template = ""
         if "prompt_file" in agent_config_data:
             prompt_file_path = Path(agent_config_data["prompt_file"])
             if not prompt_file_path.is_absolute():
                 absolute_prompt_path = self.config_dir / prompt_file_path
                 if absolute_prompt_path.exists():
-                    agent_config_data["prompt_file"] = str(absolute_prompt_path)
+                    prompt_template = str(absolute_prompt_path)
                 else:
                     logger.warning(f"Prompt file not found: {absolute_prompt_path}")
+            else:
+                prompt_template = str(prompt_file_path)
+        elif "prompt_template" in agent_config_data:
+            prompt_template = agent_config_data["prompt_template"]
         
-        return AgentConfig(**agent_config_data)
+        # Extract brain configuration
+        brain_config = None
+        if "brain_config" in agent_config_data:
+            brain_config = BrainConfig(**agent_config_data["brain_config"])
+        
+        return AgentConfig(
+            name=agent_config_data["name"],
+            description=agent_config_data.get("description", ""),
+            prompt_template=prompt_template,
+            brain_config=brain_config,
+            tools=agent_config_data.get("tools", [])
+        )
 
     def _validate_agent_names(self, agents: List[AgentConfig]):
         names = set()
