@@ -16,6 +16,7 @@ from datetime import datetime
 import asyncio
 import json
 import time
+import re
 
 from .agent import Agent
 from .orchestrator import Orchestrator
@@ -28,6 +29,7 @@ from ..config.prompt_loader import PromptLoader
 from ..utils.logger import get_logger, setup_clean_chat_logging, setup_task_file_logging, set_streaming_mode
 from ..utils.id import generate_short_id
 from ..tool.manager import ToolManager
+from ..builtin_tools.plan import PlanTool
 
 logger = get_logger(__name__)
 
@@ -45,11 +47,15 @@ class Task:
         self.config_dir = config_dir
         self.workspace_dir = workspace_dir or Path("./workspace") / self.task_id
         
+        # Instantiate PlanTool for this task's workspace
+        self.plan_tool = PlanTool(workspace_path=str(self.workspace_dir))
+        
         # Task execution state
         self.initial_prompt: Optional[str] = None
         self.is_complete: bool = False
         self.is_paused: bool = False
         self.created_at: datetime = datetime.now()
+        self.is_resumed: bool = False  # Track if this is a resumed task
         
         # Task data
         self.history: List[TaskStep] = []
@@ -62,12 +68,122 @@ class Task:
         # Reference to executor for platform services
         self.executor: Optional['TaskExecutor'] = None
         
-        # Setup workspace
+        # Setup workspace and check for existing state
         self.workspace_dir.mkdir(parents=True, exist_ok=True)
         self._setup_workspace()
         
-        logger.info(f"🎯 Task {self.task_id} initialized")
+        # Load existing state if this is a resumed task
+        self._load_existing_state()
+        
+        logger.info(f"🎯 Task {self.task_id} {'resumed' if self.is_resumed else 'initialized'}")
     
+    def _load_existing_state(self):
+        """Load existing task state if workspace already contains work."""
+        state_file = self.workspace_dir / "artifacts" / "task_state.json"
+        plan_file = self.workspace_dir / "artifacts" / "plan.md"
+        
+        # Check if this is an existing task workspace
+        if state_file.exists() or plan_file.exists():
+            self.is_resumed = True
+            logger.info(f"📂 Detected existing workspace for task {self.task_id}")
+            
+            # Load state file if it exists
+            if state_file.exists():
+                try:
+                    with open(state_file, 'r') as f:
+                        state_data = json.load(f)
+                    
+                    self.initial_prompt = state_data.get('initial_prompt')
+                    self.is_complete = state_data.get('is_complete', False)
+                    self.is_paused = state_data.get('is_paused', False)
+                    self.created_at = datetime.fromisoformat(state_data.get('created_at', datetime.now().isoformat()))
+                    self.metadata = state_data.get('metadata', {})
+                    
+                    logger.info(f"📋 Loaded existing task state")
+                except Exception as e:
+                    logger.warning(f"Failed to load task state: {e}")
+            
+            # If plan exists but task is complete, mark as such
+            if plan_file.exists() and self._is_plan_complete():
+                self.is_complete = True
+                logger.info(f"✅ Task {self.task_id} was already completed")
+
+    def _is_plan_complete(self) -> bool:
+        """Check if all steps in the plan are completed."""
+        plan_file = self.workspace_dir / "artifacts" / "plan.md"
+        if not plan_file.exists():
+            return False
+        
+        try:
+            with open(plan_file, 'r') as f:
+                content = f.read()
+            
+            # Check for incomplete tasks
+            incomplete_tasks = re.findall(r"-\s*\[\s*\]\s*(.*)", content)
+            return len(incomplete_tasks) == 0
+        except Exception:
+            return False
+
+    def save_state(self):
+        """Save current task state for resuming later."""
+        state_file = self.workspace_dir / "artifacts" / "task_state.json"
+        
+        state_data = {
+            'task_id': self.task_id,
+            'initial_prompt': self.initial_prompt,
+            'is_complete': self.is_complete,
+            'is_paused': self.is_paused,
+            'created_at': self.created_at.isoformat(),
+            'metadata': self.metadata,
+            'saved_at': datetime.now().isoformat()
+        }
+        
+        try:
+            with open(state_file, 'w') as f:
+                json.dump(state_data, f, indent=2)
+            logger.info(f"💾 Task state saved for resuming")
+        except Exception as e:
+            logger.warning(f"Failed to save task state: {e}")
+
+    def can_resume_with_prompt(self, new_prompt: str) -> bool:
+        """Check if the task can be resumed with a different prompt."""
+        if not self.is_resumed or not self.initial_prompt:
+            return True  # New task or no existing prompt
+        
+        # Simple similarity check - you could enhance with semantic similarity
+        return self.initial_prompt.lower().strip() == new_prompt.lower().strip()
+
+    def get_resume_summary(self) -> str:
+        """Get a summary of the existing work for resuming."""
+        if not self.is_resumed:
+            return "No existing work found."
+        
+        plan_file = self.workspace_dir / "artifacts" / "plan.md"
+        summary = f"📂 Resuming task {self.task_id}\n"
+        summary += f"🕐 Originally created: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+        
+        if self.initial_prompt:
+            summary += f"📝 Original prompt: {self.initial_prompt[:100]}...\n"
+        
+        if plan_file.exists():
+            try:
+                with open(plan_file, 'r') as f:
+                    content = f.read()
+                
+                completed_tasks = re.findall(r"-\s*\[x\]\s*(.*)", content)
+                incomplete_tasks = re.findall(r"-\s*\[\s*\]\s*(.*)", content)
+                
+                summary += f"✅ Completed steps: {len(completed_tasks)}\n"
+                summary += f"⏳ Remaining steps: {len(incomplete_tasks)}\n"
+                
+                if incomplete_tasks:
+                    summary += f"🔜 Next step: {incomplete_tasks[0][:50]}...\n"
+                
+            except Exception as e:
+                summary += f"⚠️ Could not read plan: {e}\n"
+        
+        return summary
+
     def get_agent(self, name: str):
         """Get agent by name with task context injected."""
         if name not in self.agents:
@@ -100,6 +216,7 @@ class Task:
     def complete_task(self) -> None:
         """Mark task as complete."""
         self.is_complete = True
+        self.save_state()  # Save state when completing
         logger.info(f"✅ Task {self.task_id} completed")
     
     def add_artifact(self, name: str, content: Any, metadata: Dict[str, Any] = None) -> None:
@@ -344,7 +461,7 @@ class TaskExecutor:
     def _register_tools(self) -> None:
         """Register all available tools with the task's tool manager."""
         # Register builtin tools
-        from ..builtin_tools.registry import register_builtin_tools
+        from ..builtin_tools import register_builtin_tools
         register_builtin_tools(
             registry=self.tool_manager.registry,
             workspace_path=str(self.task.workspace_dir),
@@ -413,12 +530,38 @@ async def execute_task(prompt: str, config_path: str, planner_agent: str = "plan
         config_path: Path to team configuration file
         planner_agent: Name of the agent to use for planning (default: "planner")
         stream: Whether to stream execution progress
-        task_id: Optional task ID (generated if not provided)
+        task_id: Optional task ID for resuming existing work (generated if not provided)
     
     Returns:
         Task object (non-streaming) or AsyncGenerator (streaming)
     """
     executor = TaskExecutor(config_path, task_id=task_id)
+    
+    # Handle task resuming logic
+    if executor.task.is_resumed:
+        logger.info(f"🔄 Resuming existing task {executor.task.task_id}")
+        print(executor.task.get_resume_summary())
+        
+        # Check if we can resume with this prompt
+        if not executor.task.can_resume_with_prompt(prompt):
+            print(f"⚠️ Warning: New prompt differs from original task prompt")
+            print(f"Original: {executor.task.initial_prompt[:100]}...")
+            print(f"New: {prompt[:100]}...")
+            print(f"📝 Continuing with new requirements - task will be extended")
+            
+            # NEVER reject user requests - allow continuation with new prompt
+            if executor.task.is_complete:
+                print(f"🔄 Task was completed, but user requests additional work - continuing")
+                executor.task.is_complete = False  # Reset completion status
+                executor.task.is_paused = False    # Ensure it's not paused
+            
+            # Update to new prompt for continuation
+            executor.task.initial_prompt = prompt
+            executor.task.save_state()  # Save updated state
+    else:
+        # New task - set the initial prompt
+        executor.task.initial_prompt = prompt
+        executor.task.save_state()  # Save initial state
     
     if stream:
         return executor.execute_task(prompt, planner_agent=planner_agent, stream=True)

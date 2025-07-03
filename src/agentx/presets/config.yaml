@@ -11,7 +11,7 @@ defaults:
     timeout: 30
 
   tools:
-    - "file_management"
+    - "file_tools"
     - "search"
 
 # Preset agent definitions
@@ -28,7 +28,7 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_management"
+      - "file_tools"
       - "search"
       - "planning"
 
@@ -45,7 +45,7 @@ preset_agents:
       streaming: true
     tools:
       - "web_search"
-      - "file_management"
+      - "file_tools"
       - "search"
       - "context_tools"
 
@@ -61,9 +61,8 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_management"
+      - "file_tools"
       - "search"
-      - "storage_tools"
 
   reviewer:
     description: "Quality assurance specialist ensuring executive-level standards"
@@ -77,7 +76,7 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_management"
+      - "file_tools"
       - "search"
 
   developer:
@@ -92,22 +91,21 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_management"
+      - "file_tools"
       - "search"
-      - "storage_tools"
 
-  document_formatter:
-    description: "Universal document formatter supporting HTML, PDF, Word, and other professional formats"
+  web_designer:
+    description: "Professional web designer specializing in modern, responsive HTML websites and interactive experiences"
     role: "specialist"
-    prompt_file: "agents/document_formatter.md"
+    prompt_file: "agents/web_designer.md"
     brain_config:
       provider: "deepseek"
       model: "deepseek/deepseek-chat"
-      temperature: 0.1
+      temperature: 0.2
       max_tokens: 4000
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_management"
+      - "file_tools"
       - "search"
-      - "storage_tools"
+      - "web_tools"

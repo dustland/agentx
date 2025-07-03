@@ -20,6 +20,8 @@ from pydantic import BaseModel, Field, create_model
 import secrets
 import string
 
+from .base import Tool, ToolFunction
+
 def generate_short_id(length: int = 8) -> str:
     """Generate a short, URL-friendly, cryptographically secure random ID."""
     alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '_'
@@ -329,4 +331,12 @@ def _extract_all_param_descriptions(docstring: str) -> Dict[str, str]:
             
             descriptions[param_name] = desc_part
     
-    return descriptions 
+    return descriptions
+
+
+class ToolRegistry:
+    """A thread-safe registry for managing tools and their configurations."""
+
+    def __init__(self):
+        self._tools: Dict[str, ToolFunction] = {}
+        self._toolsets: Dict[str, List[str]] = {} 

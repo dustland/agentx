@@ -137,13 +137,10 @@ You can also use the observability features in CLI mode without the option `--we
 AgentX is built on a robust foundation of modern Python technologies:
 
 - **[LiteLLM](https://github.com/BerriAI/litellm)** - Unified interface for 100+ LLM providers
-- **[Pydantic](https://pydantic.dev/)** - Data validation and settings management
 - **[Mem0](https://github.com/mem0ai/mem0)** - Intelligent memory layer for long-term context
-- **[ChromaDB](https://www.trychroma.com/)** - Vector database for semantic search
-- **[FastAPI](https://fastapi.tiangolo.com/)** - Modern web framework for APIs and dashboard
-- **[Docker](https://www.docker.com/)** - Containerized execution for secure tool execution
 - **[SerpAPI](https://serpapi.com/)** - Web search capabilities for agents
-- **[FireCrawl](https://www.firecrawl.dev/)** - Web content extraction
+- **[Jina](https://www.jina.ai)** - Web content extraction
+- **[Browser-use](https://browser-use.com/)** - Browser automation
 
 ## 🤝 Contributing
 
@@ -153,10 +150,12 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 This project was initially inspired by and built upon concepts from [AG2 (AutoGen)](https://github.com/ag2ai/ag2), an excellent multi-agent conversation framework. While AgentX has evolved into its own distinct architecture and approach, we're grateful for the foundational ideas and patterns that AG2 provided to the multi-agent AI community.
 
+This project also referred to other open-source projects such as [OpenManus](https://github.com/FoundationAgents/OpenManus), [Suna](https://github.com/Kortix-ai/Suna) and [Magic](https://github.com/dtyq/magic/) etc.
+
 ## 📄 License
 
 Licensed under the Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with ❤️ by the [Dustland](https://github.com/dustland) team**
+**Built with ❤️ by [Dustland](https://github.com/dustland)**

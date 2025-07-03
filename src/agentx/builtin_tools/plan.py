@@ -16,7 +16,7 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class PlanningTool(Tool):
+class PlanTool(Tool):
     """
     Generic execution plan management tool for tracking project phases, tasks, and progress.
     

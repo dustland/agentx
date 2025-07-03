@@ -94,7 +94,18 @@ def setup_task_file_logging(log_file_path: str) -> None:
         global _task_file_handler
         _task_file_handler = file_handler
         
-        # Test that it works
+        # Add file handler to all existing AgentX loggers
+        for logger_name in logging.Logger.manager.loggerDict:
+            if logger_name.startswith('agentx'):
+                logger = logging.getLogger(logger_name)
+                if file_handler not in logger.handlers:
+                    logger.addHandler(file_handler)
+                    logger.setLevel(logging.INFO)
+        
+        # Test that it works with a sample log
+        test_logger = logging.getLogger('agentx.core.task')
+        test_logger.info("Task file logging initialized successfully")
+        
         print(f"Task file logging initialized: {log_file}")
         
     except Exception as e:

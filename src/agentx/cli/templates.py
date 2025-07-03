@@ -25,7 +25,7 @@ def generate_template_config(template: str, model: str) -> str:
                 "researcher",    # Professional market researcher
                 "writer",        # Strategic business writer  
                 "reviewer",      # Quality assurance specialist
-                "document_formatter"  # Universal document formatter
+                "web_designer"   # Professional web designer for HTML/CSS
             ]
         }
         
@@ -286,7 +286,7 @@ This project is configured for cost-effective operation:
 ## Next Steps
 
 1. **Experiment**: Start asking questions and see how preset agents collaborate
-2. **Scale**: Add more preset agents like `document_formatter` for multi-format output
+2. **Scale**: Add more preset agents like `web_designer` for enhanced output formatting
 3. **Customize**: Only create custom agents when presets don't meet your needs
 4. **Deploy**: Use `agentx start` to run as a service
 
@@ -316,9 +316,9 @@ def get_template_description(template: str) -> str:
 - **Researcher**: Professional market researcher with industry expertise
 - **Writer**: Strategic business writer producing executive-quality content  
 - **Reviewer**: Quality assurance specialist ensuring executive-level standards
-- **Document Formatter**: Universal formatter for HTML, PDF, Word, PowerPoint
+- **Web Designer**: Professional web designer for modern, responsive HTML websites and visualizations
 
-Perfect for creating research papers, technical documentation, marketing content, and comprehensive reports.""",
+Perfect for creating research papers, technical documentation, marketing content, and comprehensive reports with beautiful web presentation.""",
 
         "coding": """This template optimizes for **Vibe-Coding** workflows using preset agents:
 
@@ -361,7 +361,7 @@ def get_agents_description(template: str) -> str:
         "writing": """- **Researcher**: Gathers comprehensive information and credible sources
 - **Writer**: Creates compelling, well-structured content
 - **Reviewer**: Provides quality assurance and polish
-- **Document Formatter**: Generates professional multi-format outputs""",
+- **Web Designer**: Creates modern, responsive HTML websites and data visualizations""",
 
         "coding": """- **Planner**: Plans system design and technical approach
 - **Developer**: Implements clean, maintainable code (custom recommended)
@@ -397,7 +397,7 @@ agents:
   - "researcher"
   - "writer" 
   - "reviewer"
-  - "document_formatter"'''
+  - "web_designer"'''
     elif template == "coding":
         return '''name: "coding_project"
 description: "AgentX coding workflow with architecture, development, and testing"

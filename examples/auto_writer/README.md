@@ -7,7 +7,7 @@ Professional multi-agent research system that produces consulting-quality report
 - **Zero Custom Code**: Uses only framework preset agents
 - **Minimal Configuration**: 12-line team.yaml file
 - **Maximum Capability**: Professional research, writing, review, and formatting
-- **Multi-format Output**: HTML, PDF, Word, PowerPoint, and more
+- **Professional Web Output**: Modern, responsive HTML with data visualization
 - **Language Intelligence**: Automatic language consistency across all outputs
 
 ## 📋 **Pure Preset Architecture**
@@ -17,7 +17,7 @@ This example uses **only preset agents** from the AgentX framework:
 - **Researcher**: Market intelligence and data gathering
 - **Writer**: Strategic content creation and business analysis
 - **Reviewer**: Quality assurance and final optimization
-- **Document Formatter**: Universal formatting for HTML, PDF, Word, PowerPoint+
+- **Web Designer**: Professional web design for modern, responsive HTML with data visualization
 
 ## 🛠 **Ultra-Simple Configuration**
 
@@ -31,11 +31,11 @@ orchestrator:
   timeout: 1800
 
 # All agents are presets - no custom configuration needed!
-preset_agents:
+agents:
   - "researcher" # Market intelligence and data gathering
   - "writer" # Strategic content creation and business analysis
   - "reviewer" # Quality assurance and final optimization
-  - "document_formatter" # Universal formatting: HTML, PDF, Word, PowerPoint+
+  - "web_designer" # Professional web design: Modern HTML, responsive layouts, data visualization
 ```
 
 ## 📁 **Minimal Directory Structure**
@@ -76,11 +76,11 @@ result = await execute_task(
 When you need custom business logic:
 
 ```yaml
-preset_agents:
+agents:
   - "researcher"
   - "writer"
   - "reviewer"
-  - "document_formatter"
+  - "web_designer"
 
 # Add custom agents only when needed
 agents:
@@ -90,25 +90,25 @@ agents:
 
 ### **Format Customization**
 
-Request specific outputs in your prompt:
+Request specific web outputs in your prompt:
 
 ```bash
-"Generate report in PowerPoint presentation format"
-"Create both HTML and PDF versions"
-"Export as editable Word document with charts"
+"Generate report as modern HTML with interactive charts"
+"Create responsive webpage with data visualizations"
+"Design professional web presentation with ECharts"
 ```
 
 ## ⚡ **Preset Power Demonstration**
 
-| Metric                  | Traditional Framework | AgentX Presets         |
-| ----------------------- | --------------------- | ---------------------- |
-| **Configuration Lines** | 80-200+ lines         | 12 lines               |
-| **Custom Agent Files**  | 4-8 files             | 0 files                |
-| **Development Time**    | Hours                 | Minutes                |
-| **Quality Standards**   | Variable              | Enterprise-grade       |
-| **Format Support**      | HTML only             | Multi-format built-in  |
-| **Language Support**    | Manual handling       | Automatic intelligence |
-| **Maintenance Burden**  | High                  | Zero                   |
+| Metric                  | Traditional Framework | AgentX Presets             |
+| ----------------------- | --------------------- | -------------------------- |
+| **Configuration Lines** | 80-200+ lines         | 12 lines                   |
+| **Custom Agent Files**  | 4-8 files             | 0 files                    |
+| **Development Time**    | Hours                 | Minutes                    |
+| **Quality Standards**   | Variable              | Enterprise-grade           |
+| **Format Support**      | HTML only             | Professional HTML built-in |
+| **Language Support**    | Manual handling       | Automatic intelligence     |
+| **Maintenance Burden**  | High                  | Zero                       |
 
 ## 🎯 **Framework Philosophy Proven**
 
@@ -121,13 +121,13 @@ This example perfectly demonstrates **AgentX's core philosophy**:
 
 ## 🏆 **Why This Exceeds Magic Project**
 
-| Capability             | Magic Project          | AgentX AutoWriter         |
-| ---------------------- | ---------------------- | ------------------------- |
-| **Setup Complexity**   | Manual agent creation  | Preset agents             |
-| **Code Requirements**  | Custom implementations | Zero custom code          |
-| **Quality Guarantee**  | Variable results       | Framework-assured quality |
-| **Format Support**     | HTML only              | Multi-format built-in     |
-| **Language Support**   | Manual handling        | Automatic intelligence    |
-| **Maintenance Burden** | High                   | Zero                      |
+| Capability             | Magic Project          | AgentX AutoWriter          |
+| ---------------------- | ---------------------- | -------------------------- |
+| **Setup Complexity**   | Manual agent creation  | Preset agents              |
+| **Code Requirements**  | Custom implementations | Zero custom code           |
+| **Quality Guarantee**  | Variable results       | Framework-assured quality  |
+| **Format Support**     | HTML only              | Professional HTML built-in |
+| **Language Support**   | Manual handling        | Automatic intelligence     |
+| **Maintenance Burden** | High                   | Zero                       |
 
 This example proves that **AgentX delivers superior results** with **dramatically less complexity** than traditional approaches. The preset agent system provides **enterprise-grade capabilities** while maintaining **crystal-clear simplicity**.

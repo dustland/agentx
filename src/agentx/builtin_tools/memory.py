@@ -124,5 +124,9 @@ class MemoryTool(Tool):
         except Exception as e:
             return {"success": False, "error": f"❌ Failed to clear memories: {str(e)}"}
 
+def create_memory_tools(memory: MemoryBackend) -> list[MemoryTool]:
+    """Factory function to create memory tools."""
+    return [MemoryTool(memory=memory)]
+
 # Export the tool class
-__all__ = ['MemoryTool'] 
+__all__ = ['MemoryTool', 'create_memory_tools'] 

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     from agentx.core.task import Task
+    from agentx.builtin_tools.plan import PlanTool
 
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
@@ -29,8 +30,8 @@ class BaseOrchestrator(ABC):
     
     def __init__(self, task: "Task"):
         self.task = task
+        self.plan_tool = task.plan_tool  # Get the tool from the task
         self.workspace = Path(self.task.workspace_dir)
-        self.plan_path = self.workspace / "artifacts" / "plan.md"
         
         # Detect input language once and store for consistent usage
         self.input_language = self._detect_language(self.task.initial_prompt)
@@ -42,21 +43,16 @@ class BaseOrchestrator(ABC):
         logger.info(f"BaseOrchestrator initialized for task: {self.task.initial_prompt[:100]}... (Language: {self.input_language})")
 
     def _setup_workspace_structure(self):
-        """Create professional workspace structure for organized output"""
-        directories = [
-            "artifacts",         # Plans and coordination files
-            "research",          # Research findings and data
-            "research/data_tables",  # Structured data files
-            "research/case_studies", # Company examples
-            "research/expert_quotes", # Industry expert insights
-            "drafts",           # Work-in-progress content
-            "final_reports",    # Completed deliverables
-            "assets",           # Images, charts, supporting files
-            "deploy"            # Final production-ready files
+        """Create only essential workspace structure - other directories created on-demand"""
+        essential_directories = [
+            "artifacts",         # Plans and coordination files (always needed)
         ]
         
-        for directory in directories:
+        for directory in essential_directories:
             (self.workspace / directory).mkdir(parents=True, exist_ok=True)
+        
+        # Other directories (research, final_reports, assets, deploy, etc.) 
+        # will be created on-demand when agents actually need them
 
     def _detect_language(self, text: str) -> str:
         """
@@ -136,98 +132,81 @@ class BaseOrchestrator(ABC):
 
     async def _create_plan(self, planner_agent_name: str):
         """
-        Creates strategic plan following AgentX orchestration principles:
-        - 3-6 high-value tasks maximum
-        - Direct path to final deliverables
-        - No redundant intermediate steps
-        - Clear completion criteria for each task
+        Creates a strategic plan using the PlanTool.
         """
         if planner_agent_name not in self.task.agents:
             raise ValueError(f"Planner agent '{planner_agent_name}' not found in the team.")
         
         planner = self.task.agents[planner_agent_name]
         
+        # The prompt now instructs the agent to call the 'create_plan' tool
+        # with a structured (but flexible) JSON format.
         prompt = f"""Create a strategic execution plan for: {self.task.initial_prompt}
 
 {self.language_instruction}
 
+Your goal is to produce a JSON structure for the `create_plan` tool. The structure should contain a list of 'phases', each with a 'name' and a list of 'tasks'. Each task should have a 'description'.
+
 AGENTX ORCHESTRATION PRINCIPLES:
-- Maximum 3-6 high-value tasks that directly contribute to final deliverables
-- Each task should build toward the ultimate goal without redundant steps
-- No intermediate files or unnecessary complexity
-- Direct path to professional, executive-ready outputs
-- Clear, measurable completion criteria for each task
+- Maximum 3-6 high-value phases that directly contribute to final deliverables.
+- Each task should be a concrete action building toward the phase goal.
+- Focus on quality over quantity - fewer, better tasks.
 
-PLAN REQUIREMENTS:
-- Use markdown checklist format with - [ ] for each task
-- Each task should be substantial and directly valuable
-- Focus on quality over quantity - fewer, better tasks
-- Ensure logical dependencies and execution order
-- Include specific deliverable requirements for each task
+Example of a good `plan_data` format:
+{{
+    "phases": [
+        {{
+            "name": "Phase 1: Research and Analysis",
+            "tasks": [
+                {{"description": "Conduct market research on target audience."}},
+                {{"description": "Analyze competitor strategies."}}
+            ]
+        }},
+        {{
+            "name": "Phase 2: Content Creation",
+            "tasks": [
+                {{"description": "Write blog post about findings."}},
+                {{"description": "Create social media content."}}
+            ]
+        }}
+    ]
+}}
 
-WORKSPACE ORGANIZATION:
-- research/ for data gathering and analysis
-- final_reports/ for completed content
-- deploy/ for production-ready deliverables
-- assets/ for supporting materials
-
-Create a strategic plan that eliminates waste and focuses on high-impact deliverables. Save as '{self.plan_path.name}' in the current directory."""
+Now, create the plan.
+"""
         
         plan_result = await self.task.executor.run_agent(
             agent=planner,
             prompt=prompt
         )
         
-        if not self.plan_path.exists():
-            raise FileNotFoundError(f"Planner agent '{planner_agent_name}' did not create the plan file at {self.plan_path}. The agent output was: {plan_result}")
-        
-        logger.info(f"Strategic plan created at {self.plan_path}")
-        print(f"Plan created at {self.plan_path}")
+        # We no longer check for a file, as the tool handles persistence.
+        # We rely on the agent having correctly called the tool.
+        logger.info(f"Planner agent executed. Agent output: {plan_result}")
+        print(f"Planner agent run completed.")
 
-    def get_next_step(self) -> str | None:
-        """Reads the plan and returns the next incomplete step."""
-        if not self.plan_path.exists():
-            return None
-        with open(self.plan_path, "r") as f:
-            plan_content = f.read()
+    async def get_next_step(self) -> str | None:
+        """Reads the plan from the PlanTool and returns the next incomplete step."""
+        result = await self.plan_tool.get_plan_status(query="next incomplete task")
         
-        incomplete_tasks = re.findall(r"-\s*\[\s*\]\s*(.*)", plan_content)
-        if not incomplete_tasks:
-            return None
-        
-        return incomplete_tasks[0].strip()
+        if result.is_success() and result.content:
+            # The tool should return the description of the next task.
+            return result.content
+        return None
 
-    def _update_plan(self, step: str, result: str):
-        """Marks a step as complete and appends the result."""
-        with open(self.plan_path, "r") as f:
-            content = f.read()
+    async def _update_plan(self, step: str, result: str):
+        """Marks a step as complete in the PlanTool."""
+        update_result = await self.plan_tool.update_task_status(
+            task_query=step,
+            new_status="completed",
+            notes=result
+        )
         
-        # More flexible regex that handles variations in whitespace and formatting
-        step_escaped = re.escape(step.strip())
-        pattern = re.compile(r"^(\s*-\s*\[\s*\]\s*.*?" + step_escaped + r".*?)$", re.MULTILINE | re.IGNORECASE)
-        
-        match = pattern.search(content)
-        if match:
-            # Replace the unchecked box with a checked one
-            old_line = match.group(1)
-            new_line = re.sub(r"\[\s*\]", "[x]", old_line)
-            new_content = content.replace(old_line, new_line, 1)
-            
-            # Append the result at the end, but avoid duplicating results
-            if f"**Result for '{step}':**" not in new_content:
-                new_content += f"\n\n**Result for '{step}':**\n{result}\n---\n"
-            
-            with open(self.plan_path, "w") as f:
-                f.write(new_content)
-                
-            logger.info(f"Step completed and plan updated: {step[:50]}...")
+        if update_result.is_success():
+            logger.info(f"Step completed and plan updated via PlanTool: {step[:50]}...")
         else:
-            logger.warning(f"Could not find step '{step}' to mark as complete in the plan.")
-            # Debug: show what we're looking for vs what's in the file
-            print(f"Warning: Could not find step '{step}' to mark as complete in the plan.")
-            print(f"Looking for step: '{step}'")
-            incomplete_tasks = re.findall(r"-\s*\[\s*\]\s*(.*)", content)
-            print(f"Available incomplete steps: {incomplete_tasks[:3]}...")  # Show first 3
+            logger.warning(f"Could not update step '{step}' via PlanTool. Reason: {update_result.content}")
+            print(f"Warning: Could not update step '{step}' via PlanTool.")
 
     def _create_step_prompt(self, step: str, agent: Agent) -> str:
         """
@@ -277,6 +256,58 @@ Focus on delivering high-quality results that directly advance the overall proje
         """Abstract method to determine which specialist agent should handle the current step."""
         pass
 
+    async def _append_to_plan(self, planner_agent_name: str):
+        """
+        Append new tasks to existing plan when user provides additional requirements.
+        Preserves all completed work and adds new todo items.
+        """
+        if planner_agent_name not in self.task.agents:
+            raise ValueError(f"Planner agent '{planner_agent_name}' not found in the team.")
+        
+        planner = self.task.agents[planner_agent_name]
+        
+        # Read existing plan to understand completed work
+        existing_plan = ""
+        if self.plan_tool.get_plan_status(query="existing plan").is_success() and self.plan_tool.get_plan_status(query="existing plan").content:
+            existing_plan = self.plan_tool.get_plan_status(query="existing plan").content
+        
+        prompt = f"""You have an existing strategic plan with completed work:
+
+{existing_plan}
+
+The user now has NEW REQUIREMENTS: {self.task.initial_prompt}
+
+{self.language_instruction}
+
+TASK: Append additional strategic tasks to the existing plan to fulfill the new requirements.
+
+IMPORTANT GUIDELINES:
+- DO NOT remove or modify existing completed items (marked with [x])
+- DO NOT duplicate any existing work
+- Build upon the completed foundation 
+- Add only NEW tasks needed for the additional requirements
+- Use the same format: - [ ] for new unchecked tasks
+- Focus on high-value additions that leverage existing work
+
+PLAN FORMAT:
+- Keep all existing content exactly as is
+- At the end, add a new section: "## Additional Requirements"
+- List new tasks with - [ ] format
+- Ensure logical dependencies and execution order
+
+Append the new tasks to the existing plan and save the complete updated plan."""
+        
+        plan_result = await self.task.executor.run_agent(
+            agent=planner,
+            prompt=prompt
+        )
+        
+        if not self.plan_tool.get_plan_status(query="existing plan").is_success():
+            raise ValueError(f"Planner agent '{planner_agent_name}' did not update the plan. The agent output was: {plan_result}")
+        
+        logger.info(f"Strategic plan updated with new requirements")
+        print(f"Plan updated with new requirements")
+
     async def run(self, planner_agent_name: str):
         """
         Runs the main orchestration loop following AgentX principles.
@@ -285,33 +316,45 @@ Focus on delivering high-quality results that directly advance the overall proje
         """
         logger.info(f"Starting orchestration workflow with planner: {planner_agent_name}")
         
-        if not self.plan_path.exists():
-            await self._create_plan(planner_agent_name)
-
-        step_count = 0
-        while (step := self.get_next_step()):
-            step_count += 1
-            logger.info(f"Orchestrating step {step_count}: {step[:100]}...")
-            print(f"Executing step: {step}")
+        # --- Main execution loop ---
+        try:
+            # Check if we need a new plan or should append to existing
+            plan_status_result = await self.plan_tool.get_plan_status(query="existing plan")
+            if not plan_status_result.is_success():
+                # No plan exists - create new one
+                await self._create_plan(planner_agent_name)
+            elif self.task.initial_prompt and not self.task.can_resume_with_prompt(self.task.initial_prompt):
+                # New requirements have been added - append to existing plan
+                await self._append_to_plan(planner_agent_name)
             
-            worker_agent = await self._get_worker_for_step(step)
-            
-            # Create comprehensive contextual prompt following AgentX principles
-            step_prompt = self._create_step_prompt(step, worker_agent)
+            # --- Iterate through plan steps ---
+            while (step := await self.get_next_step()):
+                logger.info(f"🚀 Starting next step: {step}")
+                
+                # 1. Get best worker for the step
+                worker_agent = await self._get_worker_for_step(step)
+                
+                # 2. Create contextual prompt
+                step_prompt = self._create_step_prompt(step, worker_agent)
+                
+                # 3. Execute step
+                result = await self.task.executor.run_agent(
+                    agent=worker_agent,
+                    prompt=step_prompt
+                )
+                
+                # 4. Update plan with result
+                await self._update_plan(step, str(result))
+                
+                # Give user a chance to review/pause
+                await asyncio.sleep(1)
 
-            result = await self.task.executor.run_agent(
-                agent=worker_agent,
-                prompt=step_prompt
-            )
+            # --- Task completion ---
+            self.task.complete_task()
             
-            self._update_plan(step, str(result))
-            logger.info(f"Step {step_count} completed successfully")
-            print(f"Step '{step}' completed.")
-            await asyncio.sleep(1)
-
-        logger.info("All strategic tasks completed. Orchestration finished.")
-        print("All steps completed. Task finished.")
-        self.task.complete_task()
+        except Exception as e:
+            logger.error(f"Orchestrator failed: {e}")
+            raise
 
 
 class Orchestrator(BaseOrchestrator):

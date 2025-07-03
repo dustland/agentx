@@ -13,13 +13,13 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class StorageTool(Tool):
-    """Simple storage tool with artifacts as default location and temp when requested."""
+class FileTool(Tool):
+    """Simple file tool with artifacts as default location and temp when requested."""
     
     def __init__(self, workspace_storage: WorkspaceStorage):
         super().__init__()
         self.workspace = workspace_storage
-        logger.info(f"StorageTool initialized with workspace: {self.workspace.get_workspace_path()}")
+        logger.info(f"FileTool initialized with workspace: {self.workspace.get_workspace_path()}")
     
     @tool(description="Get the temp directory path for temporary files")
     async def get_temp_dir(self) -> str:
@@ -198,31 +198,18 @@ class StorageTool(Tool):
             return f"❌ Error deleting file: {str(e)}"
 
 
-def create_storage_tool(workspace_path: str) -> StorageTool:
+def create_file_tool(workspace_path: str) -> FileTool:
     """
-    Create a storage tool for workspace file operations.
+    Create a file tool for workspace file operations.
     
     Args:
         workspace_path: Path to the workspace directory
         
     Returns:
-        StorageTool instance
+        FileTool instance
     """
     workspace = StorageFactory.create_workspace_storage(workspace_path)
-    storage_tool = StorageTool(workspace)
+    file_tool = FileTool(workspace)
     
-    logger.info(f"Created storage tool for workspace: {workspace_path}")
-    return storage_tool
-
-
-# Legacy factory functions for backward compatibility
-def create_intent_based_storage_tools(workspace_path: str) -> tuple[StorageTool, StorageTool]:
-    """Legacy function - returns the same StorageTool twice for backward compatibility."""
-    tool = create_storage_tool(workspace_path)
-    return tool, tool
-
-
-def create_storage_tools(workspace_path: str) -> tuple[StorageTool, StorageTool]:
-    """Legacy function - returns the same StorageTool twice for backward compatibility.""" 
-    tool = create_storage_tool(workspace_path)
-    return tool, tool 
+    logger.info(f"Created file tool for workspace: {workspace_path}")
+    return file_tool 

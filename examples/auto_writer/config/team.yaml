@@ -1,14 +1,24 @@
-name: "AutoWriter Enhanced Team"
-description: "Professional multi-agent research system producing consulting-quality reports"
+name: "AutoWriter Production Team"
+description: "A professional multi-agent system that produces superior, consulting-quality HTML reports from a single objective."
 
 # Enhanced orchestrator with language detection
 orchestrator:
-  max_rounds: 15
+  max_rounds: 50
   timeout: 1800
+  workflow:
+    - from: "planner"
+      to: "researcher"
+    - from: "researcher"
+      to: "writer"
+    - from: "writer"
+      to: "web_designer"
+    - from: "web_designer"
+      to: "reviewer"
 
-# All agents are presets - no custom configuration needed!
+# All agents are presets, using the detailed, high-quality prompts we developed.
 agents:
-  - "researcher" # Market intelligence and data gathering
-  - "writer" # Strategic content creation and business analysis
-  - "reviewer" # Quality assurance and final optimization
-  - "document_formatter" # Universal formatting: HTML, PDF, Word, PowerPoint+
+  - "planner" # Deconstructs the goal into a strategic, step-by-step plan.
+  - "researcher" # Gathers and synthesizes rigorous, evidence-based research.
+  - "writer" # Transforms research into a clear, persuasive, C-suite ready narrative.
+  - "web_designer" # Architects the final, world-class interactive HTML experience.
+  - "reviewer" # Provides final, uncompromising quality assurance on the HTML output.
