@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 from agentx import get_logger
-from agentx.tool.base import Tool
+from agentx.tool.models import Tool
+from agentx.tool.models import tool
 
 logger = get_logger(__name__)
 
@@ -22,6 +23,7 @@ class WeatherTool(Tool):
         self.weather_url = "https://api.open-meteo.com/v1/forecast"
         logger.info("Custom Weather Tool initialized with Open-Meteo API")
         
+    @tool("Get tomorrow's weather forecast for a specific location using Open-Meteo API")
     async def get_weather(self, location: str) -> str:
         """
         Get tomorrow's weather forecast for a specific location using Open-Meteo API.

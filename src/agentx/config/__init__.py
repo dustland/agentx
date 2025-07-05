@@ -1,5 +1,5 @@
 """
-Configuration system for AgentX.
+Configuration loading system for AgentX.
 
 Public API:
 - load_team_config: Load team configuration from YAML files (if needed)
@@ -11,16 +11,24 @@ Recommended usage:
     result = execute_task("config_dir", "Your task here")
 """
 
+from .agent_loader import (
+    load_agents_config, 
+    load_single_agent_config,
+    create_team_config_template,
+    create_single_agent_template,
+    validate_config_file
+)
+from .prompt_loader import PromptLoader
 from .team_loader import load_team_config
-from .models import TeamConfig
 
 # Note: AgentConfig imported in individual modules to avoid circular imports
 
 __all__ = [
-    # Main API (for advanced usage - prefer Team.from_config())
+    "load_agents_config",
+    "load_single_agent_config",
     "load_team_config",
-    
-    # Core config models (for advanced usage)
-    "TeamConfig",
-    "MemoryConfig",
+    "create_team_config_template",
+    "create_single_agent_template",
+    "validate_config_file",
+    "PromptLoader",
 ]

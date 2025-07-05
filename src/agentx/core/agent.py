@@ -226,7 +226,7 @@ class Agent:
                 })
                 
                 # Execute tools - use injected ToolExecutor from TaskExecutor
-                tool_messages = await self.tool_manager.execute_tool_calls(llm_response.tool_calls, self.name)
+                tool_messages = await self.tool_manager.execute_tools(llm_response.tool_calls, self.name)
                 conversation.extend(tool_messages)
                 
                 # Continue to next round
@@ -341,7 +341,7 @@ class Agent:
                     
                     try:
                         # Execute single tool call
-                        result = await self.tool_manager.execute_tool_calls([tool_call], self.name)
+                        result = await self.tool_manager.execute_tools([tool_call], self.name)
                         tool_messages.extend(result)
                         
                         # Emit tool result chunk
@@ -432,7 +432,7 @@ class Agent:
                 
                 # Execute tools and add results to conversation
                 try:
-                    tool_messages = await self.tool_manager.execute_tool_calls(formatted_tool_calls, self.name)
+                    tool_messages = await self.tool_manager.execute_tools(formatted_tool_calls, self.name)
                     conversation.extend(tool_messages)
                 except Exception as e:
                     # Handle tool execution error
@@ -455,16 +455,27 @@ class Agent:
         """Build the system prompt for the agent, including dynamic context and tool definitions."""
         # Load base prompt from file or use system_message
         base_prompt = ""
-        if hasattr(self.config, 'prompt_file') and self.config.prompt_file:
+        
+        # Check for prompt_template first (this is what team loader sets)
+        if hasattr(self.config, 'prompt_template') and self.config.prompt_template:
+            try:
+                # If prompt_template looks like a file path, read it
+                if self.config.prompt_template.endswith('.md') or '/' in self.config.prompt_template:
+                    with open(self.config.prompt_template, 'r') as f:
+                        base_prompt = f.read()
+                else:
+                    # Otherwise use it as direct prompt content
+                    base_prompt = self.config.prompt_template
+            except Exception as e:
+                logger.warning(f"Failed to load prompt template {self.config.prompt_template}: {e}")
+                base_prompt = getattr(self.config, 'system_message', "You are a helpful AI assistant.")
+        elif hasattr(self.config, 'prompt_file') and self.config.prompt_file:
             try:
                 with open(self.config.prompt_file, 'r') as f:
                     base_prompt = f.read()
             except Exception as e:
                 logger.warning(f"Failed to load prompt file {self.config.prompt_file}: {e}")
                 base_prompt = getattr(self.config, 'system_message', "You are a helpful AI assistant.")
-        elif hasattr(self.config, 'prompt_template'):
-            # Legacy support for prompt_template
-            base_prompt = self.config.prompt_template
         elif hasattr(self.config, 'system_message') and self.config.system_message:
             base_prompt = self.config.system_message
         else:

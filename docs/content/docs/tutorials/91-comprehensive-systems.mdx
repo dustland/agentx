@@ -439,7 +439,7 @@ Create `tools/research_tools.py`:
 import aiohttp
 import asyncio
 from typing import List, Dict, Any
-from agentx.tool.base import Tool
+from agentx.tool.models import Tool
 
 class WebSearchTool(Tool):
     """Production web search tool with rate limiting and error handling."""
@@ -540,7 +540,7 @@ import json
 import aiofiles
 from pathlib import Path
 from typing import Dict, Any, Optional
-from agentx.tool.base import Tool
+from agentx.tool.models import Tool
 
 class FileOperationsTool(Tool):
     """Production file operations with error handling and security."""

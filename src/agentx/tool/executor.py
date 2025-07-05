@@ -214,7 +214,7 @@ class ToolExecutor:
                 execution_time=execution_time
             )
     
-    async def execute_tool_calls(
+    async def execute_tools(
         self, 
         tool_calls: List[Any], 
         agent_name: str = "default"

@@ -40,11 +40,20 @@ class GitArtifactStorage:
     - Meaningful commit messages
     """
     
-    def __init__(self, workspace_path: Union[str, Path]):
+    def __init__(self, workspace_path: Union[str, Path] = None, base_path: Union[str, Path] = None, task_id: str = None):
         if not GIT_AVAILABLE:
             raise ImportError("GitPython is required for Git-based artifact storage")
         
-        self.workspace_path = Path(workspace_path)
+        # Support both old API (workspace_path) and new API (base_path + task_id)
+        if workspace_path is not None:
+            # Old API: workspace_path directly
+            self.workspace_path = Path(workspace_path)
+        elif base_path is not None and task_id is not None:
+            # New API: base_path + task_id for workspace isolation
+            self.workspace_path = Path(base_path) / task_id
+        else:
+            raise ValueError("Either workspace_path or (base_path + task_id) must be provided")
+        
         self.artifacts_path = self.workspace_path / "artifacts"
         self.artifacts_path.mkdir(parents=True, exist_ok=True)
         
@@ -88,7 +97,7 @@ class GitArtifactStorage:
         """Store an artifact with Git versioning."""
         try:
             # Determine file extension based on content type
-            extension = self._get_extension_for_content_type(content_type)
+            extension = self._should_add_extension(name, content_type)
             artifact_path = self.artifacts_path / f"{name}{extension}"
             
             # Write content to file
@@ -135,7 +144,7 @@ class GitArtifactStorage:
         """Get artifact content at specific version (commit)."""
         try:
             extension = self._find_artifact_extension(name)
-            if not extension:
+            if extension is None:  # Only return None if no artifact was found, not for empty extension
                 return None
             
             artifact_path = f"{name}{extension}"
@@ -162,14 +171,14 @@ class GitArtifactStorage:
             # Get all artifact files (excluding metadata files)
             for file_path in self.artifacts_path.iterdir():
                 if file_path.is_file() and not file_path.name.startswith('.') and not file_path.name.endswith('.meta.json'):
-                    name = file_path.stem
+                    name = file_path.name  # Use full filename instead of stem
                     
                     # Get Git history for this file
                     commits = await self._get_file_history(file_path.name)
                     
                     for commit in commits:
                         # Load metadata if available
-                        metadata = await self._get_metadata_at_commit(name, commit['hash'])
+                        metadata = await self._get_metadata_at_commit(file_path.stem, commit['hash'])
                         
                         artifact_info = {
                             "name": name,
@@ -195,7 +204,7 @@ class GitArtifactStorage:
         """Get all versions (commits) of an artifact."""
         try:
             extension = self._find_artifact_extension(name)
-            if not extension:
+            if extension is None:  # Only return empty if no artifact was found, not for empty extension
                 return []
             
             artifact_path = f"{name}{extension}"
@@ -219,7 +228,7 @@ class GitArtifactStorage:
             
             # Delete current version (remove file and commit)
             extension = self._find_artifact_extension(name)
-            if not extension:
+            if extension is None:  # Only return error if no artifact was found, not for empty extension
                 return StorageResult(success=False, error="Artifact not found")
             
             artifact_path = self.artifacts_path / f"{name}{extension}"
@@ -257,7 +266,7 @@ class GitArtifactStorage:
         """Get diff between two versions of an artifact."""
         try:
             extension = self._find_artifact_extension(name)
-            if not extension:
+            if extension is None:  # Only return None if no artifact was found, not for empty extension
                 return None
             
             artifact_path = f"{name}{extension}"
@@ -297,11 +306,26 @@ class GitArtifactStorage:
         }
         return extensions.get(content_type, ".txt")
     
+    def _should_add_extension(self, filename: str, content_type: str) -> str:
+        """Determine if we should add an extension to the filename."""
+        # Check if filename already has an extension
+        if "." in filename:
+            return ""  # Don't add extension if filename already has one
+        
+        # Add extension based on content type
+        return self._get_extension_for_content_type(content_type)
+    
     def _find_artifact_extension(self, name: str) -> Optional[str]:
         """Find the extension of an existing artifact."""
         for file_path in self.artifacts_path.iterdir():
-            if file_path.stem == name and not file_path.name.endswith('.meta.json'):
-                return file_path.suffix
+            if file_path.is_file() and not file_path.name.endswith('.meta.json'):
+                # Check if the full filename matches (for names with extensions)
+                if file_path.name == name:
+                    return ""  # No additional extension needed
+                
+                # Check if the stem matches (for names without extensions)
+                if file_path.stem == name:
+                    return file_path.suffix
         return None
     
     async def _commit_changes(
@@ -378,4 +402,66 @@ class GitArtifactStorage:
     def __del__(self):
         """Cleanup thread pool."""
         if hasattr(self, 'executor'):
-            self.executor.shutdown(wait=False) 
+            self.executor.shutdown(wait=False)
+    
+    # FileStorage interface methods for compatibility
+    async def list_directory(self, path: str = "") -> List[Any]:
+        """List directory contents (returns artifacts for compatibility)."""
+        try:
+            # For compatibility, return artifacts as file-like objects
+            artifacts = await self.list_artifacts()
+            from agentx.storage.interfaces import FileInfo
+            from datetime import datetime
+            
+            file_infos = []
+            for artifact in artifacts:
+                file_info = FileInfo(
+                    path=artifact["name"],
+                    size=artifact.get("size", 0),
+                    created_at=datetime.fromisoformat(artifact["created_at"]) if artifact.get("created_at") else datetime.now(),
+                    modified_at=datetime.fromisoformat(artifact["created_at"]) if artifact.get("created_at") else datetime.now()
+                )
+                file_infos.append(file_info)
+            
+            return file_infos
+            
+        except Exception as e:
+            logger.error(f"Failed to list directory: {e}")
+            return []
+    
+    async def create_directory(self, path: str) -> Any:
+        """Create directory (no-op for git storage)."""
+        from agentx.storage.interfaces import StorageResult
+        return StorageResult(success=True, path=path, metadata={"message": "Directory creation is implicit in Git storage"})
+    
+    async def exists(self, path: str) -> bool:
+        """Check if artifact exists."""
+        try:
+            content = await self.get_artifact(path)
+            return content is not None
+        except Exception:
+            return False
+    
+    async def read_text(self, path: str) -> str:
+        """Read text content (alias for get_artifact)."""
+        try:
+            content = await self.get_artifact(path)
+            return content or ""
+        except Exception:
+            return ""
+    
+    async def write_text(self, path: str, content: str) -> Any:
+        """Write text content (alias for store_artifact)."""
+        try:
+            return await self.store_artifact(path, content)
+        except Exception as e:
+            from agentx.storage.interfaces import StorageResult
+            return StorageResult(success=False, error=str(e))
+    
+    async def write_bytes(self, path: str, content: bytes) -> Any:
+        """Write bytes content (alias for store_artifact)."""
+        try:
+            return await self.store_artifact(path, content)
+        except Exception as e:
+            from agentx.storage.interfaces import StorageResult
+            return StorageResult(success=False, error=str(e)) 

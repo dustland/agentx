@@ -107,29 +107,35 @@ class MemoryConfig(BaseModel):
     vector_db_config: Dict[str, Any] = Field(default_factory=dict)
 
 class AgentConfig(BaseModel):
-    """Agent configuration for flat team structure."""
+    """Unified agent configuration for file definition and runtime."""
     name: str
-    description: str
-    prompt_template: str  # Path to Jinja2 template file
+    description: Optional[str] = ""
+    
+    # Prompt can be provided directly, via a file path, or a default will be used.
+    system_message: Optional[str] = None # Direct prompt content
+    prompt_file: Optional[str] = None # Path to prompt file
+    prompt_template: Optional[str] = None # The resolved, runtime prompt content
+    
+    # Runtime and tool configurations
     brain_config: Optional[BrainConfig] = None  # Override default Brain
-    tools: List[str] = Field(default_factory=list)  # Tool names available to this agent
+    tools: List[str] = Field(default_factory=list)
+    
+    # Fields from the old AgentConfigFile
+    role: str = "assistant"
+    enable_code_execution: bool = False
+    enable_human_interaction: bool = False
+    enable_memory: bool = True
+    max_consecutive_replies: int = 10
+    auto_reply: bool = True
+
+    # Core runtime fields
     memory_config: Optional[MemoryConfig] = None
     guardrail_policies: List[str] = Field(default_factory=list)
     collaboration_patterns: List[str] = Field(default_factory=list)
     max_parallel_tasks: int = 1
 
-class TaskConfig(BaseModel):
-    """Task-specific configuration for execution control."""
-    mode: str = "autonomous"  # "autonomous", "step_through"
-    max_rounds: int = 20  # Maximum conversation rounds
-    timeout_seconds: int = 300  # Task timeout
-    initial_agent: Optional[str] = None  # Initial agent to start with
-    step_through_enabled: bool = False
-    max_steps: Optional[int] = None
-    breakpoints: List[str] = Field(default_factory=list)
-    human_intervention_points: List[str] = Field(default_factory=list)
-    success_criteria: List[str] = Field(default_factory=list)
-    failure_criteria: List[str] = Field(default_factory=list)
+    class Config:
+        extra = 'allow'
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the orchestrator's Brain and behavior."""
@@ -145,6 +151,28 @@ class OrchestratorConfig(BaseModel):
             timeout=10        # Quick analysis
         )
 
+class TaskConfig(BaseModel):
+    """Task-specific configuration for execution control."""
+    mode: str = "autonomous"  # "autonomous", "step_through"
+    max_rounds: int = 20  # Maximum conversation rounds
+    timeout_seconds: int = 300  # Task timeout
+    initial_agent: Optional[str] = None  # Initial agent to start with
+    step_through_enabled: bool = False
+    max_steps: Optional[int] = None
+    breakpoints: List[str] = Field(default_factory=list)
+    human_intervention_points: List[str] = Field(default_factory=list)
+    success_criteria: List[str] = Field(default_factory=list)
+    failure_criteria: List[str] = Field(default_factory=list)
+    orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
+    deployment_config: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Dynamic context variables for agent coordination
+    context_variables: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Legacy fields for backward compatibility
+    max_rounds: int = 50
+    timeout: int = 3600
+    after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available
 
 class TeamConfig(BaseModel):
     """Configuration for a team of agents."""
@@ -167,4 +195,8 @@ class TeamConfig(BaseModel):
     # Legacy fields for backward compatibility
     max_rounds: int = 50
     timeout: int = 3600
-    after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available 
+    after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available
+
+class ConfigurationError(Exception):
+    """Custom exception for configuration errors."""
+    pass 

@@ -7,12 +7,13 @@ parameter descriptions, which are critical for LLM function calling.
 
 import pytest
 from agentx.tool.registry import ToolRegistry
-from agentx.tool.base import Tool
+from agentx.tool.models import Tool, tool
 
 
 class WeatherTool(Tool):
     """Test weather tool for schema validation."""
     
+    @tool("Get weather forecast for a location")
     def get_weather(self, location: str) -> str:
         """
         Get weather forecast for a location.
@@ -25,6 +26,7 @@ class WeatherTool(Tool):
         """
         return f"Weather for {location}: Sunny, 25°C"
     
+    @tool("Get weather without Args section")
     def get_weather_no_docs(self, city: str) -> str:
         """Get weather without Args section."""
         return f"Weather for {city}"

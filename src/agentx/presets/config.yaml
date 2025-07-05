@@ -8,7 +8,7 @@ defaults:
     model: "deepseek/deepseek-chat"
     supports_function_calls: true
     streaming: true
-    timeout: 30
+    timeout: 120
 
   tools:
     - "file_tools"
@@ -27,10 +27,14 @@ preset_agents:
       max_tokens: 1000
       supports_function_calls: true
       streaming: true
+      timeout: 120
     tools:
-      - "file_tools"
-      - "search"
-      - "planning"
+      - "create_plan"
+      - "update_task_status"
+      - "read_file"
+      - "list_files"
+      - "list_directory"
+      - "web_search"
 
   researcher:
     description: "Professional market researcher with industry expertise"
@@ -45,9 +49,11 @@ preset_agents:
       streaming: true
     tools:
       - "web_search"
-      - "file_tools"
-      - "search"
-      - "context_tools"
+      - "news_search"
+      - "read_file"
+      - "write_file"
+      - "list_files"
+      - "list_directory"
 
   writer:
     description: "Strategic business writer producing executive-quality content"
@@ -61,8 +67,10 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_tools"
-      - "search"
+      - "read_file"
+      - "write_file"
+      - "list_files"
+      - "list_directory"
 
   reviewer:
     description: "Quality assurance specialist ensuring executive-level standards"
@@ -76,8 +84,9 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_tools"
-      - "search"
+      - "read_file"
+      - "list_files"
+      - "list_directory"
 
   developer:
     description: "Code implementation specialist for software development"
@@ -91,8 +100,12 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_tools"
-      - "search"
+      - "read_file"
+      - "write_file"
+      - "list_files"
+      - "list_directory"
+      - "delete_file"
+      - "create_directory"
 
   web_designer:
     description: "Professional web designer specializing in modern, responsive HTML websites and interactive experiences"
@@ -106,6 +119,9 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "file_tools"
-      - "search"
-      - "web_tools"
+      - "read_file"
+      - "write_file"
+      - "list_files"
+      - "list_directory"
+      - "create_directory"
+      - "delete_file"

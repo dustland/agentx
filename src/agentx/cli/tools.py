@@ -3,13 +3,42 @@ CLI commands for tool management and discovery.
 """
 
 import click
-from ..tool.registry import validate_agent_tools, suggest_tools_for_agent, list_tools, print_available_tools
-from ..builtin_tools.web_tools import WebTool
-from ..builtin_tools.search_tools import SearchTool
-from ..tool.registry import register_tool
-from ..utils.logger import get_logger
+from rich.console import Console
+from rich.table import Table
 
-logger = get_logger(__name__)
+from ..builtin_tools import register_builtin_tools
+from ..tool.registry import ToolRegistry
+
+console = Console()
+
+
+def _print_available_tools():
+    """Prints a formatted table of all available tools and toolsets."""
+    registry = ToolRegistry()
+    tools = registry.list_tools()
+    toolsets = registry.list_toolsets()
+
+    console.print("\n[bold cyan]Available Tools[/bold cyan]")
+    tool_table = Table(show_header=True, header_style="bold magenta")
+    tool_table.add_column("Name", style="dim", width=30)
+    tool_table.add_column("Description")
+
+    for tool_name in sorted(tools):
+        tool_func = registry.get_tool_function(tool_name)
+        if tool_func:
+            tool_table.add_row(tool_name, tool_func.description)
+    console.print(tool_table)
+
+    if toolsets:
+        console.print("\n[bold cyan]Available Toolsets[/bold cyan]")
+        toolset_table = Table(show_header=True, header_style="bold magenta")
+        toolset_table.add_column("Name", style="dim", width=30)
+        toolset_table.add_column("Tools")
+
+        for ts_name in sorted(toolsets):
+            ts_tools = registry._toolsets.get(ts_name, [])
+            toolset_table.add_row(ts_name, ", ".join(ts_tools))
+        console.print(toolset_table)
 
 
 @click.group()
@@ -18,70 +47,57 @@ def tools():
     pass
 
 
-@tools.command()
-def list():
+@tools.command(name="list")
+def list_cli():
     """List all available tools with descriptions."""
-    # Register built-in tools first
-    _register_builtin_tools()
-    print_available_tools()
+    _register_builtin_tools(with_workspace=False)
+    _print_available_tools()
 
 
 @tools.command()
-@click.argument('tool_names', nargs=-1)
+@click.argument("tool_names", nargs=-1)
 def validate(tool_names):
     """Validate tool names against available tools."""
     if not tool_names:
         click.echo("Usage: agentx tools validate <tool_name1> <tool_name2> ...")
         return
-    
-    _register_builtin_tools()
-    valid, invalid = validate_agent_tools(list(tool_names))
-    
-    if valid:
-        click.echo(f"✅ Valid tools: {', '.join(valid)}")
-    
-    if invalid:
-        click.echo(f"❌ Invalid tools: {', '.join(invalid)}")
+
+    _register_builtin_tools(with_workspace=False)
+    registry = ToolRegistry()
+
+    valid_tools = []
+    invalid_tools = []
+
+    available_tools = registry.list_tools()
+
+    for name in tool_names:
+        if name in available_tools:
+            valid_tools.append(name)
+        else:
+            invalid_tools.append(name)
+
+    if valid_tools:
+        click.echo(f"✅ Valid tools: {', '.join(valid_tools)}")
+
+    if invalid_tools:
+        click.echo(f"❌ Invalid tools: {', '.join(invalid_tools)}")
         click.echo("\nRun 'agentx tools list' to see available tools")
 
 
 @tools.command()
-@click.argument('agent_name')
-@click.option('--description', '-d', default="", help="Agent description for better suggestions")
+@click.argument("agent_name")
+@click.option("--description", "-d", default="", help="Agent description for better suggestions")
 def suggest(agent_name, description):
     """Suggest relevant tools for an agent based on name and description."""
-    _register_builtin_tools()
-    suggestions = suggest_tools_for_agent(agent_name, description)
-    
-    if suggestions:
-        click.echo(f"Suggested tools for '{agent_name}':")
-        for tool in suggestions:
-            click.echo(f"  - {tool}")
-        
-        click.echo(f"\nYAML config example:")
-        click.echo(f"agents:")
-        click.echo(f"  - name: {agent_name}")
-        click.echo(f"    tools:")
-        for tool in suggestions:
-            click.echo(f"      - {tool}")
-    else:
-        click.echo(f"No specific tool suggestions for '{agent_name}'")
-        click.echo("Run 'agentx tools list' to see all available tools")
+    click.echo("Tool suggestion is not implemented yet.")
 
 
-def _register_builtin_tools():
+def _register_builtin_tools(with_workspace: bool = True):
     """Register built-in tools for CLI commands."""
-    try:
-        # Register built-in tools
-        web_tool = WebTool()
-        search_tool = SearchTool()
-        
-        register_tool(web_tool)
-        register_tool(search_tool)
-    except Exception as e:
-        # Tools might already be registered or have dependency issues
-        pass
+    registry = ToolRegistry()
+    workspace_path = "./workspace" if with_workspace else None
+    register_builtin_tools(registry, workspace_path=workspace_path, memory_system=None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tools() 

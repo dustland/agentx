@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 
 from agentx.config.team_loader import TeamLoader, load_team_config, validate_team_config
 from agentx.config.team_loader import TeamConfig
-from agentx.config.models import ConfigurationError
+from agentx.core.config import ConfigurationError
 
 
 class TestTeamConfigLoading:

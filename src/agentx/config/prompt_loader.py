@@ -10,7 +10,10 @@ import re
 
 from jinja2 import Template, Environment, FileSystemLoader, TemplateNotFound
 
-from .models import ConfigurationError
+from ..core.config import ConfigurationError
+from ..utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class PromptLoader:

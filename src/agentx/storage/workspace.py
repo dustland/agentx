@@ -27,25 +27,54 @@ class WorkspaceStorage:
     
     def __init__(
         self, 
-        workspace_path: Union[str, Path], 
-        file_storage: FileStorage,
-        use_git_artifacts: bool = True
+        workspace_path: Union[str, Path] = None,
+        file_storage: FileStorage = None,
+        use_git_artifacts: bool = True,
+        base_path: Union[str, Path] = None,
+        task_id: str = None
     ):
-        self.workspace_path = Path(workspace_path)
+        # Support both old API (workspace_path) and new API (base_path + task_id)
+        if workspace_path is not None:
+            # Old API: workspace_path directly
+            self.workspace_path = Path(workspace_path)
+        elif base_path is not None and task_id is not None:
+            # New API: base_path + task_id for workspace isolation
+            self.workspace_path = Path(base_path) / task_id
+            self.task_id = task_id
+        else:
+            raise ValueError("Either workspace_path or (base_path + task_id) must be provided")
+        
         self.file_storage = file_storage
         self.use_git_artifacts = use_git_artifacts
         
         # Initialize artifact storage
         self._init_artifact_storage()
         
-        logger.info(f"WorkspaceStorage initialized: {workspace_path} (Git artifacts: {use_git_artifacts})")
+        logger.info(f"WorkspaceStorage initialized: {self.workspace_path} (Git artifacts: {use_git_artifacts})")
     
     def _init_artifact_storage(self):
         """Initialize artifact storage (Git-based or simple file-based)."""
+        
+        # If file_storage is already a GitArtifactStorage, use it for artifacts too
+        if hasattr(self.file_storage, 'store_artifact'):
+            self.artifact_storage = self.file_storage
+            logger.info("Using provided GitArtifactStorage for artifacts")
+            return
+        
+        # Otherwise, initialize separate artifact storage if requested
         if self.use_git_artifacts:
             try:
                 from .git_storage import GitArtifactStorage
-                self.artifact_storage = GitArtifactStorage(self.workspace_path)
+                
+                # Use new API if task_id is available, otherwise fall back to old API
+                if hasattr(self, 'task_id'):
+                    # New API: use task_id for workspace isolation
+                    base_path = self.workspace_path.parent
+                    self.artifact_storage = GitArtifactStorage(base_path=base_path, task_id=self.task_id)
+                else:
+                    # Old API: use workspace_path directly
+                    self.artifact_storage = GitArtifactStorage(workspace_path=self.workspace_path)
+                
                 logger.info("Using Git-based artifact storage")
             except ImportError:
                 logger.warning("GitPython not available, falling back to simple artifact storage")

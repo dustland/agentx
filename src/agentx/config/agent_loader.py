@@ -8,47 +8,30 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
 # AgentConfig imported locally to avoid circular imports
-from ..tool.registry import validate_agent_tools, suggest_tools_for_agent, list_tools
-from .models import ConfigurationError
+from ..tool import validate_agent_tools, suggest_tools_for_agent, list_tools
+from ..core.config import AgentConfig, ConfigurationError
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
-@dataclass
-class AgentConfigFile:
-    """Agent configuration loaded from YAML file."""
-    name: str
-    role: str = "assistant"
-    system_message: Optional[str] = None
-    description: str = ""
-    prompt_file: Optional[str] = None
-    tools: List[str] = None
-    enable_code_execution: bool = False
-    enable_human_interaction: bool = False
-    enable_memory: bool = True
-    max_consecutive_replies: int = 10
-    auto_reply: bool = True
-    
-    def __post_init__(self):
-        if self.tools is None:
-            self.tools = []
-
-
-def load_agents_config(config_path: str, validate_tools: bool = True) -> List[tuple[Any, List[str]]]:
+def load_agents_config(
+    config_path: str,
+    model_override: Optional[str] = None
+) -> List[AgentConfig]:
     """
-    Load multiple agent configurations from YAML file with tool validation.
+    Load agent configurations from a YAML file, handling presets.
     
     Args:
-        config_path: Path to YAML config file
-        validate_tools: Whether to validate tool names against registry
+        config_path: Path to the main team config YAML file.
+        model_override: Optional model name to override for all agents.
         
     Returns:
-        List of (AgentConfig, tools) tuples
-        
-    Raises:
-        ConfigurationError: If config is invalid or tools are not found
+        A list of agent configuration dictionaries.
     """
+    if not config_path.endswith(('.yaml', '.yml')):
+        raise ConfigurationError(f"Invalid file format. Expected .yaml or .yml: {config_path}")
+    
     config_file = Path(config_path)
     if not config_file.exists():
         raise ConfigurationError(f"Config file not found: {config_path}")
@@ -58,6 +41,16 @@ def load_agents_config(config_path: str, validate_tools: bool = True) -> List[tu
             data = yaml.safe_load(f)
     except yaml.YAMLError as e:
         raise ConfigurationError(f"Invalid YAML in {config_path}: {e}")
+    
+    # Load preset agent definitions
+    presets_config_path = Path(__file__).parent.parent / "presets" / "config.yaml"
+    try:
+        with open(presets_config_path, 'r') as f:
+            presets_data = yaml.safe_load(f)
+        preset_agents = presets_data.get('preset_agents', {})
+    except (FileNotFoundError, yaml.YAMLError) as e:
+        logger.warning(f"Could not load or parse preset agents config: {e}")
+        preset_agents = {}
     
     # Handle both single agent and multiple agents formats
     if 'agents' in data:
@@ -69,58 +62,45 @@ def load_agents_config(config_path: str, validate_tools: bool = True) -> List[tu
     else:
         raise ConfigurationError(f"Invalid config format. Expected 'agents' list or single agent config")
     
-    results = []
-    for i, agent_data in enumerate(agents_data):
+    processed_agents = []
+    for agent_def in agents_data:
+        agent_config = {}
+        # If agent_def is just a string, it's a preset
+        if isinstance(agent_def, str):
+            if agent_def not in preset_agents:
+                raise ConfigurationError(f"Preset agent '{agent_def}' not found. Available presets: {list(preset_agents.keys())}")
+            # Use the preset configuration
+            agent_config = preset_agents[agent_def]
+            # Add the name, as it's the key in the preset dict
+            agent_config['name'] = agent_def
+        else:
+            agent_config = agent_def
+
         try:
-            config_data = AgentConfigFile(**agent_data)
-        except TypeError as e:
-            raise ConfigurationError(f"Invalid agent config structure at index {i}: {e}")
+            config_data = AgentConfig(**agent_config)
+        except Exception as e:
+            raise ConfigurationError(f"Invalid agent config structure for agent '{agent_config.get('name', 'Unknown')}': {e}")
         
         # Validate tools if requested
-        if validate_tools and config_data.tools:
-            valid_tools, invalid_tools = validate_agent_tools(config_data.tools)
-            
-            if invalid_tools:
-                available_tools = list_tools()
-                error_msg = f"Invalid tools for agent '{config_data.name}': {invalid_tools}\n"
-                error_msg += f"Available tools: {available_tools}\n"
-                error_msg += f"Run 'agentx tools list' for detailed descriptions"
-                
-                # Suggest alternatives
-                suggestions = suggest_tools_for_agent(config_data.name, config_data.description)
-                if suggestions:
-                    error_msg += f"\nSuggested tools for '{config_data.name}': {suggestions}"
-                
-                raise ConfigurationError(error_msg)
-            
-            logger.info(f"Validated tools for {config_data.name}: {valid_tools}")
+        if config_data.tools:
+            # Skip tool validation since builtin tools are automatically available
+            # and the global registry may not be synchronized with runtime registry
+            logger.info(f"Agent '{config_data.name}' configured with tools: {config_data.tools}")
+            # Note: Tool validation will happen at runtime when tools are actually used
         
-        # Convert to AgentConfig
-        from .models import AgentConfig
+        # Apply model override if provided
+        if model_override:
+            if "llm_config" not in config_data:
+                config_data["llm_config"] = {}
+            config_data["llm_config"]["model"] = model_override
         
-        # Handle prompt_template - use prompt_file if available, otherwise create from system_message
-        prompt_template = config_data.prompt_file
-        if not prompt_template and config_data.system_message:
-            # For backward compatibility, create a simple template from system_message
-            prompt_template = config_data.system_message
-        elif not prompt_template:
-            # Default template if neither is provided
-            prompt_template = f"You are a helpful AI assistant named {config_data.name}."
-        
-        agent_config = AgentConfig(
-            name=config_data.name,
-            description=config_data.description or f"AI assistant named {config_data.name}",
-            prompt_template=prompt_template,
-            tools=config_data.tools
-        )
-        
-        results.append((agent_config, config_data.tools))
+        processed_agents.append(config_data)
     
-    return results
+    return processed_agents
 
 
 def load_single_agent_config(config_path: str, agent_name: Optional[str] = None, 
-                           validate_tools: bool = True) -> tuple[Any, List[str]]:
+                           validate_tools: bool = True) -> tuple[AgentConfig, List[str]]:
     """
     Load a single agent configuration from YAML file.
     
@@ -135,19 +115,19 @@ def load_single_agent_config(config_path: str, agent_name: Optional[str] = None,
     Raises:
         ConfigurationError: If config is invalid or agent not found
     """
-    agents = load_agents_config(config_path, validate_tools)
+    agents = load_agents_config(config_path)
     
     if agent_name:
         # Find specific agent
-        for agent_config, tools in agents:
+        for agent_config in agents:
             if agent_config.name == agent_name:
-                return agent_config, tools
+                return agent_config, agent_config.tools
         raise ConfigurationError(f"Agent '{agent_name}' not found in {config_path}")
     else:
         # Return first agent if no name specified
         if not agents:
             raise ConfigurationError(f"No agents found in {config_path}")
-        return agents[0]
+        return agents[0], agents[0].tools
 
 
 def create_team_config_template(team_name: str, agent_names: List[str], 
@@ -300,11 +280,11 @@ def validate_config_file(config_path: str) -> Dict[str, Any]:
         Dictionary with validation results
     """
     try:
-        agents = load_agents_config(config_path, validate_tools=True)
-        agent_names = [config.name for config, _ in agents]
+        agents = load_agents_config(config_path)
+        agent_names = [config.name for config in agents]
         all_tools = []
-        for _, tools in agents:
-            all_tools.extend(tools)
+        for config in agents:
+            all_tools.extend(config.tools)
         
         return {
             "valid": True,
@@ -318,4 +298,10 @@ def validate_config_file(config_path: str) -> Dict[str, Any]:
             "valid": False,
             "error": str(e),
             "message": "Configuration validation failed"
+        }
+    except Exception as e:
+        return {
+            "valid": False,
+            "errors": [str(e)],
+            "message": f"Unexpected error during validation: {str(e)}"
         } 

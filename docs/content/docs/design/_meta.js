@@ -1,10 +1,10 @@
 export default {
   index: {
-    display: "hidden"
+    display: 'hidden',
   },
-  "vibe-x-philosophy": "Vibe-X",
-  overview: "System Architecture",
-  "state-and-context": "State and Context",
-  "tool-execution": "Tool Execution",
-  communication: "Communication"
+  'vibe-x-philosophy': 'Vibe-X Philosophy',
+  'system-architecture': 'System Architecture',
+  'orchestration': 'Orchestration System',
+  'tool-execution': 'Tool Execution',
+  'communication': 'Agent Communication'
 } 

@@ -16,6 +16,7 @@ alwaysApply: false
 - Use descriptive variable and function names with lowercase and underscores (e.g., `is_active`, `has_permission`).
 - Limit line length to 79 characters.
 - Use meaningful docstrings for all modules, classes, and functions.
+- Try to keep the length of each python file to be less than 500 lines.
 
 ## Functions and Methods
 - Use `def` for synchronous functions and `async def` for asynchronous functions.
@@ -36,19 +37,16 @@ alwaysApply: false
 - If employing ORM features, adopt SQLAlchemy 2.0 with its async support.
 - Specify version constraints for dependencies to ensure compatibility.
 
-## AG2 Framework
-- Utilize AG2's multi-agent conversation framework to build LLM workflows.
-- Leverage AG2's enhanced LLM inference APIs to improve performance and reduce costs.
-- Explore AG2's collection of working systems across various domains to inspire and guide application development.
-- Make use of handoff patterns for effective agent collaboration.
-- When generating code related to AG2/autogen framework, you should always look into the source to make sure the correctness of the usage.
-
 ## Agent Design Patterns
 - Use the singleton pattern for factories and services that shoupplor e.glempproach to agent registration and discovery.
 - Design agents to be modular and extensible.
 
 ## Document subproject
-- Use 'pnpm' instead of 'npm' as package manager
+- Use 'pnpm' instead of 'npm' as package manager.
+- When we have decisions on arhictecture design, make sure design docs under docs/  folder are updated beforehand.
+
+## Examples
+- Alway set current directory to the example when run it, so that workspace folder will be created within that example folder.
 
 ## References
 - [FastAPI Documentation](mdc:roboco/roboco_workspace/https:/fastapi.tiangolo.com)

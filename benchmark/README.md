@@ -309,9 +309,9 @@ agents:
       model: "deepseek/deepseek-chat"
       temperature: 0.2
     tools:
-      - web_tools
-      - search_tools
-      - context_tools
+      - web
+      - search
+      - context
 ```
 
 ## Best Practices

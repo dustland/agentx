@@ -9,7 +9,7 @@ This simplifies the Agent interface and ensures task-level tool isolation.
 from typing import Dict, List, Any, Optional
 from .registry import ToolRegistry
 from .executor import ToolExecutor, ToolResult
-from .base import Tool
+from .models import Tool
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -55,6 +55,10 @@ class ToolManager:
         """Get a tool function by name."""
         return self.registry.get_tool_function(name)
     
+    def get_tool(self, name: str):
+        """Get a tool instance by name for direct access."""
+        return self.registry.get_tool(name)
+    
     def get_builtin_tools(self) -> List[str]:
         """Get list of all builtin tool names."""
         return self.registry.get_builtin_tools()
@@ -68,9 +72,9 @@ class ToolManager:
         """Execute a single tool."""
         return await self.executor.execute_tool(tool_name, agent_name, **kwargs)
     
-    async def execute_tool_calls(self, tool_calls: List[Any], agent_name: str = "default") -> List[Dict[str, Any]]:
+    async def execute_tools(self, tool_calls: List[Any], agent_name: str = "default") -> List[Dict[str, Any]]:
         """Execute multiple tool calls."""
-        return await self.executor.execute_tool_calls(tool_calls, agent_name)
+        return await self.executor.execute_tools(tool_calls, agent_name)
     
     def get_execution_stats(self) -> Dict[str, Any]:
         """Get execution statistics."""

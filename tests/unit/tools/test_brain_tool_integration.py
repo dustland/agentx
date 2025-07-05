@@ -8,7 +8,7 @@ the framework to the Brain and then to the LLM.
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from weather_tool import WeatherTool
+from .weather_tool import WeatherTool
 from agentx.tool.registry import ToolRegistry
 from agentx.tool.manager import ToolManager
 from agentx.core.brain import Brain, BrainConfig
