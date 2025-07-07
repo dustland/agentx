@@ -34,6 +34,9 @@ if [ -d "docs/content/api/agentx" ]; then
     cd - > /dev/null
 fi
 
+# Rename all __init__.mdx files to index.mdx for Nextra compatibility
+find docs/content/api -name "__init__.mdx" -exec sh -c 'mv "$1" "$(dirname "$1")/index.mdx"' _ {} \;
+
 # Create API index page
 cat > docs/content/api/index.mdx << 'EOF'
 # API Reference
