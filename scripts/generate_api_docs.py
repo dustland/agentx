@@ -345,9 +345,17 @@ class MDXGenerator:
         if not items:
             return
         
-        # Create output directory structure
+        # Create output directory structure - flatten by removing 'agentx' root
         module_parts = module_path.split('.')
-        file_path = self.output_dir / '/'.join(module_parts[:-1]) / f"{module_parts[-1]}.mdx"
+        # Remove 'agentx' from the beginning if present
+        if module_parts[0] == 'agentx':
+            module_parts = module_parts[1:]
+        
+        if len(module_parts) == 0:
+            # This is the root agentx module
+            file_path = self.output_dir / "agentx.mdx"
+        else:
+            file_path = self.output_dir / '/'.join(module_parts[:-1]) / f"{module_parts[-1]}.mdx"
         file_path.parent.mkdir(parents=True, exist_ok=True)
         
         # Generate content
@@ -604,7 +612,9 @@ def generate_index_file(output_dir: Path, items: List[DocItem]) -> None:
         lines.append("")
         for module in sorted(core_modules):
             module_name = module.split('.')[-1]
-            lines.append(f"- [{module_name}](./{module.replace('.', '/')}.mdx)")
+            # Remove 'agentx.' prefix for flattened structure
+            flattened_path = module.replace('agentx.', '')
+            lines.append(f"- [{module_name}](./{flattened_path.replace('.', '/')}.mdx)")
         lines.append("")
     
     # Builtin tools
@@ -614,7 +624,9 @@ def generate_index_file(output_dir: Path, items: List[DocItem]) -> None:
         lines.append("")
         for module in sorted(tool_modules):
             module_name = module.split('.')[-1]
-            lines.append(f"- [{module_name}](./{module.replace('.', '/')}.mdx)")
+            # Remove 'agentx.' prefix for flattened structure
+            flattened_path = module.replace('agentx.', '')
+            lines.append(f"- [{module_name}](./{flattened_path.replace('.', '/')}.mdx)")
         lines.append("")
     
     # Other modules
@@ -624,7 +636,9 @@ def generate_index_file(output_dir: Path, items: List[DocItem]) -> None:
         lines.append("")
         for module in sorted(other_modules):
             module_name = module.split('.')[-1]
-            lines.append(f"- [{module_name}](./{module.replace('.', '/')}.mdx)")
+            # Remove 'agentx.' prefix for flattened structure
+            flattened_path = module.replace('agentx.', '')
+            lines.append(f"- [{module_name}](./{flattened_path.replace('.', '/')}.mdx)")
         lines.append("")
     
     with open(index_path, 'w', encoding='utf-8') as f:
