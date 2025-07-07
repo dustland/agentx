@@ -1,5 +1,3 @@
----
-sidebar_label: cli
-title: agentx.cli
----
+# Cli
 
+*Module: [`agentx.cli`](https://github.com/dustland/agentx/blob/main/src/agentx/cli.py)*

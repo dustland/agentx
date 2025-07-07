@@ -25,9 +25,15 @@ const Page: FC<PageProps> = async (props) => {
   const params = await props.params;
   const result = await importPage(params.mdxPath || []);
   const { default: MDXContent, toc, metadata } = result;
+
+  // Check if this is an API page
+  const isApiPage = params.mdxPath && params.mdxPath[0] === "api";
+
   return (
     <Wrapper toc={toc} metadata={metadata}>
-      <MDXContent {...props} params={params} />
+      <div className={isApiPage ? "api-page" : ""}>
+        <MDXContent {...props} params={params} />
+      </div>
     </Wrapper>
   );
 };

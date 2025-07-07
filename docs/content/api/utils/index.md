@@ -1,11 +1,5 @@
----
-sidebar_label: utils
-title: agentx.utils
----
+# Utils
+
+*Module: [`agentx.utils`](https://github.com/dustland/agentx/blob/main/src/agentx/utils.py)*
 
 AgentX utilities.
-
-## get\_logger
-
-## configure\_logging
-

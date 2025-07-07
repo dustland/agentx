@@ -1,7 +1,6 @@
----
-sidebar_label: config
-title: agentx.config
----
+# Configuration Models
+
+*Module: [`agentx.config`](https://github.com/dustland/agentx/blob/main/src/agentx/config.py)*
 
 Configuration loading system for AgentX.
 
@@ -12,19 +11,4 @@ Public API:
 
 Recommended usage:
     from agentx import execute_task
-    result = execute_task(&quot;config_dir&quot;, &quot;Your task here&quot;)
-
-## load\_agents\_config
-
-## load\_single\_agent\_config
-
-## create\_team\_config\_template
-
-## create\_single\_agent\_template
-
-## validate\_config\_file
-
-## PromptLoader
-
-## load\_team\_config
-
+    result = execute_task("config_dir", "Your task here")
