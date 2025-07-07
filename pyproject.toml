@@ -1,5 +1,5 @@
 [build-system]
-requires = [ "setuptools>=42", "wheel",]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,21 +8,63 @@ version = "0.15.0"
 description = "AgentX - An Opinionated Multi-Agent Framework"
 readme = "README.md"
 requires-python = ">=3.11"
-classifiers = [ "Programming Language :: Python :: 3.11", "Operating System :: OS Independent",]
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: OS Independent",
+]
 license = "Apache-2.0"
-dependencies = [ "fastapi>=0.104.0", "uvicorn>=0.24.0", "pydantic>=2.7.1", "python-dotenv>=1.0.0", "pyyaml>=6.0.1", "rich>=13.6.0", "loguru", "litellm", "openai>=1.0.0", "google-search-results>=2.4.2", "mem0ai>=0.1.106", "mcp>=1.4.1", "firecrawl-py>=0.0.16", "browser-use>=0.1.0", "numpy>=1.24.3", "requests>=2.31.0", "httpx>=0.24.0", "aiohttp>=3.8.0", "beautifulsoup4>=4.12.0", "markdown>=3.4.0", "jinja2>=3.1.6", "sqlmodel>=0.0.8", "sqlalchemy>=2.0.0", "chromadb>=1.0.12", "pyarrow>=19.0.1", "aiofiles>=24.1.0", "gitpython>=3.1.44", "pygithub>=2.6.1",]
+dependencies = [
+  "fastapi>=0.104.0",
+  "uvicorn>=0.24.0",
+  "pydantic>=2.7.1",
+  "python-dotenv>=1.0.0",
+  "pyyaml>=6.0.1",
+  "rich>=13.6.0",
+  "loguru",
+  "litellm",
+  "openai>=1.0.0",
+  "google-search-results>=2.4.2",
+  "mem0ai>=0.1.106",
+  "mcp>=1.4.1",
+  "firecrawl-py>=0.0.16",
+  "browser-use>=0.1.0",
+  "numpy>=1.24.3",
+  "requests>=2.31.0",
+  "httpx>=0.24.0",
+  "aiohttp>=3.8.0",
+  "beautifulsoup4>=4.12.0",
+  "markdown>=3.4.0",
+  "jinja2>=3.1.6",
+  "sqlmodel>=0.0.8",
+  "sqlalchemy>=2.0.0",
+  "chromadb>=1.0.12",
+  "pyarrow>=19.0.1",
+  "aiofiles>=24.1.0",
+  "gitpython>=3.1.44",
+  "pygithub>=2.6.1",
+]
 [[project.authors]]
 name = "Dustland Team"
 email = "hi@dustland.ai"
 
 [dependency-groups]
-dev = [ "pytest>=8.3.5", "pytest-asyncio>=1.0.0", "toml>=0.10.2",]
+dev = [
+  "pytest>=8.3.5",
+  "pytest-asyncio>=1.0.0",
+  "toml>=0.10.2",
+  "pre-commit>=3.5.0",
+]
 
 [project.optional-dependencies]
-dev = [ "pytest", "pytest-cov", "pytest-asyncio", "uv",]
-code-execution = [ "daytona>=0.1.0",]
-web-automation = [ "browser-use>=0.1.0", "playwright>=1.40.0",]
-all = [ "streamlit>=1.32.0", "daytona>=0.1.0", "browser-use>=0.1.0", "playwright>=1.40.0",]
+dev = ["pytest", "pytest-cov", "pytest-asyncio", "uv"]
+code-execution = ["daytona>=0.1.0"]
+web-automation = ["browser-use>=0.1.0", "playwright>=1.40.0"]
+all = [
+  "streamlit>=1.32.0",
+  "daytona>=0.1.0",
+  "browser-use>=0.1.0",
+  "playwright>=1.40.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/dustland/agentx"
@@ -34,6 +76,9 @@ start = "agentx.run:start"
 monitor = "agentx.run:monitor"
 dev = "agentx.run:dev"
 test = "agentx.run:test"
+docs = "agentx.run:docs"
+build-docs = "agentx.run:build_docs"
+setup-hooks = "agentx.run:setup_hooks"
 benchmark = "benchmark.main:main"
 benchmark-team1 = "benchmark.main:team1"
 benchmark-team2 = "benchmark.main:team2"
@@ -42,7 +87,7 @@ benchmark-quick = "benchmark.main:quick_test"
 
 [tool.black]
 line-length = 88
-target-version = [ "py38",]
+target-version = ["py38"]
 
 [tool.isort]
 profile = "black"
@@ -59,7 +104,30 @@ disallow_untyped_decorators = true
 no_implicit_optional = true
 strict_optional = true
 [[tool.mypy.overrides]]
-module = [ "setuptools.*", "google.*", "langchain.*", "transformers.*", "bs4.*", "requests.*", "feedparser.*", "numpy.*", "PIL.*", "openai.*", "qdrant_client.*", "uvicorn.*", "fastapi.*", "markdown.*", "rich.*", "pymongo.*", "github.*", "arxiv.*", "daytona.*", "firecrawl.*", "browser_use.*", "playwright.*",]
+module = [
+  "setuptools.*",
+  "google.*",
+  "langchain.*",
+  "transformers.*",
+  "bs4.*",
+  "requests.*",
+  "feedparser.*",
+  "numpy.*",
+  "PIL.*",
+  "openai.*",
+  "qdrant_client.*",
+  "uvicorn.*",
+  "fastapi.*",
+  "markdown.*",
+  "rich.*",
+  "pymongo.*",
+  "github.*",
+  "arxiv.*",
+  "daytona.*",
+  "firecrawl.*",
+  "browser_use.*",
+  "playwright.*",
+]
 ignore_missing_imports = true
 
 [tool.setuptools.package-dir]
@@ -67,23 +135,23 @@ ignore_missing_imports = true
 benchmark = "benchmark"
 
 [tool.setuptools.package-data]
-agentx = [ "py.typed", "**/*.jinja2", "**/*.png",]
+agentx = ["py.typed", "**/*.jinja2", "**/*.png"]
 
 [tool.pytest.ini_options]
-testpaths = [ "tests",]
+testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 asyncio_mode = "auto"
 
 [tool.uv.workspace]
-members = [ "examples/superwriter",]
+members = ["examples/superwriter"]
 
 [tool.setuptools.packages.find]
-where = [ "src", ".",]
-include = [ "agentx*", "benchmark*",]
+where = ["src", "."]
+include = ["agentx*", "benchmark*"]
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/agentx",]
+packages = ["src/agentx"]
 
 [tool.hatch.build.targets.sdist]
-include = [ "src/agentx", "config", "examples", "tests", "README.md", "LICENSE",]
+include = ["src/agentx", "config", "examples", "tests", "README.md", "LICENSE"]

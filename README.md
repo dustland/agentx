@@ -112,6 +112,58 @@ _The script above shows a simple autonomous run. For more advanced patterns like
 - **[simple_chat](examples/simple_chat/)** - Interactive chat with an AI assistant
 - **[auto_writer](examples/auto_writer/)** - Advanced multi-agent writing system
 
+## 🔧 Development Workflow
+
+AgentX includes a comprehensive development setup with automated tooling to ensure code quality and documentation consistency.
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks to automatically maintain code quality and keep documentation up-to-date:
+
+```bash
+# Set up pre-commit hooks (one-time setup)
+uv run setup-hooks
+
+# Now every commit will automatically:
+# - Generate API documentation when Python files change
+# - Format code and fix whitespace issues
+# - Validate YAML and TOML files
+# - Check for merge conflicts and large files
+```
+
+### Development Commands
+
+```bash
+# Generate API documentation
+uv run docs
+
+# Build documentation site
+uv run build-docs
+
+# Run tests
+uv run test
+
+# Run development server with auto-reload
+uv run dev
+
+# Monitor tasks and events
+uv run monitor
+```
+
+### API Documentation
+
+The API documentation is automatically generated from docstrings and kept in sync with the code:
+
+- **Source**: Python docstrings in `src/agentx/`
+- **Output**: Markdown files in `docs/content/api/`
+- **Automation**: Generated on every commit via pre-commit hooks
+
+To manually regenerate API docs:
+
+```bash
+uv run docs
+```
+
 ## 📊 Observability & Monitoring
 
 AgentX includes a comprehensive observability system for monitoring and debugging multi-agent workflows.

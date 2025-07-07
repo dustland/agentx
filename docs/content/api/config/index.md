@@ -6,7 +6,7 @@ Configuration loading system for AgentX.
 
 Public API:
 - load_team_config: Load team configuration from YAML files (if needed)
-- MemoryConfig: Memory system configuration (used by memory backends)  
+- MemoryConfig: Memory system configuration (used by memory backends)
 - TeamConfig, LLMProviderConfig: Core config models (if needed)
 
 Recommended usage:

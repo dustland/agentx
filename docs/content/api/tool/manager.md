@@ -19,15 +19,16 @@ instance to prevent tool conflicts between tasks.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L27" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, task_id: str = 'default')
+def __init__(self, task_id: str = 'default', workspace_path: Optional[str] = None)
 ```
 
 Initialize tool manager with task isolation.
 
 **Args:**
     task_id: Unique identifier for this task (for logging/debugging)
+    workspace_path: Path to task-specific workspace (for file tools)
 
-### register_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L41" class="source-link" title="View source code">source</a>
+### register_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L71" class="source-link" title="View source code">source</a>
 
 ```python
 def register_tool(self, tool: Tool) -> None
@@ -35,7 +36,7 @@ def register_tool(self, tool: Tool) -> None
 
 Register a tool with this task's registry.
 
-### list_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L46" class="source-link" title="View source code">source</a>
+### list_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L76" class="source-link" title="View source code">source</a>
 
 ```python
 def list_tools(self) -> List[str]
@@ -43,7 +44,7 @@ def list_tools(self) -> List[str]
 
 Get list of all registered tool names.
 
-### get_tool_schemas <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L50" class="source-link" title="View source code">source</a>
+### get_tool_schemas <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L80" class="source-link" title="View source code">source</a>
 
 ```python
 def get_tool_schemas(self, tool_names: List[str] = None) -> List[Dict[str, Any]]
@@ -51,7 +52,7 @@ def get_tool_schemas(self, tool_names: List[str] = None) -> List[Dict[str, Any]]
 
 Get JSON schemas for tools.
 
-### get_tool_function <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L54" class="source-link" title="View source code">source</a>
+### get_tool_function <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L84" class="source-link" title="View source code">source</a>
 
 ```python
 def get_tool_function(self, name: str)
@@ -59,7 +60,7 @@ def get_tool_function(self, name: str)
 
 Get a tool function by name.
 
-### get_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L58" class="source-link" title="View source code">source</a>
+### get_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L88" class="source-link" title="View source code">source</a>
 
 ```python
 def get_tool(self, name: str)
@@ -67,7 +68,7 @@ def get_tool(self, name: str)
 
 Get a tool instance by name for direct access.
 
-### get_builtin_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L62" class="source-link" title="View source code">source</a>
+### get_builtin_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L92" class="source-link" title="View source code">source</a>
 
 ```python
 def get_builtin_tools(self) -> List[str]
@@ -75,7 +76,7 @@ def get_builtin_tools(self) -> List[str]
 
 Get list of all builtin tool names.
 
-### get_custom_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L66" class="source-link" title="View source code">source</a>
+### get_custom_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L96" class="source-link" title="View source code">source</a>
 
 ```python
 def get_custom_tools(self) -> List[str]
@@ -83,7 +84,7 @@ def get_custom_tools(self) -> List[str]
 
 Get list of all custom (non-builtin) tool names.
 
-### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L71" class="source-link" title="View source code">source</a>
+### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L101" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tool(self, tool_name: str, agent_name: str = 'default') -> ToolResult
@@ -91,7 +92,7 @@ async def execute_tool(self, tool_name: str, agent_name: str = 'default') -> Too
 
 Execute a single tool.
 
-### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L75" class="source-link" title="View source code">source</a>
+### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L105" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tools(self, tool_calls: List[Any], agent_name: str = 'default') -> List[Dict[str, Any]]
@@ -99,7 +100,7 @@ async def execute_tools(self, tool_calls: List[Any], agent_name: str = 'default'
 
 Execute multiple tool calls.
 
-### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L79" class="source-link" title="View source code">source</a>
+### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L109" class="source-link" title="View source code">source</a>
 
 ```python
 def get_execution_stats(self) -> Dict[str, Any]
@@ -107,7 +108,7 @@ def get_execution_stats(self) -> Dict[str, Any]
 
 Get execution statistics.
 
-### get_tool_count <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L84" class="source-link" title="View source code">source</a>
+### get_tool_count <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L114" class="source-link" title="View source code">source</a>
 
 ```python
 def get_tool_count(self) -> int
@@ -115,7 +116,7 @@ def get_tool_count(self) -> int
 
 Get the number of registered tools.
 
-### clear_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L88" class="source-link" title="View source code">source</a>
+### clear_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L118" class="source-link" title="View source code">source</a>
 
 ```python
 def clear_tools(self) -> None
@@ -123,12 +124,12 @@ def clear_tools(self) -> None
 
 Clear all registered tools (useful for testing).
 
-### __str__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L94" class="source-link" title="View source code">source</a>
+### __str__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L124" class="source-link" title="View source code">source</a>
 
 ```python
 def __str__(self) -> str
 ```
-### __repr__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L97" class="source-link" title="View source code">source</a>
+### __repr__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L127" class="source-link" title="View source code">source</a>
 
 ```python
 def __repr__(self) -> str
