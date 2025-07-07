@@ -25,24 +25,34 @@ async def main():
     print(f"🎯 Research Task: {research_prompt[:100]}...")
     print("-" * 60)
     
-    # Start the research task and get task executor with task ID
+    # Start the research task and get task executor
     task_executor = start_task(
         prompt=research_prompt,
         config_path="config/simple_research.yaml"
     )
     
+    # Initialize the conversation
+    await task_executor.start(research_prompt)
+    
     print(f"📋 Task ID: {task_executor.task.task_id}")
-    print(f"📁 Workspace: workspace/{task_executor.task.task_id}/artifacts/")
+    print(f"📁 Workspace: {task_executor.workspace.get_workspace_path()}")
     print("-" * 60)
     
-    # Execute the task step by step until completion
-    while not task_executor.is_complete:
-        async for result in task_executor.step():
-            # The step method already handles all the printing and flow control
-            pass
+    # Execute the task step by step with a maximum number of steps
+    max_steps = 5  # Allow up to 5 conversation steps
+    step_count = 0
     
-    print(f"\n✅ Research completed!")
-    print(f"📄 Check workspace/{task_executor.task.task_id}/artifacts/ for research findings")
+    while step_count < max_steps:
+        response = await task_executor.step()
+        if not response.strip():  # Empty response means task is done
+            break
+            
+        print(f"🔍 Research Step {step_count + 1}:\n{response}\n")
+        print("-" * 60)
+        step_count += 1
+    
+    # Mark task as complete
+    task_executor.task.complete()
 
 if __name__ == "__main__":
     asyncio.run(main()) 

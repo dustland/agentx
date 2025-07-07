@@ -64,4 +64,66 @@ class Plan(BaseModel):
     )
     tasks: List[PlanItem] = Field(
         default_factory=list, description="The list of tasks that make up the plan."
-    ) 
+    )
+    
+    def get_next_actionable_task(self) -> Optional[PlanItem]:
+        """
+        Find the next task that can be executed.
+        A task is actionable if it's pending and all its dependencies are completed.
+        """
+        for task in self.tasks:
+            if task.status != "pending":
+                continue
+                
+            # Check if all dependencies are completed
+            dependencies_met = True
+            for dep_id in task.dependencies:
+                dep_task = self.get_task_by_id(dep_id)
+                if not dep_task or dep_task.status != "completed":
+                    dependencies_met = False
+                    break
+            
+            if dependencies_met:
+                return task
+        
+        return None
+    
+    def get_task_by_id(self, task_id: str) -> Optional[PlanItem]:
+        """Get a task by its ID."""
+        for task in self.tasks:
+            if task.id == task_id:
+                return task
+        return None
+    
+    def update_task_status(self, task_id: str, status: TaskStatus) -> bool:
+        """Update the status of a task by ID."""
+        task = self.get_task_by_id(task_id)
+        if task:
+            task.status = status
+            return True
+        return False
+    
+    def is_complete(self) -> bool:
+        """Check if all tasks in the plan are completed."""
+        return all(task.status == "completed" for task in self.tasks)
+    
+    def has_failed_tasks(self) -> bool:
+        """Check if any tasks have failed."""
+        return any(task.status == "failed" for task in self.tasks)
+    
+    def get_progress_summary(self) -> dict:
+        """Get a summary of plan progress."""
+        total = len(self.tasks)
+        completed = sum(1 for task in self.tasks if task.status == "completed")
+        failed = sum(1 for task in self.tasks if task.status == "failed")
+        in_progress = sum(1 for task in self.tasks if task.status == "in_progress")
+        pending = sum(1 for task in self.tasks if task.status == "pending")
+        
+        return {
+            "total": total,
+            "completed": completed,
+            "failed": failed,
+            "in_progress": in_progress,
+            "pending": pending,
+            "completion_percentage": (completed / total * 100) if total > 0 else 0
+        } 

@@ -2,12 +2,15 @@
 Task execution class - the primary interface for AgentX task execution.
 
 Clean API:
-    # One-shot execution (Lead-driven)
+    # One-shot execution (Fire-and-forget)
     await execute_task(prompt, config_path)
     
-    # Step-by-step execution (Lead-driven)
-    task = start_task(prompt, config_path)
-    await task.run()
+    # Step-by-step execution (Conversational)
+    executor = start_task(prompt, config_path)
+    await executor.start(prompt)
+    while not executor.is_complete():
+        response = await executor.step()
+        print(response)
 """
 
 from __future__ import annotations
@@ -19,10 +22,9 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union
 
 from agentx.core.agent import Agent
 from agentx.core.config import TeamConfig, TaskConfig
-from agentx.core.message import MessageQueue, TaskHistory, Message, UserMessage
+from agentx.core.message import MessageQueue, TaskHistory, Message, UserMessage, TaskStep, TextPart
 from agentx.core.orchestrator import Orchestrator
-from agentx.core.plan import Plan
-# Event logging removed - not currently used
+from agentx.core.plan import Plan, PlanItem
 from agentx.storage.workspace import WorkspaceStorage
 from agentx.tool.manager import ToolManager
 from agentx.utils.id import generate_short_id
@@ -66,24 +68,9 @@ class Task:
         self.orchestrator = orchestrator
         self.initial_prompt = initial_prompt
 
-        self.plan: Optional[Plan] = self._load_plan()
         self.is_complete: bool = False
         self.created_at: datetime = datetime.now()
-
-    def _load_plan(self) -> Optional[Plan]:
-        """Loads the plan from the workspace if it exists."""
-        plan_path = self.workspace.get_workspace_path() / "plan.json"
-        if plan_path.exists():
-            try:
-                with open(plan_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                plan = Plan.model_validate(data)
-                logger.info(f"Successfully loaded existing plan for task {self.task_id}")
-                return plan
-            except Exception as e:
-                logger.error(f"Failed to load or validate plan for task {self.task_id}: {e}")
-                return None
-        return None
+        self.current_plan: Optional[Plan] = None
 
     def get_agent(self, name: str) -> Agent:
         """Retrieves an agent by name."""
@@ -98,21 +85,81 @@ class Task:
 
     def get_context(self) -> Dict[str, Any]:
         """Returns a dictionary with the task's context."""
-        return {
+        context = {
             "task_id": self.task_id,
             "status": "completed" if self.is_complete else "in_progress",
             "initial_prompt": self.initial_prompt,
             "workspace": str(self.workspace.get_workspace_path()),
-            "plan_exists": self.plan is not None,
             "agents": list(self.agents.keys()),
-            "history_length": len(self.history.get_messages()),
+            "history_length": len(self.history.messages),
         }
+        
+        # Add plan information if available
+        if self.current_plan:
+            context["plan"] = {
+                "goal": self.current_plan.goal,
+                "total_tasks": len(self.current_plan.tasks),
+                "progress": self.current_plan.get_progress_summary(),
+                "is_complete": self.current_plan.is_complete(),
+            }
+        
+        return context
+
+    def create_plan(self, plan: Plan) -> None:
+        """Creates a new plan for the task."""
+        self.current_plan = plan
+        self._persist_plan()
+        logger.info(f"Created plan for task {self.task_id} with {len(plan.tasks)} tasks")
+
+    def update_plan(self, plan: Plan) -> None:
+        """Updates the current plan."""
+        self.current_plan = plan
+        self._persist_plan()
+        logger.info(f"Updated plan for task {self.task_id}")
+
+    def get_plan(self) -> Optional[Plan]:
+        """Returns the current plan."""
+        return self.current_plan
+
+    def _persist_plan(self) -> None:
+        """Persists the current plan to the task history and workspace."""
+        if not self.current_plan:
+            return
+        
+        # Save plan to workspace
+        plan_file = self.workspace.get_workspace_path() / "plan.json"
+        try:
+            plan_data = self.current_plan.model_dump()
+            plan_file.write_text(json.dumps(plan_data, indent=2))
+            logger.debug(f"Plan persisted to {plan_file}")
+        except Exception as e:
+            logger.error(f"Failed to persist plan: {e}")
+
+    def load_plan(self) -> Optional[Plan]:
+        """Loads a plan from the workspace if it exists."""
+        plan_file = self.workspace.get_workspace_path() / "plan.json"
+        
+        if not plan_file.exists():
+            return None
+            
+        try:
+            plan_data = json.loads(plan_file.read_text())
+            self.current_plan = Plan(**plan_data)
+            logger.info(f"Loaded existing plan from {plan_file}")
+            return self.current_plan
+        except Exception as e:
+            logger.error(f"Failed to load plan: {e}")
+            return None
 
 
 class TaskExecutor:
     """
     The main engine for executing a task. It coordinates the agents, tools,
     and orchestrator to fulfill the user's request.
+    
+    Two execution modes:
+    1. Fire-and-forget: execute() runs task to completion autonomously
+    2. Step-by-step: start() + step() for conversational interaction
     """
 
     def __init__(
@@ -147,6 +194,9 @@ class TaskExecutor:
         )
 
         self.task: Optional[Task] = None
+        self._conversation_history: list[dict] = []
+        self._current_agent: Optional[str] = None
+        self._consecutive_no_tool_responses = 0  # Track responses without tool calls
         logger.info("✅ TaskExecutor initialized")
 
     def _setup_task_logging(self):
@@ -158,7 +208,10 @@ class TaskExecutor:
 
     def _initialize_tools(self) -> ToolManager:
         """Initializes the ToolManager and registers builtin tools."""
-        tool_manager = ToolManager()
+        tool_manager = ToolManager(
+            task_id=self.task_id,
+            workspace_path=str(self.workspace.get_workspace_path())
+        )
         logger.info("ToolManager initialized.")
         return tool_manager
 
@@ -173,13 +226,14 @@ class TaskExecutor:
         logger.info(f"Initialized {len(agents)} agents: {list(agents.keys())}")
         return agents
 
-    async def start(
+    async def execute(
         self,
         prompt: str,
         stream: bool = False,
     ) -> AsyncGenerator[Message, None]:
         """
-        Starts the task execution and streams back events.
+        Fire-and-forget execution - runs task to completion autonomously.
+        This is the method called by execute_task() for autonomous execution.
         """
         setup_clean_chat_logging()
         set_streaming_mode(stream)
@@ -195,18 +249,99 @@ class TaskExecutor:
             initial_prompt=prompt,
         )
 
-        logger.info(f"Task {self.task_id} started with prompt: {prompt[:50]}...")
+        # Load existing plan if available
+        self.task.load_plan()
 
-        initial_message = UserMessage(content=prompt)
-        self.history.add_message(initial_message)
-        self.message_queue.add(initial_message)
+        logger.info(f"Task {self.task_id} executing autonomously with prompt: {prompt[:50]}...")
 
-        async for message in self.orchestrator.run(task=self.task):
-            self.history.add_message(message)
-            yield message
+        # Use simple step-based execution
+        self._conversation_history = [{"role": "user", "content": prompt}]
+        
+        # Generate response using orchestrator's step method
+        response = await self.orchestrator.step(self._conversation_history, self.task)
+        
+        # Create a TaskStep message
+        message = TaskStep(
+            agent_name=next(iter(self.agents.keys())),
+            parts=[TextPart(text=response)]
+        )
+        self.history.add_message(message)
+        yield message
 
         self.task.complete()
         logger.info(f"Task {self.task_id} finished")
+
+    async def start(self, prompt: str) -> None:
+        """
+        Initialize the conversation with the given prompt.
+        This sets up the task but doesn't execute any agent responses yet.
+        """
+        setup_clean_chat_logging()
+
+        self.task = Task(
+            task_id=self.task_id,
+            config=self.team_config.execution,
+            history=self.history,
+            message_queue=self.message_queue,
+            agents=self.agents,
+            workspace=self.workspace,
+            orchestrator=self.orchestrator,
+            initial_prompt=prompt,
+        )
+
+        # Load existing plan if available
+        self.task.load_plan()
+
+        # Add the initial user message to conversation history
+        self._conversation_history = [{"role": "user", "content": prompt}]
+        
+        logger.info(f"Task {self.task_id} conversation started with prompt: {prompt[:50]}...")
+
+    async def step(self) -> str:
+        """
+        Execute one conversation step - get a response from the current agent.
+        Returns the agent's response as a string.
+        """
+        if not self.task:
+            raise RuntimeError("Task not started. Call start() first.")
+        
+        if self.task.is_complete:
+            return ""
+
+        # Use orchestrator's step method to get response
+        response = await self.orchestrator.step(self._conversation_history, self.task)
+        
+        # Add agent response to conversation history
+        self._conversation_history.append({"role": "assistant", "content": response})
+        
+        # Check if orchestrator indicates task is complete
+        if self._is_completion_response(response):
+            self.task.complete()
+        
+        return response
+    
+    def _is_completion_response(self, response: str) -> bool:
+        """Check if the response indicates task completion (language-independent)."""
+        # Check for specific completion indicators from the orchestrator
+        completion_phrases = [
+            "Task completed successfully",
+            "All plan items have been finished",
+            "Task execution halted"
+        ]
+        
+        return any(phrase in response for phrase in completion_phrases)
+    
+    @property
+    def is_complete(self) -> bool:
+        """Check if the task is complete."""
+        return self.task.is_complete if self.task else False
+
+    def add_user_message(self, content: str) -> None:
+        """Add a user message to the conversation history."""
+        self._conversation_history.append({"role": "user", "content": content})
+        # Reset completion status for continued conversation
+        if self.task:
+            self.task.is_complete = False
 
 
 async def execute_task(
@@ -223,7 +358,7 @@ async def execute_task(
     team_config = load_team_config(config_path)
     executor = TaskExecutor(team_config=team_config)
 
-    async for message in executor.start(prompt=prompt, stream=stream):
+    async for message in executor.execute(prompt=prompt, stream=stream):
         yield message
 
 
@@ -237,10 +372,9 @@ def start_task(
     High-level function to start a task and return the TaskExecutor for step-by-step execution.
     
     This function is ideal for interactive scenarios where you want to:
-    - Execute tasks step by step
-    - Inspect task state between steps
-    - Modify task configuration during execution
-    - Build interactive UIs with manual control
+    - Execute conversations step by step
+    - Build interactive chat interfaces
+    - Have manual control over the conversation flow
     
     Args:
         prompt: The initial task prompt
@@ -253,20 +387,23 @@ def start_task(
         
     Example:
         ```python
-        # Start a task for step-by-step execution
+        # Start a conversational task
         executor = start_task(
-            prompt="Write a research report",
+            prompt="Hello, how are you?",
             config_path="config/team.yaml"
         )
         
-        # Execute steps manually
-        async for message in executor.start(prompt, stream=True):
-            print(f"Agent: {message.agent_name}")
-            print(f"Content: {message.content}")
-            
-            # You can inspect state, pause, or modify between steps
-            if some_condition:
-                break
+        # Initialize the conversation
+        await executor.start(prompt)
+        
+        # Get agent response
+        response = await executor.step()
+        print(f"Agent: {response}")
+        
+        # Continue conversation
+        executor.add_user_message("Tell me a joke")
+        response = await executor.step()
+        print(f"Agent: {response}")
         ```
     """
     from agentx.config.team_loader import load_team_config

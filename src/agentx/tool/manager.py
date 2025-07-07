@@ -24,18 +24,48 @@ class ToolManager:
     instance to prevent tool conflicts between tasks.
     """
     
-    def __init__(self, task_id: str = "default"):
+    def __init__(self, task_id: str = "default", workspace_path: Optional[str] = None):
         """
         Initialize tool manager with task isolation.
         
         Args:
             task_id: Unique identifier for this task (for logging/debugging)
+            workspace_path: Path to task-specific workspace (for file tools)
         """
         self.task_id = task_id
+        self.workspace_path = workspace_path
         self.registry = ToolRegistry()
+        
+        # Register task-specific builtin tools if workspace_path is provided
+        if workspace_path:
+            self._register_builtin_tools(workspace_path)
+        
         self.executor = ToolExecutor(registry=self.registry)
         
-        logger.debug(f"ToolManager initialized for task {task_id}")
+        logger.debug(f"ToolManager initialized for task {task_id} with workspace: {workspace_path}")
+    
+    def _register_builtin_tools(self, workspace_path: str):
+        """Register builtin tools with correct workspace path."""
+        from ..builtin_tools.file import create_file_tool
+        from ..builtin_tools.search import SearchTool
+        from ..builtin_tools.web import WebTool
+        from ..builtin_tools.context import ContextTool
+        
+        # Create file tool with correct workspace
+        file_tool = create_file_tool(workspace_path=workspace_path)
+        self.registry.register_tool(file_tool)
+        
+        # Register other builtin tools
+        search_tool = SearchTool()
+        self.registry.register_tool(search_tool)
+        
+        web_tool = WebTool()
+        self.registry.register_tool(web_tool)
+        
+        context_tool = ContextTool(workspace_path=workspace_path)
+        self.registry.register_tool(context_tool)
+        
+        logger.info(f"Registered builtin tools for workspace: {workspace_path}")
     
     # Registry methods (delegation)
     def register_tool(self, tool: Tool) -> None:

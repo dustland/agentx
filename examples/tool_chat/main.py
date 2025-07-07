@@ -36,65 +36,32 @@ async def main():
     
     try:
         # Start task and get executor
-        task = start_task(user_prompt, config_path)
+        executor = start_task(user_prompt, config_path)
         
         # Register custom weather tool
         weather_tool = WeatherTool()
-        task.register_tool(weather_tool)
+        executor.tool_manager.register_tool(weather_tool)
         
         # Debug: Check what tools are registered
-        print(f"🔧 Registered tools: {task.tool_manager.list_tools()}")
+        print(f"🔧 Registered tools: {executor.tool_manager.list_tools()}")
+        
+        # Start the conversation
+        await executor.start(user_prompt)
         
         # Get the agent to check tool schemas
-        agent = list(task.task.agents.values())[0]
+        agent = list(executor.agents.values())[0]
         tool_schemas = agent.get_tools_json()
         print(f"🔧 Agent has access to {len(tool_schemas)} tools")
         
         print(f"🎬 Processing: {user_prompt}")
         print()
         
-        # Execute the task with streaming
-        async for result in task.step(stream=True):
-            chunk_type = result.get("type", "unknown")
-            
-            if chunk_type == "content":
-                print(result.get("content", ""), end="", flush=True)
-            elif chunk_type == "tool_call":
-                print(f"\n🔧 Calling tool: {result.get('name')}")
-                args = result.get('arguments', '')
-                if args:
-                    print(f"   Arguments: {args}")
-            elif chunk_type == "tool_result":
-                success = result.get("success", True)
-                name = result.get("name", "unknown")
-                content = result.get("content", "")
-                if success:
-                    print(f"\n✅ Tool {name} completed")
-                    # Show a preview of the result
-                    if isinstance(content, str) and len(content) > 100:
-                        print(f"   Preview: {content[:100]}...")
-                    else:
-                        print(f"   Result: {content}")
-                else:
-                    print(f"\n❌ Tool {name} failed: {content}")
-            elif chunk_type == "tool_calls_start":
-                count = result.get("count", 0)
-                print(f"\n🔧 Executing {count} tool(s) in parallel...")
-            elif chunk_type == "routing_decision":
-                action = result.get("action")
-                if action == "COMPLETE":
-                    print(f"\n🎉 Task completed!")
-                elif action == "HANDOFF":
-                    from_agent = result.get("current_agent")
-                    to_agent = result.get("next_agent")
-                    print(f"\n🔄 Handoff from {from_agent} to {to_agent}")
-            elif chunk_type == "error":
-                print(f"\n❌ Error: {result.get('content', 'Unknown error')}")
-            elif chunk_type == "warning":
-                print(f"\n⚠️ Warning: {result.get('content', 'Unknown warning')}")
-            # Ignore other chunk types silently
+        # Execute the task step by step
+        while not executor.is_complete():
+            response = await executor.step()
+            print(f"🤖 Assistant: {response}")
+            print("-" * 60)
         
-        print("\n" + "=" * 60)
         print("✅ Task completed successfully!")
         
     except Exception as e:

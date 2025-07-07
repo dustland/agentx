@@ -72,10 +72,9 @@ class SecurityPolicy:
             "store_artifact", "get_artifact", "list_artifacts",
             "get_artifact_versions", "delete_artifact",
             # Framework operations
-            "get_context", "set_context", "create_plan", 
-            "update_task_status", "get_plan_status",
+            "get_context", "set_context",
             # Search and weather tools
-            "web_search", "serpapi_search", "get_weather",
+            "web_search", "serpapi_search", "image_search", "get_weather",
             # Web content tools
             "extract_content", "crawl_website", "automate_browser",
             # News and search tools

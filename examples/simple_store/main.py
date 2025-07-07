@@ -43,25 +43,20 @@ Use the write_file tool to save this file directly in the workspace.
         
         # Run the task
         print("\n🤖 Running storage test...")
-        async for message in executor.start(prompt, stream=False):
-            print(f"Agent response: {message.content}")
+        await executor.start(prompt)
+        response = await executor.step()
+        print(f"Agent response: {response}")
         
         # Check if file was created
         workspace_path = executor.workspace.get_workspace_path()
-        hello_file = workspace_path / "hello.txt"
-        artifact_file = workspace_path / "artifacts" / "hello.txt.txt"
+        artifact_file = workspace_path / "artifacts" / "hello.txt"
         
-        if hello_file.exists():
-            print(f"\n✅ SUCCESS: hello.txt created directly in workspace!")
-            content = hello_file.read_text()
-            print(f"📄 Content: '{content}'")
-        elif artifact_file.exists():
+        if artifact_file.exists():
             print(f"\n✅ SUCCESS: hello.txt created as artifact!")
             content = artifact_file.read_text()
             print(f"📄 Content: '{content}'")
         else:
-            print(f"\n❌ FAILED: hello.txt not found in either location")
-            print(f"  Checked: {hello_file}")
+            print(f"\n❌ FAILED: hello.txt not found in artifacts")
             print(f"  Checked: {artifact_file}")
             
         # List all files created
