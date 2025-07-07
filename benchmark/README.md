@@ -116,7 +116,7 @@ This implementation provides multiple team configurations for comprehensive eval
 - **Analyst**: Data analysis and logical reasoning
 - **Synthesizer**: Final answer formulation and quality control
 
-**Model**: DeepSeek Chat (cost-optimized)  
+**Model**: DeepSeek Chat (cost-optimized)
 **Best for**: Complex questions requiring specialized expertise
 
 ### Team 2: Sequential Planning Team
@@ -127,7 +127,7 @@ This implementation provides multiple team configurations for comprehensive eval
 - **Executor**: Comprehensive research execution
 - **Validator**: Final answer validation and quality assurance
 
-**Model**: Claude 3.5 Haiku (speed-optimized)  
+**Model**: Claude 3.5 Haiku (speed-optimized)
 **Best for**: Systematic approach with clear quality gates
 
 ### Team 3: Single Agent
@@ -136,7 +136,7 @@ This implementation provides multiple team configurations for comprehensive eval
 
 - **GAIA Agent**: End-to-end question solving with all tools
 
-**Model**: DeepSeek Chat  
+**Model**: DeepSeek Chat
 **Best for**: Baseline comparison and simpler questions
 
 ## Setup Instructions

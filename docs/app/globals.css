@@ -84,7 +84,7 @@ a.inline-flex {
   .text-5xl {
     font-size: 2.5rem;
   }
-  
+
   .text-6xl {
     font-size: 3rem;
   }
@@ -345,4 +345,3 @@ nav .source-link,
 aside .source-link {
   display: none !important;
 }
-

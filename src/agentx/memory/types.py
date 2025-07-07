@@ -29,7 +29,7 @@ class MemoryType(str, Enum):
     CONSTRAINT = "constraint"
     HOT_ISSUE = "hot_issue"
     DOCUMENT_CHUNK = "document_chunk"
-    
+
     def __str__(self):
         return self.value
 
@@ -49,7 +49,7 @@ class MemoryItem:
     is_active: bool = True
     version: Optional[int] = None
     parent_id: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -66,7 +66,7 @@ class MemoryItem:
             "version": self.version,
             "parent_id": self.parent_id
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'MemoryItem':
         """Create MemoryItem from dictionary."""
@@ -76,12 +76,12 @@ class MemoryItem:
             timestamp = datetime.fromisoformat(timestamp)
         elif timestamp is None:
             timestamp = datetime.now()
-        
+
         # Handle memory_type conversion
         memory_type = data.get("memory_type")
         if isinstance(memory_type, str):
             memory_type = MemoryType(memory_type)
-        
+
         return cls(
             content=data["content"],
             memory_type=memory_type,
@@ -116,7 +116,7 @@ class Constraint(Memory):
     """Memory representing user constraints, preferences, or rules."""
     type: Literal["CONSTRAINT"] = "CONSTRAINT"
     # e.g., "Do not use requirements.txt", "Use APA citation style"
-    
+
 
 class HotIssue(Memory):
     """Memory representing active problems that need attention."""
@@ -156,7 +156,7 @@ class MemorySearchResult:
     query_time_ms: float
     has_more: bool = False
     query_metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -178,7 +178,7 @@ class MemoryStats:
     oldest_memory: Optional[datetime] = None
     newest_memory: Optional[datetime] = None
     storage_size_mb: Optional[float] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -189,4 +189,4 @@ class MemoryStats:
             "oldest_memory": self.oldest_memory.isoformat() if self.oldest_memory else None,
             "newest_memory": self.newest_memory.isoformat() if self.newest_memory else None,
             "storage_size_mb": self.storage_size_mb
-        } 
+        }

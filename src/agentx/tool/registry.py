@@ -40,7 +40,7 @@ class ToolRegistry:
         # allow tools to be initialized with context when a task starts.
         # For now, we'll use a default path.
         default_workspace = "workspace"
-        
+
         builtin_tool_instances = [
             create_file_tool(workspace_path=default_workspace),
             SearchTool()
@@ -94,7 +94,7 @@ class ToolRegistry:
         invalid_tools = [t_name for t_name in tool_names if t_name not in self._tools]
         if invalid_tools:
             raise ValueError(f"Cannot create toolset '{name}'. The following tools are not registered: {invalid_tools}")
-            
+
         self._toolsets[name] = tool_names
         logger.debug(f"Registered toolset '{name}' with tools: {tool_names}")
 
@@ -115,7 +115,7 @@ class ToolRegistry:
         tool_func = self.get_tool_function(name)
         if not tool_func:
             return None
-        
+
         return {
             "type": "function",
             "function": {
@@ -145,7 +145,7 @@ class ToolRegistry:
             schema = self.get_tool_schema(name)
             if schema:
                 schemas.append(schema)
-        
+
         return schemas
 
     def list_tools(self) -> List[str]:
@@ -182,4 +182,4 @@ class ToolRegistry:
 
 def get_tool_registry() -> ToolRegistry:
     """Get the global tool registry instance."""
-    return ToolRegistry() 
+    return ToolRegistry()

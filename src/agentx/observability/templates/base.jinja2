@@ -4,21 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AgentX Observability{% endblock %}</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/static/logo.png">
     <link rel="shortcut icon" type="image/png" href="/static/logo.png">
-    
+
     <!-- TailwindCSS + Preline UI v3.1.0 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/preline@3.1.0/dist/preline.min.js"></script>
 
     <!-- HTMX v2.0.4 -->
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+
     <!-- Custom styles -->
     <style>
         /* HTMX indicators */
@@ -32,7 +32,7 @@
         .htmx-request.htmx-indicator {
             opacity: 1;
         }
-        
+
         /* Custom scrollbar for better UX */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
@@ -48,7 +48,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgb(107 114 128);
         }
-        
+
         /* Dark mode scrollbar */
         .dark .custom-scrollbar::-webkit-scrollbar-track {
             background: rgb(64 64 64);
@@ -59,7 +59,7 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgb(163 163 163);
         }
-        
+
         /* Toast animations */
         @keyframes slide-in-right {
             from {
@@ -74,7 +74,7 @@
         .animate-slide-in-right {
             animation: slide-in-right 0.3s ease-out;
         }
-        
+
         /* Modal fallback styles */
         #project-path-modal {
             backdrop-filter: blur(4px);
@@ -83,12 +83,12 @@
         #project-path-modal.hidden {
             display: none !important;
         }
-        
+
         /* Ensure modal is above sidebar */
         #project-path-modal > div {
             z-index: 10000;
         }
-        
+
         /* Modal input styling */
         #project-path-modal input[type="text"] {
             padding: 8px 12px;
@@ -96,7 +96,7 @@
             border-radius: 6px;
             width: 100%;
         }
-        
+
         #project-path-modal input[type="text"]:focus {
             outline: none;
             border-color: #3b82f6;
@@ -266,7 +266,7 @@
                                 <!-- New Project Path Input -->
                                 <div class="mb-4">
                                     <label for="new-project-path" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Project Path:</label>
-                                    <input type="text" id="new-project-path" name="new-project-path" 
+                                    <input type="text" id="new-project-path" name="new-project-path"
                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                            placeholder="/path/to/your/agentx/project"
                                            value="{{ config_data.project_path or '.' }}">
@@ -291,12 +291,12 @@
                     </div>
                 </div>
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-700">
-                    <button type="button" onclick="changeProjectPath()" 
+                    <button type="button" onclick="changeProjectPath()"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                         <i data-lucide="folder" class="w-4 h-4 mr-2"></i>
                         Change Path
                     </button>
-                    <button type="button" onclick="closeProjectPathModal()" 
+                    <button type="button" onclick="closeProjectPathModal()"
                             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">
                         Cancel
                     </button>
@@ -307,37 +307,37 @@
 
     <!-- Preline UI v3.1.0 -->
     <script src="https://cdn.jsdelivr.net/npm/preline@3.1.0/dist/preline.min.js"></script>
-    
+
     <!-- Preline UI theme initialization (must run after Preline is loaded) -->
     <script>
         // This code should be added to <head>. It's used to prevent page load glitches.
         const html = document.querySelector('html');
-        
+
         // Set default theme if none exists
         if (!localStorage.getItem('hs_theme')) {
             localStorage.setItem('hs_theme', 'light');
         }
-        
+
         const isLightOrAuto = localStorage.getItem('hs_theme') === 'light' || (localStorage.getItem('hs_theme') === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches);
         const isDarkOrAuto = localStorage.getItem('hs_theme') === 'dark' || (localStorage.getItem('hs_theme') === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        
+
         if (isLightOrAuto && html.classList.contains('dark')) html.classList.remove('dark');
         else if (isDarkOrAuto && html.classList.contains('light')) html.classList.remove('light');
         else if (isDarkOrAuto && !html.classList.contains('dark')) html.classList.add('dark');
         else if (isLightOrAuto && !html.classList.contains('light')) html.classList.add('light');
     </script>
-    
+
     <script>
         // Initialize components when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing components...');
-            
+
             // Initialize Lucide icons
             if (window.lucide) {
                 lucide.createIcons();
                 console.log('Lucide icons initialized');
             }
-            
+
             // Try to initialize Preline components if available
             if (window.HSStaticMethods) {
                 try {
@@ -350,16 +350,16 @@
                 console.log('Preline UI not available, using basic functionality');
             }
         });
-        
+
         // Re-initialize after page fully loads
         window.addEventListener('load', function() {
             console.log('Page fully loaded, re-initializing...');
-            
+
             // Re-initialize Lucide icons
             if (window.lucide) {
                 lucide.createIcons();
             }
-            
+
             // Try to initialize theme switching if available
             if (window.HSStaticMethods) {
                 try {
@@ -369,15 +369,15 @@
                 }
             }
         });
-        
 
-        
+
+
         // Toast notification system
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
             const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info';
-            
+
             toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center gap-2 animate-slide-in-right`;
             toast.innerHTML = `
                 <i data-lucide="${iconName}" class="shrink-0 size-4"></i>
@@ -386,10 +386,10 @@
                     <i data-lucide="x" class="shrink-0 size-4 hover:bg-black/20 rounded p-0.5"></i>
                 </button>
             `;
-            
+
             document.getElementById('toast-container').appendChild(toast);
             lucide.createIcons();
-            
+
             // Auto remove after 5 seconds
             setTimeout(() => {
                 if (toast.parentElement) {
@@ -397,15 +397,15 @@
                 }
             }, 5000);
         }
-        
+
         // HTMX event handlers
         document.body.addEventListener('htmx:beforeRequest', function(evt) {
             document.getElementById('loading-overlay').classList.remove('hidden');
         });
-        
+
         document.body.addEventListener('htmx:afterRequest', function(evt) {
             document.getElementById('loading-overlay').classList.add('hidden');
-            
+
             if (evt.detail.successful) {
                 // Re-initialize Lucide icons after HTMX updates
                 lucide.createIcons();
@@ -413,14 +413,14 @@
                 showToast('Request failed', 'error');
             }
         });
-        
+
         // Auto-refresh dashboard stats every 30 seconds
         setInterval(function() {
             if (window.location.pathname === '/') {
                 htmx.trigger('#dashboard-stats', 'refresh');
             }
         }, 30000);
-        
+
         // Status indicator updates
         function updateStatusIndicator(isRunning, isIntegrated) {
             const indicator = document.getElementById('status-indicator');
@@ -432,7 +432,7 @@
                 indicator.className = 'absolute top-0 end-0 inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium transform -translate-y-1/2 translate-x-1/2 bg-red-500 text-white';
             }
         }
-        
+
         // Project Path Management Functions
         function openProjectPathModal() {
             console.log('Opening project path modal...');
@@ -441,11 +441,11 @@
                 console.error('Modal element not found!');
                 return;
             }
-            
+
             console.log('Modal element found, removing hidden class...');
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-            
+
             // Re-initialize Lucide icons in the modal
             setTimeout(() => {
                 if (window.lucide) {
@@ -454,13 +454,13 @@
                 console.log('Modal should be visible now');
             }, 100);
         }
-        
+
         function closeProjectPathModal() {
             const modal = document.getElementById('project-path-modal');
             modal.classList.add('hidden');
             document.body.style.overflow = '';
         }
-        
+
         // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -470,17 +470,17 @@
                 }
             }
         });
-        
+
         function changeProjectPath() {
             console.log('changeProjectPath called');
             const newPath = document.getElementById('new-project-path').value.trim();
             console.log('New path:', newPath);
-            
+
             if (!newPath) {
                 showToast('Please enter a valid project path', 'error');
                 return;
             }
-            
+
             if (confirm('Changing the project path will restart the monitor. Continue?')) {
                 console.log('User confirmed path change');
                 // Show loading state
@@ -489,7 +489,7 @@
                 button.disabled = true;
                 button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i>Changing...';
                 lucide.createIcons();
-                
+
                 fetch('/api/project/change', {
                     method: 'POST',
                     headers: {
@@ -525,7 +525,7 @@
                 });
             }
         }
-        
+
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() {
                 showToast('Path copied to clipboard', 'success');
@@ -533,14 +533,14 @@
                 showToast('Failed to copy path', 'error');
             });
         }
-        
+
         // Test functionality after initialization
         setTimeout(() => {
             // Test toast notification after everything is loaded
             showToast('AgentX Observability Platform loaded successfully!', 'success');
         }, 2000);
     </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
-</html> 
+</html>

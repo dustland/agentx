@@ -3,7 +3,7 @@ AgentX - Multi-Agent Conversation Framework
 
 A flexible framework for building AI agent teams with:
 - Autonomous agents with private LLM interactions
-- Centralized tool execution for security and monitoring  
+- Centralized tool execution for security and monitoring
 - Built-in storage, memory, and search capabilities
 - Team coordination and task management
 """
@@ -30,11 +30,11 @@ __all__ = [
     # Main API - primary entry points
     "execute_task",
     "start_task",
-    
+
     # Tool creation - for custom tools
     "Tool",
     "tool",
-    
+
     # Logging utilities
     "setup_clean_chat_logging",
     "set_log_level",
@@ -42,7 +42,7 @@ __all__ = [
 
     # Core classes
     "Agent",
-    "Task", 
+    "Task",
     "TaskExecutor",
     "Orchestrator",
 ]
@@ -52,11 +52,11 @@ try:
     from dotenv import load_dotenv
     import os
     from pathlib import Path
-    
+
     # Try to find .env file in current directory or parent directories
     current_dir = Path.cwd()
     env_file = None
-    
+
     # Look for .env file up to 3 levels up
     for i in range(4):
         potential_env = current_dir / ".env"
@@ -66,10 +66,10 @@ try:
         current_dir = current_dir.parent
         if current_dir == current_dir.parent:  # reached root
             break
-    
+
     if env_file:
         load_dotenv(env_file)
-    
+
 except ImportError:
     # python-dotenv not available, skip
     pass

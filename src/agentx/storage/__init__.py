@@ -13,11 +13,11 @@ from .git_storage import GitArtifactStorage
 
 __all__ = [
     "StorageBackend",
-    "FileStorage", 
+    "FileStorage",
     "ArtifactStorage",
     "StorageResult",
     "LocalFileStorage",
     "StorageFactory",
     "WorkspaceStorage",
     "GitArtifactStorage"
-] 
+]

@@ -14,11 +14,11 @@ def run_tests():
     """Run the test suite."""
     # Get the project root directory
     project_root = Path(__file__).parent.parent
-    
+
     # Change to project root
     import os
     os.chdir(project_root)
-    
+
     # Run pytest with configuration
     cmd = [
         sys.executable, "-m", "pytest",
@@ -28,11 +28,11 @@ def run_tests():
         "--strict-markers",  # Strict marker checking
         "-x",  # Stop on first failure
     ]
-    
+
     print("🧪 Running AgentX Framework Tests...")
     print(f"Command: {' '.join(cmd)}")
     print("-" * 60)
-    
+
     try:
         result = subprocess.run(cmd, check=False)
         return result.returncode
@@ -46,10 +46,10 @@ def run_tests():
 
 if __name__ == "__main__":
     exit_code = run_tests()
-    
+
     if exit_code == 0:
         print("\n✅ All tests passed!")
     else:
         print(f"\n❌ Tests failed with exit code: {exit_code}")
-    
-    sys.exit(exit_code) 
+
+    sys.exit(exit_code)

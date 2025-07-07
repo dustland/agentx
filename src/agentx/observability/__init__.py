@@ -11,10 +11,10 @@ Project-based observability system providing:
 """
 
 from .monitor import (
-    ObservabilityMonitor, 
-    ConversationHistory, 
-    EventCapture, 
-    ArtifactsViewer, 
+    ObservabilityMonitor,
+    ConversationHistory,
+    EventCapture,
+    ArtifactsViewer,
     ConfigViewer,
     ProjectStorage,
     get_monitor,
@@ -24,7 +24,7 @@ from .web_app import create_web_app, run_web_app
 
 __all__ = [
     "ObservabilityMonitor",
-    "ConversationHistory", 
+    "ConversationHistory",
     "EventCapture",
     "ArtifactsViewer",
     "ConfigViewer",
@@ -33,4 +33,4 @@ __all__ = [
     "find_project_directory",
     "create_web_app",
     "run_web_app"
-] 
+]

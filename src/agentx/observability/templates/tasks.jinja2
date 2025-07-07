@@ -22,10 +22,10 @@
                     <i data-lucide="list" class="w-5 h-5"></i>
                     Select Task
                 </h2>
-                
+
                 <div class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                     {% for task_id in recent_tasks %}
-                    <button 
+                    <button
                         class="btn btn-ghost btn-block justify-start task-item"
                         onclick="loadTaskConversation('{{ task_id }}')"
                         data-task-id="{{ task_id }}"
@@ -48,7 +48,7 @@
                             Conversation
                         </h2>
                         <div class="flex space-x-2">
-                            <button 
+                            <button
                                 id="export-conversation-btn"
                                 class="btn btn-outline btn-sm"
                                 onclick="exportConversation()"
@@ -57,7 +57,7 @@
                                 <i data-lucide="download" class="w-4 h-4"></i>
                                 Export
                             </button>
-                            <button 
+                            <button
                                 id="refresh-conversation-btn"
                                 class="btn btn-outline btn-sm"
                                 onclick="refreshConversation()"
@@ -68,7 +68,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div id="conversation-content" class="min-h-96">
                         <div class="text-center py-16 text-base-content/50">
                             <i data-lucide="message-square" class="w-16 h-16 mx-auto mb-4"></i>
@@ -107,21 +107,21 @@
 <script>
     let currentTaskId = null;
     let currentConversation = null;
-    
+
     // Load task conversation
     function loadTaskConversation(taskId) {
         currentTaskId = taskId;
-        
+
         // Update UI state
         document.querySelectorAll('.task-item').forEach(btn => {
             btn.classList.remove('btn-active');
         });
         document.querySelector(`[data-task-id="${taskId}"]`).classList.add('btn-active');
-        
+
         // Enable buttons
         document.getElementById('export-conversation-btn').disabled = false;
         document.getElementById('refresh-conversation-btn').disabled = false;
-        
+
         // Show loading
         const content = document.getElementById('conversation-content');
         content.innerHTML = `
@@ -130,7 +130,7 @@
                 <span class="ml-4 text-lg">Loading conversation...</span>
             </div>
         `;
-        
+
         // Load conversation
         fetch(`/api/task/${taskId}/conversation`)
             .then(response => response.json())
@@ -151,11 +151,11 @@
                 lucide.createIcons();
             });
     }
-    
+
     // Display conversation
     function displayConversation(conversation) {
         const content = document.getElementById('conversation-content');
-        
+
         if (!conversation || conversation.length === 0) {
             content.innerHTML = `
                 <div class="text-center py-16 text-base-content/50">
@@ -167,13 +167,13 @@
             lucide.createIcons();
             return;
         }
-        
+
         let html = '<div class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">';
-        
+
         conversation.forEach((entry, index) => {
             const time = new Date(entry.timestamp).toLocaleTimeString();
             const date = new Date(entry.timestamp).toLocaleDateString();
-            
+
             // Choose icon and style based on message type
             let icon, alertClass, typeLabel;
             switch (entry.type) {
@@ -192,7 +192,7 @@
                     alertClass = 'alert-success';
                     typeLabel = 'Message';
             }
-            
+
             html += `
                 <div class="alert ${alertClass}">
                     <i data-lucide="${icon}" class="w-5 h-5 flex-shrink-0"></i>
@@ -209,9 +209,9 @@
                 </div>
             `;
         });
-        
+
         html += '</div>';
-        
+
         // Add conversation stats
         const stats = getConversationStats(conversation);
         html += `
@@ -235,33 +235,33 @@
                 </div>
             </div>
         `;
-        
+
         content.innerHTML = html;
         lucide.createIcons();
-        
+
         // Scroll to bottom
         const scrollContainer = content.querySelector('.custom-scrollbar');
         if (scrollContainer) {
             scrollContainer.scrollTop = scrollContainer.scrollHeight;
         }
     }
-    
+
     // Get conversation statistics
     function getConversationStats(conversation) {
         if (!conversation || conversation.length === 0) {
             return { total: 0, agents: 0, tools: 0, duration: '0s' };
         }
-        
+
         const agents = new Set(conversation.map(entry => entry.agent));
         const tools = conversation.filter(entry => entry.type === 'tool').length;
-        
+
         // Calculate duration
         const start = new Date(conversation[0].timestamp);
         const end = new Date(conversation[conversation.length - 1].timestamp);
         const durationMs = end - start;
         const durationSec = Math.round(durationMs / 1000);
         const duration = durationSec < 60 ? `${durationSec}s` : `${Math.round(durationSec / 60)}m`;
-        
+
         return {
             total: conversation.length,
             agents: agents.size,
@@ -269,7 +269,7 @@
             duration: duration
         };
     }
-    
+
     // Refresh current conversation
     function refreshConversation() {
         if (currentTaskId) {
@@ -277,21 +277,21 @@
             showToast('Conversation refreshed', 'success');
         }
     }
-    
+
     // Export conversation
     function exportConversation() {
         if (!currentConversation || !currentTaskId) {
             showToast('No conversation to export', 'warning');
             return;
         }
-        
+
         const data = {
             task_id: currentTaskId,
             conversation: currentConversation,
             exported_at: new Date().toISOString(),
             stats: getConversationStats(currentConversation)
         };
-        
+
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -301,8 +301,8 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         showToast('Conversation exported successfully', 'success');
     }
 </script>
-{% endblock %} 
+{% endblock %}

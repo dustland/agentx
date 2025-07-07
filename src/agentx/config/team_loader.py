@@ -19,7 +19,7 @@ class TeamLoader:
         self.standard_agents_dir = Path(__file__).parent.parent / "presets"
         self.config_dir = Path(config_dir) if config_dir else None
         self._preset_configs = None  # Cache for preset configurations
-        
+
         # Set up prompt loader if config directory has prompts
         self.prompt_loader = None
         if self.config_dir and (self.config_dir / "prompts").exists():
@@ -32,20 +32,20 @@ class TeamLoader:
             config_path = self.standard_agents_dir / "config.yaml"
             if not config_path.exists():
                 raise ConfigurationError(f"Preset agent config file not found: {config_path}")
-            
+
             with open(config_path, 'r') as f:
                 data = yaml.safe_load(f)
-            
+
             self._preset_configs = data.get('preset_agents', {})
             logger.info(f"Loaded {len(self._preset_configs)} preset agent configurations")
-        
+
         return self._preset_configs
 
     def load_team_config(self, config_path: str) -> TeamConfig:
         config_file = Path(config_path)
         if not config_file.exists():
             raise ConfigurationError(f"Team config file not found: {config_path}")
-        
+
         # Set config_dir if not already set in constructor
         if self.config_dir is None:
             self.config_dir = config_file.parent
@@ -53,7 +53,7 @@ class TeamLoader:
         self._validate_config(data)
 
         agent_configs = []
-        
+
         # Load agents from unified agents field (supports both preset strings and custom objects)
         agents_data = data.get("agents", [])
         for agent_data in agents_data:
@@ -70,18 +70,18 @@ class TeamLoader:
 
         # Parse orchestrator configuration parameters (no class loading)
         orchestrator_config = data.get("orchestrator") or data.get("lead", {})  # Support both names
-        
+
         # Build TeamConfig with only non-None values to use defaults properly
         team_config_data = {
             "name": data.get("name"),
             "agents": agent_configs,  # Keep as AgentConfig objects for type safety
             "orchestrator": orchestrator_config
         }
-        
+
         # Only include description if it's provided
         if "description" in data and data["description"] is not None:
             team_config_data["description"] = data["description"]
-            
+
         # Handle collaboration section for legacy compatibility
         if "collaboration" in data:
             collaboration = data["collaboration"]
@@ -91,26 +91,26 @@ class TeamLoader:
                 team_config_data["speaker_selection_method"] = collaboration["speaker_selection_method"]
             if "termination_condition" in collaboration:
                 team_config_data["termination_condition"] = collaboration["termination_condition"]
-                
+
         # Handle llm_provider configuration
         if "llm_provider" in data:
             llm_provider_data = data["llm_provider"]
             team_config_data["llm_provider"] = BrainConfig(**llm_provider_data)
-        
+
         team_config = TeamConfig(**team_config_data)
-        
+
         return team_config
 
     def load_preset_agent(self, agent_name: str) -> AgentConfig:
         """Load a preset agent from the framework's agents configuration."""
         preset_configs = self._load_preset_configs()
-        
+
         if agent_name not in preset_configs:
             available_presets = list(preset_configs.keys())
             raise ConfigurationError(f"Preset agent '{agent_name}' not found. Available presets: {available_presets}")
-        
+
         preset_config = preset_configs[agent_name]
-        
+
         # Check for local override in config/agents/ first
         if self.config_dir:
             local_override_path = self.config_dir / "agents" / f"{agent_name}.md"
@@ -128,7 +128,7 @@ class TeamLoader:
                 else:
                     prompt_template = ""
         else:
-            # Use framework prompt file  
+            # Use framework prompt file
             prompt_file = preset_config.get('prompt_file')
             if prompt_file:
                 prompt_path = self.standard_agents_dir / prompt_file
@@ -137,11 +137,11 @@ class TeamLoader:
                 prompt_template = str(prompt_path)
             else:
                 prompt_template = ""
-        
+
         # Extract brain configuration
         brain_config_data = preset_config.get('brain_config', {})
         brain_config = BrainConfig(**brain_config_data)
-        
+
         # Create canonical AgentConfig object
         return AgentConfig(
             name=agent_name,
@@ -158,7 +158,7 @@ class TeamLoader:
                 prompt_path = self.standard_agents_dir / f"agents/{agent_name}.md"
                 if not prompt_path.exists():
                     raise ConfigurationError(f"Standard agent '{agent_name}' not found at {prompt_path}")
-                
+
                 default_brain_config = BrainConfig(
                     provider="deepseek",
                     model="deepseek/deepseek-coder",
@@ -177,7 +177,7 @@ class TeamLoader:
                 )
             else:
                 raise ConfigurationError(f"Invalid agent string definition: '{agent_config_data}'. Must start with 'standard:'.")
-        
+
         # Handle custom agent configuration (dict)
         # Resolve relative paths for prompt files and load content
         prompt_template = ""
@@ -187,7 +187,7 @@ class TeamLoader:
                 absolute_prompt_path = self.config_dir / prompt_file_path
             else:
                 absolute_prompt_path = prompt_file_path
-                
+
             if absolute_prompt_path.exists():
                 try:
                     prompt_template = absolute_prompt_path.read_text(encoding='utf-8')
@@ -203,12 +203,12 @@ class TeamLoader:
             prompt_template = agent_config_data["system_message"]
         elif "prompt_template" in agent_config_data:
             prompt_template = agent_config_data["prompt_template"]
-        
+
         # Extract brain configuration
         brain_config = None
         if "brain_config" in agent_config_data:
             brain_config = BrainConfig(**agent_config_data["brain_config"])
-        
+
         return AgentConfig(
             name=agent_config_data["name"],
             description=agent_config_data.get("description", ""),
@@ -219,7 +219,7 @@ class TeamLoader:
 
     def create_agents(self, team_config: TeamConfig) -> List[tuple]:
         """Create agents from team configuration.
-        
+
         Returns:
             List of (agent_config, tools) tuples
         """
@@ -249,10 +249,10 @@ class TeamLoader:
             raise ConfigurationError("Invalid team config format")
         if 'name' not in data:
             raise ConfigurationError("Team config must have a 'name' field")
-        
+
         # Check that we have agents
         has_agents = data.get('agents') and len(data['agents']) > 0
-        
+
         if not has_agents:
             raise ConfigurationError("Team config must have at least one agent in the 'agents' field")
 
@@ -267,10 +267,10 @@ def create_team_from_config(team_config: TeamConfig):
     """
     Create a Team object from team configuration.
     This would be the Team.from_config() method.
-    
+
     Args:
         team_config: Team configuration
-        
+
     Returns:
         Team object
     """
@@ -281,10 +281,10 @@ def create_team_from_config(team_config: TeamConfig):
 def validate_team_config(config_path: str) -> Dict[str, Any]:
     """
     Validate a team configuration file.
-    
+
     Args:
         config_path: Path to team.yaml file
-        
+
     Returns:
         Dictionary with validation results
     """
@@ -292,7 +292,7 @@ def validate_team_config(config_path: str) -> Dict[str, Any]:
         team_config = load_team_config(config_path)
         loader = TeamLoader()
         agents = loader.create_agents(team_config)
-        
+
         return {
             "valid": True,
             "team_name": team_config.name,
@@ -321,4 +321,4 @@ def list_preset_agents() -> List[str]:
         return sorted(preset_configs.keys())
     except Exception as e:
         logger.warning(f"Could not load preset agent configurations: {e}")
-        return [] 
+        return []

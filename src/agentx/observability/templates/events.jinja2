@@ -10,17 +10,17 @@
             <h1 class="text-3xl font-bold">Events</h1>
             <p class="text-base-content/70 mt-1">Real-time event monitoring and analysis</p>
         </div>
-        
+
         <div class="flex space-x-2">
-            <button 
+            <button
                 class="btn btn-outline btn-sm"
                 onclick="refreshEvents()"
             >
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 Refresh
             </button>
-            
-            <button 
+
+            <button
                 class="btn btn-outline btn-sm"
                 onclick="exportEvents()"
             >
@@ -40,7 +40,7 @@
         </div>
     </div>
     {% else %}
-    
+
     {% if event_summary %}
     <!-- Event Summary -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -77,29 +77,29 @@
                     <i data-lucide="filter" class="w-5 h-5"></i>
                     Event Stream
                 </h2>
-                
+
                 <!-- Auto-refresh toggle -->
                 <div class="form-control">
                     <label class="label cursor-pointer">
                         <span class="label-text mr-2">Auto-refresh</span>
-                        <input 
-                            type="checkbox" 
-                            class="toggle toggle-primary" 
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-primary"
                             id="auto-refresh-toggle"
                             onchange="toggleAutoRefresh()"
                         />
                     </label>
                 </div>
             </div>
-            
+
             <!-- Filters -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Event Type</span>
                     </label>
-                    <select 
-                        class="select select-bordered" 
+                    <select
+                        class="select select-bordered"
                         id="event-type-filter"
                         onchange="filterEvents()"
                     >
@@ -109,13 +109,13 @@
                         {% endfor %}
                     </select>
                 </div>
-                
+
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Limit</span>
                     </label>
-                    <select 
-                        class="select select-bordered" 
+                    <select
+                        class="select select-bordered"
                         id="event-limit-filter"
                         onchange="filterEvents()"
                     >
@@ -125,21 +125,21 @@
                         <option value="500">500 events</option>
                     </select>
                 </div>
-                
+
                 <div class="form-control">
                     <label class="label">
                         <span class="label-text">Search</span>
                     </label>
-                    <input 
-                        type="text" 
-                        placeholder="Search events..." 
-                        class="input input-bordered" 
+                    <input
+                        type="text"
+                        placeholder="Search events..."
+                        class="input input-bordered"
                         id="event-search"
                         onkeyup="debounceSearch()"
                     />
                 </div>
             </div>
-            
+
             <!-- Events List -->
             <div id="events-container" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                 <div class="text-center py-8">
@@ -149,7 +149,7 @@
             </div>
         </div>
     </div>
-    
+
     {% else %}
     <!-- No Events -->
     <div class="card bg-base-200 shadow-xl">
@@ -171,7 +171,7 @@
         </div>
     </div>
     {% endif %}
-    
+
     {% endif %}
 </div>
 
@@ -194,23 +194,23 @@
     let autoRefreshInterval = null;
     let searchTimeout = null;
     let currentEvents = [];
-    
+
     // Load events on page load
     document.addEventListener('DOMContentLoaded', function() {
         {% if is_integrated %}
         loadEvents();
         {% endif %}
     });
-    
+
     // Load events from API
     function loadEvents() {
         const eventType = document.getElementById('event-type-filter')?.value || '';
         const limit = document.getElementById('event-limit-filter')?.value || 100;
-        
+
         const params = new URLSearchParams();
         if (eventType) params.append('event_type', eventType);
         params.append('limit', limit);
-        
+
         fetch(`/api/events?${params}`)
             .then(response => response.json())
             .then(data => {
@@ -225,11 +225,11 @@
                 displayError(error.message);
             });
     }
-    
+
     // Display events
     function displayEvents(events) {
         const container = document.getElementById('events-container');
-        
+
         if (!events || events.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-8 text-base-content/50">
@@ -240,12 +240,12 @@
             lucide.createIcons();
             return;
         }
-        
+
         let html = '';
         events.forEach((event, index) => {
             const time = new Date(event.timestamp).toLocaleTimeString();
             const date = new Date(event.timestamp).toLocaleDateString();
-            
+
             // Choose icon and color based on event type
             let icon, badgeClass;
             if (event.event_type.includes('tool')) {
@@ -264,7 +264,7 @@
                 icon = 'zap';
                 badgeClass = 'badge-primary';
             }
-            
+
             // Preview of event data
             let dataPreview = '';
             if (event.data && typeof event.data === 'object') {
@@ -274,7 +274,7 @@
                     if (keys.length > 3) dataPreview += '...';
                 }
             }
-            
+
             html += `
                 <div class="alert alert-info cursor-pointer hover:bg-base-300 transition-colors"
                      onclick="showEventDetails(${index})">
@@ -293,11 +293,11 @@
                 </div>
             `;
         });
-        
+
         container.innerHTML = html;
         lucide.createIcons();
     }
-    
+
     // Display error
     function displayError(message) {
         const container = document.getElementById('events-container');
@@ -312,19 +312,19 @@
         `;
         lucide.createIcons();
     }
-    
+
     // Filter events
     function filterEvents() {
         loadEvents();
     }
-    
+
     // Debounced search
     function debounceSearch() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             const query = document.getElementById('event-search').value.toLowerCase();
             if (query) {
-                const filtered = currentEvents.filter(event => 
+                const filtered = currentEvents.filter(event =>
                     event.event_type.toLowerCase().includes(query) ||
                     event.source.toLowerCase().includes(query) ||
                     JSON.stringify(event.data).toLowerCase().includes(query)
@@ -335,11 +335,11 @@
             }
         }, 300);
     }
-    
+
     // Toggle auto-refresh
     function toggleAutoRefresh() {
         const toggle = document.getElementById('auto-refresh-toggle');
-        
+
         if (toggle.checked) {
             autoRefreshInterval = setInterval(loadEvents, 5000); // Refresh every 5 seconds
             showToast('Auto-refresh enabled', 'success');
@@ -349,23 +349,23 @@
             showToast('Auto-refresh disabled', 'info');
         }
     }
-    
+
     // Refresh events manually
     function refreshEvents() {
         loadEvents();
         showToast('Events refreshed', 'success');
     }
-    
+
     // Show event details
     function showEventDetails(index) {
         const event = currentEvents[index];
         if (!event) return;
-        
+
         const modal = document.getElementById('event-details-modal');
         const content = document.getElementById('event-details-content');
-        
+
         const time = new Date(event.timestamp).toLocaleString();
-        
+
         content.innerHTML = `
             <div class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,14 +375,14 @@
                         </label>
                         <div class="badge badge-primary">${event.event_type}</div>
                     </div>
-                    
+
                     <div>
                         <label class="label">
                             <span class="label-text font-bold">Source</span>
                         </label>
                         <div class="badge badge-secondary">${event.source}</div>
                     </div>
-                    
+
                     <div class="md:col-span-2">
                         <label class="label">
                             <span class="label-text font-bold">Timestamp</span>
@@ -390,7 +390,7 @@
                         <div class="text-sm font-mono">${time}</div>
                     </div>
                 </div>
-                
+
                 <div>
                     <label class="label">
                         <span class="label-text font-bold">Event Data</span>
@@ -401,17 +401,17 @@
                 </div>
             </div>
         `;
-        
+
         modal.showModal();
     }
-    
+
     // Export events
     function exportEvents() {
         if (!currentEvents || currentEvents.length === 0) {
             showToast('No events to export', 'warning');
             return;
         }
-        
+
         const data = {
             events: currentEvents,
             exported_at: new Date().toISOString(),
@@ -422,7 +422,7 @@
                 search: document.getElementById('event-search')?.value || ''
             }
         };
-        
+
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -432,10 +432,10 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        
+
         showToast('Events exported successfully', 'success');
     }
-    
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
         if (autoRefreshInterval) {
@@ -443,4 +443,4 @@
         }
     });
 </script>
-{% endblock %} 
+{% endblock %}

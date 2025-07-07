@@ -40,17 +40,17 @@ class ToolFunction(BaseModel):
     parameters: Dict[str, Any]  # JSON schema
     return_description: str = ""
     function: Optional[Callable] = Field(default=None, exclude=True)
-    
+
     class Config:
         arbitrary_types_allowed = True
 
 
 class Tool(ABC):
     """Base class for tools that provide multiple callable methods for LLMs."""
-    
+
     def __init__(self, name: str = ""):
         self.name = name or self.__class__.__name__.lower().replace('tool', '')
-    
+
     def get_callable_methods(self) -> Dict[str, Callable]:
         """Get all methods marked with @tool decorator."""
         methods = {}
@@ -60,19 +60,19 @@ class Tool(ABC):
                 tool_name = attr_name
                 methods[tool_name] = attr
         return methods
-    
+
     def get_tool_schemas(self) -> Dict[str, Dict[str, Any]]:
         """Get detailed OpenAI function schemas for all callable methods using Pydantic."""
         schemas = {}
         methods = self.get_callable_methods()
-        
+
         for tool_name, method in methods.items():
             # Use Pydantic for schema generation
             pydantic_model = _create_pydantic_model_from_signature(method)
             if pydantic_model:
                 # Get Pydantic's JSON schema
                 pydantic_schema = pydantic_model.model_json_schema()
-                
+
                 # Convert to OpenAI function calling format
                 schema = {
                     "type": "function",
@@ -86,7 +86,7 @@ class Tool(ABC):
             else:
                 # Fallback for methods without parameters
                 schema = {
-                    "type": "function", 
+                    "type": "function",
                     "function": {
                         "name": tool_name,
                         "description": method._tool_description,
@@ -98,7 +98,7 @@ class Tool(ABC):
                     }
                 }
                 schemas[tool_name] = schema
-        
+
         return schemas
 
 
@@ -119,7 +119,7 @@ class ToolCall(BaseModel):
 class ToolResult(BaseModel):
     """
     Canonical tool execution result model.
-    
+
     This is the single source of truth for tool execution results across the framework.
     """
     # Core execution results
@@ -127,39 +127,39 @@ class ToolResult(BaseModel):
     result: Any = None
     error: Optional[str] = None
     execution_time: float = 0.0
-    
+
     # Execution metadata
     metadata: Dict[str, Any] = Field(default_factory=dict)
     timestamp: Optional[str] = None  # ISO format string for JSON serialization
-    
+
     # Tool call context (for messaging)
     tool_call_id: Optional[str] = None
     tool_name: Optional[str] = None
-    
+
     # Artifacts and resources (for file operations)
     artifacts: List[str] = Field(default_factory=list)
     resource_usage: Optional[Dict[str, Any]] = None
     exit_code: Optional[int] = None
-    
+
     def __init__(self, **data):
         # Auto-generate timestamp if not provided
         if 'timestamp' not in data or data['timestamp'] is None:
             data['timestamp'] = datetime.now().isoformat()
         super().__init__(**data)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return self.model_dump()
-    
+
     def to_json(self) -> str:
         """Convert to JSON string."""
         return self.model_dump_json()
-    
+
     @classmethod
     def success_result(cls, result: Any, **kwargs) -> "ToolResult":
         """Create a successful result."""
         return cls(success=True, result=result, **kwargs)
-    
+
     @classmethod
     def error_result(cls, error: str, **kwargs) -> "ToolResult":
         """Create an error result."""
@@ -178,7 +178,7 @@ class ToolRegistryEntry(BaseModel):
     name: str
     description: str
     tool_schema: Dict[str, Any]  # Renamed from 'schema' to avoid shadowing BaseModel.schema()
-    
+
     class Config:
         arbitrary_types_allowed = True
 
@@ -227,7 +227,7 @@ def safe_json_serialize(obj: Any) -> Any:
         return asdict(obj)
     elif hasattr(obj, '__dict__'):
         # Regular object with __dict__
-        return {k: safe_json_serialize(v) for k, v in obj.__dict__.items() 
+        return {k: safe_json_serialize(v) for k, v in obj.__dict__.items()
                 if not k.startswith('_')}
     elif isinstance(obj, (list, tuple)):
         return [safe_json_serialize(item) for item in obj]
@@ -269,22 +269,22 @@ def _create_pydantic_model_from_signature(func: Callable) -> Optional[BaseModel]
     sig = inspect.signature(func)
     type_hints = inspect.get_annotations(func)
     docstring = func.__doc__ or ""
-    
+
     param_descriptions = _extract_all_param_descriptions(docstring)
-    
+
     fields = {}
     for param_name, param in sig.parameters.items():
         if param_name in ['self', 'kwargs']:
             continue
-        
+
         param_type = type_hints.get(param_name, str)
         param_desc = param_descriptions.get(param_name, f"Parameter {param_name}")
-        
+
         if param.default != inspect.Parameter.empty:
             fields[param_name] = (param_type, Field(default=param.default, description=param_desc))
         else:
             fields[param_name] = (param_type, Field(description=param_desc))
-    
+
     # Always create a model, even if there are no fields.
     # This ensures that parameter-less functions get a valid, empty object schema.
     model_name = f"{func.__name__.title()}Params"
@@ -295,10 +295,10 @@ def _extract_all_param_descriptions(docstring: str) -> Dict[str, str]:
     descriptions = {}
     if not docstring:
         return descriptions
-    
+
     lines = docstring.split('\n')
     in_args_section = False
-    
+
     for line in lines:
         line = line.strip()
         if line.lower().startswith(('args:', 'parameters:')):
@@ -311,12 +311,12 @@ def _extract_all_param_descriptions(docstring: str) -> Dict[str, str]:
             colon_idx = line.find(':')
             param_part = line[:colon_idx].strip()
             desc_part = line[colon_idx + 1:].strip()
-            
+
             if '(' in param_part and ')' in param_part:
                 param_name = param_part.split('(')[0].strip()
             else:
                 param_name = param_part
-            
+
             descriptions[param_name] = desc_part
-    
-    return descriptions 
+
+    return descriptions

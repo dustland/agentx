@@ -9,9 +9,9 @@
         <h1 class="text-2xl font-semibold text-gray-800 dark:text-neutral-200">Configuration</h1>
         <p class="text-sm text-gray-600 dark:text-neutral-400">System configuration and agent settings</p>
     </div>
-    
+
     <div class="flex gap-x-2">
-        <button 
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
             onclick="window.location.reload()"
@@ -31,7 +31,7 @@
                     <i data-lucide="folder" class="inline shrink-0 size-4 mr-2"></i>
                     Data Directory Management
                 </h2>
-                <button 
+                <button
                     type="button"
                     class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
                     onclick="refreshDataDirectory()"
@@ -41,18 +41,18 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="p-6">
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Current Data Directory -->
                 <div class="space-y-4">
                     <h3 class="text-lg font-medium text-gray-800 dark:text-neutral-200">Current Directory</h3>
-                    
+
                     <div class="bg-gray-50 dark:bg-neutral-900 rounded-lg p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-sm font-medium text-gray-700 dark:text-neutral-300">Path:</span>
                             <div class="flex items-center gap-x-2">
-                                <button 
+                                <button
                                     type="button"
                                     class="inline-flex items-center gap-x-1 py-1 px-2 text-xs font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
                                     onclick="copyToClipboard('{{ config_data.system.data_directory }}')"
@@ -60,7 +60,7 @@
                                 >
                                     <i data-lucide="copy" class="shrink-0 size-3"></i>
                                 </button>
-                                <button 
+                                <button
                                     type="button"
                                     class="inline-flex items-center gap-x-1 py-1 px-2 text-xs font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
                                     onclick="openDataDirectory()"
@@ -71,7 +71,7 @@
                             </div>
                         </div>
                         <div class="font-mono text-sm text-gray-800 dark:text-neutral-200 break-all">{{ config_data.system.data_directory }}</div>
-                        
+
                         <div class="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
                             <div id="data-directory-info" class="space-y-2">
                                 <div class="flex justify-between text-sm">
@@ -82,25 +82,25 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Change Data Directory -->
                 <div class="space-y-4">
                     <h3 class="text-lg font-medium text-gray-800 dark:text-neutral-200">Change Directory</h3>
-                    
+
                     <div class="space-y-4">
                         <div>
                             <label for="new-data-dir" class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">
                                 New Data Directory Path
                             </label>
                             <div class="flex gap-x-2">
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     id="new-data-dir"
                                     class="flex-1 py-2 px-3 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                     placeholder="Enter new data directory path..."
                                     value="{{ config_data.system.data_directory }}"
                                 >
-                                <button 
+                                <button
                                     type="button"
                                     class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
                                     onclick="browseDataDirectory()"
@@ -110,9 +110,9 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div class="flex gap-x-2">
-                            <button 
+                            <button
                                 type="button"
                                 class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                                 onclick="changeDataDirectory()"
@@ -120,7 +120,7 @@
                                 <i data-lucide="save" class="shrink-0 size-4"></i>
                                 Apply Changes
                             </button>
-                            <button 
+                            <button
                                 type="button"
                                 class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
                                 onclick="resetDataDirectory()"
@@ -129,7 +129,7 @@
                                 Reset
                             </button>
                         </div>
-                        
+
                         <div class="text-xs text-gray-500 dark:text-neutral-400">
                             <p><strong>Note:</strong> Changing the data directory will restart the monitor with the new location. Existing data will remain in the old directory unless manually moved.</p>
                         </div>
@@ -150,7 +150,7 @@
                 System Information
             </h2>
         </div>
-        
+
         <div class="p-6">
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
@@ -159,19 +159,19 @@
                         {{ config_data.system.mode }}
                     </span>
                 </div>
-                
+
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Status:</span>
                     <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium {% if config_data.system.running %}bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500{% else %}bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500{% endif %}">
                         {% if config_data.system.running %}Running{% else %}Stopped{% endif %}
                     </span>
                 </div>
-                
+
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Data Directory:</span>
                     <div class="flex items-center gap-x-2">
                         <span class="text-sm font-mono text-gray-800 dark:text-neutral-200 text-right max-w-xs truncate" title="{{ config_data.system.data_directory }}">{{ config_data.system.data_directory }}</span>
-                        <button 
+                        <button
                             type="button"
                             class="inline-flex items-center gap-x-1 py-1 px-2 text-xs font-medium rounded border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700"
                             onclick="copyToClipboard('{{ config_data.system.data_directory }}')"
@@ -181,12 +181,12 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="flex justify-between">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Python Version:</span>
                     <span class="text-sm font-medium text-gray-800 dark:text-neutral-200">{{ config_data.system.python_version }}</span>
                 </div>
-                
+
                 <div class="flex justify-between">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Platform:</span>
                     <span class="text-sm font-medium text-gray-800 dark:text-neutral-200">{{ config_data.system.platform }}</span>
@@ -203,7 +203,7 @@
                 LLM Models
             </h2>
         </div>
-        
+
         <div class="p-6">
             {% if config_data.llm_models %}
                 <div class="space-y-4">
@@ -230,7 +230,7 @@
                         </div>
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if config_data.llm_models.config_file %}
                     <div class="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
                         <div class="space-y-2">
@@ -273,7 +273,7 @@
                 Agents Configuration
             </h2>
         </div>
-        
+
         <div class="p-6">
             {% if config_data.agents %}
                 <div class="space-y-4">
@@ -283,7 +283,7 @@
                             <h3 class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ agent_name }}</h3>
                             <span class="inline-flex items-center py-1 px-2 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-500">{{ agent_config.role }}</span>
                         </div>
-                        
+
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-neutral-400">Class:</span>
@@ -326,7 +326,7 @@
                 Tools Configuration
             </h2>
         </div>
-        
+
         <div class="p-6">
             {% if config_data.tools.tool_modules %}
                 <div class="space-y-3">
@@ -356,7 +356,7 @@
                 Events Configuration
             </h2>
         </div>
-        
+
         <div class="p-6">
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
@@ -365,19 +365,19 @@
                         {% if config_data.events.integrated_mode %}Integrated{% else %}Independent{% endif %}
                     </span>
                 </div>
-                
+
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Capture Enabled:</span>
                     <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium {% if config_data.events.capture_enabled %}bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500{% else %}bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500{% endif %}">
                         {% if config_data.events.capture_enabled %}Yes{% else %}No{% endif %}
                     </span>
                 </div>
-                
+
                 <div class="flex justify-between">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Total Events:</span>
                     <span class="text-sm font-medium text-gray-800 dark:text-neutral-200">{{ config_data.events.total_events }}</span>
                 </div>
-                
+
                 <div class="flex justify-between">
                     <span class="text-sm text-gray-600 dark:text-neutral-400">Event Types:</span>
                     <span class="text-sm font-medium text-gray-800 dark:text-neutral-200">{{ config_data.events.event_types }}</span>
@@ -386,4 +386,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

@@ -96,13 +96,13 @@ def mock_agents():
     agent1.is_assistant_agent = True
     agent1.is_user_agent = False
     agent1.is_system_agent = False
-    
+
     agent2 = Mock()
     agent2.name = "agent2"
     agent2.is_assistant_agent = True
     agent2.is_user_agent = False
     agent2.is_system_agent = False
-    
+
     return [agent1, agent2]
 
 
@@ -110,4 +110,4 @@ def mock_agents():
 def mock_agent_config():
     """Mock agent config for testing."""
     from agentx.core.agent import AgentConfig, AgentRole
-    return AgentConfig(name="test_agent", role=AgentRole.ASSISTANT) 
+    return AgentConfig(name="test_agent", role=AgentRole.ASSISTANT)

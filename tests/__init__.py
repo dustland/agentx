@@ -8,4 +8,4 @@ Comprehensive testing for all subsystems:
 - Event system
 - Configuration system
 - Integration tests
-""" 
+"""

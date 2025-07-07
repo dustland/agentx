@@ -9,10 +9,10 @@
         <h1 class="text-2xl font-semibold text-gray-800 dark:text-neutral-200">Dashboard</h1>
         <p class="text-sm text-gray-600 dark:text-neutral-400">Real-time observability for your AgentX system</p>
     </div>
-    
+
     <!-- Control buttons -->
     <div class="flex gap-x-2">
-        <button 
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
             onclick="window.location.reload()"
@@ -20,9 +20,9 @@
             <i data-lucide="refresh-cw" class="shrink-0 size-4"></i>
             Refresh
         </button>
-        
+
         {% if dashboard_data.is_running %}
-        <button 
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:bg-red-700 disabled:opacity-50 disabled:pointer-events-none"
             hx-post="/api/monitor/stop"
@@ -34,7 +34,7 @@
             Stop
         </button>
         {% else %}
-        <button 
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:bg-green-700 disabled:opacity-50 disabled:pointer-events-none"
             hx-post="/api/monitor/start"
@@ -59,7 +59,7 @@
                     System Status
                 </p>
             </div>
-            
+
             <div class="mt-1 flex items-center gap-x-2">
                 {% if dashboard_data.is_running and dashboard_data.is_integrated %}
                     <i data-lucide="check-circle" class="shrink-0 size-5 text-green-600"></i>
@@ -72,7 +72,7 @@
                     {% if dashboard_data.is_running %}Running{% else %}Stopped{% endif %}
                 </h3>
             </div>
-            
+
             <div class="mt-2 flex gap-x-1">
                 {% if dashboard_data.is_integrated %}
                     <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500">Integrated</span>
@@ -91,14 +91,14 @@
                     Tasks
                 </p>
             </div>
-            
+
             <div class="mt-1 flex items-center gap-x-2">
                 <i data-lucide="list-checks" class="shrink-0 size-5 text-blue-600"></i>
                 <h3 class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
                     {{ dashboard_data.total_tasks }}
                 </h3>
             </div>
-            
+
             <p class="mt-1 text-sm text-gray-500 dark:text-neutral-500">
                 Total tracked
             </p>
@@ -113,14 +113,14 @@
                     Artifacts
                 </p>
             </div>
-            
+
             <div class="mt-1 flex items-center gap-x-2">
                 <i data-lucide="folder-open" class="shrink-0 size-5 text-purple-600"></i>
                 <h3 class="text-xl sm:text-2xl font-medium text-gray-800 dark:text-neutral-200">
                     {{ dashboard_data.artifacts.total_files or 0 }}
                 </h3>
             </div>
-            
+
             <p class="mt-1 text-sm text-gray-500 dark:text-neutral-500">
                 {{ dashboard_data.artifacts.total_size or "0 B" }}
             </p>
@@ -135,7 +135,7 @@
                     Events
                 </p>
             </div>
-            
+
             <div class="mt-1 flex items-center gap-x-2">
                 {% if dashboard_data.is_integrated %}
                     <i data-lucide="zap" class="shrink-0 size-5 text-orange-600"></i>
@@ -149,7 +149,7 @@
                     </h3>
                 {% endif %}
             </div>
-            
+
             <p class="mt-1 text-sm text-gray-500 dark:text-neutral-500">
                 {% if dashboard_data.is_integrated %}Real-time capture{% else %}Integrated mode only{% endif %}
             </p>
@@ -168,7 +168,7 @@
                     Recent Tasks
                 </h2>
             </div>
-            
+
             <div>
                 <a class="py-1.5 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" href="/tasks">
                     View All
@@ -176,7 +176,7 @@
                 </a>
             </div>
         </div>
-        
+
         <div class="p-6">
             {% if dashboard_data.recent_tasks %}
                 <div class="space-y-3">
@@ -186,7 +186,7 @@
                             <div class="size-2 bg-blue-600 rounded-full"></div>
                             <span class="text-sm font-mono text-gray-800 dark:text-neutral-200">{{ task_id }}</span>
                         </div>
-                        <button 
+                        <button
                             type="button"
                             class="py-1 px-2 inline-flex items-center gap-x-2 text-xs font-medium rounded-lg border border-transparent text-gray-500 hover:text-gray-800 focus:outline-none focus:text-gray-800 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
                             onclick="viewTaskDetails('{{ task_id }}')"
@@ -220,7 +220,7 @@
                     {% endif %}
                 </h2>
             </div>
-            
+
             {% if dashboard_data.is_integrated and dashboard_data.event_types %}
             <div>
                 <a class="py-1.5 px-2 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" href="/events">
@@ -230,7 +230,7 @@
             </div>
             {% endif %}
         </div>
-        
+
         <div class="p-6">
             {% if dashboard_data.is_integrated and dashboard_data.event_types %}
                 <div class="space-y-3">
@@ -249,12 +249,12 @@
                             {% if dashboard_data.is_integrated %}Integrated{% else %}Independent{% endif %}
                         </span>
                     </div>
-                    
+
                     <div class="flex justify-between">
                         <span class="text-sm text-gray-600 dark:text-neutral-400">Data Directory:</span>
                         <span class="text-sm font-mono text-gray-800 dark:text-neutral-200">{{ dashboard_data.data_dir }}</span>
                     </div>
-                    
+
                     <div class="flex justify-between">
                         <span class="text-sm text-gray-600 dark:text-neutral-400">Status:</span>
                         <span class="text-sm font-medium text-gray-800 dark:text-neutral-200">
@@ -262,7 +262,7 @@
                         </span>
                     </div>
                 </div>
-                
+
                 {% if not dashboard_data.is_integrated %}
                 <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-800/30 dark:border-blue-700">
                     <div class="flex">
@@ -292,19 +292,19 @@
                 Quick Actions
             </h2>
         </div>
-        
+
         <div class="p-6">
             <div class="grid sm:grid-cols-3 gap-4">
                 <a href="/tasks" class="group flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 focus:outline-none focus:border-gray-400 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
                     <i data-lucide="list-checks" class="size-8 text-gray-400 group-hover:text-gray-500 dark:text-neutral-500 dark:group-hover:text-neutral-400"></i>
                     <span class="mt-2 block text-sm font-medium text-gray-700 group-hover:text-gray-800 dark:text-neutral-300 dark:group-hover:text-neutral-200">View Tasks</span>
                 </a>
-                
+
                 <a href="/artifacts" class="group flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 focus:outline-none focus:border-gray-400 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
                     <i data-lucide="folder-open" class="size-8 text-gray-400 group-hover:text-gray-500 dark:text-neutral-500 dark:group-hover:text-neutral-400"></i>
                     <span class="mt-2 block text-sm font-medium text-gray-700 group-hover:text-gray-800 dark:text-neutral-300 dark:group-hover:text-neutral-200">Browse Artifacts</span>
                 </a>
-                
+
                 <button type="button" onclick="exportData()" class="group flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 focus:outline-none focus:border-gray-400 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
                     <i data-lucide="download" class="size-8 text-gray-400 group-hover:text-gray-500 dark:text-neutral-500 dark:group-hover:text-neutral-400"></i>
                     <span class="mt-2 block text-sm font-medium text-gray-700 group-hover:text-gray-800 dark:text-neutral-300 dark:group-hover:text-neutral-200">Export Data</span>
@@ -325,4 +325,4 @@ function exportData() {
     window.location.href = '/api/export';
 }
 </script>
-{% endblock %} 
+{% endblock %}

@@ -3,7 +3,7 @@ export default {
     display: "hidden"
   },
   "getting-started": "Getting Started",
-  tutorials: "Tutorials", 
+  tutorials: "Tutorials",
   design: "Design",
   reference: "Reference"
-} 
+}

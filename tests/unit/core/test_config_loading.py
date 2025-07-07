@@ -18,7 +18,7 @@ try:
     # Check if a known file exists to validate root
     if not (PROJECT_ROOT / 'pyproject.toml').exists():
         # This works when the CWD is inside the tests folder
-        PROJECT_ROOT = Path.cwd().parent 
+        PROJECT_ROOT = Path.cwd().parent
 except FileNotFoundError:
     PROJECT_ROOT = Path.cwd()
 
@@ -59,7 +59,7 @@ def test_load_team_from_config(sample_team_config_path: str):
     assert "coordinator" in task_executor.agents
     assert "analyst" in task_executor.agents
     assert "writer" in task_executor.agents
-    
+
     # Check max rounds - this comes from team_config.max_rounds (default 10)
     assert task_executor.team_config.max_rounds == 10
 
@@ -77,7 +77,7 @@ def test_load_team_with_invalid_yaml(tmp_path: Path):
     invalid_yaml = "name: Test Team\n  agents: - name: agent1" # Bad indentation
     config_path = tmp_path / "invalid_team.yaml"
     config_path.write_text(invalid_yaml)
-    
+
     with pytest.raises(ConfigurationError):
         TaskExecutor(str(config_path))
 
@@ -97,7 +97,7 @@ agents:
     config_path = tmp_path / "invalid_team.yaml"
     (tmp_path / "prompt.jinja2").write_text("dummy prompt")
     config_path.write_text(invalid_config)
-    
+
     with pytest.raises(ConfigurationError):
         TaskExecutor(str(config_path))
 
@@ -122,7 +122,7 @@ tools:
     config_path = tmp_path / "team.yaml"
     (tmp_path / "prompt.jinja2").write_text("dummy prompt")
     config_path.write_text(invalid_config)
-    
+
     # This should load successfully since we don't validate tool sources at load time
     task_executor = TaskExecutor(str(config_path))
     assert task_executor.team_config.name == "Test Team"
@@ -152,7 +152,7 @@ tools: []
 
 def test_basic_team_config_loading():
     """Test loading a basic team configuration."""
-    
+
     # Create a minimal team configuration
     config_data = {
         'name': 'test_team',
@@ -173,10 +173,10 @@ def test_basic_team_config_loading():
             }
         ]
     }
-    
+
     # Create TeamConfig from dict
     team_config = TeamConfig(**config_data)
-    
+
     # Verify the configuration
     assert team_config.name == 'test_team'
     assert team_config.description == 'A test team configuration'
@@ -187,11 +187,11 @@ def test_basic_team_config_loading():
 
 def test_team_config_validation():
     """Test that team configuration validation works correctly."""
-    
+
     # Test missing required fields
     with pytest.raises(Exception):  # Should raise validation error
         TeamConfig()
-    
+
     # Test valid minimal config
     config = TeamConfig(
         name="test",
@@ -204,16 +204,16 @@ def test_team_config_validation():
             )
         ]
     )
-    
+
     assert config.name == "test"
     assert len(config.agents) == 1
 
 def test_brain_config_defaults():
     """Test that Brain configuration uses proper defaults."""
-    
+
     # Test with minimal Brain config
     brain_config = BrainConfig(provider='deepseek', model='deepseek-chat', api_key='test-key')
-    
+
     assert brain_config.provider == 'deepseek'
     assert brain_config.model == 'deepseek-chat'
     assert brain_config.temperature == 0.7  # Default value
@@ -223,15 +223,15 @@ def test_brain_config_defaults():
 
 def test_task_config():
     """Test task configuration."""
-    
+
     # Test default values
     task_config = TaskConfig()
-    
+
     assert task_config.mode == "autonomous"
     assert task_config.max_rounds == 10  # Updated to match current default
     assert task_config.timeout_seconds == 300
     assert task_config.step_through_enabled == False
-    
+
     # Test custom values
     task_config = TaskConfig(
         mode="step_through",
@@ -239,8 +239,8 @@ def test_task_config():
         timeout_seconds=600,
         step_through_enabled=True
     )
-    
+
     assert task_config.mode == "step_through"
     assert task_config.max_rounds == 50
     assert task_config.timeout_seconds == 600
-    assert task_config.step_through_enabled == True 
+    assert task_config.step_through_enabled == True

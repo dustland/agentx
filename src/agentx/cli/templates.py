@@ -12,7 +12,7 @@ from pathlib import Path
 
 def generate_template_config(template: str, model: str) -> str:
     """Generate team configuration based on template using preset agents."""
-    
+
     if template == "writing":
         config = {
             "name": f"{template}_project",
@@ -23,15 +23,15 @@ def generate_template_config(template: str, model: str) -> str:
             },
             "agents": [
                 "researcher",    # Professional market researcher
-                "writer",        # Strategic business writer  
+                "writer",        # Strategic business writer
                 "reviewer",      # Quality assurance specialist
                 "web_designer"   # Professional web designer for HTML/CSS
             ]
         }
-        
+
     elif template == "coding":
         config = {
-            "name": f"{template}_project", 
+            "name": f"{template}_project",
             "description": "AgentX coding workflow with architecture, development, and testing",
             "orchestrator": {
                 "max_rounds": 20,
@@ -43,11 +43,11 @@ def generate_template_config(template: str, model: str) -> str:
                 "reviewer"       # Quality assurance and testing
             ]
         }
-        
+
     elif template == "operating":
         config = {
             "name": f"{template}_project",
-            "description": "AgentX operating workflow with analysis, execution, and monitoring", 
+            "description": "AgentX operating workflow with analysis, execution, and monitoring",
             "orchestrator": {
                 "max_rounds": 25,
                 "timeout": 3600
@@ -58,7 +58,7 @@ def generate_template_config(template: str, model: str) -> str:
                 "reviewer"       # Results monitoring
             ]
         }
-        
+
     else:  # custom
         config = {
             "name": f"{template}_project",
@@ -73,13 +73,13 @@ def generate_template_config(template: str, model: str) -> str:
                 "reviewer"       # For quality assurance
             ]
         }
-    
+
     return yaml.dump(config, default_flow_style=False, sort_keys=False)
 
 
 def generate_template_prompts(template: str) -> Dict[str, str]:
     """Generate prompt files based on template - now minimal since we use presets."""
-    
+
     # With preset agents, we only need to generate custom prompts if any
     # For now, all templates use preset agents, so no custom prompts needed
     return {}
@@ -104,43 +104,43 @@ async def main():
     """Main application entry point."""
     print("🚀 Starting {project_name}")
     print("=" * 50)
-    
+
     # Configuration
     config_path = Path("config/team.yaml")
-    
+
     if not config_path.exists():
         print("❌ Configuration file not found: {{config_path}}")
         print("Make sure you're running from the project root directory.")
         return
-    
+
     # Start task
     task_executor = TaskExecutor(config_path)
     task_id = await task_executor.start_task()
-    
+
     print(f"📋 Task ID: {{task_id}}")
     print(f"📁 Workspace: {{task_executor.task.workspace_path}}")
     print("\\n🤖 AI agents are ready! What would you like to work on?")
-    
+
     try:
         # Interactive session
         while True:
             user_input = input("\\n👤 You: ").strip()
-            
+
             if user_input.lower() in ['quit', 'exit', 'bye']:
                 break
-                
+
             if not user_input:
                 continue
-            
+
             print("\\n🤖 AI:")
             async for chunk in task_executor.step(user_input, stream=True):
                 if chunk.get('type') == 'agent_response':
                     print(chunk.get('content', ''), end='', flush=True)
             print()  # New line after streaming
-            
+
     except KeyboardInterrupt:
         print("\\n\\n👋 Session ended. Your work is saved in the workspace!")
-    
+
     print(f"\\n📁 Check your results in: {{task_executor.task.workspace_path}}")
 
 
@@ -156,7 +156,7 @@ def generate_env_example(model: str) -> str:
 
 # Primary LLM Provider: {model}
 """
-    
+
     if model == "deepseek":
         env_content += """DEEPSEEK_API_KEY=your_deepseek_api_key_here
 # Get your key at: https://platform.deepseek.com
@@ -188,29 +188,29 @@ def generate_env_example(model: str) -> str:
 # DEEPSEEK_API_KEY=your_deepseek_api_key_here
 # OPENAI_API_KEY=your_openai_api_key_here
 """
-    
+
     env_content += """
 # Optional: AgentX Configuration
 # AGENTX_LOG_LEVEL=INFO
 # AGENTX_WORKSPACE_DIR=./workspace
 # AGENTX_MAX_ROUNDS=50
 """
-    
+
     return env_content
 
 
 def generate_readme(project_name: str, template: str, model: str) -> str:
     """Generate README.md for the project."""
-    
+
     template_descriptions = {
         "writing": "document creation, research papers, and content workflows",
-        "coding": "software development, debugging, and testing workflows", 
+        "coding": "software development, debugging, and testing workflows",
         "operating": "automation, API integration, and real-world action workflows",
         "custom": "general-purpose AI assistance workflows"
     }
-    
+
     description = template_descriptions.get(template, "AI workflow")
-    
+
     return f'''# {project_name}
 
 An AgentX project optimized for {description} using **preset agents**.
@@ -314,7 +314,7 @@ def get_template_description(template: str) -> str:
         "writing": """This template optimizes for **Vibe-Writing** workflows using preset agents:
 
 - **Researcher**: Professional market researcher with industry expertise
-- **Writer**: Strategic business writer producing executive-quality content  
+- **Writer**: Strategic business writer producing executive-quality content
 - **Reviewer**: Quality assurance specialist ensuring executive-level standards
 - **Web Designer**: Professional web designer for modern, responsive HTML websites and visualizations
 
@@ -340,7 +340,7 @@ Perfect for building applications, creating libraries, debugging systems, and im
 - **Writer**: For content creation and documentation
 - **Reviewer**: For quality assurance and optimization"""
     }
-    
+
     return descriptions.get(template, "A flexible AgentX project template.")
 
 
@@ -348,7 +348,7 @@ def get_default_model(model: str) -> str:
     """Get default model name for provider."""
     models = {
         "deepseek": "deepseek-chat",
-        "openai": "gpt-4o-mini", 
+        "openai": "gpt-4o-mini",
         "claude": "claude-3-haiku-20240307",
         "gemini": "gemini-1.5-flash"
     }
@@ -375,7 +375,7 @@ def get_agents_description(template: str) -> str:
 - **Writer**: General content creation and documentation
 - **Reviewer**: Quality assurance and optimization"""
     }
-    
+
     return descriptions.get(template, "General-purpose preset agents")
 
 
@@ -395,7 +395,7 @@ orchestrator:
   timeout: 1800
 agents:
   - "researcher"
-  - "writer" 
+  - "writer"
   - "reviewer"
   - "web_designer"'''
     elif template == "coding":
@@ -427,4 +427,4 @@ orchestrator:
 agents:
   - "researcher"
   - "writer"
-  - "reviewer"''' 
+  - "reviewer"'''

@@ -27,37 +27,37 @@ Examples:
 For more information, visit: https://github.com/dustland/agentx
         """
     )
-    
+
     subparsers = parser.add_subparsers(
         dest="command",
         help="Available commands",
         metavar="COMMAND"
     )
-    
+
     # Bootstrap/Init command
     _add_init_parser(subparsers)
-    
+
     # Start command (API server)
     _add_start_parser(subparsers)
-    
+
     # Monitor command (merged with web)
     _add_monitor_parser(subparsers)
-    
+
     # Status command
     _add_status_parser(subparsers)
-    
+
     # Example command
     _add_example_parser(subparsers)
-    
+
     # Version command
     _add_version_parser(subparsers)
-    
+
     # Config command
     _add_config_parser(subparsers)
-    
+
     # Debug command
     _add_debug_parser(subparsers)
-    
+
     return parser
 
 
@@ -200,4 +200,4 @@ def _add_debug_parser(subparsers) -> None:
     debug_parser.add_argument(
         "task_id",
         help="Task ID to debug"
-    ) 
+    )

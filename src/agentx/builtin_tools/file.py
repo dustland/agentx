@@ -16,20 +16,20 @@ logger = get_logger(__name__)
 
 class FileTool(Tool):
     """File tool that works with workspace artifacts and provides simple file operations."""
-    
+
     def __init__(self, workspace_storage: WorkspaceStorage):
         super().__init__()
-        
+
         # Validate required parameter
         if workspace_storage is None:
             raise TypeError("FileTool requires a WorkspaceStorage instance, got None")
-        
+
         if not hasattr(workspace_storage, 'get_workspace_path'):
             raise TypeError(f"FileTool requires a WorkspaceStorage instance, got {type(workspace_storage)}")
-        
+
         self.workspace = workspace_storage
         logger.info(f"FileTool initialized with workspace: {self.workspace.get_workspace_path()}")
-    
+
     @tool(description="Write content to a file")
     async def write_file(
         self,
@@ -44,7 +44,7 @@ class FileTool(Tool):
                 "content_type": self._get_content_type(filename),
                 "tool": "file_tool"
             }
-            
+
             result = await self.workspace.store_artifact(
                 name=filename,
                 content=content,
@@ -52,11 +52,11 @@ class FileTool(Tool):
                 metadata=metadata,
                 commit_message=f"Updated {filename}"
             )
-            
+
             if result.success:
                 version = result.data.get("version", "unknown") if result.data else "unknown"
                 logger.info(f"Wrote file artifact: {filename} (version: {version})")
-                
+
                 # Return ToolResult with user-friendly content for LLM + structured data
                 return ToolResult(
                     success=True,
@@ -74,7 +74,7 @@ class FileTool(Tool):
                     result=f"❌ Failed to write file: {result.error}",
                     error=result.error
                 )
-                
+
         except Exception as e:
             logger.error(f"Error writing file {filename}: {e}")
             return ToolResult(
@@ -82,7 +82,7 @@ class FileTool(Tool):
                 result=f"❌ Failed to write file: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Read the contents of a file")
     async def read_file(
         self,
@@ -92,14 +92,14 @@ class FileTool(Tool):
         """Read file contents from workspace artifacts."""
         try:
             content = await self.workspace.get_artifact(filename, version)
-            
+
             if content is None:
                 return ToolResult(
                     success=False,
                     result=f"❌ File not found: {filename}",
                     error=f"File not found: {filename}"
                 )
-            
+
             logger.info(f"Read file artifact: {filename}")
             return ToolResult(
                 success=True,
@@ -111,7 +111,7 @@ class FileTool(Tool):
                     "content": content  # Include raw content for programmatic access
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Error reading file {filename}: {e}")
             return ToolResult(
@@ -119,20 +119,20 @@ class FileTool(Tool):
                 result=f"❌ Error reading file: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="List all files in the workspace")
     async def list_files(self) -> ToolResult:
         """List all file artifacts in the workspace."""
         try:
             artifacts = await self.workspace.list_artifacts()
-            
+
             if not artifacts:
                 return ToolResult(
                     success=True,
                     result="📂 Workspace files:\n\nNo files found in workspace.",
                     metadata={"files": [], "count": 0}
                 )
-            
+
             # Group by filename (artifacts can have multiple versions)
             files_by_name = {}
             for artifact in artifacts:
@@ -140,7 +140,7 @@ class FileTool(Tool):
                 if name not in files_by_name:
                     files_by_name[name] = []
                 files_by_name[name].append(artifact)
-            
+
             file_list = []
             files_metadata = []
             for name, versions in files_by_name.items():
@@ -148,13 +148,13 @@ class FileTool(Tool):
                 size = latest_version.get("size", 0)
                 version_count = len(versions)
                 created_at = latest_version.get("created_at", "unknown")
-                
+
                 file_entry = f"  📄 {name} ({size} bytes"
                 if version_count > 1:
                     file_entry += f", {version_count} versions"
                 file_entry += f", created: {created_at})"
                 file_list.append(file_entry)
-                
+
                 # Add structured data for programmatic access
                 files_metadata.append({
                     "name": name,
@@ -163,7 +163,7 @@ class FileTool(Tool):
                     "created_at": created_at,
                     "latest_version": latest_version.get("version", "unknown")
                 })
-            
+
             logger.info(f"Listed {len(files_by_name)} file artifacts")
             return ToolResult(
                 success=True,
@@ -173,7 +173,7 @@ class FileTool(Tool):
                     "count": len(files_by_name)
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Error listing files: {e}")
             return ToolResult(
@@ -181,7 +181,7 @@ class FileTool(Tool):
                 result=f"❌ Error listing files: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Check if a file exists in the workspace")
     async def file_exists(
         self,
@@ -190,23 +190,23 @@ class FileTool(Tool):
         """Check if a file artifact exists in the workspace."""
         try:
             content = await self.workspace.get_artifact(filename)
-            
+
             if content is not None:
                 # Get artifact metadata
                 artifacts = await self.workspace.list_artifacts()
                 file_artifacts = [a for a in artifacts if a["name"] == filename]
-                
+
                 if file_artifacts:
                     latest = sorted(file_artifacts, key=lambda x: x.get("created_at", ""))[-1]
                     size = latest.get("size", 0)
                     created_at = latest.get("created_at", "unknown")
                     version_count = len(file_artifacts)
-                    
+
                     info = f"✅ File exists: {filename} ({size} bytes, created: {created_at}"
                     if version_count > 1:
                         info += f", {version_count} versions"
                     info += ")"
-                    
+
                     logger.info(f"File exists: {filename}")
                     return ToolResult(
                         success=True,
@@ -231,7 +231,7 @@ class FileTool(Tool):
                     result=f"❌ File does not exist: {filename}",
                     metadata={"filename": filename, "exists": False}
                 )
-                
+
         except Exception as e:
             logger.error(f"Error checking file {filename}: {e}")
             return ToolResult(
@@ -239,7 +239,7 @@ class FileTool(Tool):
                 result=f"❌ Error checking file: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Delete a file from the workspace")
     async def delete_file(
         self,
@@ -249,7 +249,7 @@ class FileTool(Tool):
         """Delete a file artifact from the workspace."""
         try:
             result = await self.workspace.delete_artifact(filename, version)
-            
+
             if result.success:
                 if version:
                     logger.info(f"Deleted file artifact version: {filename} (version: {version})")
@@ -271,7 +271,7 @@ class FileTool(Tool):
                     result=f"❌ Failed to delete file: {result.error}",
                     error=result.error
                 )
-                
+
         except Exception as e:
             logger.error(f"Error deleting file {filename}: {e}")
             return ToolResult(
@@ -279,7 +279,7 @@ class FileTool(Tool):
                 result=f"❌ Error deleting file: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Get version history of a file")
     async def get_file_versions(
         self,
@@ -288,42 +288,42 @@ class FileTool(Tool):
         """Get version history of a file artifact."""
         try:
             versions = await self.workspace.get_artifact_versions(filename)
-            
+
             if not versions:
                 return ToolResult(
                     success=False,
                     result=f"❌ No versions found for file: {filename}",
                     error=f"No versions found for file: {filename}"
                 )
-            
+
             # Get detailed info for each version
             artifacts = await self.workspace.list_artifacts()
             file_artifacts = [a for a in artifacts if a["name"] == filename]
-            
+
             if not file_artifacts:
                 return ToolResult(
                     success=False,
                     result=f"❌ No artifact metadata found for file: {filename}",
                     error=f"No artifact metadata found for file: {filename}"
                 )
-            
+
             # Sort by creation time
             file_artifacts.sort(key=lambda x: x.get("created_at", ""))
-            
+
             version_list = []
             versions_metadata = []
             for i, artifact in enumerate(file_artifacts):
                 version = artifact.get("version", f"v{i+1}")
                 size = artifact.get("size", 0)
                 created_at = artifact.get("created_at", "unknown")
-                
+
                 version_list.append(f"  {version} - {size} bytes, created: {created_at}")
                 versions_metadata.append({
                     "version": version,
                     "size": size,
                     "created_at": created_at
                 })
-            
+
             logger.info(f"Retrieved {len(versions)} versions for {filename}")
             return ToolResult(
                 success=True,
@@ -334,7 +334,7 @@ class FileTool(Tool):
                     "count": len(versions)
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Error getting versions for {filename}: {e}")
             return ToolResult(
@@ -342,20 +342,20 @@ class FileTool(Tool):
                 result=f"❌ Error getting versions: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Get workspace summary with file statistics")
     async def get_workspace_summary(self) -> ToolResult:
         """Get a summary of the workspace contents."""
         try:
             summary = await self.workspace.get_workspace_summary()
-            
+
             if isinstance(summary, dict) and "error" in summary:
                 return ToolResult(
                     success=False,
                     result=f"❌ Error getting workspace summary: {summary['error']}",
                     error=summary['error']
                 )
-            
+
             # Format the summary nicely
             if isinstance(summary, dict):
                 lines = ["📊 Workspace Summary:\n"]
@@ -365,14 +365,14 @@ class FileTool(Tool):
                 result_text = "\n".join(lines)
             else:
                 result_text = f"📊 Workspace Summary:\n\n{summary}"
-            
+
             logger.info("Retrieved workspace summary")
             return ToolResult(
                 success=True,
                 result=result_text,
                 metadata=summary if isinstance(summary, dict) else {"summary": summary}
             )
-            
+
         except Exception as e:
             logger.error(f"Error getting workspace summary: {e}")
             return ToolResult(
@@ -380,7 +380,7 @@ class FileTool(Tool):
                 result=f"❌ Error getting workspace summary: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="Create a directory in the workspace")
     async def create_directory(
         self,
@@ -389,7 +389,7 @@ class FileTool(Tool):
         """Create a directory in the workspace using the underlying file storage."""
         try:
             result = await self.workspace.file_storage.create_directory(path)
-            
+
             if result.success:
                 if result.metadata and result.metadata.get("already_exists"):
                     logger.info(f"Directory already exists: {path}")
@@ -411,7 +411,7 @@ class FileTool(Tool):
                     result=f"❌ Failed to create directory: {result.error}",
                     error=result.error
                 )
-                
+
         except Exception as e:
             logger.error(f"Error creating directory {path}: {e}")
             return ToolResult(
@@ -419,7 +419,7 @@ class FileTool(Tool):
                 result=f"❌ Error creating directory: {str(e)}",
                 error=str(e)
             )
-    
+
     @tool(description="List contents of a directory in the workspace")
     async def list_directory(
         self,
@@ -429,9 +429,9 @@ class FileTool(Tool):
         try:
             # Use empty string for root, or the specified path
             directory_path = path if path else ""
-            
+
             files = await self.workspace.file_storage.list_directory(directory_path)
-            
+
             if not files:
                 display_path = directory_path if directory_path else "workspace root"
                 return ToolResult(
@@ -439,7 +439,7 @@ class FileTool(Tool):
                     result=f"📂 Directory '{display_path}' is empty",
                     metadata={"path": directory_path, "items": [], "count": 0}
                 )
-            
+
             items = []
             items_metadata = []
             for file_info in files:
@@ -458,7 +458,7 @@ class FileTool(Tool):
                         "type": "file",
                         "size": file_info.size
                     })
-            
+
             display_path = directory_path if directory_path else "workspace root"
             logger.info(f"Listed directory: {display_path}")
             return ToolResult(
@@ -470,7 +470,7 @@ class FileTool(Tool):
                     "count": len(items)
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Error listing directory {path}: {e}")
             return ToolResult(
@@ -478,7 +478,7 @@ class FileTool(Tool):
                 result=f"❌ Error listing directory: {str(e)}",
                 error=str(e)
             )
-    
+
     def _get_content_type(self, filename: str) -> str:
         """Determine content type from filename."""
         if filename.endswith('.html'):
@@ -502,15 +502,15 @@ class FileTool(Tool):
 def create_file_tool(workspace_path: str) -> FileTool:
     """
     Create a file tool for workspace operations.
-    
+
     Args:
         workspace_path: Path to the workspace directory
-        
+
     Returns:
         FileTool instance that properly uses workspace abstraction
     """
     workspace = StorageFactory.create_workspace_storage(workspace_path)
     file_tool = FileTool(workspace)
-    
+
     logger.info(f"Created file tool for workspace: {workspace_path}")
-    return file_tool 
+    return file_tool

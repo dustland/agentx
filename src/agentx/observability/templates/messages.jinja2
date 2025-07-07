@@ -9,9 +9,9 @@
         <h1 class="text-2xl font-semibold text-gray-800 dark:text-neutral-200">Messages</h1>
         <p class="text-sm text-gray-600 dark:text-neutral-400">Agent conversation history and task execution logs</p>
     </div>
-    
+
     <div class="flex gap-x-2">
-        <button 
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
             onclick="window.location.reload()"
@@ -19,8 +19,8 @@
             <i data-lucide="refresh-cw" class="shrink-0 size-4"></i>
             Refresh
         </button>
-        
-        <button 
+
+        <button
             type="button"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             onclick="exportMessagesHistory()"
@@ -40,12 +40,12 @@
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-neutral-200">Tasks</h3>
                 <p class="text-xs text-gray-600 dark:text-neutral-400">Select a task to view conversation</p>
             </div>
-            
+
             <div class="flex-1 overflow-y-auto custom-scrollbar">
                 {% if all_tasks %}
                     <div class="p-2 space-y-1">
                         {% for task_id in all_tasks %}
-                        <button 
+                        <button
                             type="button"
                             class="task-item w-full text-left p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors"
                             data-task-id="{{ task_id }}"
@@ -79,7 +79,7 @@
                         <h3 id="messages-task-title" class="text-lg font-semibold text-gray-800 dark:text-neutral-200">Select a Task</h3>
                         <p id="messages-task-subtitle" class="text-sm text-gray-600 dark:text-neutral-400">Choose a task from the sidebar to view conversation history</p>
                     </div>
-                    
+
                     <div class="flex items-center gap-x-2">
                         <!-- Message Type Filter -->
                         <select id="message-filter" class="py-1.5 px-3 pe-9 block border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400 dark:focus:ring-neutral-600" onchange="filterMessages()">
@@ -88,9 +88,9 @@
                             <option value="tool">Tool Calls</option>
                             <option value="error">Errors Only</option>
                         </select>
-                        
+
                         <!-- Auto-scroll toggle -->
-                        <button 
+                        <button
                             type="button"
                             id="auto-scroll-toggle"
                             class="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 focus:outline-none focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
@@ -102,22 +102,22 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Messages Container -->
             <div id="messages-container" class="flex-1 overflow-y-auto custom-scrollbar p-6">
                 <div id="welcome-message" class="flex flex-col items-center justify-center h-full">
                     <i data-lucide="message-circle" class="size-16 text-gray-400 dark:text-neutral-500 mb-4"></i>
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-neutral-200 mb-2">Welcome to Messages</h3>
                     <p class="text-sm text-gray-600 dark:text-neutral-400 text-center max-w-md">
-                        This is where you can view the conversation history between agents during task execution. 
+                        This is where you can view the conversation history between agents during task execution.
                         Select a task from the sidebar to see the detailed agent interactions.
                     </p>
                 </div>
-                
+
                 <!-- Messages will be loaded here -->
                 <div id="conversation-messages" class="space-y-4 hidden"></div>
             </div>
-            
+
             <!-- Messages Footer -->
             <div id="messages-footer" class="px-6 py-3 border-t border-gray-200 dark:border-neutral-700 hidden">
                 <div class="flex items-center justify-between text-sm text-gray-600 dark:text-neutral-400">
@@ -137,38 +137,38 @@ let autoScroll = true;
 // Load conversation for a specific task
 async function loadTaskConversation(taskId) {
     currentTaskId = taskId;
-    
+
     // Update UI
     document.getElementById('messages-task-title').textContent = `Task: ${taskId}`;
     document.getElementById('messages-task-subtitle').textContent = 'Loading conversation...';
-    
+
     // Highlight selected task
     document.querySelectorAll('.task-item').forEach(item => {
         item.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'border-blue-200', 'dark:border-blue-800');
     });
     document.querySelector(`[data-task-id="${taskId}"]`).classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'border', 'border-blue-200', 'dark:border-blue-800');
-    
+
     // Hide welcome message
     document.getElementById('welcome-message').classList.add('hidden');
     document.getElementById('conversation-messages').classList.remove('hidden');
     document.getElementById('messages-footer').classList.remove('hidden');
-    
+
     try {
         const response = await fetch(`/api/task/${taskId}/conversation`);
         const data = await response.json();
-        
+
         if (data.conversation && data.conversation.length > 0) {
             allMessages = data.conversation;
             displayMessages(allMessages);
-            
+
             // Update footer
             document.getElementById('message-count').textContent = `${allMessages.length} messages`;
             document.getElementById('messages-task-subtitle').textContent = `${allMessages.length} messages in conversation`;
-            
+
             if (allMessages.length > 0) {
                 const firstMessage = new Date(allMessages[0].timestamp);
                 const lastMessage = new Date(allMessages[allMessages.length - 1].timestamp);
-                document.getElementById('conversation-time').textContent = 
+                document.getElementById('conversation-time').textContent =
                     `${firstMessage.toLocaleString()} - ${lastMessage.toLocaleString()}`;
             }
         } else {
@@ -180,7 +180,7 @@ async function loadTaskConversation(taskId) {
                 </div>
             `;
             lucide.createIcons();
-            
+
             document.getElementById('message-count').textContent = '0 messages';
             document.getElementById('conversation-time').textContent = 'No conversation data';
             document.getElementById('messages-task-subtitle').textContent = 'No conversation history available';
@@ -201,15 +201,15 @@ async function loadTaskConversation(taskId) {
 function displayMessages(messages) {
     const container = document.getElementById('conversation-messages');
     container.innerHTML = '';
-    
+
     messages.forEach((message, index) => {
         const messageEl = createMessageElement(message, index);
         container.appendChild(messageEl);
     });
-    
+
     // Re-initialize Lucide icons
     lucide.createIcons();
-    
+
     // Auto-scroll to bottom
     if (autoScroll) {
         scrollToBottom();
@@ -220,11 +220,11 @@ function displayMessages(messages) {
 function createMessageElement(message, index) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message-item message-type-${message.type}`;
-    
+
     const time = new Date(message.timestamp).toLocaleTimeString();
     const messageTypeIcon = getMessageTypeIcon(message.type);
     const messageTypeColor = getMessageTypeColor(message.type);
-    
+
     messageDiv.innerHTML = `
         <div class="flex gap-x-3">
             <div class="shrink-0">
@@ -232,21 +232,21 @@ function createMessageElement(message, index) {
                     <i data-lucide="${messageTypeIcon}" class="size-4 text-white"></i>
                 </div>
             </div>
-            
+
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-x-2 mb-1">
                     <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">${message.agent}</span>
                     <span class="text-xs text-gray-500 dark:text-neutral-500">${time}</span>
                     <span class="inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium ${getMessageTypeBadgeColor(message.type)}">${message.type}</span>
                 </div>
-                
+
                 <div class="text-sm text-gray-700 dark:text-neutral-300 whitespace-pre-wrap break-words">
                     ${escapeHtml(message.message)}
                 </div>
             </div>
         </div>
     `;
-    
+
     return messageDiv;
 }
 
@@ -283,7 +283,7 @@ function getMessageTypeBadgeColor(type) {
 // Filter messages by type
 function filterMessages() {
     const filterValue = document.getElementById('message-filter').value;
-    
+
     if (filterValue === 'all') {
         displayMessages(allMessages);
     } else {
@@ -296,7 +296,7 @@ function filterMessages() {
 function toggleAutoScroll() {
     autoScroll = !autoScroll;
     const button = document.getElementById('auto-scroll-toggle');
-    
+
     if (autoScroll) {
         button.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200');
         button.classList.remove('bg-white', 'text-gray-800', 'border-gray-200');
@@ -319,14 +319,14 @@ function exportMessagesHistory() {
         alert('No conversation to export. Please select a task first.');
         return;
     }
-    
+
     const exportData = {
         task_id: currentTaskId,
         exported_at: new Date().toISOString(),
         message_count: allMessages.length,
         conversation: allMessages
     };
-    
+
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -354,4 +354,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% endblock %} 
+{% endblock %}

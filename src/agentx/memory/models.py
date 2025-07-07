@@ -37,7 +37,7 @@ class MemoryType(str, Enum):
     CONSTRAINT = "constraint"
     HOT_ISSUE = "hot_issue"
     DOCUMENT_CHUNK = "document_chunk"
-    
+
     def __str__(self):
         return self.value
 
@@ -82,7 +82,7 @@ class MemoryItem:
     is_active: bool = True
     version: Optional[int] = None
     parent_id: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -99,7 +99,7 @@ class MemoryItem:
             "version": self.version,
             "parent_id": self.parent_id
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'MemoryItem':
         """Create MemoryItem from dictionary."""
@@ -109,12 +109,12 @@ class MemoryItem:
             timestamp = datetime.fromisoformat(timestamp)
         elif timestamp is None:
             timestamp = datetime.now()
-        
+
         # Handle memory_type conversion
         memory_type = data.get("memory_type")
         if isinstance(memory_type, str):
             memory_type = MemoryType(memory_type)
-        
+
         return cls(
             content=data["content"],
             memory_type=memory_type,
@@ -205,7 +205,7 @@ class MemorySearchResult:
     has_more: bool = False
     query_metadata: Dict[str, Any] = field(default_factory=dict)
     similarity_scores: List[float] = field(default_factory=list)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -224,54 +224,54 @@ class MemorySearchResult:
 
 class MemoryBackend(ABC):
     """Abstract interface for memory backend implementations."""
-    
+
     @abstractmethod
     async def add(self, content: str, memory_type: MemoryType,
                   agent_name: str, metadata: dict = None,
                   importance: float = 1.0) -> str:
         """Add a new memory item."""
         pass
-    
+
     @abstractmethod
     async def query(self, query: MemoryQuery) -> MemorySearchResult:
         """Query memories with structured parameters."""
         pass
-    
+
     @abstractmethod
     async def search(self, query: MemoryQuery) -> MemorySearchResult:
         """Semantic search across memories."""
         pass
-    
+
     @abstractmethod
     async def get(self, memory_id: str) -> Optional[MemoryItem]:
         """Get a specific memory by ID."""
         pass
-    
+
     @abstractmethod
     async def update(self, memory_id: str, **kwargs) -> bool:
         """Update a memory item."""
         pass
-    
+
     @abstractmethod
     async def delete(self, memory_id: str) -> bool:
         """Delete a memory item."""
         pass
-    
+
     @abstractmethod
     async def clear(self, agent_name: str = None) -> int:
         """Clear memories, optionally filtered by agent."""
         pass
-    
+
     @abstractmethod
     async def count(self, **filters) -> int:
         """Count memories with optional filters."""
         pass
-    
+
     @abstractmethod
     async def stats(self) -> 'MemoryStats':
         """Get memory backend statistics."""
         pass
-    
+
     @abstractmethod
     async def health(self) -> Dict[str, Any]:
         """Get backend health information."""
@@ -293,7 +293,7 @@ class MemoryStats:
     newest_memory: Optional[datetime] = None
     storage_size_mb: Optional[float] = None
     backend_type: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -327,23 +327,23 @@ class MemoryConfig(BaseModel):
     """Configuration for memory system."""
     enabled: bool = True
     backend: MemoryBackendType = MemoryBackendType.MEM0
-    
+
     # Backend-specific configuration
     config: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Memory behavior settings
     max_memories: Optional[int] = None
     retention_days: Optional[int] = None
     importance_threshold: float = 0.5
-    
+
     # Synthesis settings
     synthesis_enabled: bool = True
     synthesis_interval: int = 3600  # seconds
-    
+
     # Context injection settings
     context_enabled: bool = True
     max_context_memories: int = 10
-    
+
     # Performance settings
     batch_size: int = 100
     cache_enabled: bool = True
@@ -431,11 +431,11 @@ class MemoryInjection(BaseModel):
 # MEMORY UTILITIES
 # ============================================================================
 
-def calculate_memory_importance(content: str, agent_name: str, 
+def calculate_memory_importance(content: str, agent_name: str,
                               memory_type: MemoryType, metadata: Dict[str, Any] = None) -> float:
     """Calculate importance score for a memory item."""
     base_importance = 1.0
-    
+
     # Adjust based on memory type
     type_weights = {
         MemoryType.CONSTRAINT: 1.5,
@@ -446,13 +446,13 @@ def calculate_memory_importance(content: str, agent_name: str,
         MemoryType.KEY_VALUE: 1.0,
         MemoryType.VERSIONED_TEXT: 1.3
     }
-    
+
     importance = base_importance * type_weights.get(memory_type, 1.0)
-    
+
     # Adjust based on content length (longer content might be more important)
     content_length_factor = min(len(content) / 1000, 2.0)  # Cap at 2x
     importance *= (1.0 + content_length_factor * 0.2)
-    
+
     # Adjust based on metadata
     if metadata:
         if metadata.get('user_flagged'):
@@ -461,7 +461,7 @@ def calculate_memory_importance(content: str, agent_name: str,
             importance *= 1.3
         if metadata.get('success_related'):
             importance *= 1.2
-    
+
     return min(importance, 10.0)  # Cap at 10.0
 
 
@@ -470,11 +470,11 @@ def create_memory_item(content: str, memory_type: MemoryType, agent_name: str,
     """Create a new memory item with calculated importance."""
     if importance is None:
         importance = calculate_memory_importance(content, agent_name, memory_type, metadata)
-    
+
     return MemoryItem(
         content=content,
         memory_type=memory_type,
         agent_name=agent_name,
         metadata=metadata or {},
         importance=importance
-    ) 
+    )

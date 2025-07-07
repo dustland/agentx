@@ -49,7 +49,7 @@ class BrainConfig(BaseModel):
     retry_policy: Dict[str, Any] = Field(default_factory=dict)
     supports_function_calls: bool = True  # Whether the model supports native function calling
     streaming: bool = True  # Whether to use streaming mode
-    
+
     @model_validator(mode='after')
     def set_default_base_url(self):
         if self.base_url is None and self.provider == 'deepseek':
@@ -110,16 +110,16 @@ class AgentConfig(BaseModel):
     """Unified agent configuration for file definition and runtime."""
     name: str
     description: Optional[str] = ""
-    
+
     # Prompt can be provided directly, via a file path, or a default will be used.
     system_message: Optional[str] = None # Direct prompt content
     prompt_file: Optional[str] = None # Path to prompt file
     prompt_template: Optional[str] = None # The resolved, runtime prompt content
-    
+
     # Runtime and tool configurations
     brain_config: Optional[BrainConfig] = None  # Override default Brain
     tools: List[str] = Field(default_factory=list)
-    
+
     # Fields from the old AgentConfigFile
     role: str = "assistant"
     enable_code_execution: bool = False
@@ -142,7 +142,7 @@ class OrchestratorConfig(BaseModel):
     brain_config: Optional[BrainConfig] = None  # Orchestrator's Brain config for routing decisions
     max_rounds: int = 50
     timeout: int = 3600
-    
+
     def get_default_brain_config(self) -> BrainConfig:
         """Get default Brain config for orchestrator if none specified."""
         return BrainConfig(
@@ -165,10 +165,10 @@ class TaskConfig(BaseModel):
     failure_criteria: List[str] = Field(default_factory=list)
     orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
     deployment_config: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Dynamic context variables for agent coordination
     context_variables: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Legacy fields for backward compatibility
     timeout: int = 3600
     after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available
@@ -187,17 +187,17 @@ class TeamConfig(BaseModel):
     execution: TaskConfig = Field(default_factory=TaskConfig)
     orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
     deployment_config: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # LLM provider configuration at team level
     llm_provider: Optional[BrainConfig] = None
-    
+
     # Collaboration settings
     speaker_selection_method: str = "auto"  # "auto", "round_robin", "manual"
     termination_condition: str = "TERMINATE"  # Default termination keyword
-    
+
     # Dynamic context variables for agent coordination
     context_variables: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Legacy fields for backward compatibility
     max_rounds: int = 10  # Default to 10 rounds, more reasonable for most use cases
     timeout: int = 3600
@@ -205,4 +205,4 @@ class TeamConfig(BaseModel):
 
 class ConfigurationError(Exception):
     """Custom exception for configuration errors."""
-    pass 
+    pass

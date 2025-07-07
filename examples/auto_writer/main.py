@@ -28,10 +28,10 @@ async def main():
 
     # Start the task and get the executor
     executor = start_task(prompt, str(config_path))
-    
+
     # Initialize the conversation
     await executor.start(prompt)
-    
+
     print(f"📋 Task ID: {executor.task.task_id}")
     print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
     print("-" * 80)
@@ -39,7 +39,7 @@ async def main():
     # Execute the task step by step
     while not executor.is_complete():
         response = await executor.step()
-        
+
         # Print agent responses with better formatting
         if response.strip():
             print(f"🤖 Agent Response: {response[:200]}...")
@@ -48,11 +48,11 @@ async def main():
     print("\n✅ TASK COMPLETE")
     print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
     print(f"📋 Task ID: {executor.task.task_id}")
-    
+
     # Check for artifacts in the workspace
     workspace_path = executor.workspace.get_workspace_path()
     artifacts_path = workspace_path / "artifacts"
-    
+
     if artifacts_path.exists():
         artifact_files = list(artifacts_path.glob("*"))
         if artifact_files:
@@ -63,7 +63,7 @@ async def main():
             print("📄 No artifacts found in artifacts directory")
     else:
         print("📄 No artifacts directory found")
-    
+
     print(f"\n🔗 Full workspace path: {workspace_path}")
     print("📁 Check the workspace directory for the generated report and artifacts.")
 

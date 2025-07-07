@@ -7,4 +7,4 @@ export default {
   'orchestration': 'Orchestration System',
   'tool-execution': 'Tool Execution',
   'communication': 'Agent Communication'
-} 
+}

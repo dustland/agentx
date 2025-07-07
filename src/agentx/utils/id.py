@@ -16,4 +16,4 @@ def generate_short_id(length: int = 8) -> str:
         str: A new short ID.
     """
     alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + '_'
-    return ''.join(secrets.choice(alphabet) for _ in range(length)) 
+    return ''.join(secrets.choice(alphabet) for _ in range(length))

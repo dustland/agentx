@@ -12,6 +12,6 @@ __all__ = [
     "SearchBackend",
     "SearchResult",
     "SearchResponse",
-    "SerpAPIBackend", 
+    "SerpAPIBackend",
     "SearchManager",
-] 
+]

@@ -32,17 +32,17 @@ class SearchResult:
 class SearchTool(Tool):
     """
     Web search tool using SerpAPI.
-    
+
     Provides access to multiple search engines including Google, Bing,
     DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.
     """
-    
+
     def __init__(self, api_key: Optional[str] = None):
         super().__init__("search")
         self.api_key = api_key
         self._backend = None
         self._init_backend()
-    
+
     def _init_backend(self):
         """Initialize SerpAPI backend."""
         try:
@@ -52,24 +52,24 @@ class SearchTool(Tool):
             logger.error(f"Failed to initialize SerpAPI backend: {e}")
         except Exception as e:
             logger.error(f"Unexpected error initializing search backend: {e}")
-    
+
     @tool(
         description="Search the web using Google, Bing, DuckDuckGo or other search engines",
         return_description="ToolResult containing list of search results with titles, URLs, and snippets"
     )
-    async def web_search(self, query: str, engine: str = "google", 
-                        max_results: int = 10, country: str = "us", 
+    async def web_search(self, query: str, engine: str = "google",
+                        max_results: int = 10, country: str = "us",
                         language: str = "en") -> ToolResult:
         """
         Search the web using various search engines.
-        
+
         Args:
             query: Search query to execute (required)
             engine: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)
             max_results: Maximum number of results to return, max 20 (default: 10)
             country: Country code for localized results (default: us)
             language: Language code for results (default: en)
-            
+
         Returns:
             ToolResult containing search results and metadata
         """
@@ -79,7 +79,7 @@ class SearchTool(Tool):
                 result=None,
                 error="Search backend not available. Check SERPAPI_KEY environment variable."
             )
-        
+
         try:
             # Execute search
             response = await self._backend.search(
@@ -89,7 +89,7 @@ class SearchTool(Tool):
                 country=country,
                 language=language
             )
-            
+
             if response.success:
                 # Convert to our SearchResult format
                 search_results = [
@@ -106,7 +106,7 @@ class SearchTool(Tool):
                     )
                     for result in response.results
                 ]
-                
+
                 return ToolResult(
                     success=True,
                     result=search_results,
@@ -127,7 +127,7 @@ class SearchTool(Tool):
                     error=response.error or "Search failed",
                     execution_time=response.response_time
                 )
-                
+
         except Exception as e:
             logger.error(f"Web search failed for query '{query}': {e}")
             return ToolResult(
@@ -135,22 +135,22 @@ class SearchTool(Tool):
                 result=None,
                 error=str(e)
             )
-    
+
     @tool(
         description="Search for news articles using Google News or Bing News",
         return_description="ToolResult containing list of news search results with articles and publication dates"
     )
-    async def news_search(self, query: str, engine: str = "google", 
+    async def news_search(self, query: str, engine: str = "google",
                          max_results: int = 10, country: str = "us") -> ToolResult:
         """
         Search for news articles.
-        
+
         Args:
             query: News search query (required)
             engine: Search engine to use - google or bing (default: google)
             max_results: Maximum number of news results (default: 10)
             country: Country code for localized news (default: us)
-            
+
         Returns:
             ToolResult containing news search results
         """
@@ -160,7 +160,7 @@ class SearchTool(Tool):
                 result=None,
                 error="Search backend not available"
             )
-        
+
         try:
             # Add news-specific parameters
             response = await self._backend.search(
@@ -170,7 +170,7 @@ class SearchTool(Tool):
                 country=country,
                 tbm="nws"  # Google News search
             )
-            
+
             if response.success:
                 return ToolResult(
                     success=True,
@@ -190,7 +190,7 @@ class SearchTool(Tool):
                     result=None,
                     error=response.error or "News search failed"
                 )
-                
+
         except Exception as e:
             logger.error(f"News search failed for query '{query}': {e}")
             return ToolResult(
@@ -198,22 +198,22 @@ class SearchTool(Tool):
                 result=None,
                 error=str(e)
             )
-    
+
     @tool(
         description="Search for images using Google Images or Bing Images",
         return_description="ToolResult containing list of image search results with URLs and metadata"
     )
-    async def image_search(self, query: str, engine: str = "google", 
+    async def image_search(self, query: str, engine: str = "google",
                           max_results: int = 10, safe_search: str = "moderate") -> ToolResult:
         """
         Search for images.
-        
+
         Args:
             query: Image search query (required)
             engine: Search engine to use - google or bing (default: google)
             max_results: Maximum number of image results (default: 10)
             safe_search: Safe search setting - off, moderate, strict (default: moderate)
-            
+
         Returns:
             ToolResult containing image search results
         """
@@ -223,7 +223,7 @@ class SearchTool(Tool):
                 result=None,
                 error="Search backend not available"
             )
-        
+
         try:
             response = await self._backend.search(
                 query=query,
@@ -232,7 +232,7 @@ class SearchTool(Tool):
                 tbm="isch",  # Google Images search
                 safe=safe_search
             )
-            
+
             if response.success:
                 return ToolResult(
                     success=True,
@@ -253,7 +253,7 @@ class SearchTool(Tool):
                     result=None,
                     error=response.error or "Image search failed"
                 )
-                
+
         except Exception as e:
             logger.error(f"Image search failed for query '{query}': {e}")
             return ToolResult(
@@ -268,4 +268,3 @@ __all__ = [
     "SearchTool",
     "SearchResult",
 ]
-

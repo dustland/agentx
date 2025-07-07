@@ -100,4 +100,4 @@ def _register_builtin_tools(with_workspace: bool = True):
 
 
 if __name__ == "__main__":
-    tools() 
+    tools()

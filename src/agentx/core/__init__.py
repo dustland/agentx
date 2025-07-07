@@ -22,7 +22,7 @@ __all__ = [
     "Orchestrator",
     "TaskExecutor",
     "Brain",
-    "BrainMessage", 
+    "BrainMessage",
     "BrainResponse",
     "TaskStep",
     "TextPart",
@@ -39,7 +39,7 @@ __all__ = [
     "StreamChunk",
     "StreamError",
     "StreamComplete"
-] 
+]
 
 # Note: No model rebuilds needed since ToolCallPart is now self-contained
-# and doesn't have forward references to ToolCall 
+# and doesn't have forward references to ToolCall

@@ -48,21 +48,21 @@ class SearchResponse:
 
 class SearchBackend(ABC):
     """Abstract base class for search backends."""
-    
+
     @abstractmethod
-    async def search(self, query: str, engine: str = "google", 
-                    max_results: int = 10, country: str = "us", 
+    async def search(self, query: str, engine: str = "google",
+                    max_results: int = 10, country: str = "us",
                     language: str = "en", **kwargs) -> SearchResponse:
         """Execute a search query."""
         pass
-    
+
     @abstractmethod
     def is_available(self) -> bool:
         """Check if the backend is available and properly configured."""
         pass
-    
+
     @property
     @abstractmethod
     def name(self) -> str:
         """Backend name."""
-        pass 
+        pass

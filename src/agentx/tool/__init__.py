@@ -32,15 +32,15 @@ def get_tool_schemas(tool_names=None):
 def validate_agent_tools(tool_names: list[str]) -> tuple[list[str], list[str]]:
     """
     Validate a list of tool names against the registry.
-    
+
     Returns:
         A tuple of (valid_tools, invalid_tools)
     """
     available_tools = list_tools()
-    
+
     valid = [name for name in tool_names if name in available_tools]
     invalid = [name for name in tool_names if name not in available_tools]
-    
+
     return valid, invalid
 
 def suggest_tools_for_agent(agent_name: str, agent_description: str = "") -> list[str]:
@@ -62,4 +62,4 @@ __all__ = [
     "get_tool_schemas",
     "validate_agent_tools",
     "suggest_tools_for_agent",
-] 
+]

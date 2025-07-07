@@ -47,19 +47,19 @@ class Event(BaseModel, Generic[T]):
     """Base event wrapper with metadata."""
     data: T
     metadata: EventMetadata
-    
+
     @property
     def event_type(self) -> str:
         """Get the event type from the data."""
         if hasattr(self.data, 'type'):
             return self.data.type
         return self.data.__class__.__name__
-    
+
     @property
     def event_id(self) -> str:
         """Get the event ID."""
         return self.metadata.event_id
-    
+
     @property
     def timestamp(self) -> datetime:
         """Get the event timestamp."""
@@ -86,4 +86,4 @@ class EventBusStats(BaseModel):
     active_subscriptions: int = 0
     event_types_count: Dict[str, int] = Field(default_factory=dict)
     average_processing_time_ms: float = 0.0
-    last_event_timestamp: Optional[datetime] = None 
+    last_event_timestamp: Optional[datetime] = None

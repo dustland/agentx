@@ -36,7 +36,7 @@
 *.azw3
 
 # Local development
-.local/ 
+.local/
 
 .next/
 .turbo/

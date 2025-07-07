@@ -104,7 +104,7 @@ always emitting structured tool-call and tool-result chunks for client visualiza
 
 **Args:**
     messages: Conversation history
-    system_prompt: Optional system prompt  
+    system_prompt: Optional system prompt
     temperature: Override temperature
     tools: Available tools for the LLM
 

@@ -16,21 +16,21 @@ logger = get_logger(__name__)
 
 class WeatherTool(Tool):
     """Custom weather tool using the free Open-Meteo API (no API key required)."""
-    
+
     def __init__(self):
         super().__init__()
         self.geocoding_url = "https://geocoding-api.open-meteo.com/v1/search"
         self.weather_url = "https://api.open-meteo.com/v1/forecast"
         logger.info("Custom Weather Tool initialized with Open-Meteo API")
-        
+
     @tool("Get tomorrow's weather forecast for a specific location using Open-Meteo API")
     async def get_weather(self, location: str) -> str:
         """
         Get tomorrow's weather forecast for a specific location using Open-Meteo API.
-        
+
         Args:
             location: The city and state/country, e.g., "San Francisco, CA" or "Paris, France".
-            
+
         Returns:
             A formatted string containing tomorrow's weather forecast.
         """
@@ -39,21 +39,21 @@ class WeatherTool(Tool):
             coordinates = await self._get_coordinates(location)
             if not coordinates:
                 return f"Sorry, I couldn't find the location '{location}'. Please try a more specific location name."
-            
+
             # Get weather forecast
             weather_data = await self._get_weather_forecast(coordinates)
             if not weather_data:
                 return f"Sorry, I couldn't get the weather forecast for {location}. Please try again later."
-            
+
             tomorrow = datetime.now() + timedelta(days=1)
             tomorrow_date = tomorrow.strftime("%B %d, %Y")
-            
+
             return self._format_weather_response(location, tomorrow_date, weather_data, coordinates)
-            
+
         except Exception as e:
             logger.error(f"Error getting weather forecast: {e}")
             return f"Sorry, I encountered an error getting the weather forecast for {location}. Error: {str(e)}"
-    
+
     async def _get_coordinates(self, location: str) -> Dict[str, Any]:
         """Get latitude and longitude for a location using Open-Meteo Geocoding API."""
         try:
@@ -64,7 +64,7 @@ class WeatherTool(Tool):
                     "language": "en",
                     "format": "json"
                 }
-                
+
                 async with session.get(self.geocoding_url, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -81,7 +81,7 @@ class WeatherTool(Tool):
         except Exception as e:
             logger.error(f"Error getting coordinates for {location}: {e}")
             return None
-    
+
     async def _get_weather_forecast(self, coordinates: Dict[str, Any]) -> Dict[str, Any]:
         """Get weather forecast using Open-Meteo API."""
         try:
@@ -93,7 +93,7 @@ class WeatherTool(Tool):
                     "timezone": "auto",
                     "forecast_days": 2  # today and tomorrow
                 }
-                
+
                 async with session.get(self.weather_url, params=params) as response:
                     if response.status == 200:
                         data = await response.json()
@@ -114,7 +114,7 @@ class WeatherTool(Tool):
         except Exception as e:
             logger.error(f"Error getting weather forecast: {e}")
             return None
-    
+
     def _get_weather_description(self, weather_code: int) -> str:
         """Convert WMO weather code to human-readable description."""
         weather_codes = {
@@ -148,14 +148,14 @@ class WeatherTool(Tool):
             99: "Thunderstorm with heavy hail"
         }
         return weather_codes.get(weather_code, f"Unknown weather (code: {weather_code})")
-    
+
     def _get_wind_direction(self, degrees: float) -> str:
         """Convert wind direction degrees to compass direction."""
         directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
                      "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
         index = round(degrees / 22.5) % 16
         return directions[index]
-    
+
     def _format_weather_response(self, location: str, date: str, weather: Dict[str, Any], coordinates: Dict[str, Any]) -> str:
         """Format weather data into a readable response."""
         location_name = coordinates["name"]
@@ -163,15 +163,15 @@ class WeatherTool(Tool):
             location_name += f", {coordinates['admin1']}"
         if coordinates.get("country"):
             location_name += f", {coordinates['country']}"
-        
+
         temp_max_f = round(weather["temp_max"] * 9/5 + 32)  # Convert C to F
         temp_min_f = round(weather["temp_min"] * 9/5 + 32)
-        
+
         weather_desc = self._get_weather_description(weather["weather_code"])
         wind_dir = self._get_wind_direction(weather["wind_direction"])
         wind_speed_mph = round(weather["wind_speed"] * 0.621371)  # Convert km/h to mph
         precipitation_in = round(weather["precipitation"] * 0.0393701, 2)  # Convert mm to inches
-        
+
         response = f"""Tomorrow's Weather Forecast for {location_name} ({date}):
 
 🌡️ Temperature: High {temp_max_f}°F ({weather['temp_max']:.1f}°C), Low {temp_min_f}°F ({weather['temp_min']:.1f}°C)
@@ -182,4 +182,4 @@ class WeatherTool(Tool):
 
 Weather data provided by Open-Meteo API (open-meteo.com)"""
 
-        return response 
+        return response

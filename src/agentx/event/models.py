@@ -33,34 +33,34 @@ class EventType(str, Enum):
     TASK_FAILED = "task_failed"
     TASK_PAUSED = "task_paused"
     TASK_RESUMED = "task_resumed"
-    
+
     # Agent events
     AGENT_STARTED = "agent_started"
     AGENT_COMPLETED = "agent_completed"
     AGENT_FAILED = "agent_failed"
     AGENT_HANDOFF = "agent_handoff"
-    
+
     # Tool events
     TOOL_CALL_STARTED = "tool_call_started"
     TOOL_CALL_COMPLETED = "tool_call_completed"
     TOOL_CALL_FAILED = "tool_call_failed"
     TOOL_VALIDATION_ERROR = "tool_validation_error"
-    
+
     # Memory events
     MEMORY_ADDED = "memory_added"
     MEMORY_RETRIEVED = "memory_retrieved"
     MEMORY_SYNTHESIZED = "memory_synthesized"
-    
+
     # Storage events
     ARTIFACT_CREATED = "artifact_created"
     ARTIFACT_UPDATED = "artifact_updated"
     ARTIFACT_DELETED = "artifact_deleted"
-    
+
     # System events
     SYSTEM_ERROR = "system_error"
     SYSTEM_WARNING = "system_warning"
     SYSTEM_INFO = "system_info"
-    
+
     # Custom events
     CUSTOM = "custom"
 
@@ -92,22 +92,22 @@ class Event(BaseModel):
     event_type: EventType
     timestamp: datetime = Field(default_factory=datetime.now)
     source: str  # Component that generated the event
-    
+
     # Event content
     data: Dict[str, Any] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    
+
     # Event context
     task_id: Optional[str] = None
     agent_name: Optional[str] = None
     tool_name: Optional[str] = None
-    
+
     # Event properties
     priority: EventPriority = EventPriority.NORMAL
     status: EventStatus = EventStatus.PENDING
     correlation_id: Optional[str] = None
     parent_event_id: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""
         return {
@@ -344,12 +344,12 @@ class EventBusHealth(BaseModel):
 
 class EventMiddleware(ABC):
     """Abstract base class for event middleware."""
-    
+
     @abstractmethod
     async def process_event(self, event: Event) -> Event:
         """Process an event and return the modified event."""
         pass
-    
+
     @abstractmethod
     def get_name(self) -> str:
         """Get the middleware name."""
@@ -468,4 +468,4 @@ def create_agent_handoff_event(from_agent: str, to_agent: str, source: str,
         source=source,
         task_id=task_id,
         handoff_reason=handoff_reason
-    ) 
+    )

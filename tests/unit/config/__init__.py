@@ -1,1 +1,1 @@
-"""Config tests module.""" 
+"""Config tests module."""

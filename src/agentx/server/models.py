@@ -73,4 +73,4 @@ class HealthResponse(BaseModel):
     status: str = "healthy"
     timestamp: datetime = Field(default_factory=utc_now)
     version: str = "0.4.0"
-    active_tasks: int = 0 
+    active_tasks: int = 0

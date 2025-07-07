@@ -49,4 +49,4 @@ chroma/
 
 # Server runtime files
 *.pid
-*.sock 
+*.sock

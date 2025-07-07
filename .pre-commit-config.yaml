@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: generate-api-docs
         name: Generate API Documentation
-        entry: python scripts/generate_api_docs.py
+        entry: python3 scripts/generate_api_docs.py
         language: system
         files: ^src/agentx/.*\.py$
         pass_filenames: false

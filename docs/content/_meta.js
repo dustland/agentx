@@ -1,8 +1,4 @@
 export default {
-  index: {
-    title: "Home",
-    type: "page"
-  },
   docs: {
     title: "Documentation",
     type: "page"
@@ -11,4 +7,4 @@ export default {
     title: "API",
     type: "page"
   }
-} 
+}

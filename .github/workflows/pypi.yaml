@@ -62,11 +62,11 @@ jobs:
           try:
               if last_tag.startswith('v'):
                   # If we have a proper tag, get commits since that tag
-                  result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--oneline'], 
+                  result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--oneline'],
                                         capture_output=True, text=True)
               else:
                   # If no tags, get all commits
-                  result = subprocess.run(['git', 'log', '--oneline'], 
+                  result = subprocess.run(['git', 'log', '--oneline'],
                                         capture_output=True, text=True)
               commits = result.stdout.strip().split('\n') if result.stdout.strip() else []
           except:
@@ -184,10 +184,10 @@ jobs:
           last_tag = '${{ steps.last_release.outputs.tag }}'
           try:
               if last_tag.startswith('v'):
-                  result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--pretty=format:%H|%s|%an|%ad', '--date=short'], 
+                  result = subprocess.run(['git', 'log', f'{last_tag}..HEAD', '--pretty=format:%H|%s|%an|%ad', '--date=short'],
                                         capture_output=True, text=True)
               else:
-                  result = subprocess.run(['git', 'log', '--pretty=format:%H|%s|%an|%ad', '--date=short'], 
+                  result = subprocess.run(['git', 'log', '--pretty=format:%H|%s|%an|%ad', '--date=short'],
                                         capture_output=True, text=True)
               commits = result.stdout.strip().split('\n') if result.stdout.strip() else []
           except:
@@ -202,13 +202,13 @@ jobs:
           for commit in commits:
               if not commit.strip():
                   continue
-              
+
               parts = commit.split('|')
               if len(parts) >= 2:
                   hash_short = parts[0][:7]
                   message = parts[1]
                   author = parts[2] if len(parts) > 2 else 'Unknown'
-                  
+
                   # Categorize by conventional commit format
                   if re.match(r'^(feat|feature)(\(.*\))?:', message, re.IGNORECASE):
                       features.append(f'- {message} ({hash_short})')

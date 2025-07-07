@@ -13,7 +13,7 @@ from .models import (
 
 __all__ = [
     "create_app",
-    "run_server", 
+    "run_server",
     "TaskRequest",
     "TaskResponse",
     "TaskInfo",
@@ -21,4 +21,4 @@ __all__ = [
     "MemoryRequest",
     "MemoryResponse",
     "HealthResponse"
-] 
+]

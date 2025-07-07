@@ -21,36 +21,36 @@ from agentx.core.task import start_task
 
 async def test_storage():
     """Test basic file storage functionality."""
-    
+
     print("🗄️ Simple Store Test - Testing File Storage")
     print("=" * 50)
-    
+
     # Simple, direct prompt that should result in file creation
     prompt = """
-Create a simple text file called 'hello.txt' with the content 'Hello, World!' 
+Create a simple text file called 'hello.txt' with the content 'Hello, World!'
 Use the write_file tool to save this file directly in the workspace.
 """
-    
+
     try:
         # Start the task executor
         executor = start_task(
             prompt=prompt,
             config_path="config/simple_agent.yaml"
         )
-        
+
         print(f"📋 Task ID: {executor.task_id}")
         print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
-        
+
         # Run the task
         print("\n🤖 Running storage test...")
         await executor.start(prompt)
         response = await executor.step()
         print(f"Agent response: {response}")
-        
+
         # Check if file was created
         workspace_path = executor.workspace.get_workspace_path()
         artifact_file = workspace_path / "artifacts" / "hello.txt"
-        
+
         if artifact_file.exists():
             print(f"\n✅ SUCCESS: hello.txt created as artifact!")
             content = artifact_file.read_text()
@@ -58,18 +58,18 @@ Use the write_file tool to save this file directly in the workspace.
         else:
             print(f"\n❌ FAILED: hello.txt not found in artifacts")
             print(f"  Checked: {artifact_file}")
-            
+
         # List all files created
         print(f"\n📁 All files in workspace:")
         if workspace_path.exists():
             for f in workspace_path.rglob("*"):
                 if f.is_file() and not f.name.startswith('.'):
                     print(f"  📄 {f.relative_to(workspace_path)}")
-                    
+
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
-    asyncio.run(test_storage()) 
+    asyncio.run(test_storage())

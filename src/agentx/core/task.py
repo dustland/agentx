@@ -4,7 +4,7 @@ Task execution class - the primary interface for AgentX task execution.
 Clean API:
     # One-shot execution (Fire-and-forget)
     await execute_task(prompt, config_path)
-    
+
     # Step-by-step execution (Conversational)
     executor = start_task(prompt, config_path)
     await executor.start(prompt)
@@ -93,7 +93,7 @@ class Task:
             "agents": list(self.agents.keys()),
             "history_length": len(self.history.messages),
         }
-        
+
         # Add plan information if available
         if self.current_plan:
             context["plan"] = {
@@ -102,7 +102,7 @@ class Task:
                 "progress": self.current_plan.get_progress_summary(),
                 "is_complete": self.current_plan.is_complete(),
             }
-        
+
         return context
 
     def create_plan(self, plan: Plan) -> None:
@@ -125,7 +125,7 @@ class Task:
         """Persists the current plan to the task history and workspace."""
         if not self.current_plan:
             return
-        
+
         # Save plan to workspace
         plan_file = self.workspace.get_workspace_path() / "plan.json"
         try:
@@ -138,10 +138,10 @@ class Task:
     def load_plan(self) -> Optional[Plan]:
         """Loads a plan from the workspace if it exists."""
         plan_file = self.workspace.get_workspace_path() / "plan.json"
-        
+
         if not plan_file.exists():
             return None
-            
+
         try:
             plan_data = json.loads(plan_file.read_text())
             self.current_plan = Plan(**plan_data)
@@ -156,7 +156,7 @@ class TaskExecutor:
     """
     The main engine for executing a task. It coordinates the agents, tools,
     and orchestrator to fulfill the user's request.
-    
+
     Two execution modes:
     1. Fire-and-forget: execute() runs task to completion autonomously
     2. Step-by-step: start() + step() for conversational interaction
@@ -169,7 +169,7 @@ class TaskExecutor:
         workspace_dir: Optional[Path] = None,
     ):
         self.task_id = task_id or generate_short_id()
-        
+
         # Handle both TeamConfig objects and config file paths
         if isinstance(team_config, str):
             self.team_config = load_team_config(team_config)
@@ -256,10 +256,10 @@ class TaskExecutor:
 
         # Use simple step-based execution
         self._conversation_history = [{"role": "user", "content": prompt}]
-        
+
         # Generate response using orchestrator's step method
         response = await self.orchestrator.step(self._conversation_history, self.task)
-        
+
         # Create a TaskStep message
         message = TaskStep(
             agent_name=next(iter(self.agents.keys())),
@@ -294,7 +294,7 @@ class TaskExecutor:
 
         # Add the initial user message to conversation history
         self._conversation_history = [{"role": "user", "content": prompt}]
-        
+
         logger.info(f"Task {self.task_id} conversation started with prompt: {prompt[:50]}...")
 
     async def step(self) -> str:
@@ -304,22 +304,22 @@ class TaskExecutor:
         """
         if not self.task:
             raise RuntimeError("Task not started. Call start() first.")
-        
+
         if self.task.is_complete:
             return ""
 
         # Use orchestrator's step method to get response
         response = await self.orchestrator.step(self._conversation_history, self.task)
-        
+
         # Add agent response to conversation history
         self._conversation_history.append({"role": "assistant", "content": response})
-        
+
         # Check if orchestrator indicates task is complete
         if self._is_completion_response(response):
             self.task.complete()
-        
+
         return response
-    
+
     def _is_completion_response(self, response: str) -> bool:
         """Check if the response indicates task completion (language-independent)."""
         # Check for specific completion indicators from the orchestrator
@@ -328,9 +328,9 @@ class TaskExecutor:
             "All plan items have been finished",
             "Task execution halted"
         ]
-        
+
         return any(phrase in response for phrase in completion_phrases)
-    
+
     @property
     def is_complete(self) -> bool:
         """Check if the task is complete."""
@@ -370,21 +370,21 @@ def start_task(
 ) -> TaskExecutor:
     """
     High-level function to start a task and return the TaskExecutor for step-by-step execution.
-    
+
     This function is ideal for interactive scenarios where you want to:
     - Execute conversations step by step
     - Build interactive chat interfaces
     - Have manual control over the conversation flow
-    
+
     Args:
         prompt: The initial task prompt
         config_path: Path to the team configuration file
         task_id: Optional custom task ID
         workspace_dir: Optional custom workspace directory
-        
+
     Returns:
         TaskExecutor: The initialized executor ready for step-by-step execution
-        
+
     Example:
         ```python
         # Start a conversational task
@@ -392,14 +392,14 @@ def start_task(
             prompt="Hello, how are you?",
             config_path="config/team.yaml"
         )
-        
+
         # Initialize the conversation
         await executor.start(prompt)
-        
+
         # Get agent response
         response = await executor.step()
         print(f"Agent: {response}")
-        
+
         # Continue conversation
         executor.add_user_message("Tell me a joke")
         response = await executor.step()
@@ -414,5 +414,5 @@ def start_task(
         task_id=task_id,
         workspace_dir=workspace_dir
     )
-    
+
     return executor

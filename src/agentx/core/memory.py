@@ -30,7 +30,7 @@ class MemoryItem:
     memory_type: MemoryType = MemoryType.TEXT
     metadata: Dict[str, Any] = field(default_factory=dict)
     importance: float = 1.0
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -42,7 +42,7 @@ class MemoryItem:
             "metadata": self.metadata,
             "importance": self.importance
         }
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "MemoryItem":
         """Create from dictionary."""
@@ -60,24 +60,24 @@ class MemoryItem:
 class Memory:
     """
     Memory component for individual agents.
-    
+
     Provides a simple interface backed by intelligent memory backends
     for semantic search and advanced memory operations.
     """
-    
+
     def __init__(self, agent: "Agent", config = None):
         self.agent = agent
         self._backend: Optional[MemoryBackend] = None
         self._config = config
-        
+
         logger.debug(f"Initialized memory for agent '{agent.name}'")
-    
+
     async def _get_backend(self) -> MemoryBackend:
         """Get or create the memory backend."""
         if self._backend is None:
             self._backend = create_memory_backend(self._config)
         return self._backend
-    
+
     async def save_async(self, content: str, metadata: Optional[Dict[str, Any]] = None, importance: float = 1.0) -> str:
         """Save content to memory."""
         backend = await self._get_backend()
@@ -90,7 +90,7 @@ class Memory:
         )
         logger.debug(f"Saved memory {memory_id} for {self.agent.name}: {content[:50]}...")
         return memory_id
-    
+
     def save(self, content: str, metadata: Optional[Dict[str, Any]] = None, importance: float = 1.0) -> str:
         """Save content to memory (sync wrapper)."""
         try:
@@ -105,7 +105,7 @@ class Memory:
         except Exception as e:
             logger.error(f"Failed to save memory: {e}")
             raise
-    
+
     async def search_async(self, query: str, limit: int = 10) -> List[MemoryItem]:
         """Search memories by content."""
         backend = await self._get_backend()
@@ -114,7 +114,7 @@ class Memory:
             agent_name=self.agent.name,
             limit=limit
         )
-        
+
         # Convert backend results to MemoryItem objects
         memory_items = []
         for result in results:
@@ -128,10 +128,10 @@ class Memory:
                 importance=result.get("importance", 1.0)
             )
             memory_items.append(memory_item)
-        
+
         logger.debug(f"Found {len(memory_items)} memories for query: {query}")
         return memory_items
-    
+
     def search(self, query: str, limit: int = 10) -> List[MemoryItem]:
         """Search memories by content (sync wrapper)."""
         try:
@@ -144,12 +144,12 @@ class Memory:
         except Exception as e:
             logger.error(f"Failed to search memory: {e}")
             raise
-    
+
     async def get_async(self, memory_id: str) -> Optional[MemoryItem]:
         """Get a specific memory by ID."""
         backend = await self._get_backend()
         result = await backend.get(memory_id, self.agent.name)
-        
+
         if result:
             return MemoryItem(
                 memory_id=result["memory_id"],
@@ -161,7 +161,7 @@ class Memory:
                 importance=result.get("importance", 1.0)
             )
         return None
-    
+
     def get(self, memory_id: str) -> Optional[MemoryItem]:
         """Get a specific memory by ID (sync wrapper)."""
         try:
@@ -174,7 +174,7 @@ class Memory:
         except Exception as e:
             logger.error(f"Failed to get memory: {e}")
             raise
-    
+
     async def delete_async(self, memory_id: str) -> bool:
         """Delete a memory by ID."""
         backend = await self._get_backend()
@@ -182,7 +182,7 @@ class Memory:
         if success:
             logger.debug(f"Deleted memory {memory_id} for {self.agent.name}")
         return success
-    
+
     def delete(self, memory_id: str) -> bool:
         """Delete a memory by ID (sync wrapper)."""
         try:
@@ -195,7 +195,7 @@ class Memory:
         except Exception as e:
             logger.error(f"Failed to delete memory: {e}")
             raise
-    
+
     async def clear_async(self) -> bool:
         """Clear all memories for this agent."""
         backend = await self._get_backend()
@@ -203,7 +203,7 @@ class Memory:
         if success:
             logger.debug(f"Cleared all memories for {self.agent.name}")
         return success
-    
+
     def clear(self) -> bool:
         """Clear all memories for this agent (sync wrapper)."""
         try:
@@ -216,5 +216,3 @@ class Memory:
         except Exception as e:
             logger.error(f"Failed to clear memory: {e}")
             raise
-    
- 
