@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from pathlib import Path
 from agentx.core.task import TaskExecutor
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, OrchestrationConfig, TaskConfig as CoreTaskConfig
+from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, OrchestratorConfig, TaskConfig as CoreTaskConfig
 from agentx.core.message import Message
 
 
@@ -12,15 +12,15 @@ def mock_team_config():
     return TeamConfig(
         name="test_team",
         agents=[
-            AgentConfig(name="test_agent", brain=BrainConfig(model="test_model"))
+            AgentConfig(name="test_agent", brain_config=BrainConfig(model="test_model"))
         ],
-        orchestration=OrchestrationConfig(),
-        task=CoreTaskConfig(),
+        orchestrator=OrchestratorConfig(),
+        execution=CoreTaskConfig(),
     )
 
 
 @patch('agentx.core.task.Orchestrator')
-@patch('agentx.core.task.Workspace')
+@patch('agentx.core.task.WorkspaceStorage')
 @patch('agentx.core.task.setup_task_file_logging')
 def test_task_executor_initialization(mock_setup_logging, mock_workspace, mock_orchestrator, mock_team_config):
     """
@@ -57,7 +57,8 @@ async def test_start_task_invokes_orchestrator(mock_set_streaming, mock_setup_lo
         yield Message.system_message(content="Orchestrator run started")
         yield Message.system_message(content="Orchestrator run finished")
 
-    mock_orchestrator.return_value.run = AsyncMock(side_effect=mock_orchestrator_run)
+    # Mock the orchestrator run method to return an async generator
+    mock_orchestrator.return_value.run = Mock(side_effect=mock_orchestrator_run)
     
     executor = TaskExecutor(team_config=mock_team_config)
     

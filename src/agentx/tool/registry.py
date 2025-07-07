@@ -43,8 +43,7 @@ class ToolRegistry:
         
         builtin_tool_instances = [
             create_file_tool(workspace_path=default_workspace),
-            SearchTool(),
-            PlanTool(workspace_path=default_workspace)
+            SearchTool()
         ]
 
         for tool_instance in builtin_tool_instances:
@@ -172,6 +171,13 @@ class ToolRegistry:
         # For now, return empty list since we haven't implemented custom tool tracking
         # This would need to be enhanced to track which tools are custom
         return []
+
+    def clear(self):
+        """Clear all registered tools and toolsets. Useful for testing."""
+        self._tools.clear()
+        self._toolsets.clear()
+        # Re-register builtin tools after clearing
+        self._register_builtin_tools()
 
 
 def get_tool_registry() -> ToolRegistry:

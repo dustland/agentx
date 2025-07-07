@@ -150,6 +150,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 This project was initially inspired by and built upon concepts from [AG2 (AutoGen)](https://github.com/ag2ai/ag2), an excellent multi-agent conversation framework. While AgentX has evolved into its own distinct architecture and approach, we're grateful for the foundational ideas and patterns that AG2 provided to the multi-agent AI community.
 
+Our message system and conversation architecture draws inspiration from [Vercel AI SDK](https://github.com/vercel/ai), particularly its elegant message format with role-based structure and parts array for handling complex content types. This design pattern has proven invaluable for building robust, extensible AI applications.
+
 This project also referred to other open-source projects such as [OpenManus](https://github.com/FoundationAgents/OpenManus), [Suna](https://github.com/Kortix-ai/Suna) and [Magic](https://github.com/dtyq/magic/) etc.
 
 ## 📄 License

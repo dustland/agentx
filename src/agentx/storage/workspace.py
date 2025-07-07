@@ -415,6 +415,39 @@ class WorkspaceStorage:
             logger.error(f"Failed to get execution plan {plan_id}: {e}")
             return None
     
+    # Directory Management
+    async def list_directory(self, path: str = "") -> Dict[str, Any]:
+        """List contents of a directory in the workspace."""
+        try:
+            # Use direct filesystem operations for simplicity
+            full_path = self.workspace_path / path if path else self.workspace_path
+            if not full_path.exists():
+                return {
+                    "success": False,
+                    "error": f"Directory '{path}' not found"
+                }
+            
+            items = []
+            for item in full_path.iterdir():
+                items.append({
+                    "name": item.name,
+                    "type": "directory" if item.is_dir() else "file",
+                    "size": item.stat().st_size if item.is_file() else None
+                })
+            
+            return {
+                "success": True,
+                "path": path,
+                "items": items,
+                "count": len(items)
+            }
+        except Exception as e:
+            logger.error(f"Error listing directory '{path}': {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
     # Workspace Summary
     async def get_workspace_summary(self) -> Dict[str, Any]:
         """Get a summary of workspace contents."""

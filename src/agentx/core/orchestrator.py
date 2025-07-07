@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, Optional
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import TeamConfig
-from agentx.core.message import Message, MessageQueue, UserMessage
-from agentx.core.plan import Plan, Task as PlanTask, ToolCall, ToolResult
-from agentx.event.bus import log_event
+from agentx.core.message import TaskStep, TextPart, MessageQueue, Message
+from agentx.core.plan import Plan, PlanItem
+# Event logging removed - not currently used
 from agentx.tool.manager import ToolManager
 from agentx.utils.logger import get_logger
-from agentx.storage.workspace import Workspace
+from agentx.storage.workspace import WorkspaceStorage
 import json
 
 if TYPE_CHECKING:
@@ -34,9 +34,9 @@ class Orchestrator:
         self.routing_brain: Optional[Brain] = self._initialize_routing_brain()
 
     def _initialize_routing_brain(self) -> Optional[Brain]:
-        if self.team_config.orchestration and self.team_config.orchestration.routing_brain:
+        if self.team_config.orchestrator and self.team_config.orchestrator.brain_config:
             logger.info("Initializing routing brain...")
-            return Brain.from_config(self.team_config.orchestration.routing_brain)
+            return Brain.from_config(self.team_config.orchestrator.brain_config)
         logger.info("No routing brain configured. Using heuristic routing.")
         return None
 
@@ -59,39 +59,50 @@ class Orchestrator:
                 )
 
     async def _generate_plan(self, task: "Task") -> Optional[Plan]:
-        planner_config = self.team_config.orchestration.planner
-        planner_agent = self.agents.get(planner_config.agent)
-
-        if not planner_agent:
-            logger.error(f"Planner agent '{planner_config.agent}' not found.")
-            return None
-
-        logger.info(f"Generating plan with agent: {planner_agent.name}")
-
-        response_message = await planner_agent.run(task.initial_prompt)
-
-        # The planner agent is expected to call a tool that creates the plan.
-        if not response_message.tool_calls:
-            logger.error("Planner agent did not request a tool call to create the plan.")
-            return None
+        # Use the orchestrator's brain for planning
+        planner_brain = self.routing_brain or Brain.from_config(self.team_config.orchestrator.get_default_brain_config())
         
-        # Assume the first tool call is the plan creation
-        tool_call = response_message.tool_calls[0]
+        logger.info("Generating plan using orchestrator's brain...")
+
+        # Create a planning prompt
+        available_agents = ", ".join(self.agents.keys())
+        planning_prompt = f"""
+        Create a detailed plan for the following task:
         
-        # This is a placeholder for a more robust tool execution flow
-        # In a real scenario, a "CreatePlan" tool would be invoked.
-        # For now, we simulate this by parsing the arguments directly.
+        Task: {task.initial_prompt}
+        
+        Available agents: {available_agents}
+        
+        Please create a plan with the following structure:
+        - goal: Overall goal of the plan
+        - tasks: Array of tasks, each with:
+          - id: Unique identifier
+          - name: Short descriptive name
+          - goal: What this task should accomplish
+          - agent: Which agent should handle this (optional)
+          - status: "pending" (default)
+          - dependencies: Array of task IDs this depends on (optional)
+        
+        Return only a valid JSON object matching this structure.
+        """
+
         try:
-            plan_data = tool_call.args
-            if isinstance(plan_data, str):
-                plan_data = json.loads(plan_data)
+            response = await planner_brain.run(planning_prompt)
             
+            # Parse the response as JSON
+            plan_data = json.loads(response.strip())
+            
+            # Validate and create the plan
             plan = Plan.model_validate(plan_data)
             self._save_plan(plan, task.workspace)
             logger.info(f"Plan generated and saved for task {task.task_id}")
             return plan
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse plan JSON from brain response: {e}")
+            return None
         except Exception as e:
-            logger.error(f"Failed to parse or validate the plan from planner agent: {e}")
+            logger.error(f"Failed to generate plan: {e}")
             return None
 
 
@@ -99,23 +110,37 @@ class Orchestrator:
         while next_task_to_run := self._get_next_task(task.plan):
             next_task_to_run.status = "in_progress"
             
-            yield Message.system_message(
-                content=f"Starting task: {next_task_to_run.description}",
-                task_id=task.task_id,
-                metadata={"plan_task_id": next_task_to_run.id}
+            yield TaskStep(
+                agent_name="orchestrator",
+                parts=[TextPart(text=f"Starting task: {next_task_to_run.name}")]
             )
 
             agent_name = next_task_to_run.agent or await self._decide_agent_for_task(next_task_to_run, task)
             agent = self.agents.get(agent_name)
 
             if not agent:
-                error_message = f"Agent '{agent_name}' not found for task '{next_task_to_run.description}'"
-                yield Message.system_message(content=error_message, task_id=task.task_id)
+                error_message = f"Agent '{agent_name}' not found for task '{next_task_to_run.name}'"
+                yield TaskStep(
+                    agent_name="orchestrator",
+                    parts=[TextPart(text=error_message)]
+                )
                 next_task_to_run.status = "failed"
                 continue
 
-            response_message = await agent.run(next_task_to_run.description)
-            yield response_message
+            # Build conversation messages for the agent
+            messages = [{"role": "user", "content": next_task_to_run.goal}]
+            
+            # Generate response using agent's interface
+            response_content = await agent.generate_response(
+                messages=messages,
+                orchestrator=self
+            )
+            
+            # Create TaskStep from agent response  
+            yield TaskStep(
+                agent_name=agent_name,
+                parts=[TextPart(text=response_content)]
+            )
 
             next_task_to_run.status = "completed"
             self._save_plan(task.plan, task.workspace)
@@ -123,21 +148,47 @@ class Orchestrator:
         yield Message.system_message(content="Plan execution complete.", task_id=task.task_id)
 
 
-    def _get_next_task(self, plan: Plan) -> Optional[PlanTask]:
-        for phase in plan.phases:
-            for task in phase.tasks:
-                if task.status == "pending":
+    def _get_next_task(self, plan: Plan) -> Optional[PlanItem]:
+        """
+        Find the next actionable task in the plan.
+        A task is actionable if:
+        1. Its status is 'pending'
+        2. All of its dependencies have status 'completed'
+        """
+        for task in plan.tasks:
+            if task.status == "pending":
+                # Check if all dependencies are completed
+                if self._are_dependencies_satisfied(task, plan):
                     return task
         return None
+    
+    def _are_dependencies_satisfied(self, task: PlanItem, plan: Plan) -> bool:
+        """Check if all dependencies for a task are completed."""
+        if not task.dependencies:
+            return True
+        
+        # Create a lookup map for task statuses
+        task_statuses = {t.id: t.status for t in plan.tasks}
+        
+        # Check that all dependencies are completed
+        for dep_id in task.dependencies:
+            if dep_id not in task_statuses:
+                logger.warning(f"Task {task.id} depends on unknown task {dep_id}")
+                return False
+            if task_statuses[dep_id] != "completed":
+                return False
+        
+        return True
 
-    async def _decide_agent_for_task(self, plan_task: PlanTask, task: "Task") -> str:
+    async def _decide_agent_for_task(self, plan_task: PlanItem, task: "Task") -> str:
         if not self.routing_brain:
             # Default to the first agent if no routing brain is available
             return next(iter(self.agents.keys()))
             
         prompt = f"""
         Given the following task:
-        Description: {plan_task.description}
+        Name: {plan_task.name}
+        Goal: {plan_task.goal}
         
         And the following available agents:
         {list(self.agents.keys())}
@@ -153,8 +204,8 @@ class Orchestrator:
             
         return next(iter(self.agents.keys())) # Fallback
 
-    def _save_plan(self, plan: Plan, workspace: Workspace):
-        plan_path = workspace.get_path("plan.json")
+    def _save_plan(self, plan: Plan, workspace: WorkspaceStorage):
+        plan_path = workspace.get_workspace_path() / "plan.json"
         try:
             with open(plan_path, "w", encoding="utf-8") as f:
                 f.write(plan.model_dump_json(indent=2))

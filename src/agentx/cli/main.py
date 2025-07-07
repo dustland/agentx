@@ -19,9 +19,14 @@ def main():
     # If no arguments provided, show help
     if len(sys.argv) == 1:
         parser.print_help()
-        return 0
+        sys.exit(0)
     
     args = parser.parse_args()
+    
+    # Handle case where command is None (for test compatibility)
+    if not hasattr(args, 'command') or args.command is None:
+        parser.print_help()
+        sys.exit(0)
     
     try:
         if args.command == "init":

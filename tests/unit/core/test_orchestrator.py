@@ -3,9 +3,9 @@ from unittest.mock import Mock, AsyncMock, patch
 from agentx.core.orchestrator import Orchestrator
 from agentx.core.task import Task
 from agentx.core.agent import Agent
-from agentx.core.message import Message
-from agentx.core.plan import Plan, Phase, Task as PlanTask
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, OrchestrationConfig, PlannerConfig
+from agentx.core.message import TaskStep, TextPart
+from agentx.core.plan import Plan, PlanItem
+from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, OrchestratorConfig
 
 
 @pytest.fixture
@@ -32,11 +32,11 @@ def mock_team_config():
     return TeamConfig(
         name="test_team",
         agents=[
-            AgentConfig(name="planner_agent", brain=BrainConfig(model="test_model")),
-            AgentConfig(name="execution_agent", brain=BrainConfig(model="test_model")),
+            AgentConfig(name="planner_agent", brain_config=BrainConfig(model="test_model")),
+            AgentConfig(name="execution_agent", brain_config=BrainConfig(model="test_model")),
         ],
-        orchestration=OrchestrationConfig(
-            planner=PlannerConfig(agent="planner_agent")
+        orchestrator=OrchestratorConfig(
+            brain_config=BrainConfig(model="test_model")
         )
     )
 
@@ -60,15 +60,22 @@ def orchestrator(mock_team_config, mock_agents):
 @pytest.mark.asyncio
 async def test_run_generates_plan_if_none_exists(orchestrator, mock_task, mock_agents):
     # Arrange
-    generated_plan = Plan(phases=[Phase(tasks=[PlanTask(description="do work")])])
+    generated_plan = Plan(
+        goal="Test goal",
+        tasks=[PlanItem(id="task1", name="Test Task", goal="do work")]
+    )
     
     # Mock the behavior of _generate_plan to return a valid plan
     async def mock_generate_plan(task):
         return generated_plan
 
+    # Mock async generator for _execute_plan
+    async def mock_execute_plan(task):
+        yield TaskStep(agent_name="test", parts=[TextPart(text="test")])
+    
     # Patch the internal methods
     with patch.object(orchestrator, '_generate_plan', new=AsyncMock(side_effect=mock_generate_plan)) as mock_gen_plan, \
-         patch.object(orchestrator, '_execute_plan', new=AsyncMock()) as mock_exec_plan:
+         patch.object(orchestrator, '_execute_plan', new=Mock(side_effect=mock_execute_plan)) as mock_exec_plan:
         
         # Act
         async for _ in orchestrator.run(mock_task):
@@ -83,10 +90,17 @@ async def test_run_generates_plan_if_none_exists(orchestrator, mock_task, mock_a
 @pytest.mark.asyncio
 async def test_run_executes_existing_plan(orchestrator, mock_task):
     # Arrange
-    mock_task.plan = Plan(phases=[Phase(tasks=[PlanTask(description="do work")])])
+    mock_task.plan = Plan(
+        goal="Test goal", 
+        tasks=[PlanItem(id="task1", name="Test Task", goal="do work")]
+    )
+    
+    # Mock async generator for _execute_plan
+    async def mock_execute_plan(task):
+        yield TaskStep(agent_name="test", parts=[TextPart(text="test")])
     
     with patch.object(orchestrator, '_generate_plan', new=AsyncMock()) as mock_gen_plan, \
-         patch.object(orchestrator, '_execute_plan', new=AsyncMock()) as mock_exec_plan:
+         patch.object(orchestrator, '_execute_plan', new=Mock(side_effect=mock_execute_plan)) as mock_exec_plan:
 
         # Act
         async for _ in orchestrator.run(mock_task):

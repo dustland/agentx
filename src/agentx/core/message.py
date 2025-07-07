@@ -114,6 +114,88 @@ class TaskStep(BaseModel):
     parts: List[ConversationPart]
     timestamp: datetime = Field(default_factory=datetime.now)
 
+# --- Standard Chat Message Format (compatible with Vercel AI SDK) ---
+
+class Message(BaseModel):
+    """
+    Standard chat message format compatible with LLM APIs and Vercel AI SDK.
+    
+    This follows the industry standard format with role/content/parts structure.
+    """
+    id: str = Field(default_factory=generate_short_id)
+    role: Literal["system", "user", "assistant", "tool"] = "user"
+    content: str = ""  # Backward compatibility - text content
+    parts: List[ConversationPart] = Field(default_factory=list)  # Modern structured content
+    timestamp: datetime = Field(default_factory=datetime.now)
+    
+    @classmethod
+    def user_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+        """Create a user message."""
+        return cls(
+            role="user",
+            content=content,
+            parts=parts or [TextPart(text=content)]
+        )
+    
+    @classmethod
+    def assistant_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+        """Create an assistant message."""
+        return cls(
+            role="assistant", 
+            content=content,
+            parts=parts or [TextPart(text=content)]
+        )
+    
+    @classmethod
+    def system_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+        """Create a system message."""
+        return cls(
+            role="system",
+            content=content, 
+            parts=parts or [TextPart(text=content)]
+        )
+
+class UserMessage(Message):
+    """User message - alias for Message with role='user'."""
+    role: Literal["user"] = "user"
+
+class MessageQueue(BaseModel):
+    """Queue for managing message flow in tasks."""
+    messages: List[Message] = Field(default_factory=list)
+    max_size: int = 1000
+    
+    def add(self, message: Message) -> None:
+        """Add a message to the queue."""
+        self.messages.append(message)
+        if len(self.messages) > self.max_size:
+            self.messages.pop(0)  # Remove oldest message
+    
+    def get_all(self) -> List[Message]:
+        """Get all messages in the queue."""
+        return self.messages.copy()
+    
+    def clear(self) -> None:
+        """Clear all messages from the queue."""
+        self.messages.clear()
+
+class TaskHistory(BaseModel):
+    """Task execution history with messages and metadata."""
+    task_id: str
+    messages: List[Message] = Field(default_factory=list)
+    steps: List[TaskStep] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    
+    def add_message(self, message: Message) -> None:
+        """Add a message to the history."""
+        self.messages.append(message)
+        self.updated_at = datetime.now()
+    
+    def add_step(self, step: TaskStep) -> None:
+        """Add a task step to the history."""
+        self.steps.append(step)
+        self.updated_at = datetime.now()
+
 # --- Streaming Models ---
 
 class StreamChunk(BaseModel):
@@ -150,4 +232,7 @@ class StreamComplete(BaseModel):
     step_id: str
     agent_name: str
     total_tokens: Optional[int] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow) 
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+ 

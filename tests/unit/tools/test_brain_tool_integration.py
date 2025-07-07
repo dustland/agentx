@@ -132,19 +132,27 @@ class TestBrainToolIntegration:
         tool_schemas = agent.get_tools_json()
         print(f"Tool schemas from agent: {tool_schemas}")
         
-        # Verify schemas are complete
-        assert len(tool_schemas) == 1
-        schema = tool_schemas[0]
+        # Verify schemas are complete (should include builtin tools + custom weather tool)
+        assert len(tool_schemas) >= 13  # At least builtin tools + weather tool
+        
+        # Find the weather tool in the schemas
+        weather_schema = None
+        for schema in tool_schemas:
+            if schema['function']['name'] == 'get_weather':
+                weather_schema = schema
+                break
+        
+        assert weather_schema is not None, "Weather tool should be in the schemas"
         
         # Check complete structure
-        assert schema['type'] == 'function'
-        assert 'function' in schema
-        assert 'name' in schema['function']
-        assert 'description' in schema['function']
-        assert 'parameters' in schema['function']
+        assert weather_schema['type'] == 'function'
+        assert 'function' in weather_schema
+        assert 'name' in weather_schema['function']
+        assert 'description' in weather_schema['function']
+        assert 'parameters' in weather_schema['function']
         
         # Check parameter details
-        params = schema['function']['parameters']
+        params = weather_schema['function']['parameters']
         assert 'properties' in params
         assert 'location' in params['properties']
         
@@ -152,7 +160,13 @@ class TestBrainToolIntegration:
         assert 'description' in location_param
         assert location_param['type'] == 'string'
         
-        print(f"✅ Agent provides complete tool schemas: {location_param}")
+        # Verify builtin tools are also included
+        tool_names = {schema['function']['name'] for schema in tool_schemas}
+        assert 'write_file' in tool_names  # Should have builtin file tools
+        assert 'read_file' in tool_names
+        assert 'web_search' in tool_names
+        
+        print(f"✅ Agent provides complete tool schemas including {len(tool_schemas)} tools: {location_param}")
 
 
 if __name__ == "__main__":

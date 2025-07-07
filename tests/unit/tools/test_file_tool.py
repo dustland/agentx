@@ -241,7 +241,7 @@ class TestFileToolDirectoryOperations:
         result = await file_tool.list_directory("reports")
         
         file_tool.workspace.file_storage.list_directory.assert_called_once_with("reports")
-        assert "📂 Contents of 'reports'" in result
+        assert "📂 Directory 'reports' is empty" in result
 
 
 class TestFileToolIntegrationReal:
@@ -320,7 +320,7 @@ class TestFileTool:
         self.workspace.artifacts_dir = self.workspace_path / self.task_id / "artifacts"
         
         # FileTool should receive a properly configured workspace
-        self.file_tool = FileTool(workspace=self.workspace)
+        self.file_tool = FileTool(workspace_storage=self.workspace)
     
     def test_write_file_stores_in_correct_location(self):
         """Files should be stored in workspace/{task_id}/artifacts/ directory."""
@@ -412,8 +412,8 @@ class TestFileTool:
     
     def test_file_tool_initialization(self):
         """FileTool should initialize correctly with workspace."""
-        # Should accept workspace parameter
-        tool = FileTool(workspace=self.workspace)
+        # Should accept workspace_storage parameter
+        tool = FileTool(workspace_storage=self.workspace)
         
         assert tool.workspace == self.workspace
         assert hasattr(tool, 'write_file')

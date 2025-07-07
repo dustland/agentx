@@ -32,25 +32,22 @@ Use the write_file tool to save this file directly in the workspace.
 """
     
     try:
-        # Start the task with minimal config
+        # Start the task executor
         executor = start_task(
             prompt=prompt,
             config_path="config/simple_agent.yaml"
         )
         
-        # Print task information
-        task_id = executor.task.task_id
-        workspace_path = executor.task.workspace_dir
-        print(f"📋 Task ID: {task_id}")
-        print(f"📁 Workspace: {workspace_path}")
+        print(f"📋 Task ID: {executor.task_id}")
+        print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
         
-        # Run one step
+        # Run the task
         print("\n🤖 Running storage test...")
-        async for step_result in executor.step():
-            print(f"Agent response: {step_result['response']}")
-            break
+        async for message in executor.start(prompt, stream=False):
+            print(f"Agent response: {message.content}")
         
         # Check if file was created
+        workspace_path = executor.workspace.get_workspace_path()
         hello_file = workspace_path / "hello.txt"
         artifact_file = workspace_path / "artifacts" / "hello.txt.txt"
         

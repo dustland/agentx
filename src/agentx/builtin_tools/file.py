@@ -6,7 +6,7 @@ import os
 import mimetypes
 from pathlib import Path
 from typing import Annotated, Optional, Dict, Any
-from agentx.core.tool import tool, Tool
+from agentx.core.tool import tool, Tool, ToolResult
 from agentx.storage.workspace import WorkspaceStorage
 from agentx.storage.factory import StorageFactory
 from agentx.utils.logger import get_logger
@@ -35,7 +35,7 @@ class FileTool(Tool):
         self,
         filename: Annotated[str, "Name of the file (e.g., 'report.html', 'requirements.md')"],
         content: Annotated[str, "Content to write to the file"]
-    ) -> Dict[str, Any]:
+    ) -> ToolResult:
         """Write content to file as a workspace artifact with versioning."""
         try:
             # Store as artifact with metadata
@@ -56,80 +56,82 @@ class FileTool(Tool):
             if result.success:
                 version = result.data.get("version", "unknown") if result.data else "unknown"
                 logger.info(f"Wrote file artifact: {filename} (version: {version})")
-                return {
-                    "success": True,
-                    "filename": filename,
-                    "size": len(content),
-                    "version": version,
-                    "message": f"Successfully wrote {len(content)} characters to {filename}"
-                }
+                
+                # Return ToolResult with user-friendly content for LLM + structured data
+                return ToolResult(
+                    success=True,
+                    result=f"✅ Successfully wrote {len(content)} characters to {filename}",
+                    metadata={
+                        "filename": filename,
+                        "size": len(content),
+                        "version": version,
+                        "content_type": metadata["content_type"]
+                    }
+                )
             else:
-                return {
-                    "success": False,
-                    "filename": filename,
-                    "error": result.error,
-                    "message": f"Failed to write file: {result.error}"
-                }
+                return ToolResult(
+                    success=False,
+                    result=f"❌ Failed to write file: {result.error}",
+                    error=result.error
+                )
                 
         except Exception as e:
             logger.error(f"Error writing file {filename}: {e}")
-            return {
-                "success": False,
-                "filename": filename,
-                "error": str(e),
-                "message": f"Error writing file: {str(e)}"
-            }
+            return ToolResult(
+                success=False,
+                result=f"❌ Failed to write file: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Read the contents of a file")
     async def read_file(
         self,
         filename: Annotated[str, "Name of the file to read"],
         version: Annotated[Optional[str], "Specific version to read (optional, defaults to latest)"] = None
-    ) -> Dict[str, Any]:
+    ) -> ToolResult:
         """Read file contents from workspace artifacts."""
         try:
             content = await self.workspace.get_artifact(filename, version)
             
             if content is None:
-                return {
-                    "success": False,
-                    "filename": filename,
-                    "error": f"File not found: {filename}",
-                    "message": f"File not found: {filename}"
-                }
+                return ToolResult(
+                    success=False,
+                    result=f"❌ File not found: {filename}",
+                    error=f"File not found: {filename}"
+                )
             
             logger.info(f"Read file artifact: {filename}")
-            return {
-                "success": True,
-                "filename": filename,
-                "content": content,
-                "size": len(content),
-                "version": version,
-                "message": f"Successfully read {filename}"
-            }
+            return ToolResult(
+                success=True,
+                result=f"📄 Contents of {filename}:\n\n{content}",
+                metadata={
+                    "filename": filename,
+                    "size": len(content),
+                    "version": version,
+                    "content": content  # Include raw content for programmatic access
+                }
+            )
             
         except Exception as e:
             logger.error(f"Error reading file {filename}: {e}")
-            return {
-                "success": False,
-                "filename": filename,
-                "error": str(e),
-                "message": f"Error reading file: {str(e)}"
-            }
+            return ToolResult(
+                success=False,
+                result=f"❌ Error reading file: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="List all files in the workspace")
-    async def list_files(self) -> Dict[str, Any]:
+    async def list_files(self) -> ToolResult:
         """List all file artifacts in the workspace."""
         try:
             artifacts = await self.workspace.list_artifacts()
             
             if not artifacts:
-                return {
-                    "success": True,
-                    "files": [],
-                    "count": 0,
-                    "message": "No files found in workspace"
-                }
+                return ToolResult(
+                    success=True,
+                    result="📂 Workspace files:\n\nNo files found in workspace.",
+                    metadata={"files": [], "count": 0}
+                )
             
             # Group by filename (artifacts can have multiple versions)
             files_by_name = {}
@@ -139,45 +141,52 @@ class FileTool(Tool):
                     files_by_name[name] = []
                 files_by_name[name].append(artifact)
             
-            files = []
+            file_list = []
+            files_metadata = []
             for name, versions in files_by_name.items():
                 latest_version = sorted(versions, key=lambda x: x.get("created_at", ""))[-1]
                 size = latest_version.get("size", 0)
                 version_count = len(versions)
+                created_at = latest_version.get("created_at", "unknown")
                 
-                file_info = {
+                file_entry = f"  📄 {name} ({size} bytes"
+                if version_count > 1:
+                    file_entry += f", {version_count} versions"
+                file_entry += f", created: {created_at})"
+                file_list.append(file_entry)
+                
+                # Add structured data for programmatic access
+                files_metadata.append({
                     "name": name,
                     "size": size,
-                    "versions": version_count,
-                    "latest_version": latest_version.get("version", "unknown"),
-                    "created_at": latest_version.get("created_at"),
-                    "content_type": latest_version.get("content_type", "text/plain")
-                }
-                files.append(file_info)
+                    "version_count": version_count,
+                    "created_at": created_at,
+                    "latest_version": latest_version.get("version", "unknown")
+                })
             
             logger.info(f"Listed {len(files_by_name)} file artifacts")
-            return {
-                "success": True,
-                "files": files,
-                "count": len(files),
-                "message": f"Found {len(files)} files in workspace"
-            }
+            return ToolResult(
+                success=True,
+                result=f"📂 Workspace files:\n\n" + "\n".join(file_list),
+                metadata={
+                    "files": files_metadata,
+                    "count": len(files_by_name)
+                }
+            )
             
         except Exception as e:
             logger.error(f"Error listing files: {e}")
-            return {
-                "success": False,
-                "files": [],
-                "count": 0,
-                "error": str(e),
-                "message": f"Error listing files: {str(e)}"
-            }
+            return ToolResult(
+                success=False,
+                result=f"❌ Error listing files: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Check if a file exists in the workspace")
     async def file_exists(
         self,
         filename: Annotated[str, "Name of the file to check"]
-    ) -> str:
+    ) -> ToolResult:
         """Check if a file artifact exists in the workspace."""
         try:
             content = await self.workspace.get_artifact(filename)
@@ -199,22 +208,44 @@ class FileTool(Tool):
                     info += ")"
                     
                     logger.info(f"File exists: {filename}")
-                    return info
+                    return ToolResult(
+                        success=True,
+                        result=info,
+                        metadata={
+                            "filename": filename,
+                            "exists": True,
+                            "size": size,
+                            "created_at": created_at,
+                            "version_count": version_count
+                        }
+                    )
                 else:
-                    return f"✅ File exists: {filename}"
+                    return ToolResult(
+                        success=True,
+                        result=f"✅ File exists: {filename}",
+                        metadata={"filename": filename, "exists": True}
+                    )
             else:
-                return f"❌ File does not exist: {filename}"
+                return ToolResult(
+                    success=True,
+                    result=f"❌ File does not exist: {filename}",
+                    metadata={"filename": filename, "exists": False}
+                )
                 
         except Exception as e:
             logger.error(f"Error checking file {filename}: {e}")
-            return f"❌ Error checking file: {str(e)}"
+            return ToolResult(
+                success=False,
+                result=f"❌ Error checking file: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Delete a file from the workspace")
     async def delete_file(
         self,
         filename: Annotated[str, "Name of the file to delete"],
         version: Annotated[Optional[str], "Specific version to delete (optional, deletes all versions if not specified)"] = None
-    ) -> str:
+    ) -> ToolResult:
         """Delete a file artifact from the workspace."""
         try:
             result = await self.workspace.delete_artifact(filename, version)
@@ -222,87 +253,139 @@ class FileTool(Tool):
             if result.success:
                 if version:
                     logger.info(f"Deleted file artifact version: {filename} (version: {version})")
-                    return f"✅ Successfully deleted {filename} version {version}"
+                    return ToolResult(
+                        success=True,
+                        result=f"✅ Successfully deleted {filename} version {version}",
+                        metadata={"filename": filename, "version": version}
+                    )
                 else:
                     logger.info(f"Deleted file artifact: {filename}")
-                    return f"✅ Successfully deleted {filename}"
+                    return ToolResult(
+                        success=True,
+                        result=f"✅ Successfully deleted {filename}",
+                        metadata={"filename": filename}
+                    )
             else:
-                return f"❌ Failed to delete file: {result.error}"
+                return ToolResult(
+                    success=False,
+                    result=f"❌ Failed to delete file: {result.error}",
+                    error=result.error
+                )
                 
         except Exception as e:
             logger.error(f"Error deleting file {filename}: {e}")
-            return f"❌ Error deleting file: {str(e)}"
+            return ToolResult(
+                success=False,
+                result=f"❌ Error deleting file: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Get version history of a file")
     async def get_file_versions(
         self,
         filename: Annotated[str, "Name of the file to get versions for"]
-    ) -> str:
+    ) -> ToolResult:
         """Get version history of a file artifact."""
         try:
             versions = await self.workspace.get_artifact_versions(filename)
             
             if not versions:
-                return f"❌ No versions found for file: {filename}"
+                return ToolResult(
+                    success=False,
+                    result=f"❌ No versions found for file: {filename}",
+                    error=f"No versions found for file: {filename}"
+                )
             
             # Get detailed info for each version
             artifacts = await self.workspace.list_artifacts()
             file_artifacts = [a for a in artifacts if a["name"] == filename]
             
             if not file_artifacts:
-                return f"❌ No artifact metadata found for file: {filename}"
+                return ToolResult(
+                    success=False,
+                    result=f"❌ No artifact metadata found for file: {filename}",
+                    error=f"No artifact metadata found for file: {filename}"
+                )
             
             # Sort by creation time
             file_artifacts.sort(key=lambda x: x.get("created_at", ""))
             
             version_list = []
+            versions_metadata = []
             for i, artifact in enumerate(file_artifacts):
                 version = artifact.get("version", f"v{i+1}")
                 size = artifact.get("size", 0)
                 created_at = artifact.get("created_at", "unknown")
                 
                 version_list.append(f"  {version} - {size} bytes, created: {created_at}")
+                versions_metadata.append({
+                    "version": version,
+                    "size": size,
+                    "created_at": created_at
+                })
             
             logger.info(f"Retrieved {len(versions)} versions for {filename}")
-            return f"📋 Version history for {filename}:\n\n" + "\n".join(version_list)
+            return ToolResult(
+                success=True,
+                result=f"📋 Version history for {filename}:\n\n" + "\n".join(version_list),
+                metadata={
+                    "filename": filename,
+                    "versions": versions_metadata,
+                    "count": len(versions)
+                }
+            )
             
         except Exception as e:
             logger.error(f"Error getting versions for {filename}: {e}")
-            return f"❌ Error getting versions: {str(e)}"
+            return ToolResult(
+                success=False,
+                result=f"❌ Error getting versions: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Get workspace summary with file statistics")
-    async def get_workspace_summary(self) -> Dict[str, Any]:
+    async def get_workspace_summary(self) -> ToolResult:
         """Get a summary of the workspace contents."""
         try:
             summary = await self.workspace.get_workspace_summary()
             
-            if "error" in summary:
-                return {
-                    "success": False,
-                    "error": summary["error"],
-                    "message": f"Error getting workspace summary: {summary['error']}"
-                }
+            if isinstance(summary, dict) and "error" in summary:
+                return ToolResult(
+                    success=False,
+                    result=f"❌ Error getting workspace summary: {summary['error']}",
+                    error=summary['error']
+                )
+            
+            # Format the summary nicely
+            if isinstance(summary, dict):
+                lines = ["📊 Workspace Summary:\n"]
+                for key, value in summary.items():
+                    if key != "error":
+                        lines.append(f"  {key}: {value}")
+                result_text = "\n".join(lines)
+            else:
+                result_text = f"📊 Workspace Summary:\n\n{summary}"
             
             logger.info("Retrieved workspace summary")
-            return {
-                "success": True,
-                "summary": summary,
-                "message": "Successfully retrieved workspace summary"
-            }
+            return ToolResult(
+                success=True,
+                result=result_text,
+                metadata=summary if isinstance(summary, dict) else {"summary": summary}
+            )
             
         except Exception as e:
             logger.error(f"Error getting workspace summary: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "message": f"Error getting workspace summary: {str(e)}"
-            }
+            return ToolResult(
+                success=False,
+                result=f"❌ Error getting workspace summary: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="Create a directory in the workspace")
     async def create_directory(
         self,
         path: Annotated[str, "Directory path to create (e.g., 'reports', 'data/sources')"]
-    ) -> str:
+    ) -> ToolResult:
         """Create a directory in the workspace using the underlying file storage."""
         try:
             result = await self.workspace.file_storage.create_directory(path)
@@ -310,22 +393,38 @@ class FileTool(Tool):
             if result.success:
                 if result.metadata and result.metadata.get("already_exists"):
                     logger.info(f"Directory already exists: {path}")
-                    return f"ℹ️ Directory already exists: {path}"
+                    return ToolResult(
+                        success=True,
+                        result=f"ℹ️ Directory already exists: {path}",
+                        metadata={"path": path, "already_exists": True}
+                    )
                 else:
                     logger.info(f"Created directory: {path}")
-                    return f"✅ Successfully created directory: {path}"
+                    return ToolResult(
+                        success=True,
+                        result=f"✅ Successfully created directory: {path}",
+                        metadata={"path": path, "created": True}
+                    )
             else:
-                return f"❌ Failed to create directory: {result.error}"
+                return ToolResult(
+                    success=False,
+                    result=f"❌ Failed to create directory: {result.error}",
+                    error=result.error
+                )
                 
         except Exception as e:
             logger.error(f"Error creating directory {path}: {e}")
-            return f"❌ Error creating directory: {str(e)}"
+            return ToolResult(
+                success=False,
+                result=f"❌ Error creating directory: {str(e)}",
+                error=str(e)
+            )
     
     @tool(description="List contents of a directory in the workspace")
     async def list_directory(
         self,
         path: Annotated[str, "Directory path to list (defaults to workspace root)"] = ""
-    ) -> str:
+    ) -> ToolResult:
         """List the contents of a directory in the workspace."""
         try:
             # Use empty string for root, or the specified path
@@ -335,23 +434,50 @@ class FileTool(Tool):
             
             if not files:
                 display_path = directory_path if directory_path else "workspace root"
-                return f"📂 Directory '{display_path}' is empty"
+                return ToolResult(
+                    success=True,
+                    result=f"📂 Directory '{display_path}' is empty",
+                    metadata={"path": directory_path, "items": [], "count": 0}
+                )
             
             items = []
+            items_metadata = []
             for file_info in files:
                 # Check if it's a directory (ends with /) or file
                 if file_info.path.endswith('/'):
                     items.append(f"📁 {file_info.path}")
+                    items_metadata.append({
+                        "name": file_info.path,
+                        "type": "directory",
+                        "size": 0
+                    })
                 else:
                     items.append(f"📄 {file_info.path} ({file_info.size} bytes)")
+                    items_metadata.append({
+                        "name": file_info.path,
+                        "type": "file",
+                        "size": file_info.size
+                    })
             
             display_path = directory_path if directory_path else "workspace root"
             logger.info(f"Listed directory: {display_path}")
-            return f"📂 Contents of '{display_path}':\n\n" + "\n".join(items)
+            return ToolResult(
+                success=True,
+                result=f"📂 Contents of '{display_path}':\n\n" + "\n".join(items),
+                metadata={
+                    "path": directory_path,
+                    "items": items_metadata,
+                    "count": len(items)
+                }
+            )
             
         except Exception as e:
             logger.error(f"Error listing directory {path}: {e}")
-            return f"❌ Error listing directory: {str(e)}"
+            return ToolResult(
+                success=False,
+                result=f"❌ Error listing directory: {str(e)}",
+                error=str(e)
+            )
     
     def _get_content_type(self, filename: str) -> str:
         """Determine content type from filename."""

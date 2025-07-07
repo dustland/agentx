@@ -23,6 +23,7 @@ graph TD
         Orchestrator -- Manages --> Plan
         Orchestrator -- Provides --> Workspace
         Orchestrator -- Provides --> Memory
+        Orchestrator -- "Uses for planning & routing" --> Brain
     end
 
     subgraph "Execution Units"
@@ -37,28 +38,42 @@ graph TD
     Agent1 -- "Accesses" --> Memory
     Agent1 -- "Signals Completion" --> Orchestrator
 
-    linkStyle 0,1,2,3,4,5,6 stroke-width:2px,stroke:gray,stroke-dasharray: 3 3;
 ```
 
-### 2.1. The Orchestrator
+### 2.1. The Orchestrator: The System's Process Manager
 
-The Orchestrator is the central process manager of the system. It is a deterministic component whose sole responsibility is to execute the `Plan`. It is not an agent and has no creative or decision-making capabilities beyond what is required to follow the plan. Its functions are divided into its core responsibilities and the auxiliary services it consumes.
+The Orchestrator is the central process manager of the system. It is a deterministic, non-creative component whose sole responsibility is to execute the `Plan` with unwavering precision. It operates as a state machine, moving the system from one task to the next according to the instructions in the `Plan`. For any task requiring language understanding, such as initial plan generation or agent routing, it delegates the "thinking" to a dedicated `Brain` component.
 
-#### 2.1.1. Core Responsibilities
+Its core logic is a persistent loop that methodically executes the plan. This loop is the engine that drives the entire system forward.
 
-These are the deterministic functions the Orchestrator performs in its main execution loop.
+1.  **Initialize and Generate Plan (If Needed)**: The loop begins. The Orchestrator's first action is to ensure a plan exists. It looks for the `plan.json` file in the workspace.
 
-1.  **Plan Management**: Loading the `Plan` and tracking the status of each task.
-2.  **Task Dispatch**: Cueing the appropriate agent when a task is ready to be executed.
-3.  **Task Briefing**: Assembling a focused briefing for an agent's task.
-4.  **Resource Provisioning**: Providing agents with access to the `Workspace` and `Memory`.
+    - If `plan.json` is found, it is loaded into memory.
+    - If `plan.json` is **not** found, the Orchestrator executes a **one-time, internal subroutine to generate the plan**. This routine uses its `Brain` instance to translate the initial high-level user goal into the structured `plan.json` format. The resulting file is saved, and the loop proceeds.
 
-#### 2.1.2. Auxiliary Services
+2.  **Identify Next Actionable Task**: It scans the list of tasks in the plan to find the next task to execute. A task is considered actionable if its status is `pending` and all of its dependencies (as listed in its `dependencies` array) have a status of `completed`.
 
-These are focused, LLM-powered services the Orchestrator uses for specific setup tasks that require language understanding.
+3.  **Select Agent (and Route If Needed)**: The Orchestrator identifies which agent must execute the task.
 
-1.  **Planning Service**: If no `Plan` exists, this service is called once to translate a high-level user goal into a structured `plan.json` file.
-2.  **Routing Service**: If a `Plan` task does not specify an agent, this service is used to select the best agent based on the task and agent descriptions.
+    - If the task object in the plan has a specific `agent` assigned, the Orchestrator selects that agent.
+    - If the `agent` field is null, the Orchestrator executes an **internal routing subroutine**. This routine uses its `Brain` instance to match the task description against the capabilities of all available agents and selects the most suitable one.
+
+4.  **Prepare Task Briefing**: The Orchestrator assembles a complete and isolated set of instructions for the selected agent. This briefing contains:
+
+    - The specific `task` description and `goal` from the plan.
+    - Access handles to the `Workspace` and `Memory`.
+    - The specific list of `tools` the agent is permitted to use for this task.
+
+5.  **Dispatch and Monitor**: The Orchestrator sends the briefing to the agent and immediately updates the task's status to `in_progress` in its in-memory representation of the plan. It then waits for the agent to signal that it has finished.
+
+6.  **Process Completion Signal**: When the agent completes its work, it returns a status signal (`success` or `failure`).
+
+    - **On Success**: The Orchestrator updates the task's status to `completed`.
+    - **On Failure**: It updates the status to `failed` and immediately consults the task's `on_failure` policy (`halt`, `escalate_to_user`, `proceed`) to determine the next step.
+
+7.  **Persist State**: After processing the completion signal, the Orchestrator writes the entire updated plan, including the new task status, back to the `plan.json` file on disk. **This is the critical step that ensures resumability.** If the system is stopped, it can be restarted, and the Orchestrator will simply load the `plan.json` and know exactly where it left off.
+
+8.  **Continue or Terminate**: The Orchestrator checks if there are any more actionable tasks. If so, the loop repeats from Step 2. If all tasks are `completed` (or the process has been halted), the Orchestrator terminates the execution.
 
 ### 2.2. The Plan
 
@@ -68,7 +83,7 @@ The **Plan** is a declarative data structure, typically defined in a `plan.json`
 
 - **Declarative**: It describes _what_ needs to be done, not _how_ to do it.
 - **Structured**: It uses a formal Pydantic schema (`agentx.core.plan.Plan`) for validation and reliability.
-- **Centrally Managed**: The plan is static during an execution run. It is managed by the Orchestrator and is not modified by agents.
+- **Centrally Managed**: The plan is the single source of truth. The Orchestrator reads from it and writes status updates to it. It is never modified by agents.
 
 ### 2.3. The Workspace: Storing Facts
 
@@ -77,9 +92,9 @@ The Workspace is a standard file system that holds the tangible, objective artif
 - **Purpose**: To store and retrieve raw data, source code, downloaded documents, and final reports.
 - **Access**: By a standard file path (e.g., `read_file('data/source.csv')`).
 
-### 2.4. The Shared Memory: Storing Actionable Knowledge
+### 2.4. The Memory: Storing Actionable Knowledge
 
-The Shared Memory is a strategic store that guides the ongoing task toward a better result. It holds the "verb" of the project, answering the question, "Given the facts, what should we do next?"
+The Memory is a strategic store that guides the ongoing task toward a better result. It holds the "verb" of the project, answering the question, "Given the facts, what should we do next?"
 
 - **Purpose**: To store insights, derived conclusions, and, most importantly, knowledge about _how to proceed_.
 - **Access**: By concept or natural language query (e.g., `recall("What is the current strategy for analyzing the data?")`).
@@ -97,50 +112,37 @@ The `Memory` is updated from two primary sources: **Agents** (who contribute the
 
 2.  **User-Driven Updates**: When a user interrupts a task with a new preference or strategic directive (e.g., "Don't use pie charts; use bar charts instead"), it is the **Orchestrator's** responsibility to commit this preference to `Memory` as a high-priority piece of actionable knowledge. This ensures the user's guidance is immediately available to all subsequent agents.
 
-## 3. The Execution Flow
+### 2.5. User Interruption and Control
 
-The orchestration unfolds with disciplined precision, guided by the Orchestrator:
+To be effective, the system must support user intervention and control over long-running tasks. Rather than requiring tasks to run from start to finish without interruption, the architecture supports a **stop-and-resume** pattern.
 
-1.  **Generate or Load Plan**: If no `plan.json` exists, the Orchestrator's **Planning Service** generates one from the initial user prompt. Otherwise, it loads the existing plan.
-2.  **Get Next Task**: It identifies the next `pending` task based on the plan's structure and dependencies.
-3.  **Cue Agent**: It cues the designated agent to perform their task. If no agent is designated, it uses its **Routing Service** to select the most suitable one.
-4.  **Execute**: The agent performs its work using its tools to interact with the `Workspace` and `Memory`.
-5.  **Update Status**: Upon completion, the agent signals back to the Orchestrator.
-6.  **Update Plan**: The Orchestrator precisely updates the task's status in `plan.json`, recalculates progress, and saves the file.
-7.  **Loop**: The cycle continues with relentless precision until the plan is complete or a terminal failure occurs.
+The key principle is **stateful resumability**: when a task is stopped, all progress is persisted to disk. When execution restarts, the system automatically detects the existing state and continues from where it left off.
 
-```mermaid
-graph TD
-    A[Orchestrator: Generate or Load plan.json] --> B{Find next pending task};
-    B --> C["Cue Agent<br/>(Use Routing Service if needed)"];
-    C --> D{Agent executes};
-    D -- Uses --> E["Workspace & Memory"];
-    D --> F[Signal completion];
-    F --> G[Orchestrator: Update task status in plan.json];
-    G --> B;
-    B -- No tasks left --> H[End];
-```
+This enables several important user control patterns:
 
-## 4. Error Handling and Recovery
+- **Task Interruption**: Users can stop execution at any time, and the system preserves all progress.
+- **State Inspection**: Between runs, users can examine the workspace, plan status, and accumulated memory.
+- **Directive Injection**: Users can add new strategic guidance to Memory before resuming.
+- **Plan Modification**: Advanced users can manually edit the plan file to adjust the remaining work.
 
-A robust system must anticipate and handle failure gracefully. Since agents are not permitted to modify the `Plan` upon failure, we must encode recovery strategies directly into the plan itself.
+This stateful approach makes the system truly interactive and directable without requiring complex real-time control interfaces.
 
-This is achieved by adding an `on_failure` policy to each `Task` within the `Plan` schema. This field instructs the Orchestrator on how to proceed when a task is marked as `failed`.
+## 3. Error Handling and Recovery
 
-- **`halt` (Default)**: The Orchestrator stops all further execution immediately. The entire task is halted, and the failure is reported to the user.
-- **`escalate_to_user`**: The Orchestrator pauses the execution loop and waits for direct input from the user on how to proceed.
-- **`proceed`**: The Orchestrator marks the failed task, records the error, and moves on to the next independent task in the plan.
+A robust system must anticipate and handle failure gracefully. Recovery strategies are encoded directly into the plan itself via an `on_failure` policy on each `Task`.
 
-## 5. Human-in-the-Loop: Requiring Approvals
+- **`halt` (Default)**: The Orchestrator stops all further execution immediately.
+- **`escalate_to_user`**: The Orchestrator pauses the execution and waits for direct user input.
+- **`proceed`**: The Orchestrator marks the task as failed, records the error, and moves on to the next independent task.
 
-For critical steps in a workflow, autonomous execution is not enough; user oversight is required. The design incorporates a Human-in-the-Loop (HITL) model for explicit approvals.
+## 4. Human-in-the-Loop: Requiring Approvals
 
-This is achieved by adding a simple `approval_required` boolean flag to the `Task` schema within the `Plan`. When a task with this flag is completed, the Orchestrator will pause and escalate to the user for a "go" or "no-go" decision before proceeding.
+For critical steps, a task in the `Plan` can be flagged with `approval_required: true`. When a task with this flag is completed, the Orchestrator will pause and escalate to the user for a "go" or "no-go" decision before proceeding.
 
-## 6. Core Design Principles
+## 5. Core Design Qualities
 
-This architecture is built on three key principles to ensure robust, long-running agentic processes:
+This architecture is designed to produce three key qualities:
 
-- **Resumability**: Because the Plan is the persistent source of truth, a task can be stopped and restarted at any time. The Orchestrator simply re-reads the plan and picks up where it left off.
-- **Interruptibility**: The system is designed to be paused and adjusted by the user. User instructions during a task can be committed to `Memory` (as preferences) or trigger a full re-planning cycle.
-- **Reliability**: The system's reliability stems from the Orchestrator's unwavering discipline. By treating the plan as a fixed set of instructions, it prevents creative agents from derailing the mission. This clear separation of concerns—creative execution by agents, disciplined coordination by the Orchestrator—is the cornerstone of a robust system.
+- **Resumability**: Because the `Plan` is the persistent source of truth, a task can be stopped and restarted. The Orchestrator simply re-reads the plan and picks up where it left off.
+- **Interruptibility**: Through the stop-and-resume pattern, users can interrupt execution, inspect state, inject directives into `Memory`, and resume with full context preservation.
+- **Reliability**: Reliability stems from the Orchestrator's discipline. By treating the plan as a fixed set of instructions, it prevents creative agents from derailing the mission. This clear separation of concerns—creative execution by agents, disciplined coordination by the Orchestrator—is the cornerstone of the system.

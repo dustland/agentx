@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from agentx.core.task import TaskExecutor
 from agentx.core.agent import Agent
 from agentx.tool.registry import get_tool_registry
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig
+from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError
 
 # It's better to use absolute paths in tests to avoid issues with the test runner's CWD
 # This finds the project root based on the test file's location.
@@ -54,20 +54,20 @@ def test_load_team_from_config(sample_team_config_path: str):
     task_executor = TaskExecutor(sample_team_config_path)
 
     # Assert
-    assert task_executor.task.team_config.name == "sample_team"
-    assert len(task_executor.task.agents) == 3  # coordinator, analyst, writer
-    assert "coordinator" in task_executor.task.agents
-    assert "analyst" in task_executor.task.agents
-    assert "writer" in task_executor.task.agents
+    assert task_executor.team_config.name == "sample_team"
+    assert len(task_executor.agents) == 3  # coordinator, analyst, writer
+    assert "coordinator" in task_executor.agents
+    assert "analyst" in task_executor.agents
+    assert "writer" in task_executor.agents
     
-    # Check max rounds - this comes from team_config.max_rounds (default 50)
-    assert task_executor.task.max_rounds == 50
+    # Check max rounds - this comes from team_config.max_rounds (default 10)
+    assert task_executor.team_config.max_rounds == 10
 
 def test_load_team_with_nonexistent_config():
     """
-    Tests that loading a non-existent config file raises FileNotFoundError.
+    Tests that loading a non-existent config file raises ConfigurationError.
     """
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(ConfigurationError):
         TaskExecutor("non_existent_path/team.yaml")
 
 def test_load_team_with_invalid_yaml(tmp_path: Path):
@@ -78,12 +78,12 @@ def test_load_team_with_invalid_yaml(tmp_path: Path):
     config_path = tmp_path / "invalid_team.yaml"
     config_path.write_text(invalid_yaml)
     
-    with pytest.raises(yaml.YAMLError):
+    with pytest.raises(ConfigurationError):
         TaskExecutor(str(config_path))
 
 def test_load_team_with_validation_error(tmp_path: Path):
     """
-    Tests that a config with missing required fields raises a Pydantic validation error.
+    Tests that a config with missing required fields raises a configuration error.
     """
     # 'name' field is missing, which should cause a validation error
     invalid_config = """
@@ -98,7 +98,7 @@ agents:
     (tmp_path / "prompt.jinja2").write_text("dummy prompt")
     config_path.write_text(invalid_config)
     
-    with pytest.raises(ValidationError):
+    with pytest.raises(ConfigurationError):
         TaskExecutor(str(config_path))
 
 def test_load_team_with_invalid_tool_source(tmp_path: Path):
@@ -125,7 +125,7 @@ tools:
     
     # This should load successfully since we don't validate tool sources at load time
     task_executor = TaskExecutor(str(config_path))
-    assert task_executor.task.team_config.name == "Test Team"
+    assert task_executor.team_config.name == "Test Team"
 
 def test_load_team_with_undefined_agent_tool(tmp_path: Path):
     """
@@ -148,7 +148,7 @@ tools: []
 
     # This should load successfully
     task_executor = TaskExecutor(str(config_path))
-    assert task_executor.task.team_config.name == "Test Team"
+    assert task_executor.team_config.name == "Test Team"
 
 def test_basic_team_config_loading():
     """Test loading a basic team configuration."""
@@ -228,7 +228,7 @@ def test_task_config():
     task_config = TaskConfig()
     
     assert task_config.mode == "autonomous"
-    assert task_config.max_rounds == 20
+    assert task_config.max_rounds == 10  # Updated to match current default
     assert task_config.timeout_seconds == 300
     assert task_config.step_through_enabled == False
     

@@ -22,7 +22,7 @@ from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 # Core classes for advanced usage
 from agentx.core.agent import Agent
 from agentx.core.task import Task, TaskExecutor
-from agentx.core.orchestrator import BaseOrchestrator, Orchestrator
+from agentx.core.orchestrator import Orchestrator
 
 __version__ = "0.13.4"
 
@@ -44,7 +44,6 @@ __all__ = [
     "Agent",
     "Task", 
     "TaskExecutor",
-    "BaseOrchestrator",
     "Orchestrator",
 ]
 

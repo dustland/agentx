@@ -154,7 +154,7 @@ class OrchestratorConfig(BaseModel):
 class TaskConfig(BaseModel):
     """Task-specific configuration for execution control."""
     mode: str = "autonomous"  # "autonomous", "step_through"
-    max_rounds: int = 20  # Maximum conversation rounds
+    max_rounds: int = 10  # Maximum conversation rounds - default to 10 for most use cases
     timeout_seconds: int = 300  # Task timeout
     initial_agent: Optional[str] = None  # Initial agent to start with
     step_through_enabled: bool = False
@@ -170,7 +170,6 @@ class TaskConfig(BaseModel):
     context_variables: Dict[str, Any] = Field(default_factory=dict)
     
     # Legacy fields for backward compatibility
-    max_rounds: int = 50
     timeout: int = 3600
     after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available
 
@@ -189,11 +188,18 @@ class TeamConfig(BaseModel):
     orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
     deployment_config: Dict[str, Any] = Field(default_factory=dict)
     
+    # LLM provider configuration at team level
+    llm_provider: Optional[BrainConfig] = None
+    
+    # Collaboration settings
+    speaker_selection_method: str = "auto"  # "auto", "round_robin", "manual"
+    termination_condition: str = "TERMINATE"  # Default termination keyword
+    
     # Dynamic context variables for agent coordination
     context_variables: Dict[str, Any] = Field(default_factory=dict)
     
     # Legacy fields for backward compatibility
-    max_rounds: int = 50
+    max_rounds: int = 10  # Default to 10 rounds, more reasonable for most use cases
     timeout: int = 3600
     after_work_behavior: str = "return_to_user"  # Default behavior when no more handoffs available
 
