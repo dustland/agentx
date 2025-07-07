@@ -1,0 +1,99 @@
+# run
+
+Simple runner functions for AgentX examples
+
+```python
+from agentx.run import ...
+```
+
+## Functions
+
+### run_example
+
+```python
+def run_example(example_name)
+```
+
+Run an example.
+
+
+### start
+
+```python
+def start()
+```
+
+Start the AgentX API server with integrated observability.
+
+
+### monitor
+
+```python
+def monitor(project_path)
+```
+
+Run observability monitor in independent mode (post-mortem analysis).
+
+
+### web
+
+```python
+def web(project_path, host, port)
+```
+
+Start the modern web-based observability dashboard.
+
+
+### monitor_dashboard
+
+```python
+def monitor_dashboard()
+```
+
+Redirect to the observability dashboard.
+
+
+### monitor_status
+
+```python
+def monitor_status()
+```
+
+Get monitor status.
+
+
+### get_task_conversation
+
+```python
+def get_task_conversation(task_id)
+```
+
+Get conversation history for a task.
+
+
+### get_events
+
+```python
+def get_events(event_type, limit)
+```
+
+Get events.
+
+
+### get_memory_overview
+
+```python
+def get_memory_overview()
+```
+
+Get memory overview.
+
+
+### get_memory_by_category
+
+```python
+def get_memory_by_category(category)
+```
+
+Get memory by category.
+

@@ -1,0 +1,251 @@
+# manager
+
+Tool Manager - Unified tool registry and execution for task isolation.
+
+Combines ToolRegistry and ToolExecutor into a single manager class that provides both tool registration and execution capabilities. This simplifies the Agent interface and ensures task-level tool isolation.
+
+```python
+from agentx.tool.manager import ...
+```
+
+## Classes
+
+### ToolManager
+
+```python
+class ToolManager
+```
+
+Unified tool manager that combines registry and execution.
+
+This class provides task-level tool isolation by maintaining its own registry and executor. Each task gets its own ToolManager instance to prevent tool conflicts between tasks.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, task_id)
+```
+
+Initialize tool manager with task isolation.
+
+
+##### register_tool
+
+```python
+def register_tool(self, tool)
+```
+
+Register a tool with this task's registry.
+
+
+##### list_tools
+
+```python
+def list_tools(self)
+```
+
+Get list of all registered tool names.
+
+
+##### get_tool_schemas
+
+```python
+def get_tool_schemas(self, tool_names)
+```
+
+Get JSON schemas for tools.
+
+
+##### get_tool_function
+
+```python
+def get_tool_function(self, name)
+```
+
+Get a tool function by name.
+
+
+##### get_tool
+
+```python
+def get_tool(self, name)
+```
+
+Get a tool instance by name for direct access.
+
+
+##### get_builtin_tools
+
+```python
+def get_builtin_tools(self)
+```
+
+Get list of all builtin tool names.
+
+
+##### get_custom_tools
+
+```python
+def get_custom_tools(self)
+```
+
+Get list of all custom (non-builtin) tool names.
+
+
+##### execute_tool
+
+```python
+def execute_tool(self, tool_name, agent_name, **kwargs)
+```
+
+Execute a single tool.
+
+
+##### execute_tools
+
+```python
+def execute_tools(self, tool_calls, agent_name)
+```
+
+Execute multiple tool calls.
+
+
+##### get_execution_stats
+
+```python
+def get_execution_stats(self)
+```
+
+Get execution statistics.
+
+
+##### get_tool_count
+
+```python
+def get_tool_count(self)
+```
+
+Get the number of registered tools.
+
+
+##### clear_tools
+
+```python
+def clear_tools(self)
+```
+
+Clear all registered tools (useful for testing).
+
+
+
+## Functions
+
+### register_tool
+
+```python
+def register_tool(self, tool)
+```
+
+Register a tool with this task's registry.
+
+
+### list_tools
+
+```python
+def list_tools(self)
+```
+
+Get list of all registered tool names.
+
+
+### get_tool_schemas
+
+```python
+def get_tool_schemas(self, tool_names)
+```
+
+Get JSON schemas for tools.
+
+
+### get_tool_function
+
+```python
+def get_tool_function(self, name)
+```
+
+Get a tool function by name.
+
+
+### get_tool
+
+```python
+def get_tool(self, name)
+```
+
+Get a tool instance by name for direct access.
+
+
+### get_builtin_tools
+
+```python
+def get_builtin_tools(self)
+```
+
+Get list of all builtin tool names.
+
+
+### get_custom_tools
+
+```python
+def get_custom_tools(self)
+```
+
+Get list of all custom (non-builtin) tool names.
+
+
+### execute_tool
+
+```python
+def execute_tool(self, tool_name, agent_name, **kwargs)
+```
+
+Execute a single tool.
+
+
+### execute_tools
+
+```python
+def execute_tools(self, tool_calls, agent_name)
+```
+
+Execute multiple tool calls.
+
+
+### get_execution_stats
+
+```python
+def get_execution_stats(self)
+```
+
+Get execution statistics.
+
+
+### get_tool_count
+
+```python
+def get_tool_count(self)
+```
+
+Get the number of registered tools.
+
+
+### clear_tools
+
+```python
+def clear_tools(self)
+```
+
+Clear all registered tools (useful for testing).
+

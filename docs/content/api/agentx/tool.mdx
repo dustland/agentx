@@ -1,0 +1,63 @@
+# tool
+
+Tool execution framework for AgentX.
+
+This module provides: - Tool registration and discovery - Secure tool execution with performance monitoring - Tool result formatting and error handling - Unified tool management for task isolation
+
+```python
+from agentx.tool import ...
+```
+
+## Functions
+
+### register_tool
+
+```python
+def register_tool(tool)
+```
+
+
+### register_function
+
+```python
+def register_function(func, name)
+```
+
+
+### list_tools
+
+```python
+def list_tools()
+```
+
+
+### get_tool_schemas
+
+```python
+def get_tool_schemas(tool_names)
+```
+
+
+### validate_agent_tools
+
+```python
+def validate_agent_tools(tool_names)
+```
+
+Validate a list of tool names against the registry.
+
+**Returns:**
+
+A tuple of (valid_tools, invalid_tools)
+
+
+### suggest_tools_for_agent
+
+```python
+def suggest_tools_for_agent(agent_name, agent_description)
+```
+
+Suggest a list of relevant tools for a new agent.
+
+(This is a placeholder for a more intelligent suggestion mechanism)
+

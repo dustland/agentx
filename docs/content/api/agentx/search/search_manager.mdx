@@ -1,0 +1,113 @@
+# search_manager
+
+Search manager that coordinates different search backends.
+
+```python
+from agentx.search.search_manager import ...
+```
+
+## Classes
+
+### SearchManager
+
+```python
+class SearchManager
+```
+
+Manages multiple search backends and provides unified search interface.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, default_backend, **backend_configs)
+```
+
+Initialize search manager.
+
+
+##### add_backend
+
+```python
+def add_backend(self, name, backend)
+```
+
+Add a new search backend.
+
+
+##### get_backend
+
+```python
+def get_backend(self, name)
+```
+
+Get a search backend by name.
+
+
+##### list_backends
+
+```python
+def list_backends(self)
+```
+
+List all backends and their availability status.
+
+
+##### search
+
+```python
+def search(self, query, backend, **kwargs)
+```
+
+Execute a search using the specified or default backend.
+
+
+
+## Functions
+
+### add_backend
+
+```python
+def add_backend(self, name, backend)
+```
+
+Add a new search backend.
+
+
+### get_backend
+
+```python
+def get_backend(self, name)
+```
+
+Get a search backend by name.
+
+
+### list_backends
+
+```python
+def list_backends(self)
+```
+
+List all backends and their availability status.
+
+
+### search
+
+```python
+def search(self, query, backend, **kwargs)
+```
+
+Execute a search using the specified or default backend.
+
+**Arguments:**
+
+- `query`: Search query
+- `backend`: Backend to use (defaults to default_backend)
+- `**kwargs`: Additional search parameters
+
+**Returns:**
+
+SearchResponse with results
+

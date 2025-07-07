@@ -1,0 +1,130 @@
+# search
+
+Search Tools - Web search capabilities using SerpAPI.
+
+Built-in integration with SerpAPI for comprehensive web search across multiple search engines (Google, Bing, DuckDuckGo, etc.).
+
+```python
+from agentx.builtin_tools.search import ...
+```
+
+## Classes
+
+### SearchResult
+
+```python
+class SearchResult
+```
+
+Individual search result.
+
+
+### SearchTool
+
+```python
+class SearchTool(Tool)
+```
+
+Web search tool using SerpAPI.
+
+Provides access to multiple search engines including Google, Bing, DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, api_key)
+```
+
+
+##### web_search
+
+```python
+def web_search(self, query, engine, max_results, country, language)
+```
+
+Search the web using various search engines.
+
+
+##### news_search
+
+```python
+def news_search(self, query, engine, max_results, country)
+```
+
+Search for news articles.
+
+
+##### image_search
+
+```python
+def image_search(self, query, engine, max_results, safe_search)
+```
+
+Search for images.
+
+
+
+## Functions
+
+### web_search
+
+```python
+def web_search(self, query, engine, max_results, country, language)
+```
+
+Search the web using various search engines.
+
+**Arguments:**
+
+- `query`: Search query to execute (required)
+- `engine`: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)
+- `max_results`: Maximum number of results to return, max 20 (default: 10)
+- `country`: Country code for localized results (default: us)
+- `language`: Language code for results (default: en)
+
+**Returns:**
+
+ToolResult containing search results and metadata
+
+
+### news_search
+
+```python
+def news_search(self, query, engine, max_results, country)
+```
+
+Search for news articles.
+
+**Arguments:**
+
+- `query`: News search query (required)
+- `engine`: Search engine to use - google or bing (default: google)
+- `max_results`: Maximum number of news results (default: 10)
+- `country`: Country code for localized news (default: us)
+
+**Returns:**
+
+ToolResult containing news search results
+
+
+### image_search
+
+```python
+def image_search(self, query, engine, max_results, safe_search)
+```
+
+Search for images.
+
+**Arguments:**
+
+- `query`: Image search query (required)
+- `engine`: Search engine to use - google or bing (default: google)
+- `max_results`: Maximum number of image results (default: 10)
+- `safe_search`: Safe search setting - off, moderate, strict (default: moderate)
+
+**Returns:**
+
+ToolResult containing image search results
+

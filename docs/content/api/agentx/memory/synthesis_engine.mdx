@@ -1,0 +1,77 @@
+# synthesis_engine
+
+Memory Synthesis Engine
+
+The intelligent core of the Memory System that analyzes events and creates structured memories (Constraints, Hot Issues, Document Chunks) as specified in the architecture document.
+
+```python
+from agentx.memory.synthesis_engine import ...
+```
+
+## Classes
+
+### MemorySynthesisEngine
+
+```python
+class MemorySynthesisEngine
+```
+
+The logical core of the Memory System that analyzes events and creates memories.
+
+Implements the event-driven analysis logic specified in the architecture: - Analyzes user messages for constraints/preferences - Detects tool failures and creates hot issues - Resolves hot issues when tools succeed - Chunks document content for semantic search
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, memory_backend, brain)
+```
+
+
+##### on_event
+
+```python
+def on_event(self, event)
+```
+
+Main event handler - routes events to appropriate analysis methods.
+
+This implements the event handling logic from the architecture document.
+
+
+##### get_relevant_context
+
+```python
+def get_relevant_context(self, last_user_message, agent_name)
+```
+
+Get relevant context for injection into agent prompts.
+
+This implements the context retrieval logic from the architecture document.
+
+
+
+## Functions
+
+### on_event
+
+```python
+def on_event(self, event)
+```
+
+Main event handler - routes events to appropriate analysis methods.
+
+This implements the event handling logic from the architecture document.
+
+
+### get_relevant_context
+
+```python
+def get_relevant_context(self, last_user_message, agent_name)
+```
+
+Get relevant context for injection into agent prompts.
+
+This implements the context retrieval logic from the architecture document.
+

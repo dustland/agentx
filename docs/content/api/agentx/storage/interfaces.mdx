@@ -1,0 +1,332 @@
+# interfaces
+
+Storage interfaces - Clean abstractions for different types of storage operations.
+
+```python
+from agentx.storage.interfaces import ...
+```
+
+## Classes
+
+### StorageResult
+
+```python
+class StorageResult
+```
+
+Result of a storage operation.
+
+
+### FileInfo
+
+```python
+class FileInfo
+```
+
+Information about a stored file.
+
+
+### StorageBackend
+
+```python
+class StorageBackend(ABC)
+```
+
+Base interface for all storage backends.
+
+#### Methods
+
+##### exists
+
+```python
+def exists(self, path)
+```
+
+Check if a path exists.
+
+
+##### get_info
+
+```python
+def get_info(self, path)
+```
+
+Get information about a file/directory.
+
+
+##### list_directory
+
+```python
+def list_directory(self, path)
+```
+
+List contents of a directory.
+
+
+
+### FileStorage
+
+```python
+class FileStorage(StorageBackend)
+```
+
+Interface for file storage operations.
+
+#### Methods
+
+##### read_text
+
+```python
+def read_text(self, path, encoding)
+```
+
+Read text content from a file.
+
+
+##### write_text
+
+```python
+def write_text(self, path, content, encoding)
+```
+
+Write text content to a file.
+
+
+##### read_bytes
+
+```python
+def read_bytes(self, path)
+```
+
+Read binary content from a file.
+
+
+##### write_bytes
+
+```python
+def write_bytes(self, path, content)
+```
+
+Write binary content to a file.
+
+
+##### append_text
+
+```python
+def append_text(self, path, content, encoding)
+```
+
+Append text content to a file.
+
+
+##### delete
+
+```python
+def delete(self, path)
+```
+
+Delete a file.
+
+
+##### create_directory
+
+```python
+def create_directory(self, path)
+```
+
+Create a directory.
+
+
+
+### ArtifactStorage
+
+```python
+class ArtifactStorage(StorageBackend)
+```
+
+Interface for artifact storage with versioning and metadata.
+
+#### Methods
+
+##### store_artifact
+
+```python
+def store_artifact(self, name, content, content_type, metadata)
+```
+
+Store an artifact with versioning.
+
+
+##### get_artifact
+
+```python
+def get_artifact(self, name, version)
+```
+
+Get artifact content by name and optional version.
+
+
+##### list_artifacts
+
+```python
+def list_artifacts(self)
+```
+
+List all artifacts with their metadata.
+
+
+##### get_artifact_versions
+
+```python
+def get_artifact_versions(self, name)
+```
+
+Get all versions of an artifact.
+
+
+##### delete_artifact
+
+```python
+def delete_artifact(self, name, version)
+```
+
+Delete an artifact or specific version.
+
+
+
+## Functions
+
+### exists
+
+```python
+def exists(self, path)
+```
+
+Check if a path exists.
+
+
+### get_info
+
+```python
+def get_info(self, path)
+```
+
+Get information about a file/directory.
+
+
+### list_directory
+
+```python
+def list_directory(self, path)
+```
+
+List contents of a directory.
+
+
+### read_text
+
+```python
+def read_text(self, path, encoding)
+```
+
+Read text content from a file.
+
+
+### write_text
+
+```python
+def write_text(self, path, content, encoding)
+```
+
+Write text content to a file.
+
+
+### read_bytes
+
+```python
+def read_bytes(self, path)
+```
+
+Read binary content from a file.
+
+
+### write_bytes
+
+```python
+def write_bytes(self, path, content)
+```
+
+Write binary content to a file.
+
+
+### append_text
+
+```python
+def append_text(self, path, content, encoding)
+```
+
+Append text content to a file.
+
+
+### delete
+
+```python
+def delete(self, path)
+```
+
+Delete a file.
+
+
+### create_directory
+
+```python
+def create_directory(self, path)
+```
+
+Create a directory.
+
+
+### store_artifact
+
+```python
+def store_artifact(self, name, content, content_type, metadata)
+```
+
+Store an artifact with versioning.
+
+
+### get_artifact
+
+```python
+def get_artifact(self, name, version)
+```
+
+Get artifact content by name and optional version.
+
+
+### list_artifacts
+
+```python
+def list_artifacts(self)
+```
+
+List all artifacts with their metadata.
+
+
+### get_artifact_versions
+
+```python
+def get_artifact_versions(self, name)
+```
+
+Get all versions of an artifact.
+
+
+### delete_artifact
+
+```python
+def delete_artifact(self, name, version)
+```
+
+Delete an artifact or specific version.
+

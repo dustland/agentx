@@ -1,0 +1,78 @@
+# logger
+
+Simple streaming-aware logging for AgentX.
+
+```python
+from agentx.utils.logger import ...
+```
+
+## Functions
+
+### set_streaming_mode
+
+```python
+def set_streaming_mode(enabled)
+```
+
+Enable/disable streaming mode to control console output.
+
+
+### get_logger
+
+```python
+def get_logger(name, level)
+```
+
+Get a configured logger instance.
+
+Simple rule: - If streaming mode is active: AgentX loggers go to file only, others suppressed - If streaming mode is off: All loggers go to both console and file
+
+**Arguments:**
+
+- `name`: Logger name (usually __name__)
+- `level`: Optional log level override
+
+**Returns:**
+
+Configured logger instance
+
+
+### setup_task_file_logging
+
+```python
+def setup_task_file_logging(log_file_path)
+```
+
+Set up file logging for a specific task.
+
+**Arguments:**
+
+- `log_file_path`: Path to the log file
+
+
+### setup_clean_chat_logging
+
+```python
+def setup_clean_chat_logging()
+```
+
+Configure logging for clean chat experience.
+
+
+### configure_logging
+
+```python
+def configure_logging(level, format_string)
+```
+
+Configure global logging settings.
+
+
+### set_log_level
+
+```python
+def set_log_level(level)
+```
+
+Set log level for the entire application.
+

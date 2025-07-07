@@ -1,0 +1,177 @@
+# brain
+
+Brain Component - Pure LLM Gateway
+
+Handles all LLM interactions for agents, including provider abstraction, prompt formatting, and response parsing. Does NOT handle tool execution - that's the orchestrator's responsibility.
+
+```python
+from agentx.core.brain import ...
+```
+
+## Classes
+
+### BrainMessage
+
+```python
+class BrainMessage(BaseModel)
+```
+
+Standard message format for brain interactions.
+
+
+### BrainResponse
+
+```python
+class BrainResponse(BaseModel)
+```
+
+Response from brain call, which can be either text content or a request to call tools.
+
+
+### Brain
+
+```python
+class Brain
+```
+
+Brain component that handles all LLM interactions for an agent.
+
+This is a PURE LLM interface - it does not execute tools or handle conversation flow. Those responsibilities belong to the orchestrator. The Brain's only job is: 1. Format messages for the LLM 2. Make API calls 3. Parse and return responses
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, config)
+```
+
+Initialize Brain with Brain configuration.
+
+
+##### from_config
+
+```python
+def from_config(cls, brain_config)
+```
+
+Create Brain instance from configuration.
+
+
+##### add_usage_callback
+
+```python
+def add_usage_callback(self, callback)
+```
+
+Add a callback function to be called after each LLM request.
+
+The callback will be called with (model, usage_data, response) parameters. - For streaming: callback(model, usage_data, None) - For non-streaming: callback(model, None, response)
+
+
+##### remove_usage_callback
+
+```python
+def remove_usage_callback(self, callback)
+```
+
+Remove a usage callback.
+
+
+##### generate_response
+
+```python
+def generate_response(self, messages, system_prompt, temperature, tools, json_mode)
+```
+
+Generate a single response from the LLM.
+
+This is a PURE LLM call - no tool execution, no conversation management. If the LLM requests tool calls, they are returned in the response for the orchestrator to handle.
+
+
+##### stream_response
+
+```python
+def stream_response(self, messages, system_prompt, temperature, tools)
+```
+
+Stream response from the LLM with integrated tool call detection.
+
+Handles both native function calling models and text-based tool calling, always emitting structured tool-call and tool-result chunks for client visualization.
+
+
+
+## Functions
+
+### from_config
+
+```python
+def from_config(cls, brain_config)
+```
+
+Create Brain instance from configuration.
+
+
+### add_usage_callback
+
+```python
+def add_usage_callback(self, callback)
+```
+
+Add a callback function to be called after each LLM request.
+
+The callback will be called with (model, usage_data, response) parameters. - For streaming: callback(model, usage_data, None) - For non-streaming: callback(model, None, response)
+
+**Arguments:**
+
+- `callback`: Function to call with usage data
+
+
+### remove_usage_callback
+
+```python
+def remove_usage_callback(self, callback)
+```
+
+Remove a usage callback.
+
+
+### generate_response
+
+```python
+def generate_response(self, messages, system_prompt, temperature, tools, json_mode)
+```
+
+Generate a single response from the LLM.
+
+This is a PURE LLM call - no tool execution, no conversation management. If the LLM requests tool calls, they are returned in the response for the orchestrator to handle.
+
+**Arguments:**
+
+- `messages`: Conversation history
+- `system_prompt`: Optional system prompt
+- `temperature`: Override temperature
+- `tools`: Available tools for the LLM
+
+**Returns:**
+
+LLM response (may contain tool call requests)
+
+
+### stream_response
+
+```python
+def stream_response(self, messages, system_prompt, temperature, tools)
+```
+
+Stream response from the LLM with integrated tool call detection.
+
+Handles both native function calling models and text-based tool calling, always emitting structured tool-call and tool-result chunks for client visualization.
+
+**Arguments:**
+
+- `messages`: Conversation history
+- `system_prompt`: Optional system prompt
+- `temperature`: Override temperature
+- `tools`: Available tools for the LLM
+

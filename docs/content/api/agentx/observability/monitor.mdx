@@ -1,0 +1,769 @@
+# monitor
+
+AgentX Observability Monitor
+
+Read-only observability system that monitors AgentX project data: - Reads workspace data from {project_path}/workspace/ - Reads configuration from {project_path}/config/ - Provides web interface for viewing project data - Does NOT create or modify any files
+
+```python
+from agentx.observability.monitor import ...
+```
+
+## Classes
+
+### ProjectStorage
+
+```python
+class ProjectStorage
+```
+
+Read-only project-based storage for observability.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, project_path)
+```
+
+
+##### read_workspace_file
+
+```python
+def read_workspace_file(self, filename)
+```
+
+Read data from workspace file.
+
+
+##### read_config_file
+
+```python
+def read_config_file(self, filename)
+```
+
+Read data from config file.
+
+
+##### workspace_file_exists
+
+```python
+def workspace_file_exists(self, filename)
+```
+
+Check if workspace file exists.
+
+
+##### config_file_exists
+
+```python
+def config_file_exists(self, filename)
+```
+
+Check if config file exists.
+
+
+##### get_workspace_file_info
+
+```python
+def get_workspace_file_info(self, filename)
+```
+
+Get workspace file information.
+
+
+##### get_config_file_info
+
+```python
+def get_config_file_info(self, filename)
+```
+
+Get config file information.
+
+
+##### list_workspace_files
+
+```python
+def list_workspace_files(self)
+```
+
+List all files in workspace directory.
+
+
+##### list_config_files
+
+```python
+def list_config_files(self)
+```
+
+List all files in config directory.
+
+
+
+### ConversationHistory
+
+```python
+class ConversationHistory
+```
+
+Read conversation history from workspace/conversations.json.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, storage)
+```
+
+
+##### get_conversation
+
+```python
+def get_conversation(self, task_id)
+```
+
+Get conversation for a task.
+
+
+##### get_recent_tasks
+
+```python
+def get_recent_tasks(self, limit)
+```
+
+Get list of recent task IDs.
+
+
+##### get_task_summary
+
+```python
+def get_task_summary(self, task_id)
+```
+
+Get summary of a task.
+
+
+##### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get conversation statistics.
+
+
+
+### EventCapture
+
+```python
+class EventCapture
+```
+
+Read events from workspace/events.json.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, storage)
+```
+
+
+##### get_events
+
+```python
+def get_events(self, event_type, limit)
+```
+
+Get recent events.
+
+
+##### get_event_stats
+
+```python
+def get_event_stats(self)
+```
+
+Get event statistics.
+
+
+##### get_events_by_type
+
+```python
+def get_events_by_type(self, event_type, limit)
+```
+
+Get events of a specific type.
+
+
+
+### ArtifactsViewer
+
+```python
+class ArtifactsViewer
+```
+
+Browse and view workspace files as artifacts.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, storage)
+```
+
+
+##### get_file_list
+
+```python
+def get_file_list(self)
+```
+
+Get list of all workspace files.
+
+
+##### get_file_content
+
+```python
+def get_file_content(self, filename)
+```
+
+Get file content and metadata.
+
+
+##### get_artifacts_stats
+
+```python
+def get_artifacts_stats(self)
+```
+
+Get artifacts statistics.
+
+
+
+### ConfigViewer
+
+```python
+class ConfigViewer
+```
+
+Read configuration files from config/ directory.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, storage)
+```
+
+
+##### get_config_files
+
+```python
+def get_config_files(self)
+```
+
+Get list of config files.
+
+
+##### get_config_file
+
+```python
+def get_config_file(self, filename)
+```
+
+Get specific config file content.
+
+
+##### get_config_file_info
+
+```python
+def get_config_file_info(self, filename)
+```
+
+Get config file information.
+
+
+
+### ObservabilityMonitor
+
+```python
+class ObservabilityMonitor
+```
+
+Read-only observability monitor for AgentX project data.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, project_path)
+```
+
+
+##### start
+
+```python
+def start(self)
+```
+
+Start the monitor.
+
+
+##### stop
+
+```python
+def stop(self)
+```
+
+Stop the monitor.
+
+
+##### refresh
+
+```python
+def refresh(self)
+```
+
+Refresh data (just updates timestamp since we read files on demand).
+
+
+##### get_project_status
+
+```python
+def get_project_status(self)
+```
+
+Get status of the project directories.
+
+
+##### get_dashboard_data
+
+```python
+def get_dashboard_data(self)
+```
+
+Get comprehensive dashboard data.
+
+
+##### get_task_conversation
+
+```python
+def get_task_conversation(self, task_id)
+```
+
+Get conversation for a specific task.
+
+
+##### get_recent_tasks
+
+```python
+def get_recent_tasks(self, limit)
+```
+
+Get recent task IDs.
+
+
+##### get_artifacts_files
+
+```python
+def get_artifacts_files(self)
+```
+
+Get list of artifact files.
+
+
+##### get_artifact_content
+
+```python
+def get_artifact_content(self, filename)
+```
+
+Get artifact file content.
+
+
+##### get_artifacts_stats
+
+```python
+def get_artifacts_stats(self)
+```
+
+Get artifacts statistics.
+
+
+##### get_events
+
+```python
+def get_events(self, event_type, limit)
+```
+
+Get events.
+
+
+##### get_config_files
+
+```python
+def get_config_files(self)
+```
+
+Get list of config files.
+
+
+##### get_config_file
+
+```python
+def get_config_file(self, filename)
+```
+
+Get config file content.
+
+
+##### get_configuration_data
+
+```python
+def get_configuration_data(self)
+```
+
+Get configuration data for the web interface.
+
+
+
+## Functions
+
+### get_monitor
+
+```python
+def get_monitor(project_path)
+```
+
+Get or create observability monitor instance.
+
+
+### find_project_directory
+
+```python
+def find_project_directory()
+```
+
+Find existing project directory with workspace and config subdirectories.
+
+
+### read_workspace_file
+
+```python
+def read_workspace_file(self, filename)
+```
+
+Read data from workspace file.
+
+
+### read_config_file
+
+```python
+def read_config_file(self, filename)
+```
+
+Read data from config file.
+
+
+### workspace_file_exists
+
+```python
+def workspace_file_exists(self, filename)
+```
+
+Check if workspace file exists.
+
+
+### config_file_exists
+
+```python
+def config_file_exists(self, filename)
+```
+
+Check if config file exists.
+
+
+### get_workspace_file_info
+
+```python
+def get_workspace_file_info(self, filename)
+```
+
+Get workspace file information.
+
+
+### get_config_file_info
+
+```python
+def get_config_file_info(self, filename)
+```
+
+Get config file information.
+
+
+### list_workspace_files
+
+```python
+def list_workspace_files(self)
+```
+
+List all files in workspace directory.
+
+
+### list_config_files
+
+```python
+def list_config_files(self)
+```
+
+List all files in config directory.
+
+
+### get_conversation
+
+```python
+def get_conversation(self, task_id)
+```
+
+Get conversation for a task.
+
+
+### get_recent_tasks
+
+```python
+def get_recent_tasks(self, limit)
+```
+
+Get list of recent task IDs.
+
+
+### get_task_summary
+
+```python
+def get_task_summary(self, task_id)
+```
+
+Get summary of a task.
+
+
+### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get conversation statistics.
+
+
+### get_events
+
+```python
+def get_events(self, event_type, limit)
+```
+
+Get recent events.
+
+
+### get_event_stats
+
+```python
+def get_event_stats(self)
+```
+
+Get event statistics.
+
+
+### get_events_by_type
+
+```python
+def get_events_by_type(self, event_type, limit)
+```
+
+Get events of a specific type.
+
+
+### get_file_list
+
+```python
+def get_file_list(self)
+```
+
+Get list of all workspace files.
+
+
+### get_file_content
+
+```python
+def get_file_content(self, filename)
+```
+
+Get file content and metadata.
+
+
+### get_artifacts_stats
+
+```python
+def get_artifacts_stats(self)
+```
+
+Get artifacts statistics.
+
+
+### get_config_files
+
+```python
+def get_config_files(self)
+```
+
+Get list of config files.
+
+
+### get_config_file
+
+```python
+def get_config_file(self, filename)
+```
+
+Get specific config file content.
+
+
+### get_config_file_info
+
+```python
+def get_config_file_info(self, filename)
+```
+
+Get config file information.
+
+
+### start
+
+```python
+def start(self)
+```
+
+Start the monitor.
+
+
+### stop
+
+```python
+def stop(self)
+```
+
+Stop the monitor.
+
+
+### refresh
+
+```python
+def refresh(self)
+```
+
+Refresh data (just updates timestamp since we read files on demand).
+
+
+### get_project_status
+
+```python
+def get_project_status(self)
+```
+
+Get status of the project directories.
+
+
+### get_dashboard_data
+
+```python
+def get_dashboard_data(self)
+```
+
+Get comprehensive dashboard data.
+
+
+### get_task_conversation
+
+```python
+def get_task_conversation(self, task_id)
+```
+
+Get conversation for a specific task.
+
+
+### get_recent_tasks
+
+```python
+def get_recent_tasks(self, limit)
+```
+
+Get recent task IDs.
+
+
+### get_artifacts_files
+
+```python
+def get_artifacts_files(self)
+```
+
+Get list of artifact files.
+
+
+### get_artifact_content
+
+```python
+def get_artifact_content(self, filename)
+```
+
+Get artifact file content.
+
+
+### get_artifacts_stats
+
+```python
+def get_artifacts_stats(self)
+```
+
+Get artifacts statistics.
+
+
+### get_events
+
+```python
+def get_events(self, event_type, limit)
+```
+
+Get events.
+
+
+### get_config_files
+
+```python
+def get_config_files(self)
+```
+
+Get list of config files.
+
+
+### get_config_file
+
+```python
+def get_config_file(self, filename)
+```
+
+Get config file content.
+
+
+### get_configuration_data
+
+```python
+def get_configuration_data(self)
+```
+
+Get configuration data for the web interface.
+

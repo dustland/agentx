@@ -1,0 +1,268 @@
+# bus
+
+Event Bus implementation for AgentX framework.
+
+Provides a centralized event system with publish/subscribe patterns, middleware support, and comprehensive observability features.
+
+```python
+from agentx.event.bus import ...
+```
+
+## Classes
+
+### EventBus
+
+```python
+class EventBus
+```
+
+Centralized event bus for publish/subscribe messaging.
+
+Features: - Async/sync event publishing - Priority-based event processing - Event filtering and routing - Middleware support - Comprehensive statistics - Error handling and retries
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, name)
+```
+
+
+##### start
+
+```python
+def start(self)
+```
+
+Start the event bus worker.
+
+
+##### stop
+
+```python
+def stop(self)
+```
+
+Stop the event bus worker.
+
+
+##### add_middleware
+
+```python
+def add_middleware(self, middleware)
+```
+
+Add middleware to the event bus.
+
+
+##### subscribe
+
+```python
+def subscribe(self, event_types, handler, filter_func, priority, subscription_id)
+```
+
+Subscribe to events.
+
+
+##### unsubscribe
+
+```python
+def unsubscribe(self, subscription_id)
+```
+
+Unsubscribe from events.
+
+
+##### publish
+
+```python
+def publish(self, event_data, event_type, priority, source, correlation_id, tags)
+```
+
+Publish an event.
+
+
+##### publish_sync
+
+```python
+def publish_sync(self, event_data, event_type, priority, source, correlation_id, tags)
+```
+
+Synchronous wrapper for publish.
+
+
+##### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get event bus statistics.
+
+
+##### get_subscriptions
+
+```python
+def get_subscriptions(self)
+```
+
+Get current subscriptions by event type.
+
+
+##### health_check
+
+```python
+def health_check(self)
+```
+
+Perform health check.
+
+
+
+## Functions
+
+### get_event_bus
+
+```python
+def get_event_bus(name)
+```
+
+Get or create the global event bus instance.
+
+
+### initialize_event_bus
+
+```python
+def initialize_event_bus(name)
+```
+
+Initialize and start the global event bus.
+
+
+### start
+
+```python
+def start(self)
+```
+
+Start the event bus worker.
+
+
+### stop
+
+```python
+def stop(self)
+```
+
+Stop the event bus worker.
+
+
+### add_middleware
+
+```python
+def add_middleware(self, middleware)
+```
+
+Add middleware to the event bus.
+
+
+### subscribe
+
+```python
+def subscribe(self, event_types, handler, filter_func, priority, subscription_id)
+```
+
+Subscribe to events.
+
+**Arguments:**
+
+- `event_types`: Event type(s) to subscribe to. Supports wildcards:
+- `- "*" matches any characters`: 
+- `- "?" matches single character`: 
+- `- "Agent*" matches "AgentStartEvent", "AgentCompleteEvent", etc.`: 
+- `- "*Event" matches all events ending with "Event"`: 
+- `handler`: Event handler function
+- `filter_func`: Optional filter function
+- `priority`: Subscription priority
+- `subscription_id`: Optional custom subscription ID
+
+**Returns:**
+
+Subscription ID
+
+
+### unsubscribe
+
+```python
+def unsubscribe(self, subscription_id)
+```
+
+Unsubscribe from events.
+
+**Arguments:**
+
+- `subscription_id`: Subscription ID to remove
+
+**Returns:**
+
+True if subscription was found and removed
+
+
+### publish
+
+```python
+def publish(self, event_data, event_type, priority, source, correlation_id, tags)
+```
+
+Publish an event.
+
+**Arguments:**
+
+- `event_data`: Event data (should be a Pydantic model)
+- `event_type`: Optional event type override
+- `priority`: Event priority
+- `source`: Event source identifier
+- `correlation_id`: Correlation ID for tracing
+- `tags`: Additional tags
+
+**Returns:**
+
+Event ID
+
+
+### publish_sync
+
+```python
+def publish_sync(self, event_data, event_type, priority, source, correlation_id, tags)
+```
+
+Synchronous wrapper for publish.
+
+
+### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get event bus statistics.
+
+
+### get_subscriptions
+
+```python
+def get_subscriptions(self)
+```
+
+Get current subscriptions by event type.
+
+
+### health_check
+
+```python
+def health_check(self)
+```
+
+Perform health check.
+

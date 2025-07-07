@@ -1,0 +1,94 @@
+# serpapi_backend
+
+SerpAPI backend implementation for web search.
+
+```python
+from agentx.search.serpapi_backend import ...
+```
+
+## Classes
+
+### SerpAPIBackend
+
+```python
+class SerpAPIBackend(SearchBackend)
+```
+
+Search backend using SerpAPI service.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, api_key)
+```
+
+Initialize SerpAPI backend.
+
+
+##### name
+
+```python
+def name(self)
+```
+
+
+##### is_available
+
+```python
+def is_available(self)
+```
+
+Check if SerpAPI backend is available.
+
+
+##### search
+
+```python
+def search(self, query, engine, max_results, country, language, **kwargs)
+```
+
+Execute search using SerpAPI.
+
+
+
+## Functions
+
+### name
+
+```python
+def name(self)
+```
+
+
+### is_available
+
+```python
+def is_available(self)
+```
+
+Check if SerpAPI backend is available.
+
+
+### search
+
+```python
+def search(self, query, engine, max_results, country, language, **kwargs)
+```
+
+Execute search using SerpAPI.
+
+**Arguments:**
+
+- `query`: Search query
+- `engine`: Search engine to use
+- `max_results`: Maximum number of results (capped at 20)
+- `country`: Country code for localization
+- `language`: Language code for results
+- `**kwargs`: Additional search parameters
+
+**Returns:**
+
+SearchResponse with results and metadata
+

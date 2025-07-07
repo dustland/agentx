@@ -1,0 +1,213 @@
+# mem0_backend
+
+Mem0 Backend Implementation
+
+Intelligent memory backend using Mem0 for semantic search, vector storage, and advanced memory operations.
+
+```python
+from agentx.memory.mem0_backend import ...
+```
+
+## Classes
+
+### Mem0Backend
+
+```python
+class Mem0Backend(MemoryBackend)
+```
+
+Mem0-powered memory backend with semantic search and intelligent storage.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, config)
+```
+
+Initialize Mem0 backend.
+
+
+##### add
+
+```python
+def add(self, content, memory_type, agent_name, metadata, importance)
+```
+
+Add content to Mem0 memory.
+
+
+##### query
+
+```python
+def query(self, query)
+```
+
+Query Mem0 for content retrieval with semantic search.
+
+
+##### search
+
+```python
+def search(self, query)
+```
+
+Search Mem0 for item discovery and filtering.
+
+
+##### get
+
+```python
+def get(self, memory_id)
+```
+
+Get a specific memory by ID.
+
+
+##### update
+
+```python
+def update(self, memory_id, **kwargs)
+```
+
+Update memory metadata or content.
+
+
+##### delete
+
+```python
+def delete(self, memory_id)
+```
+
+Delete memory from Mem0.
+
+
+##### clear
+
+```python
+def clear(self, agent_name)
+```
+
+Clear memories from Mem0.
+
+
+##### count
+
+```python
+def count(self, memory_type, agent_name, metadata_filter)
+```
+
+Count memories in Mem0.
+
+
+##### stats
+
+```python
+def stats(self)
+```
+
+Get memory statistics from Mem0.
+
+
+##### health
+
+```python
+def health(self)
+```
+
+Check Mem0 backend health.
+
+
+
+## Functions
+
+### add
+
+```python
+def add(self, content, memory_type, agent_name, metadata, importance)
+```
+
+Add content to Mem0 memory.
+
+
+### query
+
+```python
+def query(self, query)
+```
+
+Query Mem0 for content retrieval with semantic search.
+
+
+### search
+
+```python
+def search(self, query)
+```
+
+Search Mem0 for item discovery and filtering.
+
+
+### get
+
+```python
+def get(self, memory_id)
+```
+
+Get a specific memory by ID.
+
+
+### update
+
+```python
+def update(self, memory_id, **kwargs)
+```
+
+Update memory metadata or content.
+
+
+### delete
+
+```python
+def delete(self, memory_id)
+```
+
+Delete memory from Mem0.
+
+
+### clear
+
+```python
+def clear(self, agent_name)
+```
+
+Clear memories from Mem0.
+
+
+### count
+
+```python
+def count(self, memory_type, agent_name, metadata_filter)
+```
+
+Count memories in Mem0.
+
+
+### stats
+
+```python
+def stats(self)
+```
+
+Get memory statistics from Mem0.
+
+
+### health
+
+```python
+def health(self)
+```
+
+Check Mem0 backend health.
+

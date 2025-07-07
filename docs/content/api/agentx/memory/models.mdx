@@ -1,0 +1,480 @@
+# models
+
+Memory subsystem models - Self-contained data models for memory management.
+
+This module contains all data models related to memory management, following the architectural rule that subsystems should be self-contained and not import from core.
+
+```python
+from agentx.memory.models import ...
+```
+
+## Classes
+
+### MemoryType
+
+```python
+class MemoryType(str, Enum)
+```
+
+Types of memory content.
+
+
+### MemoryBackendType
+
+```python
+class MemoryBackendType(str, Enum)
+```
+
+Types of memory backends.
+
+
+### MemoryOperation
+
+```python
+class MemoryOperation(str, Enum)
+```
+
+Types of memory operations.
+
+
+### MemoryItem
+
+```python
+class MemoryItem
+```
+
+Individual memory item with metadata.
+
+#### Methods
+
+##### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+##### from_dict
+
+```python
+def from_dict(cls, data)
+```
+
+Create MemoryItem from dictionary.
+
+
+
+### Memory
+
+```python
+class Memory(BaseModel)
+```
+
+Base memory model for synthesis engine.
+
+
+### Constraint
+
+```python
+class Constraint(Memory)
+```
+
+Memory representing user constraints, preferences, or rules.
+
+
+### HotIssue
+
+```python
+class HotIssue(Memory)
+```
+
+Memory representing active problems that need attention.
+
+
+### DocumentChunk
+
+```python
+class DocumentChunk(Memory)
+```
+
+Memory representing a chunk of document content for semantic search.
+
+
+### MemoryQuery
+
+```python
+class MemoryQuery
+```
+
+Query parameters for memory operations.
+
+
+### MemorySearchResult
+
+```python
+class MemorySearchResult
+```
+
+Result from memory search operations.
+
+#### Methods
+
+##### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+
+### MemoryBackend
+
+```python
+class MemoryBackend(ABC)
+```
+
+Abstract interface for memory backend implementations.
+
+#### Methods
+
+##### add
+
+```python
+def add(self, content, memory_type, agent_name, metadata, importance)
+```
+
+Add a new memory item.
+
+
+##### query
+
+```python
+def query(self, query)
+```
+
+Query memories with structured parameters.
+
+
+##### search
+
+```python
+def search(self, query)
+```
+
+Semantic search across memories.
+
+
+##### get
+
+```python
+def get(self, memory_id)
+```
+
+Get a specific memory by ID.
+
+
+##### update
+
+```python
+def update(self, memory_id, **kwargs)
+```
+
+Update a memory item.
+
+
+##### delete
+
+```python
+def delete(self, memory_id)
+```
+
+Delete a memory item.
+
+
+##### clear
+
+```python
+def clear(self, agent_name)
+```
+
+Clear memories, optionally filtered by agent.
+
+
+##### count
+
+```python
+def count(self, **filters)
+```
+
+Count memories with optional filters.
+
+
+##### stats
+
+```python
+def stats(self)
+```
+
+Get memory backend statistics.
+
+
+##### health
+
+```python
+def health(self)
+```
+
+Get backend health information.
+
+
+
+### MemoryStats
+
+```python
+class MemoryStats
+```
+
+Memory backend statistics.
+
+#### Methods
+
+##### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+
+### MemoryHealth
+
+```python
+class MemoryHealth(BaseModel)
+```
+
+Memory backend health status.
+
+
+### MemoryConfig
+
+```python
+class MemoryConfig(BaseModel)
+```
+
+Configuration for memory system.
+
+
+### MemoryOperationResult
+
+```python
+class MemoryOperationResult(BaseModel)
+```
+
+Result of a memory operation.
+
+
+### MemoryEvent
+
+```python
+class MemoryEvent(BaseModel)
+```
+
+Event emitted by memory operations.
+
+
+### SynthesisRule
+
+```python
+class SynthesisRule(BaseModel)
+```
+
+Rule for memory synthesis.
+
+
+### SynthesisResult
+
+```python
+class SynthesisResult(BaseModel)
+```
+
+Result of memory synthesis operation.
+
+
+### MemoryContext
+
+```python
+class MemoryContext(BaseModel)
+```
+
+Context for memory retrieval and injection.
+
+
+### MemoryInjection
+
+```python
+class MemoryInjection(BaseModel)
+```
+
+Memory content injected into agent context.
+
+
+## Functions
+
+### generate_short_id
+
+```python
+def generate_short_id(length)
+```
+
+Generate a short, URL-friendly, cryptographically secure random ID.
+
+
+### calculate_memory_importance
+
+```python
+def calculate_memory_importance(content, agent_name, memory_type, metadata)
+```
+
+Calculate importance score for a memory item.
+
+
+### create_memory_item
+
+```python
+def create_memory_item(content, memory_type, agent_name, metadata, importance)
+```
+
+Create a new memory item with calculated importance.
+
+
+### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+### from_dict
+
+```python
+def from_dict(cls, data)
+```
+
+Create MemoryItem from dictionary.
+
+
+### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+### add
+
+```python
+def add(self, content, memory_type, agent_name, metadata, importance)
+```
+
+Add a new memory item.
+
+
+### query
+
+```python
+def query(self, query)
+```
+
+Query memories with structured parameters.
+
+
+### search
+
+```python
+def search(self, query)
+```
+
+Semantic search across memories.
+
+
+### get
+
+```python
+def get(self, memory_id)
+```
+
+Get a specific memory by ID.
+
+
+### update
+
+```python
+def update(self, memory_id, **kwargs)
+```
+
+Update a memory item.
+
+
+### delete
+
+```python
+def delete(self, memory_id)
+```
+
+Delete a memory item.
+
+
+### clear
+
+```python
+def clear(self, agent_name)
+```
+
+Clear memories, optionally filtered by agent.
+
+
+### count
+
+```python
+def count(self, **filters)
+```
+
+Count memories with optional filters.
+
+
+### stats
+
+```python
+def stats(self)
+```
+
+Get memory backend statistics.
+
+
+### health
+
+```python
+def health(self)
+```
+
+Get backend health information.
+
+
+### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+

@@ -1,0 +1,208 @@
+# file
+
+File operations for AgentX.
+
+```python
+from agentx.builtin_tools.file import ...
+```
+
+## Classes
+
+### FileTool
+
+```python
+class FileTool(Tool)
+```
+
+File tool that works with workspace artifacts and provides simple file operations.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, workspace_storage)
+```
+
+
+##### write_file
+
+```python
+def write_file(self, filename, content)
+```
+
+Write content to file as a workspace artifact with versioning.
+
+
+##### read_file
+
+```python
+def read_file(self, filename, version)
+```
+
+Read file contents from workspace artifacts.
+
+
+##### list_files
+
+```python
+def list_files(self)
+```
+
+List all file artifacts in the workspace.
+
+
+##### file_exists
+
+```python
+def file_exists(self, filename)
+```
+
+Check if a file artifact exists in the workspace.
+
+
+##### delete_file
+
+```python
+def delete_file(self, filename, version)
+```
+
+Delete a file artifact from the workspace.
+
+
+##### get_file_versions
+
+```python
+def get_file_versions(self, filename)
+```
+
+Get version history of a file artifact.
+
+
+##### get_workspace_summary
+
+```python
+def get_workspace_summary(self)
+```
+
+Get a summary of the workspace contents.
+
+
+##### create_directory
+
+```python
+def create_directory(self, path)
+```
+
+Create a directory in the workspace using the underlying file storage.
+
+
+##### list_directory
+
+```python
+def list_directory(self, path)
+```
+
+List the contents of a directory in the workspace.
+
+
+
+## Functions
+
+### create_file_tool
+
+```python
+def create_file_tool(workspace_path)
+```
+
+Create a file tool for workspace operations.
+
+**Arguments:**
+
+- `workspace_path`: Path to the workspace directory
+
+**Returns:**
+
+FileTool instance that properly uses workspace abstraction
+
+
+### write_file
+
+```python
+def write_file(self, filename, content)
+```
+
+Write content to file as a workspace artifact with versioning.
+
+
+### read_file
+
+```python
+def read_file(self, filename, version)
+```
+
+Read file contents from workspace artifacts.
+
+
+### list_files
+
+```python
+def list_files(self)
+```
+
+List all file artifacts in the workspace.
+
+
+### file_exists
+
+```python
+def file_exists(self, filename)
+```
+
+Check if a file artifact exists in the workspace.
+
+
+### delete_file
+
+```python
+def delete_file(self, filename, version)
+```
+
+Delete a file artifact from the workspace.
+
+
+### get_file_versions
+
+```python
+def get_file_versions(self, filename)
+```
+
+Get version history of a file artifact.
+
+
+### get_workspace_summary
+
+```python
+def get_workspace_summary(self)
+```
+
+Get a summary of the workspace contents.
+
+
+### create_directory
+
+```python
+def create_directory(self, path)
+```
+
+Create a directory in the workspace using the underlying file storage.
+
+
+### list_directory
+
+```python
+def list_directory(self, path)
+```
+
+List the contents of a directory in the workspace.
+

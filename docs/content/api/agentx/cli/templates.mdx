@@ -1,0 +1,101 @@
+# templates
+
+Bootstrap Template Generation
+
+Handles generation of project templates, configurations, and files for the bootstrap system.
+
+```python
+from agentx.cli.templates import ...
+```
+
+## Functions
+
+### generate_template_config
+
+```python
+def generate_template_config(template, model)
+```
+
+Generate team configuration based on template using preset agents.
+
+
+### generate_template_prompts
+
+```python
+def generate_template_prompts(template)
+```
+
+Generate prompt files based on template - now minimal since we use presets.
+
+
+### generate_main_py
+
+```python
+def generate_main_py(project_name, template)
+```
+
+Generate main.py file for the project.
+
+
+### generate_env_example
+
+```python
+def generate_env_example(model)
+```
+
+Generate .env.example file with API key templates.
+
+
+### generate_readme
+
+```python
+def generate_readme(project_name, template, model)
+```
+
+Generate README.md for the project.
+
+
+### get_template_description
+
+```python
+def get_template_description(template)
+```
+
+Get detailed description for template.
+
+
+### get_default_model
+
+```python
+def get_default_model(model)
+```
+
+Get default model name for provider.
+
+
+### get_agents_description
+
+```python
+def get_agents_description(template)
+```
+
+Get agents description for template.
+
+
+### get_config_lines
+
+```python
+def get_config_lines(template)
+```
+
+Get number of configuration lines for template.
+
+
+### get_sample_config
+
+```python
+def get_sample_config(template)
+```
+
+Get sample configuration for template.
+

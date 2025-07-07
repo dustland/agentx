@@ -1,0 +1,283 @@
+# agent
+
+```python
+from agentx.core.agent import ...
+```
+
+## Classes
+
+### AgentState
+
+```python
+class AgentState(BaseModel)
+```
+
+Current state of an agent during execution.
+
+
+### Agent
+
+```python
+class Agent
+```
+
+Represents an autonomous agent that manages its own conversation flow.
+
+Key Principles: - Each agent is autonomous and manages its own conversation flow - Agents communicate with other agents through public interfaces only - The brain is private to the agent - no external access - Tool execution is handled by orchestrator for security and control This combines: - AgentConfig (configuration data) - Brain (private LLM interaction) - Conversation management (delegates tool execution to orchestrator)
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, config, tool_manager)
+```
+
+Initialize agent with configuration and optional tool manager.
+
+
+##### get_tools_json
+
+```python
+def get_tools_json(self)
+```
+
+Get the JSON schemas for the tools available to this agent.
+
+
+##### generate_response
+
+```python
+def generate_response(self, messages, system_prompt, orchestrator, max_tool_rounds)
+```
+
+Generate response with tool execution handled by orchestrator.
+
+This is a simpler, non-streaming version that returns the final response.
+
+
+##### stream_response
+
+```python
+def stream_response(self, messages, system_prompt, orchestrator, max_tool_rounds)
+```
+
+Stream response with tool execution handled by orchestrator.
+
+This matches Brain's interface but includes tool execution loop.
+
+
+##### build_system_prompt
+
+```python
+def build_system_prompt(self, context)
+```
+
+Build the system prompt for the agent, including dynamic context and tool definitions.
+
+
+##### get_capabilities
+
+```python
+def get_capabilities(self)
+```
+
+Get agent capabilities summary.
+
+
+##### reset_state
+
+```python
+def reset_state(self)
+```
+
+Reset agent state.
+
+
+##### add_tool
+
+```python
+def add_tool(self, tool)
+```
+
+Add a tool to the agent's capabilities.
+
+
+##### remove_tool
+
+```python
+def remove_tool(self, tool_name)
+```
+
+Remove a tool from the agent's capabilities.
+
+
+##### update_config
+
+```python
+def update_config(self, **kwargs)
+```
+
+Update agent configuration.
+
+
+
+### MockToolCall
+
+```python
+class MockToolCall
+```
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, data)
+```
+
+
+##### __init__
+
+```python
+def __init__(self, data)
+```
+
+
+
+### MockToolCall
+
+```python
+class MockToolCall
+```
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, data)
+```
+
+
+##### __init__
+
+```python
+def __init__(self, data)
+```
+
+
+
+## Functions
+
+### create_assistant_agent
+
+```python
+def create_assistant_agent(name, system_message)
+```
+
+Create a simple assistant agent with default configuration.
+
+
+### get_tools_json
+
+```python
+def get_tools_json(self)
+```
+
+Get the JSON schemas for the tools available to this agent.
+
+
+### generate_response
+
+```python
+def generate_response(self, messages, system_prompt, orchestrator, max_tool_rounds)
+```
+
+Generate response with tool execution handled by orchestrator.
+
+This is a simpler, non-streaming version that returns the final response.
+
+**Arguments:**
+
+- `messages`: Conversation messages in LLM format
+- `system_prompt`: Optional system prompt override
+- `orchestrator`: Orchestrator instance for tool execution
+- `max_tool_rounds`: Maximum tool execution rounds
+
+**Returns:**
+
+Final response string
+
+
+### stream_response
+
+```python
+def stream_response(self, messages, system_prompt, orchestrator, max_tool_rounds)
+```
+
+Stream response with tool execution handled by orchestrator.
+
+This matches Brain's interface but includes tool execution loop.
+
+**Arguments:**
+
+- `messages`: Conversation messages in LLM format
+- `system_prompt`: Optional system prompt override
+- `orchestrator`: Orchestrator instance for tool execution
+- `max_tool_rounds`: Maximum tool execution rounds
+
+
+### build_system_prompt
+
+```python
+def build_system_prompt(self, context)
+```
+
+Build the system prompt for the agent, including dynamic context and tool definitions.
+
+
+### get_capabilities
+
+```python
+def get_capabilities(self)
+```
+
+Get agent capabilities summary.
+
+
+### reset_state
+
+```python
+def reset_state(self)
+```
+
+Reset agent state.
+
+
+### add_tool
+
+```python
+def add_tool(self, tool)
+```
+
+Add a tool to the agent's capabilities.
+
+
+### remove_tool
+
+```python
+def remove_tool(self, tool_name)
+```
+
+Remove a tool from the agent's capabilities.
+
+
+### update_config
+
+```python
+def update_config(self, **kwargs)
+```
+
+Update agent configuration.
+

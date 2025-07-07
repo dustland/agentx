@@ -1,0 +1,103 @@
+# interfaces
+
+Search interfaces and base classes.
+
+```python
+from agentx.search.interfaces import ...
+```
+
+## Classes
+
+### SearchEngine
+
+```python
+class SearchEngine(str, Enum)
+```
+
+Supported search engines
+
+
+### SearchResult
+
+```python
+class SearchResult
+```
+
+Represents a single search result.
+
+
+### SearchResponse
+
+```python
+class SearchResponse
+```
+
+Represents a complete search response.
+
+
+### SearchBackend
+
+```python
+class SearchBackend(ABC)
+```
+
+Abstract base class for search backends.
+
+#### Methods
+
+##### search
+
+```python
+def search(self, query, engine, max_results, country, language, **kwargs)
+```
+
+Execute a search query.
+
+
+##### is_available
+
+```python
+def is_available(self)
+```
+
+Check if the backend is available and properly configured.
+
+
+##### name
+
+```python
+def name(self)
+```
+
+Backend name.
+
+
+
+## Functions
+
+### search
+
+```python
+def search(self, query, engine, max_results, country, language, **kwargs)
+```
+
+Execute a search query.
+
+
+### is_available
+
+```python
+def is_available(self)
+```
+
+Check if the backend is available and properly configured.
+
+
+### name
+
+```python
+def name(self)
+```
+
+Backend name.
+

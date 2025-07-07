@@ -1,0 +1,528 @@
+# middleware
+
+Event middleware for the AgentX event system.
+
+Provides middleware components for logging, metrics, and custom event processing.
+
+```python
+from agentx.event.middleware import ...
+```
+
+## Classes
+
+### EventMiddleware
+
+```python
+class EventMiddleware(ABC)
+```
+
+Base class for event middleware.
+
+#### Methods
+
+##### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Called before an event is published.
+
+
+##### before_process
+
+```python
+def before_process(self, event)
+```
+
+Called before an event is processed.
+
+
+##### after_process
+
+```python
+def after_process(self, event)
+```
+
+Called after an event is processed.
+
+
+##### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Called when an error occurs during event processing.
+
+
+
+### LoggingMiddleware
+
+```python
+class LoggingMiddleware(EventMiddleware)
+```
+
+Middleware for logging events.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, log_level)
+```
+
+
+##### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Log event publication.
+
+
+##### before_process
+
+```python
+def before_process(self, event)
+```
+
+Log event processing start.
+
+
+##### after_process
+
+```python
+def after_process(self, event)
+```
+
+Log event processing completion.
+
+
+##### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Log event processing error.
+
+
+
+### MetricsMiddleware
+
+```python
+class MetricsMiddleware(EventMiddleware)
+```
+
+Middleware for collecting event metrics.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self)
+```
+
+
+##### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Record event publication metrics.
+
+
+##### before_process
+
+```python
+def before_process(self, event)
+```
+
+Record processing start time.
+
+
+##### after_process
+
+```python
+def after_process(self, event)
+```
+
+Record processing completion metrics.
+
+
+##### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Record error metrics.
+
+
+##### get_metrics
+
+```python
+def get_metrics(self)
+```
+
+Get current metrics.
+
+
+##### reset_metrics
+
+```python
+def reset_metrics(self)
+```
+
+Reset all metrics.
+
+
+
+### FilterMiddleware
+
+```python
+class FilterMiddleware(EventMiddleware)
+```
+
+Middleware for filtering events based on custom criteria.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self, filter_func)
+```
+
+
+##### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Apply filter before publishing.
+
+
+##### before_process
+
+```python
+def before_process(self, event)
+```
+
+Apply filter before processing.
+
+
+##### after_process
+
+```python
+def after_process(self, event)
+```
+
+No action needed after processing.
+
+
+##### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+No action needed on error.
+
+
+
+### CorrelationMiddleware
+
+```python
+class CorrelationMiddleware(EventMiddleware)
+```
+
+Middleware for handling event correlation and tracing.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self)
+```
+
+
+##### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Track correlation before publishing.
+
+
+##### before_process
+
+```python
+def before_process(self, event)
+```
+
+Track correlation before processing.
+
+
+##### after_process
+
+```python
+def after_process(self, event)
+```
+
+Track correlation after processing.
+
+
+##### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Track correlation on error.
+
+
+##### get_correlation_trace
+
+```python
+def get_correlation_trace(self, correlation_id)
+```
+
+Get the trace for a correlation ID.
+
+
+##### cleanup_old_correlations
+
+```python
+def cleanup_old_correlations(self, max_age_hours)
+```
+
+Clean up old correlation traces.
+
+
+
+## Functions
+
+### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Called before an event is published.
+
+
+### before_process
+
+```python
+def before_process(self, event)
+```
+
+Called before an event is processed.
+
+
+### after_process
+
+```python
+def after_process(self, event)
+```
+
+Called after an event is processed.
+
+
+### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Called when an error occurs during event processing.
+
+
+### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Log event publication.
+
+
+### before_process
+
+```python
+def before_process(self, event)
+```
+
+Log event processing start.
+
+
+### after_process
+
+```python
+def after_process(self, event)
+```
+
+Log event processing completion.
+
+
+### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Log event processing error.
+
+
+### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Record event publication metrics.
+
+
+### before_process
+
+```python
+def before_process(self, event)
+```
+
+Record processing start time.
+
+
+### after_process
+
+```python
+def after_process(self, event)
+```
+
+Record processing completion metrics.
+
+
+### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Record error metrics.
+
+
+### get_metrics
+
+```python
+def get_metrics(self)
+```
+
+Get current metrics.
+
+
+### reset_metrics
+
+```python
+def reset_metrics(self)
+```
+
+Reset all metrics.
+
+
+### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Apply filter before publishing.
+
+
+### before_process
+
+```python
+def before_process(self, event)
+```
+
+Apply filter before processing.
+
+
+### after_process
+
+```python
+def after_process(self, event)
+```
+
+No action needed after processing.
+
+
+### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+No action needed on error.
+
+
+### before_publish
+
+```python
+def before_publish(self, event)
+```
+
+Track correlation before publishing.
+
+
+### before_process
+
+```python
+def before_process(self, event)
+```
+
+Track correlation before processing.
+
+
+### after_process
+
+```python
+def after_process(self, event)
+```
+
+Track correlation after processing.
+
+
+### on_error
+
+```python
+def on_error(self, event, error)
+```
+
+Track correlation on error.
+
+
+### get_correlation_trace
+
+```python
+def get_correlation_trace(self, correlation_id)
+```
+
+Get the trace for a correlation ID.
+
+
+### cleanup_old_correlations
+
+```python
+def cleanup_old_correlations(self, max_age_hours)
+```
+
+Clean up old correlation traces.
+

@@ -1,0 +1,276 @@
+# registry
+
+Tool Registry - The single source of truth for tool definitions.
+
+```python
+from agentx.tool.registry import ...
+```
+
+## Classes
+
+### ToolRegistry
+
+```python
+class ToolRegistry
+```
+
+A thread-safe registry for managing tools and their configurations.
+
+#### Methods
+
+##### __init__
+
+```python
+def __init__(self)
+```
+
+
+##### register_tool
+
+```python
+def register_tool(self, tool)
+```
+
+Register all callable methods of a Tool instance.
+
+Each method marked with @tool is registered as a separate tool function.
+
+
+##### register_function
+
+```python
+def register_function(self, func, name)
+```
+
+Register a standalone function as a tool.
+
+
+##### register_toolset
+
+```python
+def register_toolset(self, name, tool_names)
+```
+
+Register a collection of tools as a named toolset.
+
+
+##### get_tool_function
+
+```python
+def get_tool_function(self, name)
+```
+
+Retrieve a tool function by its name.
+
+
+##### get_tool
+
+```python
+def get_tool(self, name)
+```
+
+Get a tool instance by name for direct access.
+
+
+##### get_tool_schema
+
+```python
+def get_tool_schema(self, name)
+```
+
+Get the JSON schema for a single tool.
+
+
+##### get_tool_schemas
+
+```python
+def get_tool_schemas(self, tool_names)
+```
+
+Get a list of all tool schemas, optionally filtered.
+
+
+##### list_tools
+
+```python
+def list_tools(self)
+```
+
+List all registered tool names.
+
+
+##### get_tool_names
+
+```python
+def get_tool_names(self)
+```
+
+Get all registered tool names (alias for list_tools).
+
+
+##### list_toolsets
+
+```python
+def list_toolsets(self)
+```
+
+List all registered toolset names.
+
+
+##### get_builtin_tools
+
+```python
+def get_builtin_tools(self)
+```
+
+Get list of all builtin tool names.
+
+
+##### get_custom_tools
+
+```python
+def get_custom_tools(self)
+```
+
+Get list of all custom (non-builtin) tool names.
+
+
+##### clear
+
+```python
+def clear(self)
+```
+
+Clear all registered tools and toolsets. Useful for testing.
+
+
+
+## Functions
+
+### get_tool_registry
+
+```python
+def get_tool_registry()
+```
+
+Get the global tool registry instance.
+
+
+### register_tool
+
+```python
+def register_tool(self, tool)
+```
+
+Register all callable methods of a Tool instance.
+
+Each method marked with @tool is registered as a separate tool function.
+
+
+### register_function
+
+```python
+def register_function(self, func, name)
+```
+
+Register a standalone function as a tool.
+
+
+### register_toolset
+
+```python
+def register_toolset(self, name, tool_names)
+```
+
+Register a collection of tools as a named toolset.
+
+
+### get_tool_function
+
+```python
+def get_tool_function(self, name)
+```
+
+Retrieve a tool function by its name.
+
+
+### get_tool
+
+```python
+def get_tool(self, name)
+```
+
+Get a tool instance by name for direct access.
+
+
+### get_tool_schema
+
+```python
+def get_tool_schema(self, name)
+```
+
+Get the JSON schema for a single tool.
+
+
+### get_tool_schemas
+
+```python
+def get_tool_schemas(self, tool_names)
+```
+
+Get a list of all tool schemas, optionally filtered.
+
+
+### list_tools
+
+```python
+def list_tools(self)
+```
+
+List all registered tool names.
+
+
+### get_tool_names
+
+```python
+def get_tool_names(self)
+```
+
+Get all registered tool names (alias for list_tools).
+
+
+### list_toolsets
+
+```python
+def list_toolsets(self)
+```
+
+List all registered toolset names.
+
+
+### get_builtin_tools
+
+```python
+def get_builtin_tools(self)
+```
+
+Get list of all builtin tool names.
+
+
+### get_custom_tools
+
+```python
+def get_custom_tools(self)
+```
+
+Get list of all custom (non-builtin) tool names.
+
+
+### clear
+
+```python
+def clear(self)
+```
+
+Clear all registered tools and toolsets. Useful for testing.
+

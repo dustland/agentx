@@ -1,0 +1,525 @@
+# models
+
+Storage subsystem models - Self-contained data models for storage management.
+
+This module contains all data models related to storage management, following the architectural rule that subsystems should be self-contained and not import from core.
+
+```python
+from agentx.storage.models import ...
+```
+
+## Classes
+
+### StorageBackendType
+
+```python
+class StorageBackendType(str, Enum)
+```
+
+Types of storage backends.
+
+
+### ArtifactType
+
+```python
+class ArtifactType(str, Enum)
+```
+
+Types of artifacts that can be stored.
+
+
+### StorageOperation
+
+```python
+class StorageOperation(str, Enum)
+```
+
+Types of storage operations.
+
+
+### FileStatus
+
+```python
+class FileStatus(str, Enum)
+```
+
+File status in storage.
+
+
+### Artifact
+
+```python
+class Artifact(BaseModel)
+```
+
+Represents a stored artifact.
+
+#### Methods
+
+##### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+
+### ArtifactContent
+
+```python
+class ArtifactContent(BaseModel)
+```
+
+Content of an artifact.
+
+#### Methods
+
+##### get_text_content
+
+```python
+def get_text_content(self)
+```
+
+Get content as text.
+
+
+##### get_binary_content
+
+```python
+def get_binary_content(self)
+```
+
+Get content as bytes.
+
+
+
+### StorageBackend
+
+```python
+class StorageBackend(ABC)
+```
+
+Abstract interface for storage backend implementations.
+
+#### Methods
+
+##### store
+
+```python
+def store(self, path, content, artifact_type, metadata)
+```
+
+Store content at the specified path.
+
+
+##### retrieve
+
+```python
+def retrieve(self, path)
+```
+
+Retrieve content from the specified path.
+
+
+##### delete
+
+```python
+def delete(self, path)
+```
+
+Delete content at the specified path.
+
+
+##### list_artifacts
+
+```python
+def list_artifacts(self, prefix, artifact_type, limit)
+```
+
+List artifacts with optional filtering.
+
+
+##### get_artifact
+
+```python
+def get_artifact(self, artifact_id)
+```
+
+Get artifact metadata by ID.
+
+
+##### update_metadata
+
+```python
+def update_metadata(self, artifact_id, metadata)
+```
+
+Update artifact metadata.
+
+
+##### copy
+
+```python
+def copy(self, source_path, dest_path)
+```
+
+Copy artifact from source to destination.
+
+
+##### move
+
+```python
+def move(self, source_path, dest_path)
+```
+
+Move artifact from source to destination.
+
+
+##### exists
+
+```python
+def exists(self, path)
+```
+
+Check if artifact exists at path.
+
+
+##### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get storage backend statistics.
+
+
+##### health
+
+```python
+def health(self)
+```
+
+Get storage backend health information.
+
+
+
+### WorkspaceConfig
+
+```python
+class WorkspaceConfig(BaseModel)
+```
+
+Configuration for a workspace.
+
+
+### WorkspaceState
+
+```python
+class WorkspaceState(BaseModel)
+```
+
+Current state of a workspace.
+
+
+### FileInfo
+
+```python
+class FileInfo(BaseModel)
+```
+
+Information about a file in storage.
+
+
+### DirectoryListing
+
+```python
+class DirectoryListing(BaseModel)
+```
+
+Listing of directory contents.
+
+#### Methods
+
+##### get_all_items
+
+```python
+def get_all_items(self)
+```
+
+Get all files and directories combined.
+
+
+
+### CommitInfo
+
+```python
+class CommitInfo(BaseModel)
+```
+
+Information about a commit.
+
+
+### BranchInfo
+
+```python
+class BranchInfo(BaseModel)
+```
+
+Information about a branch.
+
+
+### FileChange
+
+```python
+class FileChange(BaseModel)
+```
+
+Represents a change to a file.
+
+
+### StorageOperation
+
+```python
+class StorageOperation(BaseModel)
+```
+
+Represents a storage operation.
+
+
+### StorageOperationResult
+
+```python
+class StorageOperationResult(BaseModel)
+```
+
+Result of a storage operation.
+
+
+### StorageStats
+
+```python
+class StorageStats(BaseModel)
+```
+
+Storage backend statistics.
+
+
+### StorageHealth
+
+```python
+class StorageHealth(BaseModel)
+```
+
+Storage backend health status.
+
+
+### StorageConfig
+
+```python
+class StorageConfig(BaseModel)
+```
+
+Configuration for storage system.
+
+
+### SearchQuery
+
+```python
+class SearchQuery(BaseModel)
+```
+
+Query for searching artifacts.
+
+
+### SearchResult
+
+```python
+class SearchResult(BaseModel)
+```
+
+Result from artifact search.
+
+
+## Functions
+
+### generate_short_id
+
+```python
+def generate_short_id(length)
+```
+
+Generate a short, URL-friendly, cryptographically secure random ID.
+
+
+### create_artifact
+
+```python
+def create_artifact(name, path, artifact_type, content_size, created_by, task_id, agent_name, metadata)
+```
+
+Create a new artifact with the specified parameters.
+
+
+### get_mime_type
+
+```python
+def get_mime_type(file_path)
+```
+
+Get MIME type for a file based on its extension.
+
+
+### calculate_checksum
+
+```python
+def calculate_checksum(content)
+```
+
+Calculate SHA-256 checksum of content.
+
+
+### format_file_size
+
+```python
+def format_file_size(size_bytes)
+```
+
+Format file size in human-readable format.
+
+
+### to_dict
+
+```python
+def to_dict(self)
+```
+
+Convert to dictionary for serialization.
+
+
+### get_text_content
+
+```python
+def get_text_content(self)
+```
+
+Get content as text.
+
+
+### get_binary_content
+
+```python
+def get_binary_content(self)
+```
+
+Get content as bytes.
+
+
+### store
+
+```python
+def store(self, path, content, artifact_type, metadata)
+```
+
+Store content at the specified path.
+
+
+### retrieve
+
+```python
+def retrieve(self, path)
+```
+
+Retrieve content from the specified path.
+
+
+### delete
+
+```python
+def delete(self, path)
+```
+
+Delete content at the specified path.
+
+
+### list_artifacts
+
+```python
+def list_artifacts(self, prefix, artifact_type, limit)
+```
+
+List artifacts with optional filtering.
+
+
+### get_artifact
+
+```python
+def get_artifact(self, artifact_id)
+```
+
+Get artifact metadata by ID.
+
+
+### update_metadata
+
+```python
+def update_metadata(self, artifact_id, metadata)
+```
+
+Update artifact metadata.
+
+
+### copy
+
+```python
+def copy(self, source_path, dest_path)
+```
+
+Copy artifact from source to destination.
+
+
+### move
+
+```python
+def move(self, source_path, dest_path)
+```
+
+Move artifact from source to destination.
+
+
+### exists
+
+```python
+def exists(self, path)
+```
+
+Check if artifact exists at path.
+
+
+### get_stats
+
+```python
+def get_stats(self)
+```
+
+Get storage backend statistics.
+
+
+### health
+
+```python
+def health(self)
+```
+
+Get storage backend health information.
+
+
+### get_all_items
+
+```python
+def get_all_items(self)
+```
+
+Get all files and directories combined.
+
