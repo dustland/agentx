@@ -10,7 +10,7 @@ AgentX is a modern, AI-powered multi-agent framework for building intelligent sy
 Core framework components including agents, orchestration, and task management.
 
 - **Agent** - Autonomous agent with conversation management
-- **Brain** - LLM interface and response generation
+- **Brain** - LLM interface and response generation  
 - **Orchestrator** - Multi-agent coordination and tool execution
 - **Task** - Task management and execution flow
 
