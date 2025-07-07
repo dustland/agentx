@@ -2,7 +2,6 @@ loaders:
   - type: python
     search_path: [src]
     modules:
-      - agentx
       - agentx.core
       - agentx.builtin_tools
       - agentx.cli
