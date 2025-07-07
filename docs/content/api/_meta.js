@@ -3,58 +3,22 @@ export default {
   "agentx": "AgentX",
   
   // Core modules
-  "core": {
-    "title": "Core",
-    "type": "folder"
-  },
+  "core": "Core",
   
   // Builtin tools
-  "builtin_tools": {
-    "title": "Builtin Tools",
-    "type": "folder"
-  },
+  "builtin_tools": "Builtin Tools",
   
   // Other modules
-  "cli": {
-    "title": "CLI",
-    "type": "folder"
-  },
-  "config": {
-    "title": "Configuration",
-    "type": "folder"
-  },
-  "event": {
-    "title": "Events",
-    "type": "folder"
-  },
-  "memory": {
-    "title": "Memory",
-    "type": "folder"
-  },
-  "observability": {
-    "title": "Observability",
-    "type": "folder"
-  },
-  "search": {
-    "title": "Search",
-    "type": "folder"
-  },
-  "server": {
-    "title": "Server",
-    "type": "folder"
-  },
-  "storage": {
-    "title": "Storage",
-    "type": "folder"
-  },
-  "tool": {
-    "title": "Tools",
-    "type": "folder"
-  },
-  "utils": {
-    "title": "Utils",
-    "type": "folder"
-  },
+  "cli": "CLI",
+  "config": "Configuration",
+  "event": "Events",
+  "memory": "Memory",
+  "observability": "Observability",
+  "search": "Search",
+  "server": "Server",
+  "storage": "Storage",
+  "tool": "Tools",
+  "utils": "Utils",
   
   // Standalone modules
   "run": "Run"
