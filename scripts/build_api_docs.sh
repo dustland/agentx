@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build AgentX API Documentation using pydoc-markdown
-# This script generates MDX files compatible with Nextra
+# This script generates MD files compatible with Nextra
 
 set -e
 
@@ -23,9 +23,6 @@ rm -rf docs/content/api/utils
 # Generate new docs
 pydoc-markdown
 
-# Convert .md files to .mdx for Nextra compatibility
-find docs/content/api -name "*.md" -exec sh -c 'mv "$1" "${1%.md}.mdx"' _ {} \;
-
 # Flatten the structure by moving contents from agentx folder up one level
 if [ -d "docs/content/api/agentx" ]; then
     cd docs/content/api
@@ -34,11 +31,11 @@ if [ -d "docs/content/api/agentx" ]; then
     cd - > /dev/null
 fi
 
-# Rename all __init__.mdx files to index.mdx for Nextra compatibility
-find docs/content/api -name "__init__.mdx" -exec sh -c 'mv "$1" "$(dirname "$1")/index.mdx"' _ {} \;
+# Rename all __init__.md files to index.md for Nextra compatibility
+find docs/content/api -name "__init__.md" -exec sh -c 'mv "$1" "$(dirname "$1")/index.md"' _ {} \;
 
 # Create API index page
-cat > docs/content/api/index.mdx << 'EOF'
+cat > docs/content/api/index.md << 'EOF'
 # API Reference
 
 Complete API reference for the AgentX framework.
@@ -118,4 +115,5 @@ export default {
 EOF
 
 echo "✅ API Documentation built successfully!"
-echo "📖 Documentation available at: docs/content/api/" 
+echo "📖 Documentation available at: docs/content/api/"
+echo "🔍 Generated .md files (Nextra should support both .md and .mdx)" 
