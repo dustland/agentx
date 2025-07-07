@@ -1,0 +1,780 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.storage &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.storage</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage.delete_artifact"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage.delete_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage.get_artifact"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage.get_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage.get_artifact_versions"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage.get_artifact_versions()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage.list_artifacts"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage.list_artifacts()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.ArtifactStorage.store_artifact"><code class="docutils literal notranslate"><span class="pre">ArtifactStorage.store_artifact()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage"><code class="docutils literal notranslate"><span class="pre">FileStorage</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.append_text"><code class="docutils literal notranslate"><span class="pre">FileStorage.append_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.create_directory"><code class="docutils literal notranslate"><span class="pre">FileStorage.create_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.delete"><code class="docutils literal notranslate"><span class="pre">FileStorage.delete()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.read_bytes"><code class="docutils literal notranslate"><span class="pre">FileStorage.read_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.read_text"><code class="docutils literal notranslate"><span class="pre">FileStorage.read_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.write_bytes"><code class="docutils literal notranslate"><span class="pre">FileStorage.write_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.FileStorage.write_text"><code class="docutils literal notranslate"><span class="pre">FileStorage.write_text()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.__del__"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.__del__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.create_directory"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.create_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.delete_artifact"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.delete_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.exists"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.exists()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.get_artifact"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.get_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.get_artifact_diff"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.get_artifact_diff()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.get_artifact_versions"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.get_artifact_versions()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.list_artifacts"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.list_artifacts()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.list_directory"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.list_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.read_text"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.read_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.store_artifact"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.store_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.write_bytes"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.write_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.write_text"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.write_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.artifacts_path"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.artifacts_path</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.executor"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.executor</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.GitArtifactStorage.repo"><code class="docutils literal notranslate"><span class="pre">GitArtifactStorage.repo</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.append_text"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.append_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.create_directory"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.create_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.delete"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.delete()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.exists"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.exists()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.get_info"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.get_info()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.list_directory"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.list_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.read_bytes"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.read_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.read_text"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.read_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.write_bytes"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.write_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.write_text"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.write_text()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.LocalFileStorage.base_path"><code class="docutils literal notranslate"><span class="pre">LocalFileStorage.base_path</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.StorageBackend"><code class="docutils literal notranslate"><span class="pre">StorageBackend</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.StorageBackend.exists"><code class="docutils literal notranslate"><span class="pre">StorageBackend.exists()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageBackend.get_info"><code class="docutils literal notranslate"><span class="pre">StorageBackend.get_info()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageBackend.list_directory"><code class="docutils literal notranslate"><span class="pre">StorageBackend.list_directory()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.StorageFactory"><code class="docutils literal notranslate"><span class="pre">StorageFactory</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.StorageFactory.create_file_storage"><code class="docutils literal notranslate"><span class="pre">StorageFactory.create_file_storage()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageFactory.create_workspace_storage"><code class="docutils literal notranslate"><span class="pre">StorageFactory.create_workspace_storage()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult"><code class="docutils literal notranslate"><span class="pre">StorageResult</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.__post_init__"><code class="docutils literal notranslate"><span class="pre">StorageResult.__post_init__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.data"><code class="docutils literal notranslate"><span class="pre">StorageResult.data</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.error"><code class="docutils literal notranslate"><span class="pre">StorageResult.error</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.metadata"><code class="docutils literal notranslate"><span class="pre">StorageResult.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.path"><code class="docutils literal notranslate"><span class="pre">StorageResult.path</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.size"><code class="docutils literal notranslate"><span class="pre">StorageResult.size</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.StorageResult.success"><code class="docutils literal notranslate"><span class="pre">StorageResult.success</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.delete_artifact"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.delete_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_artifact"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_artifact_diff"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_artifact_diff()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_artifact_versions"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_artifact_versions()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_conversation_history"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_conversation_history()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_execution_plan"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_execution_plan()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_workspace_path"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_workspace_path()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.get_workspace_summary"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.get_workspace_summary()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.list_artifacts"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.list_artifacts()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.list_directory"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.list_directory()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.store_artifact"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.store_artifact()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.store_execution_plan"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.store_execution_plan()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.store_message"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.store_message()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.file_storage"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.file_storage</span></code></a></li>
+<li><a class="reference internal" href="#agentx.storage.WorkspaceStorage.use_git_artifacts"><code class="docutils literal notranslate"><span class="pre">WorkspaceStorage.use_git_artifacts</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.storage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/api/agentx/storage/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.storage">
+<span id="agentx-storage"></span><h1>agentx.storage<a class="headerlink" href="#module-agentx.storage" title="Link to this heading"></a></h1>
+<p>AgentX Storage - Clean persistence abstractions for the framework.</p>
+<p>Provides storage backends and interfaces that can be used directly by the framework
+and wrapped as tools for LLM agents.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="backends/index.html">agentx.storage.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="factory/index.html">agentx.storage.factory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="git_storage/index.html">agentx.storage.git_storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces/index.html">agentx.storage.interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/index.html">agentx.storage.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workspace/index.html">agentx.storage.workspace</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.storage.ArtifactStorage" title="agentx.storage.ArtifactStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArtifactStorage</span></code></a></p></td>
+<td><p>Interface for artifact storage with versioning and metadata.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.storage.FileStorage" title="agentx.storage.FileStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileStorage</span></code></a></p></td>
+<td><p>Interface for file storage operations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.storage.GitArtifactStorage" title="agentx.storage.GitArtifactStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GitArtifactStorage</span></code></a></p></td>
+<td><p>Git-based artifact storage with proper version control.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.storage.LocalFileStorage" title="agentx.storage.LocalFileStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalFileStorage</span></code></a></p></td>
+<td><p>Local filesystem storage backend with security constraints.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.storage.StorageBackend" title="agentx.storage.StorageBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StorageBackend</span></code></a></p></td>
+<td><p>Base interface for all storage backends.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.storage.StorageFactory" title="agentx.storage.StorageFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StorageFactory</span></code></a></p></td>
+<td><p>Factory for creating storage providers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StorageResult</span></code></a></p></td>
+<td><p>Result of a storage operation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.storage.WorkspaceStorage" title="agentx.storage.WorkspaceStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WorkspaceStorage</span></code></a></p></td>
+<td><p>Workspace storage that handles business concepts.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">ArtifactStorage</span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.storage.StorageBackend" title="agentx.storage.StorageBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StorageBackend</span></code></a></p>
+<p>Interface for artifact storage with versioning and metadata.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage.delete_artifact">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage.delete_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage.delete_artifact" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Delete an artifact or specific version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage.get_artifact">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage.get_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage.get_artifact" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Get artifact content by name and optional version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage.get_artifact_versions">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage.get_artifact_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage.get_artifact_versions" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Get all versions of an artifact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage.list_artifacts">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_artifacts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage.list_artifacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage.list_artifacts" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>List all artifacts with their metadata.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.ArtifactStorage.store_artifact">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text/plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#ArtifactStorage.store_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.ArtifactStorage.store_artifact" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Store an artifact with versioning.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">FileStorage</span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.storage.StorageBackend" title="agentx.storage.StorageBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StorageBackend</span></code></a></p>
+<p>Interface for file storage operations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.append_text">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">append_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.append_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.append_text" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Append text content to a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.create_directory">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.create_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.create_directory" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Create a directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.delete">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.delete" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Delete a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.read_bytes">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.read_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.read_bytes" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Read binary content from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.read_text">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.read_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.read_text" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Read text content from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.write_bytes">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.write_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.write_bytes" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Write binary content to a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.FileStorage.write_text">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.storage.StorageResult" title="agentx.storage.StorageResult"><span class="pre">StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#FileStorage.write_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.FileStorage.write_text" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Write text content to a file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">GitArtifactStorage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage" title="Link to this definition"></a></dt>
+<dd><p>Git-based artifact storage with proper version control.</p>
+<p>Uses Git for versioning artifacts, providing:
+- Proper diffs and history
+- Branching and merging capabilities
+- Standard Git tooling integration
+- Efficient storage with delta compression
+- Meaningful commit messages</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.__del__">
+<span class="sig-name descname"><span class="pre">__del__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.__del__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.__del__" title="Link to this definition"></a></dt>
+<dd><p>Cleanup thread pool.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.create_directory">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.create_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.create_directory" title="Link to this definition"></a></dt>
+<dd><p>Create directory (no-op for git storage).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.delete_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.delete_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.delete_artifact" title="Link to this definition"></a></dt>
+<dd><p>Delete an artifact or specific version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.exists">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.exists" title="Link to this definition"></a></dt>
+<dd><p>Check if artifact exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.get_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.get_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.get_artifact" title="Link to this definition"></a></dt>
+<dd><p>Get artifact content at specific version (commit).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.get_artifact_diff">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.get_artifact_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.get_artifact_diff" title="Link to this definition"></a></dt>
+<dd><p>Get diff between two versions of an artifact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.get_artifact_versions">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.get_artifact_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.get_artifact_versions" title="Link to this definition"></a></dt>
+<dd><p>Get all versions (commits) of an artifact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.list_artifacts">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_artifacts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.list_artifacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.list_artifacts" title="Link to this definition"></a></dt>
+<dd><p>List all artifacts with their Git history.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.list_directory">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.list_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.list_directory" title="Link to this definition"></a></dt>
+<dd><p>List directory contents (returns artifacts for compatibility).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.read_text">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.read_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.read_text" title="Link to this definition"></a></dt>
+<dd><p>Read text content (alias for get_artifact).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.store_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text/plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.store_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.store_artifact" title="Link to this definition"></a></dt>
+<dd><p>Store an artifact with Git versioning.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.write_bytes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.write_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.write_bytes" title="Link to this definition"></a></dt>
+<dd><p>Write bytes content (alias for store_artifact).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.write_text">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/git_storage.html#GitArtifactStorage.write_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.GitArtifactStorage.write_text" title="Link to this definition"></a></dt>
+<dd><p>Write text content (alias for store_artifact).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.artifacts_path">
+<span class="sig-name descname"><span class="pre">artifacts_path</span></span><a class="headerlink" href="#agentx.storage.GitArtifactStorage.artifacts_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.executor">
+<span class="sig-name descname"><span class="pre">executor</span></span><a class="headerlink" href="#agentx.storage.GitArtifactStorage.executor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.GitArtifactStorage.repo">
+<span class="sig-name descname"><span class="pre">repo</span></span><a class="headerlink" href="#agentx.storage.GitArtifactStorage.repo" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">LocalFileStorage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileStorage" title="agentx.storage.interfaces.FileStorage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agentx.storage.interfaces.FileStorage</span></code></a></p>
+<p>Local filesystem storage backend with security constraints.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.append_text">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">append_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.append_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.append_text" title="Link to this definition"></a></dt>
+<dd><p>Append text content to a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.create_directory">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.create_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.create_directory" title="Link to this definition"></a></dt>
+<dd><p>Create a directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.delete">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.delete" title="Link to this definition"></a></dt>
+<dd><p>Delete a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.exists">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.exists" title="Link to this definition"></a></dt>
+<dd><p>Check if a path exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.get_info">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileInfo" title="agentx.storage.interfaces.FileInfo"><span class="pre">agentx.storage.interfaces.FileInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.get_info" title="Link to this definition"></a></dt>
+<dd><p>Get information about a file/directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.list_directory">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileInfo" title="agentx.storage.interfaces.FileInfo"><span class="pre">agentx.storage.interfaces.FileInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.list_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.list_directory" title="Link to this definition"></a></dt>
+<dd><p>List contents of a directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.read_bytes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.read_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.read_bytes" title="Link to this definition"></a></dt>
+<dd><p>Read binary content from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.read_text">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.read_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.read_text" title="Link to this definition"></a></dt>
+<dd><p>Read text content from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.write_bytes">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.write_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.write_bytes" title="Link to this definition"></a></dt>
+<dd><p>Write binary content to a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.write_text">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_text</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'utf-8'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/backends.html#LocalFileStorage.write_text"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.LocalFileStorage.write_text" title="Link to this definition"></a></dt>
+<dd><p>Write text content to a file.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.LocalFileStorage.base_path">
+<span class="sig-name descname"><span class="pre">base_path</span></span><a class="headerlink" href="#agentx.storage.LocalFileStorage.base_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.StorageBackend">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">StorageBackend</span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageBackend" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Base interface for all storage backends.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageBackend.exists">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageBackend.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageBackend.exists" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Check if a path exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageBackend.get_info">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileInfo" title="agentx.storage.interfaces.FileInfo"><span class="pre">FileInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageBackend.get_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageBackend.get_info" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Get information about a file/directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageBackend.list_directory">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileInfo" title="agentx.storage.interfaces.FileInfo"><span class="pre">FileInfo</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageBackend.list_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageBackend.list_directory" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>List contents of a directory.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.StorageFactory">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">StorageFactory</span></span><a class="reference internal" href="../../../_modules/agentx/storage/factory.html#StorageFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageFactory" title="Link to this definition"></a></dt>
+<dd><p>Factory for creating storage providers.</p>
+<p>Creates filesystem abstractions that can be swapped for different backends
+(local, S3, Azure, etc.) and workspace storage for business logic.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageFactory.create_file_storage">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_file_storage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileStorage" title="agentx.storage.interfaces.FileStorage"><span class="pre">agentx.storage.interfaces.FileStorage</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/factory.html#StorageFactory.create_file_storage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageFactory.create_file_storage" title="Link to this definition"></a></dt>
+<dd><p>Create a filesystem abstraction.</p>
+<p>This can be swapped for different backends like S3FileStorage,
+AzureFileStorage, etc. without changing the business logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>base_path</strong> – Base path for the filesystem</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>FileStorage implementation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageFactory.create_workspace_storage">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_workspace_storage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_git_artifacts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="workspace/index.html#agentx.storage.workspace.WorkspaceStorage" title="agentx.storage.workspace.WorkspaceStorage"><span class="pre">agentx.storage.workspace.WorkspaceStorage</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/factory.html#StorageFactory.create_workspace_storage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageFactory.create_workspace_storage" title="Link to this definition"></a></dt>
+<dd><p>Create a workspace storage for business logic.</p>
+<p>Handles business concepts like artifacts, messages, execution plans
+using the filesystem abstraction underneath.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workspace_path</strong> – Path to the workspace directory</p></li>
+<li><p><strong>use_git_artifacts</strong> – Whether to use Git for artifact versioning</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>WorkspaceStorage instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">StorageResult</span></span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageResult" title="Link to this definition"></a></dt>
+<dd><p>Result of a storage operation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.__post_init__">
+<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/storage/interfaces.html#StorageResult.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.StorageResult.__post_init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.data">
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.StorageResult.data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.error">
+<span class="sig-name descname"><span class="pre">error</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.StorageResult.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.StorageResult.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.StorageResult.path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.size">
+<span class="sig-name descname"><span class="pre">size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.StorageResult.size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.StorageResult.success">
+<span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#agentx.storage.StorageResult.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.storage.</span></span><span class="sig-name descname"><span class="pre">WorkspaceStorage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workspace_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_storage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.FileStorage" title="agentx.storage.interfaces.FileStorage"><span class="pre">agentx.storage.interfaces.FileStorage</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_git_artifacts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage" title="Link to this definition"></a></dt>
+<dd><p>Workspace storage that handles business concepts.</p>
+<p>Manages execution plans, messages, artifacts, and other workspace
+content using a filesystem abstraction underneath.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.delete_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">delete_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.delete_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.delete_artifact" title="Link to this definition"></a></dt>
+<dd><p>Delete an artifact or specific version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_artifact" title="Link to this definition"></a></dt>
+<dd><p>Get artifact content.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_artifact_diff">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">version2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_artifact_diff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_artifact_diff" title="Link to this definition"></a></dt>
+<dd><p>Get diff between two versions of an artifact (Git only).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_artifact_versions">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_artifact_versions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_artifact_versions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_artifact_versions" title="Link to this definition"></a></dt>
+<dd><p>Get all versions of an artifact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_conversation_history">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_conversation_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conversation_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_conversation_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_conversation_history" title="Link to this definition"></a></dt>
+<dd><p>Get conversation history.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_execution_plan">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_execution_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_execution_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_execution_plan" title="Link to this definition"></a></dt>
+<dd><p>Get an execution plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_workspace_path">
+<span class="sig-name descname"><span class="pre">get_workspace_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_workspace_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_workspace_path" title="Link to this definition"></a></dt>
+<dd><p>Get the workspace path.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.get_workspace_summary">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_workspace_summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.get_workspace_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.get_workspace_summary" title="Link to this definition"></a></dt>
+<dd><p>Get a summary of workspace contents.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.list_artifacts">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_artifacts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.list_artifacts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.list_artifacts" title="Link to this definition"></a></dt>
+<dd><p>List all artifacts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.list_directory">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">list_directory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.list_directory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.list_directory" title="Link to this definition"></a></dt>
+<dd><p>List contents of a directory in the workspace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.store_artifact">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><span class="pre">bytes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'text/plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.store_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.store_artifact" title="Link to this definition"></a></dt>
+<dd><p>Store an artifact with versioning.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.store_execution_plan">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_execution_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plan_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.store_execution_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.store_execution_plan" title="Link to this definition"></a></dt>
+<dd><p>Store an execution plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.store_message">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conversation_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.storage.interfaces.StorageResult" title="agentx.storage.interfaces.StorageResult"><span class="pre">agentx.storage.interfaces.StorageResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/storage/workspace.html#WorkspaceStorage.store_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.storage.WorkspaceStorage.store_message" title="Link to this definition"></a></dt>
+<dd><p>Store a conversation message.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.file_storage">
+<span class="sig-name descname"><span class="pre">file_storage</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.storage.WorkspaceStorage.file_storage" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.storage.WorkspaceStorage.use_git_artifacts">
+<span class="sig-name descname"><span class="pre">use_git_artifacts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#agentx.storage.WorkspaceStorage.use_git_artifacts" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

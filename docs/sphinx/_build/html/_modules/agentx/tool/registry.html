@@ -1,0 +1,330 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.tool.registry &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../tool.html">agentx.tool</a></li>
+      <li class="breadcrumb-item active">agentx.tool.registry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.tool.registry</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Tool Registry - The single source of truth for tool definitions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">ToolFunction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..builtin_tools.file</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_file_tool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..builtin_tools.search</span><span class="w"> </span><span class="kn">import</span> <span class="n">SearchTool</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ToolRegistry">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolRegistry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A thread-safe registry for managing tools and their configurations.&quot;&quot;&quot;</span>
+    <span class="n">_instance</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ToolRegistry</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span><span class="o">.</span><span class="n">__initialized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instance</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__initialized</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ToolFunction</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_builtin_tools</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__initialized</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_register_builtin_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Automatically discover and register all functions decorated with @tool</span>
+<span class="sd">        from the agentx.builtin_tools module.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering builtin tools...&quot;</span><span class="p">)</span>
+        <span class="c1"># A workspace_path is required for some tools like file_tools</span>
+        <span class="c1"># This is a bit of a hack. A better solution would be to</span>
+        <span class="c1"># allow tools to be initialized with context when a task starts.</span>
+        <span class="c1"># For now, we&#39;ll use a default path.</span>
+        <span class="n">default_workspace</span> <span class="o">=</span> <span class="s2">&quot;workspace&quot;</span>
+        
+        <span class="n">builtin_tool_instances</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">create_file_tool</span><span class="p">(</span><span class="n">workspace_path</span><span class="o">=</span><span class="n">default_workspace</span><span class="p">),</span>
+            <span class="n">SearchTool</span><span class="p">()</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">tool_instance</span> <span class="ow">in</span> <span class="n">builtin_tool_instances</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_tool</span><span class="p">(</span><span class="n">tool_instance</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">)</span><span class="si">}</span><span class="s2"> builtin tools.&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ToolRegistry.register_tool">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.register_tool">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_tool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool</span><span class="p">:</span> <span class="n">Tool</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register all callable methods of a Tool instance.</span>
+<span class="sd">        Each method marked with @tool is registered as a separate tool function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tool_methods</span> <span class="o">=</span> <span class="n">tool</span><span class="o">.</span><span class="n">get_callable_methods</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="n">tool_methods</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tool</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_function</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.register_function">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.register_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a standalone function as a tool.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">callable</span><span class="p">(</span><span class="n">func</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s1">&#39;_is_tool_call&#39;</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Function </span><span class="si">{</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a valid tool. Please decorate it with @tool.&quot;</span><span class="p">)</span>
+
+        <span class="n">tool_name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">tool_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Tool &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39; is already registered and will be overwritten.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The schema generation utilities are now in models.py</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">_create_pydantic_model_from_signature</span>
+        <span class="n">pydantic_model</span> <span class="o">=</span> <span class="n">_create_pydantic_model_from_signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">pydantic_model</span><span class="p">:</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="n">pydantic_model</span><span class="o">.</span><span class="n">model_json_schema</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">[</span><span class="n">tool_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ToolFunction</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">_tool_description</span><span class="p">,</span>
+            <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span>
+            <span class="n">return_description</span><span class="o">=</span><span class="n">func</span><span class="o">.</span><span class="n">_return_description</span><span class="p">,</span>
+            <span class="n">function</span><span class="o">=</span><span class="n">func</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registered tool: &#39;</span><span class="si">{</span><span class="n">tool_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.register_toolset">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.register_toolset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_toolset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tool_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register a collection of tools as a named toolset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">invalid_tools</span> <span class="o">=</span> <span class="p">[</span><span class="n">t_name</span> <span class="k">for</span> <span class="n">t_name</span> <span class="ow">in</span> <span class="n">tool_names</span> <span class="k">if</span> <span class="n">t_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">invalid_tools</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot create toolset &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;. The following tools are not registered: </span><span class="si">{</span><span class="n">invalid_tools</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tool_names</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registered toolset &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; with tools: </span><span class="si">{</span><span class="n">tool_names</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_tool_function">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_tool_function">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ToolFunction</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a tool function by its name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_tool">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_tool">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a tool instance by name for direct access.&quot;&quot;&quot;</span>
+        <span class="n">tool_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tool_function</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_func</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="c1"># Return the tool instance - the function is bound to the tool instance</span>
+        <span class="k">return</span> <span class="n">tool_func</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="vm">__self__</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tool_func</span><span class="o">.</span><span class="n">function</span><span class="p">,</span> <span class="s1">&#39;__self__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">tool_func</span><span class="o">.</span><span class="n">function</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_tool_schema">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_tool_schema">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the JSON schema for a single tool.&quot;&quot;&quot;</span>
+        <span class="n">tool_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tool_function</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tool_func</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;function&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;function&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">tool_func</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">tool_func</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+                <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">tool_func</span><span class="o">.</span><span class="n">parameters</span>
+            <span class="p">}</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_tool_schemas">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_tool_schemas">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_schemas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tool_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a list of all tool schemas, optionally filtered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schemas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">target_tool_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">tool_names</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">tool_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="p">:</span>
+                    <span class="n">target_tool_names</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="p">:</span>
+                    <span class="n">target_tool_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target_tool_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">target_tool_names</span><span class="p">)):</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tool_schema</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">schema</span><span class="p">:</span>
+                <span class="n">schemas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">schemas</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.list_tools">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.list_tools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all registered tool names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_tool_names">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_tool_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tool_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all registered tool names (alias for list_tools).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_tools</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.list_toolsets">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.list_toolsets">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_toolsets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all registered toolset names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_builtin_tools">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_builtin_tools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_builtin_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of all builtin tool names.&quot;&quot;&quot;</span>
+        <span class="c1"># For now, return all tools since we register builtin tools during init</span>
+        <span class="c1"># In the future, we could track which tools are builtin vs custom</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.get_custom_tools">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.get_custom_tools">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_custom_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of all custom (non-builtin) tool names.&quot;&quot;&quot;</span>
+        <span class="c1"># For now, return empty list since we haven&#39;t implemented custom tool tracking</span>
+        <span class="c1"># This would need to be enhanced to track which tools are custom</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="ToolRegistry.clear">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.ToolRegistry.clear">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear all registered tools and toolsets. Useful for testing.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tools</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toolsets</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="c1"># Re-register builtin tools after clearing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_builtin_tools</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_tool_registry">
+<a class="viewcode-back" href="../../../api/agentx/tool/registry/index.html#agentx.tool.get_tool_registry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tool_registry</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ToolRegistry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the global tool registry instance.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ToolRegistry</span><span class="p">()</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

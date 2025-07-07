@@ -1,0 +1,29 @@
+agentx.cli.main
+===============
+
+.. py:module:: agentx.cli.main
+
+.. autoapi-nested-parse::
+
+   Universal AgentX CLI
+
+   Provides a unified command-line interface for all AgentX operations.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.cli.main.main
+
+
+Module Contents
+---------------
+
+.. py:function:: main()
+
+   Main CLI entry point.
+
+

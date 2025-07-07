@@ -1,0 +1,132 @@
+agentx.builtin_tools.file
+=========================
+
+.. py:module:: agentx.builtin_tools.file
+
+.. autoapi-nested-parse::
+
+   File operations for AgentX.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.file.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.file.FileTool
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.file.create_file_tool
+
+
+Module Contents
+---------------
+
+.. py:class:: FileTool(workspace_storage: agentx.storage.workspace.WorkspaceStorage)
+
+   Bases: :py:obj:`agentx.core.tool.Tool`
+
+
+   File tool that works with workspace artifacts and provides simple file operations.
+
+
+   .. py:method:: create_directory(path: Annotated[str, Directory path to create (e.g., 'reports', 'data/sources')]) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Create a directory in the workspace using the underlying file storage.
+
+
+
+   .. py:method:: delete_file(filename: Annotated[str, Name of the file to delete], version: Annotated[Optional[str], Specific version to delete (optional, deletes all versions if not specified)] = None) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Delete a file artifact from the workspace.
+
+
+
+   .. py:method:: file_exists(filename: Annotated[str, Name of the file to check]) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Check if a file artifact exists in the workspace.
+
+
+
+   .. py:method:: get_file_versions(filename: Annotated[str, Name of the file to get versions for]) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Get version history of a file artifact.
+
+
+
+   .. py:method:: get_workspace_summary() -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Get a summary of the workspace contents.
+
+
+
+   .. py:method:: list_directory(path: Annotated[str, Directory path to list (defaults to workspace root)] = '') -> agentx.core.tool.ToolResult
+      :async:
+
+
+      List the contents of a directory in the workspace.
+
+
+
+   .. py:method:: list_files() -> agentx.core.tool.ToolResult
+      :async:
+
+
+      List all file artifacts in the workspace.
+
+
+
+   .. py:method:: read_file(filename: Annotated[str, Name of the file to read], version: Annotated[Optional[str], Specific version to read (optional, defaults to latest)] = None) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Read file contents from workspace artifacts.
+
+
+
+   .. py:method:: write_file(filename: Annotated[str, Name of the file (e.g., 'report.html', 'requirements.md')], content: Annotated[str, Content to write to the file]) -> agentx.core.tool.ToolResult
+      :async:
+
+
+      Write content to file as a workspace artifact with versioning.
+
+
+
+   .. py:attribute:: workspace
+
+
+.. py:function:: create_file_tool(workspace_path: str) -> FileTool
+
+   Create a file tool for workspace operations.
+
+   :param workspace_path: Path to the workspace directory
+
+   :returns: FileTool instance that properly uses workspace abstraction
+
+
+.. py:data:: logger
+

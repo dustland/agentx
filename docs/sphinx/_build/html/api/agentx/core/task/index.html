@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.core.task &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.core.task</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.core.task.Task"><code class="docutils literal notranslate"><span class="pre">Task</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.task.Task.complete"><code class="docutils literal notranslate"><span class="pre">Task.complete()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.get_agent"><code class="docutils literal notranslate"><span class="pre">Task.get_agent()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.get_context"><code class="docutils literal notranslate"><span class="pre">Task.get_context()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.agents"><code class="docutils literal notranslate"><span class="pre">Task.agents</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.config"><code class="docutils literal notranslate"><span class="pre">Task.config</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.created_at"><code class="docutils literal notranslate"><span class="pre">Task.created_at</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.history"><code class="docutils literal notranslate"><span class="pre">Task.history</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.initial_prompt"><code class="docutils literal notranslate"><span class="pre">Task.initial_prompt</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.is_complete"><code class="docutils literal notranslate"><span class="pre">Task.is_complete</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.message_queue"><code class="docutils literal notranslate"><span class="pre">Task.message_queue</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.orchestrator"><code class="docutils literal notranslate"><span class="pre">Task.orchestrator</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.plan"><code class="docutils literal notranslate"><span class="pre">Task.plan</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.task_id"><code class="docutils literal notranslate"><span class="pre">Task.task_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.Task.workspace"><code class="docutils literal notranslate"><span class="pre">Task.workspace</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor"><code class="docutils literal notranslate"><span class="pre">TaskExecutor</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.start"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.start()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.agents"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.agents</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.history"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.history</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.message_queue"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.message_queue</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.orchestrator"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.orchestrator</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.task"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.task</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.task_id"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.task_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.tool_manager"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.tool_manager</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.TaskExecutor.workspace"><code class="docutils literal notranslate"><span class="pre">TaskExecutor.workspace</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.task.execute_task"><code class="docutils literal notranslate"><span class="pre">execute_task()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.start_task"><code class="docutils literal notranslate"><span class="pre">start_task()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.task.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.core.task</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/core/task/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.core.task">
+<span id="agentx-core-task"></span><h1>agentx.core.task<a class="headerlink" href="#module-agentx.core.task" title="Link to this heading"></a></h1>
+<p>Task execution class - the primary interface for AgentX task execution.</p>
+<dl>
+<dt>Clean API:</dt><dd><p># One-shot execution (Lead-driven)
+await execute_task(prompt, config_path)</p>
+<p># Step-by-step execution (Lead-driven)
+task = start_task(prompt, config_path)
+await task.run()</p>
+</dd>
+</dl>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.task.logger" title="agentx.core.task.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.task.Task" title="agentx.core.task.Task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Task</span></code></a></p></td>
+<td><p>Represents the state and context of a single task being executed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.task.TaskExecutor" title="agentx.core.task.TaskExecutor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TaskExecutor</span></code></a></p></td>
+<td><p>The main engine for executing a task. It coordinates the agents, tools,</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.task.execute_task" title="agentx.core.task.execute_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_task</span></code></a>(...)</p></td>
+<td><p>High-level function to execute a task from a prompt and config file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.task.start_task" title="agentx.core.task.start_task"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_task</span></code></a>(→ TaskExecutor)</p></td>
+<td><p>High-level function to start a task and return the TaskExecutor for step-by-step execution.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.task.Task">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.task.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../config/index.html#agentx.core.config.TaskConfig" title="agentx.core.config.TaskConfig"><span class="pre">agentx.core.config.TaskConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../message/index.html#agentx.core.message.TaskHistory" title="agentx.core.message.TaskHistory"><span class="pre">agentx.core.message.TaskHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../message/index.html#agentx.core.message.MessageQueue" title="agentx.core.message.MessageQueue"><span class="pre">agentx.core.message.MessageQueue</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">agents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../agent/index.html#agentx.core.agent.Agent" title="agentx.core.agent.Agent"><span class="pre">agentx.core.agent.Agent</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../storage/workspace/index.html#agentx.storage.workspace.WorkspaceStorage" title="agentx.storage.workspace.WorkspaceStorage"><span class="pre">agentx.storage.workspace.WorkspaceStorage</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">orchestrator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../orchestrator/index.html#agentx.core.orchestrator.Orchestrator" title="agentx.core.orchestrator.Orchestrator"><span class="pre">agentx.core.orchestrator.Orchestrator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#Task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.Task" title="Link to this definition"></a></dt>
+<dd><p>Represents the state and context of a single task being executed.
+This class is a data container and does not have execution logic.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.task.Task.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#Task.complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.Task.complete" title="Link to this definition"></a></dt>
+<dd><p>Marks the task as complete.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.task.Task.get_agent">
+<span class="sig-name descname"><span class="pre">get_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../agent/index.html#agentx.core.agent.Agent" title="agentx.core.agent.Agent"><span class="pre">agentx.core.agent.Agent</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#Task.get_agent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.Task.get_agent" title="Link to this definition"></a></dt>
+<dd><p>Retrieves an agent by name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.task.Task.get_context">
+<span class="sig-name descname"><span class="pre">get_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#Task.get_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.Task.get_context" title="Link to this definition"></a></dt>
+<dd><p>Returns a dictionary with the task’s context.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.agents">
+<span class="sig-name descname"><span class="pre">agents</span></span><a class="headerlink" href="#agentx.core.task.Task.agents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#agentx.core.task.Task.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.created_at">
+<span class="sig-name descname"><span class="pre">created_at</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a></em><a class="headerlink" href="#agentx.core.task.Task.created_at" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.history">
+<span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#agentx.core.task.Task.history" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.initial_prompt">
+<span class="sig-name descname"><span class="pre">initial_prompt</span></span><a class="headerlink" href="#agentx.core.task.Task.initial_prompt" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.is_complete">
+<span class="sig-name descname"><span class="pre">is_complete</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#agentx.core.task.Task.is_complete" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.message_queue">
+<span class="sig-name descname"><span class="pre">message_queue</span></span><a class="headerlink" href="#agentx.core.task.Task.message_queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.orchestrator">
+<span class="sig-name descname"><span class="pre">orchestrator</span></span><a class="headerlink" href="#agentx.core.task.Task.orchestrator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.plan">
+<span class="sig-name descname"><span class="pre">plan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../plan/index.html#agentx.core.plan.Plan" title="agentx.core.plan.Plan"><span class="pre">agentx.core.plan.Plan</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#agentx.core.task.Task.plan" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.task_id">
+<span class="sig-name descname"><span class="pre">task_id</span></span><a class="headerlink" href="#agentx.core.task.Task.task_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.Task.workspace">
+<span class="sig-name descname"><span class="pre">workspace</span></span><a class="headerlink" href="#agentx.core.task.Task.workspace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.task.</span></span><span class="sig-name descname"><span class="pre">TaskExecutor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#TaskExecutor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.TaskExecutor" title="Link to this definition"></a></dt>
+<dd><p>The main engine for executing a task. It coordinates the agents, tools,
+and orchestrator to fulfill the user’s request.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.start">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncGenerator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../message/index.html#agentx.core.message.Message" title="agentx.core.message.Message"><span class="pre">agentx.core.message.Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#TaskExecutor.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.TaskExecutor.start" title="Link to this definition"></a></dt>
+<dd><p>Starts the task execution and streams back events.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.agents">
+<span class="sig-name descname"><span class="pre">agents</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.agents" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.history">
+<span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.history" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.message_queue">
+<span class="sig-name descname"><span class="pre">message_queue</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.message_queue" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.orchestrator">
+<span class="sig-name descname"><span class="pre">orchestrator</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.orchestrator" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.task">
+<span class="sig-name descname"><span class="pre">task</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#agentx.core.task.Task" title="agentx.core.task.Task"><span class="pre">Task</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.task.TaskExecutor.task" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.task_id">
+<span class="sig-name descname"><span class="pre">task_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#agentx.core.task.TaskExecutor.task_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.tool_manager">
+<span class="sig-name descname"><span class="pre">tool_manager</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.tool_manager" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.task.TaskExecutor.workspace">
+<span class="sig-name descname"><span class="pre">workspace</span></span><a class="headerlink" href="#agentx.core.task.TaskExecutor.workspace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.task.execute_task">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.task.</span></span><span class="sig-name descname"><span class="pre">execute_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncGenerator</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../message/index.html#agentx.core.message.Message" title="agentx.core.message.Message"><span class="pre">agentx.core.message.Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#execute_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.execute_task" title="Link to this definition"></a></dt>
+<dd><p>High-level function to execute a task from a prompt and config file.
+This function runs the task to completion autonomously.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.task.start_task">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.task.</span></span><span class="sig-name descname"><span class="pre">start_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workspace_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.task.TaskExecutor" title="agentx.core.task.TaskExecutor"><span class="pre">TaskExecutor</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/task.html#start_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.task.start_task" title="Link to this definition"></a></dt>
+<dd><p>High-level function to start a task and return the TaskExecutor for step-by-step execution.</p>
+<p>This function is ideal for interactive scenarios where you want to:
+- Execute tasks step by step
+- Inspect task state between steps
+- Modify task configuration during execution
+- Build interactive UIs with manual control</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt</strong> – The initial task prompt</p></li>
+<li><p><strong>config_path</strong> – Path to the team configuration file</p></li>
+<li><p><strong>task_id</strong> – Optional custom task ID</p></li>
+<li><p><strong>workspace_dir</strong> – Optional custom workspace directory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The initialized executor ready for step-by-step execution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#agentx.core.task.TaskExecutor" title="agentx.core.task.TaskExecutor">TaskExecutor</a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+# Start a task for step-by-step execution
+executor = start_task(</p>
+<blockquote>
+<div><p>prompt=”Write a research report”,
+config_path=”config/team.yaml”</p>
+</div></blockquote>
+<p>)</p>
+<p># Execute steps manually
+async for message in executor.start(prompt, stream=True):</p>
+<blockquote>
+<div><p>print(f”Agent: {message.agent_name}”)
+print(f”Content: {message.content}”)</p>
+<p># You can inspect state, pause, or modify between steps
+if some_condition:</p>
+<blockquote>
+<div><p>break</p>
+</div></blockquote>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.core.task.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.task.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.core.task.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

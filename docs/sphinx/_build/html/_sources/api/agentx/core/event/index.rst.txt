@@ -1,0 +1,1364 @@
+agentx.core.event
+=================
+
+.. py:module:: agentx.core.event
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.core.event.ExecutionEvent
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.core.event.AgentCompleteEvent
+   agentx.core.event.AgentHandoffEvent
+   agentx.core.event.AgentStartEvent
+   agentx.core.event.ArtifactCreatedEvent
+   agentx.core.event.ArtifactModifiedEvent
+   agentx.core.event.ArtifactVersionedEvent
+   agentx.core.event.BreakpointHitEvent
+   agentx.core.event.ConsensusProposalEvent
+   agentx.core.event.ConsensusReachedEvent
+   agentx.core.event.ConsensusVoteEvent
+   agentx.core.event.ErrorEvent
+   agentx.core.event.GuardrailPolicyUpdateEvent
+   agentx.core.event.GuardrailViolationEvent
+   agentx.core.event.HITLRequestEvent
+   agentx.core.event.HITLResponseEvent
+   agentx.core.event.HealthCheckEvent
+   agentx.core.event.MemoryConsolidateEvent
+   agentx.core.event.MemoryRetrieveEvent
+   agentx.core.event.MemoryStoreEvent
+   agentx.core.event.ParallelExecutionStartEvent
+   agentx.core.event.ParallelExecutionSyncEvent
+   agentx.core.event.PerformanceMetricEvent
+   agentx.core.event.RecoveryEvent
+   agentx.core.event.StreamChunk
+   agentx.core.event.TaskCompleteEvent
+   agentx.core.event.TaskPausedEvent
+   agentx.core.event.TaskResumedEvent
+   agentx.core.event.TaskStartEvent
+   agentx.core.event.ToolCallEvent
+   agentx.core.event.ToolResultEvent
+   agentx.core.event.UserInterventionEvent
+
+
+Module Contents
+---------------
+
+.. py:class:: AgentCompleteEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Agent turn completed.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: memory_stored
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: step_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: token_count
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_agent_complete']
+      :value: 'event_agent_complete'
+
+
+
+.. py:class:: AgentHandoffEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Agent handoff occurred.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: from_agent
+      :type:  str
+
+
+   .. py:attribute:: handoff_type
+      :type:  str
+      :value: 'sequential'
+
+
+
+   .. py:attribute:: reason
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: to_agent
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_agent_handoff']
+      :value: 'event_agent_handoff'
+
+
+
+.. py:class:: AgentStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Agent turn started.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: context_size
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: memory_retrieved
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: step_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_agent_start']
+      :value: 'event_agent_start'
+
+
+
+.. py:class:: ArtifactCreatedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Artifact created.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: artifact
+      :type:  agentx.core.message.Artifact
+
+
+   .. py:attribute:: created_by
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_artifact_created']
+      :value: 'event_artifact_created'
+
+
+
+.. py:class:: ArtifactModifiedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Artifact modified.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: artifact_uri
+      :type:  str
+
+
+   .. py:attribute:: changes
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: modified_by
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_artifact_modified']
+      :value: 'event_artifact_modified'
+
+
+
+   .. py:attribute:: version
+      :type:  str
+
+
+.. py:class:: ArtifactVersionedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Artifact versioned.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: artifact_uri
+      :type:  str
+
+
+   .. py:attribute:: new_version
+      :type:  str
+
+
+   .. py:attribute:: old_version
+      :type:  str
+
+
+   .. py:attribute:: reason
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_artifact_versioned']
+      :value: 'event_artifact_versioned'
+
+
+
+.. py:class:: BreakpointHitEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Breakpoint hit during execution.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: breakpoint_id
+      :type:  str
+
+
+   .. py:attribute:: breakpoint_type
+      :type:  str
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_breakpoint_hit']
+      :value: 'event_breakpoint_hit'
+
+
+
+.. py:class:: ConsensusProposalEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Consensus proposal made.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: decision
+      :type:  str
+
+
+   .. py:attribute:: proposal_id
+      :type:  str
+
+
+   .. py:attribute:: proposer_agent
+      :type:  str
+
+
+   .. py:attribute:: stakeholders
+      :type:  List[str]
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_consensus_proposal']
+      :value: 'event_consensus_proposal'
+
+
+
+.. py:class:: ConsensusReachedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Consensus reached.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: final_decision
+      :type:  str
+
+
+   .. py:attribute:: proposal_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_consensus_reached']
+      :value: 'event_consensus_reached'
+
+
+
+   .. py:attribute:: votes
+      :type:  Dict[str, str]
+
+
+.. py:class:: ConsensusVoteEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Consensus vote cast.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: proposal_id
+      :type:  str
+
+
+   .. py:attribute:: reasoning
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_consensus_vote']
+      :value: 'event_consensus_vote'
+
+
+
+   .. py:attribute:: vote
+      :type:  str
+
+
+   .. py:attribute:: voter_agent
+      :type:  str
+
+
+.. py:class:: ErrorEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Error occurred.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: error_id
+      :type:  str
+
+
+   .. py:attribute:: error_message
+      :type:  str
+
+
+   .. py:attribute:: error_type
+      :type:  str
+
+
+   .. py:attribute:: recoverable
+      :type:  bool
+
+
+   .. py:attribute:: recovery_action
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: stack_trace
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_error']
+      :value: 'event_error'
+
+
+
+.. py:class:: GuardrailPolicyUpdateEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Guardrail policy updated.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: policy_name
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_guardrail_policy_update']
+      :value: 'event_guardrail_policy_update'
+
+
+
+   .. py:attribute:: update_type
+      :type:  str
+
+
+   .. py:attribute:: updated_by
+      :type:  str
+
+
+.. py:class:: GuardrailViolationEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Guardrail policy violation.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: action_taken
+      :type:  str
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: check_type
+      :type:  str
+
+
+   .. py:attribute:: content_sample
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: policy_violated
+      :type:  str
+
+
+   .. py:attribute:: severity
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_guardrail_violation']
+      :value: 'event_guardrail_violation'
+
+
+
+   .. py:attribute:: violation_id
+      :type:  str
+
+
+.. py:class:: HITLRequestEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Human-in-the-loop request made.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: request_id
+      :type:  str
+
+
+   .. py:attribute:: request_type
+      :type:  str
+
+
+   .. py:attribute:: timeout
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_hitl_request']
+      :value: 'event_hitl_request'
+
+
+
+.. py:class:: HITLResponseEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Human-in-the-loop response received.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: request_id
+      :type:  str
+
+
+   .. py:attribute:: response_data
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: response_time_ms
+      :type:  int
+
+
+   .. py:attribute:: response_type
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_hitl_response']
+      :value: 'event_hitl_response'
+
+
+
+.. py:class:: HealthCheckEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   System health check result.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: component
+      :type:  str
+
+
+   .. py:attribute:: metrics
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: status
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_health_check']
+      :value: 'event_health_check'
+
+
+
+.. py:class:: MemoryConsolidateEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Memory consolidated.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: items_consolidated
+      :type:  int
+
+
+   .. py:attribute:: summary_length
+      :type:  int
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: topic
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_memory_consolidate']
+      :value: 'event_memory_consolidate'
+
+
+
+.. py:class:: MemoryRetrieveEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Memory retrieved.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: relevance_threshold
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: results_count
+      :type:  int
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_memory_retrieve']
+      :value: 'event_memory_retrieve'
+
+
+
+.. py:class:: MemoryStoreEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Memory stored.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: content_size
+      :type:  int
+
+
+   .. py:attribute:: memory_id
+      :type:  str
+
+
+   .. py:attribute:: memory_type
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_memory_store']
+      :value: 'event_memory_store'
+
+
+
+.. py:class:: ParallelExecutionStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Parallel execution started.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agents
+      :type:  List[str]
+
+
+   .. py:attribute:: coordination_agent
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: sync_points
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_parallel_start']
+      :value: 'event_parallel_start'
+
+
+
+.. py:class:: ParallelExecutionSyncEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Parallel execution sync point reached.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: completed_agents
+      :type:  List[str]
+
+
+   .. py:attribute:: sync_point
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_parallel_sync']
+      :value: 'event_parallel_sync'
+
+
+
+   .. py:attribute:: waiting_agents
+      :type:  List[str]
+
+
+.. py:class:: PerformanceMetricEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Performance metric recorded.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: component
+      :type:  str
+
+
+   .. py:attribute:: metric_name
+      :type:  str
+
+
+   .. py:attribute:: metric_unit
+      :type:  str
+
+
+   .. py:attribute:: metric_value
+      :type:  float
+
+
+   .. py:attribute:: tags
+      :type:  Dict[str, str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_performance_metric']
+      :value: 'event_performance_metric'
+
+
+
+.. py:class:: RecoveryEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Error recovery attempted.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: details
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: error_id
+      :type:  str
+
+
+   .. py:attribute:: recovery_strategy
+      :type:  str
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_recovery']
+      :value: 'event_recovery'
+
+
+
+.. py:class:: StreamChunk(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Channel 1: Low-latency token stream for UI updates.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: text
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['content_chunk']
+      :value: 'content_chunk'
+
+
+
+.. py:class:: TaskCompleteEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Task execution completed.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: artifacts_created
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: final_status
+      :type:  Literal['success', 'error', 'cancelled']
+
+
+   .. py:attribute:: summary
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: total_duration_ms
+      :type:  int
+
+
+   .. py:attribute:: total_steps
+      :type:  int
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_task_complete']
+      :value: 'event_task_complete'
+
+
+
+.. py:class:: TaskPausedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Task execution paused.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: reason
+      :type:  str
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_task_paused']
+      :value: 'event_task_paused'
+
+
+
+.. py:class:: TaskResumedEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Task execution resumed.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: reason
+      :type:  str
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_task_resumed']
+      :value: 'event_task_resumed'
+
+
+
+.. py:class:: TaskStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Task execution started.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: execution_mode
+      :type:  str
+
+
+   .. py:attribute:: initial_prompt
+      :type:  str
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: team_config
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_task_start']
+      :value: 'event_task_start'
+
+
+
+.. py:class:: ToolCallEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Tool call initiated.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: sandbox_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: tool_call
+      :type:  agentx.core.tool.ToolCall
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_tool_call']
+      :value: 'event_tool_call'
+
+
+
+.. py:class:: ToolResultEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Tool call completed.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: sandbox_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: tool_result
+      :type:  agentx.core.tool.ToolResult
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_tool_result']
+      :value: 'event_tool_result'
+
+
+
+.. py:class:: UserInterventionEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   User intervention occurred.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: details
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: intervention_id
+      :type:  str
+
+
+   .. py:attribute:: intervention_type
+      :type:  str
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: type
+      :type:  Literal['event_user_intervention']
+      :value: 'event_user_intervention'
+
+
+
+   .. py:attribute:: user_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:data:: ExecutionEvent
+

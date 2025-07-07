@@ -1,0 +1,71 @@
+agentx.server.api
+=================
+
+.. py:module:: agentx.server.api
+
+.. autoapi-nested-parse::
+
+   AgentX Server API
+
+   FastAPI-based REST API for task execution and memory management.
+   Provides endpoints for creating and managing tasks, and accessing task memory.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.server.api.active_tasks
+   agentx.server.api.logger
+   agentx.server.api.server_start_time
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.server.api.add_routes
+   agentx.server.api.create_app
+   agentx.server.api.run_server
+
+
+Module Contents
+---------------
+
+.. py:function:: add_routes(app: fastapi.FastAPI)
+
+   Add API routes to the FastAPI application
+
+
+.. py:function:: create_app(title: str = 'AgentX API', description: str = 'REST API for AgentX task execution and memory management', version: str = '0.4.0', enable_cors: bool = True) -> fastapi.FastAPI
+
+   Create and configure the FastAPI application.
+
+   :param title: API title
+   :param description: API description
+   :param version: API version
+   :param enable_cors: Whether to enable CORS middleware
+
+   :returns: Configured FastAPI application
+
+
+.. py:function:: run_server(host: str = '0.0.0.0', port: int = 8000, reload: bool = False, log_level: str = 'info')
+
+   Run the AgentX server with integrated observability.
+
+   :param host: Host to bind to
+   :param port: Port to bind to
+   :param reload: Enable auto-reload for development
+   :param log_level: Logging level
+
+
+.. py:data:: active_tasks
+   :type:  Dict[str, agentx.core.task.TaskExecutor]
+
+.. py:data:: logger
+
+.. py:data:: server_start_time
+

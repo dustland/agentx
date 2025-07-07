@@ -1,0 +1,68 @@
+agentx.utils.logger
+===================
+
+.. py:module:: agentx.utils.logger
+
+.. autoapi-nested-parse::
+
+   Simple streaming-aware logging for AgentX.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.utils.logger.configure_logging
+   agentx.utils.logger.get_logger
+   agentx.utils.logger.set_log_level
+   agentx.utils.logger.set_streaming_mode
+   agentx.utils.logger.setup_clean_chat_logging
+   agentx.utils.logger.setup_task_file_logging
+
+
+Module Contents
+---------------
+
+.. py:function:: configure_logging(level: str = 'INFO', format_string: Optional[str] = None)
+
+   Configure global logging settings.
+
+
+.. py:function:: get_logger(name: str, level: Optional[str] = None) -> logging.Logger
+
+   Get a configured logger instance.
+
+   Simple rule:
+   - If streaming mode is active: AgentX loggers go to file only, others suppressed
+   - If streaming mode is off: All loggers go to both console and file
+
+   :param name: Logger name (usually __name__)
+   :param level: Optional log level override
+
+   :returns: Configured logger instance
+
+
+.. py:function:: set_log_level(level: str)
+
+   Set log level for the entire application.
+
+
+.. py:function:: set_streaming_mode(enabled: bool)
+
+   Enable/disable streaming mode to control console output.
+
+
+.. py:function:: setup_clean_chat_logging()
+
+   Configure logging for clean chat experience.
+
+
+.. py:function:: setup_task_file_logging(log_file_path: str) -> None
+
+   Set up file logging for a specific task.
+
+   :param log_file_path: Path to the log file
+
+

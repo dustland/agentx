@@ -1,0 +1,52 @@
+agentx.utils
+============
+
+.. py:module:: agentx.utils
+
+.. autoapi-nested-parse::
+
+   AgentX utilities.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/agentx/utils/id/index
+   /api/agentx/utils/logger/index
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.utils.configure_logging
+   agentx.utils.get_logger
+
+
+Package Contents
+----------------
+
+.. py:function:: configure_logging(level: str = 'INFO', format_string: Optional[str] = None)
+
+   Configure global logging settings.
+
+
+.. py:function:: get_logger(name: str, level: Optional[str] = None) -> logging.Logger
+
+   Get a configured logger instance.
+
+   Simple rule:
+   - If streaming mode is active: AgentX loggers go to file only, others suppressed
+   - If streaming mode is off: All loggers go to both console and file
+
+   :param name: Logger name (usually __name__)
+   :param level: Optional log level override
+
+   :returns: Configured logger instance
+
+

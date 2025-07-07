@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.event.subscribers &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.event.subscribers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.event.subscribers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Event subscribers for the AgentX event system.</span>
+
+<span class="sd">Provides base classes and utilities for creating event subscribers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventHandler</span><span class="p">,</span> <span class="n">EventFilter</span><span class="p">,</span> <span class="n">EventPriority</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.bus</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_event_bus</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EventSubscriber">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventSubscriber</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for event subscribers.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span> <span class="o">=</span> <span class="n">get_event_bus</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">False</span>
+    
+<div class="viewcode-block" id="EventSubscriber.get_event_types">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.get_event_types">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of event types this subscriber handles.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.handle_event">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.handle_event">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle an event.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.get_filter">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.get_filter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventFilter</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return optional filter function for events.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.get_priority">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.get_priority">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_priority</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventPriority</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return subscription priority.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">EventPriority</span><span class="o">.</span><span class="n">NORMAL</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.start">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start subscribing to events.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">event_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_event_types</span><span class="p">()</span>
+        <span class="n">filter_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">()</span>
+        <span class="n">priority</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_priority</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="n">event_types</span><span class="p">:</span>
+            <span class="n">subscription_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+                <span class="n">event_types</span><span class="o">=</span><span class="p">[</span><span class="n">event_type</span><span class="p">],</span>
+                <span class="n">handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_event</span><span class="p">,</span>
+                <span class="n">filter_func</span><span class="o">=</span><span class="n">filter_func</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                <span class="n">subscription_id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscriber &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; started for events: </span><span class="si">{</span><span class="n">event_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.stop">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop subscribing to events.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="k">for</span> <span class="n">subscription_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Subscriber &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; stopped&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="EventSubscriber.is_active">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.EventSubscriber.is_active">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if subscriber is active.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="AsyncEventSubscriber">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AsyncEventSubscriber</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for async event subscribers.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span> <span class="o">=</span> <span class="n">get_event_bus</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">False</span>
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.get_event_types">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.get_event_types">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of event types this subscriber handles.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.handle_event">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.handle_event">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle an event asynchronously.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.get_filter">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.get_filter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventFilter</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return optional filter function for events.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.get_priority">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.get_priority">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_priority</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EventPriority</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return subscription priority.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">EventPriority</span><span class="o">.</span><span class="n">NORMAL</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.start">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start subscribing to events.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">event_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_event_types</span><span class="p">()</span>
+        <span class="n">filter_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_filter</span><span class="p">()</span>
+        <span class="n">priority</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_priority</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="n">event_types</span><span class="p">:</span>
+            <span class="n">subscription_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span>
+                <span class="n">event_types</span><span class="o">=</span><span class="p">[</span><span class="n">event_type</span><span class="p">],</span>
+                <span class="n">handler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_event</span><span class="p">,</span>
+                <span class="n">filter_func</span><span class="o">=</span><span class="n">filter_func</span><span class="p">,</span>
+                <span class="n">priority</span><span class="o">=</span><span class="n">priority</span><span class="p">,</span>
+                <span class="n">subscription_id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Async subscriber &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; started for events: </span><span class="si">{</span><span class="n">event_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.stop">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop subscribing to events.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="k">for</span> <span class="n">subscription_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">event_bus</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">subscription_id</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">subscription_ids</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Async subscriber &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; stopped&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="AsyncEventSubscriber.is_active">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.AsyncEventSubscriber.is_active">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_active</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if subscriber is active.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ObservabilitySubscriber">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.ObservabilitySubscriber">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservabilitySubscriber</span><span class="p">(</span><span class="n">AsyncEventSubscriber</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscriber for observability events.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;observability&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    
+<div class="viewcode-block" id="ObservabilitySubscriber.get_event_types">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.ObservabilitySubscriber.get_event_types">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to all event types for observability.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s2">&quot;event_task_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_task_complete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_task_paused&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_task_resumed&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_agent_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_agent_complete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_agent_handoff&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_tool_call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_tool_result&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_error&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_memory_store&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_memory_retrieve&quot;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilitySubscriber.handle_event">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.ObservabilitySubscriber.handle_event">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle observability events.&quot;&quot;&quot;</span>
+        <span class="n">event_info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;timestamp&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s1">&#39;event_type&#39;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="n">event_data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+            <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">event_data</span><span class="o">.</span><span class="n">model_dump</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;model_dump&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">event_data</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event_info</span><span class="p">)</span>
+        
+        <span class="c1"># Keep only last 1000 events</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">events_received</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1000</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span><span class="p">[</span><span class="o">-</span><span class="mi">1000</span><span class="p">:]</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Observability: Received </span><span class="si">{</span><span class="n">event_info</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> event&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilitySubscriber.get_recent_events">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.ObservabilitySubscriber.get_recent_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_recent_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get recent events for observability.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span><span class="p">[</span><span class="o">-</span><span class="n">limit</span><span class="p">:]</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilitySubscriber.get_events_by_type">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.ObservabilitySubscriber.get_events_by_type">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get events of a specific type.&quot;&quot;&quot;</span>
+        <span class="n">filtered_events</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events_received</span> 
+            <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;event_type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">event_type</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">filtered_events</span><span class="p">[</span><span class="o">-</span><span class="n">limit</span><span class="p">:]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MetricsSubscriber">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.MetricsSubscriber">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MetricsSubscriber</span><span class="p">(</span><span class="n">AsyncEventSubscriber</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Subscriber for collecting metrics from events.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;metrics&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;task_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;agent_turns&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;tool_calls&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;task_durations&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;agent_performance&#39;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+    
+<div class="viewcode-block" id="MetricsSubscriber.get_event_types">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.MetricsSubscriber.get_event_types">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subscribe to metric-relevant events.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="s2">&quot;event_task_start&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_task_complete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_agent_complete&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_tool_call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;event_error&quot;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="MetricsSubscriber.handle_event">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.MetricsSubscriber.handle_event">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle metric events.&quot;&quot;&quot;</span>
+        <span class="n">event_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="n">event_data</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;event_task_start&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_count&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;event_task_complete&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;total_duration_ms&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event_data</span><span class="o">.</span><span class="n">total_duration_ms</span><span class="p">)</span>
+                <span class="c1"># Keep only last 100 durations</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">100</span><span class="p">:]</span>
+        
+        <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;event_agent_complete&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_turns&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;agent_name&#39;</span><span class="p">):</span>
+                <span class="n">agent_name</span> <span class="o">=</span> <span class="n">event_data</span><span class="o">.</span><span class="n">agent_name</span>
+                <span class="k">if</span> <span class="n">agent_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s1">&#39;turns&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;total_time_ms&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                        <span class="s1">&#39;avg_time_ms&#39;</span><span class="p">:</span> <span class="mi">0</span>
+                    <span class="p">}</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;turns&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">event_data</span><span class="p">,</span> <span class="s1">&#39;execution_time_ms&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">event_data</span><span class="o">.</span><span class="n">execution_time_ms</span><span class="p">:</span>
+                    <span class="n">total_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;total_time_ms&#39;</span><span class="p">]</span>
+                    <span class="n">total_time</span> <span class="o">+=</span> <span class="n">event_data</span><span class="o">.</span><span class="n">execution_time_ms</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;total_time_ms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_time</span>
+                    
+                    <span class="n">turns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;turns&#39;</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;agent_performance&#39;</span><span class="p">][</span><span class="n">agent_name</span><span class="p">][</span><span class="s1">&#39;avg_time_ms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_time</span> <span class="o">/</span> <span class="n">turns</span>
+        
+        <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;event_tool_call&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;tool_calls&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s2">&quot;event_error&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;errors&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+    
+<div class="viewcode-block" id="MetricsSubscriber.get_metrics">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.MetricsSubscriber.get_metrics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current metrics.&quot;&quot;&quot;</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># Calculate average task duration</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">]:</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;avg_task_duration_ms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;task_durations&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;avg_task_duration_ms&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+    
+<div class="viewcode-block" id="MetricsSubscriber.reset_metrics">
+<a class="viewcode-back" href="../../../api/agentx/event/subscribers/index.html#agentx.event.MetricsSubscriber.reset_metrics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset all metrics.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;task_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;agent_turns&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;tool_calls&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;errors&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;task_durations&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;agent_performance&#39;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span> </div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

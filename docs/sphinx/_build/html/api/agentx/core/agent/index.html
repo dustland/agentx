@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.core.agent &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.core.agent</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.core.agent.Agent"><code class="docutils literal notranslate"><span class="pre">Agent</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.__repr__"><code class="docutils literal notranslate"><span class="pre">Agent.__repr__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.__str__"><code class="docutils literal notranslate"><span class="pre">Agent.__str__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.add_tool"><code class="docutils literal notranslate"><span class="pre">Agent.add_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.build_system_prompt"><code class="docutils literal notranslate"><span class="pre">Agent.build_system_prompt()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.generate_response"><code class="docutils literal notranslate"><span class="pre">Agent.generate_response()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.get_capabilities"><code class="docutils literal notranslate"><span class="pre">Agent.get_capabilities()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.get_tools_json"><code class="docutils literal notranslate"><span class="pre">Agent.get_tools_json()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.remove_tool"><code class="docutils literal notranslate"><span class="pre">Agent.remove_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.reset_state"><code class="docutils literal notranslate"><span class="pre">Agent.reset_state()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.stream_response"><code class="docutils literal notranslate"><span class="pre">Agent.stream_response()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.update_config"><code class="docutils literal notranslate"><span class="pre">Agent.update_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.brain"><code class="docutils literal notranslate"><span class="pre">Agent.brain</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.config"><code class="docutils literal notranslate"><span class="pre">Agent.config</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.description"><code class="docutils literal notranslate"><span class="pre">Agent.description</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.max_iterations"><code class="docutils literal notranslate"><span class="pre">Agent.max_iterations</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.memory_enabled"><code class="docutils literal notranslate"><span class="pre">Agent.memory_enabled</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.name"><code class="docutils literal notranslate"><span class="pre">Agent.name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.state"><code class="docutils literal notranslate"><span class="pre">Agent.state</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.tool_manager"><code class="docutils literal notranslate"><span class="pre">Agent.tool_manager</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.Agent.tools"><code class="docutils literal notranslate"><span class="pre">Agent.tools</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState"><code class="docutils literal notranslate"><span class="pre">AgentState</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.agent_name"><code class="docutils literal notranslate"><span class="pre">AgentState.agent_name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.current_step_id"><code class="docutils literal notranslate"><span class="pre">AgentState.current_step_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.errors_encountered"><code class="docutils literal notranslate"><span class="pre">AgentState.errors_encountered</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.is_active"><code class="docutils literal notranslate"><span class="pre">AgentState.is_active</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.last_response"><code class="docutils literal notranslate"><span class="pre">AgentState.last_response</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.last_response_timestamp"><code class="docutils literal notranslate"><span class="pre">AgentState.last_response_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.metadata"><code class="docutils literal notranslate"><span class="pre">AgentState.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.tokens_used"><code class="docutils literal notranslate"><span class="pre">AgentState.tokens_used</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.AgentState.tool_calls_made"><code class="docutils literal notranslate"><span class="pre">AgentState.tool_calls_made</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.agent.create_assistant_agent"><code class="docutils literal notranslate"><span class="pre">create_assistant_agent()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.agent.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.core.agent</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/core/agent/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.core.agent">
+<span id="agentx-core-agent"></span><h1>agentx.core.agent<a class="headerlink" href="#module-agentx.core.agent" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.agent.logger" title="agentx.core.agent.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.agent.Agent" title="agentx.core.agent.Agent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Agent</span></code></a></p></td>
+<td><p>Represents an autonomous agent that manages its own conversation flow.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.agent.AgentState" title="agentx.core.agent.AgentState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AgentState</span></code></a></p></td>
+<td><p>Current state of an agent during execution.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.agent.create_assistant_agent" title="agentx.core.agent.create_assistant_agent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_assistant_agent</span></code></a>(→ Agent)</p></td>
+<td><p>Create a simple assistant agent with default configuration.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.agent.</span></span><span class="sig-name descname"><span class="pre">Agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../config/index.html#agentx.core.config.AgentConfig" title="agentx.core.config.AgentConfig"><span class="pre">agentx.core.config.AgentConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool_manager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent" title="Link to this definition"></a></dt>
+<dd><p>Represents an autonomous agent that manages its own conversation flow.</p>
+<p>Key Principles:
+- Each agent is autonomous and manages its own conversation flow
+- Agents communicate with other agents through public interfaces only
+- The brain is private to the agent - no external access
+- Tool execution is handled by orchestrator for security and control</p>
+<p>This combines:
+- AgentConfig (configuration data)
+- Brain (private LLM interaction)
+- Conversation management (delegates tool execution to orchestrator)</p>
+<p>Initialize agent with configuration and optional tool manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – Agent configuration</p></li>
+<li><p><strong>tool_manager</strong> – Optional tool manager (injected by TaskExecutor)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.__repr__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.__str__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.add_tool">
+<span class="sig-name descname"><span class="pre">add_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.add_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.add_tool" title="Link to this definition"></a></dt>
+<dd><p>Add a tool to the agent’s capabilities.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.build_system_prompt">
+<span class="sig-name descname"><span class="pre">build_system_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.build_system_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.build_system_prompt" title="Link to this definition"></a></dt>
+<dd><p>Build the system prompt for the agent, including dynamic context and tool definitions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.generate_response">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orchestrator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tool_rounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.generate_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.generate_response" title="Link to this definition"></a></dt>
+<dd><p>Generate response with tool execution handled by orchestrator.</p>
+<p>This is a simpler, non-streaming version that returns the final response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messages</strong> – Conversation messages in LLM format</p></li>
+<li><p><strong>system_prompt</strong> – Optional system prompt override</p></li>
+<li><p><strong>orchestrator</strong> – Orchestrator instance for tool execution</p></li>
+<li><p><strong>max_tool_rounds</strong> – Maximum tool execution rounds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Final response string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.get_capabilities">
+<span class="sig-name descname"><span class="pre">get_capabilities</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.get_capabilities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.get_capabilities" title="Link to this definition"></a></dt>
+<dd><p>Get agent capabilities summary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.get_tools_json">
+<span class="sig-name descname"><span class="pre">get_tools_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.get_tools_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.get_tools_json" title="Link to this definition"></a></dt>
+<dd><p>Get the JSON schemas for the tools available to this agent.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.remove_tool">
+<span class="sig-name descname"><span class="pre">remove_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.remove_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.remove_tool" title="Link to this definition"></a></dt>
+<dd><p>Remove a tool from the agent’s capabilities.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.reset_state">
+<span class="sig-name descname"><span class="pre">reset_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.reset_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.reset_state" title="Link to this definition"></a></dt>
+<dd><p>Reset agent state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.stream_response">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stream_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orchestrator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tool_rounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AsyncGenerator</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.stream_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.stream_response" title="Link to this definition"></a></dt>
+<dd><p>Stream response with tool execution handled by orchestrator.</p>
+<p>This matches Brain’s interface but includes tool execution loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>messages</strong> – Conversation messages in LLM format</p></li>
+<li><p><strong>system_prompt</strong> – Optional system prompt override</p></li>
+<li><p><strong>orchestrator</strong> – Orchestrator instance for tool execution</p></li>
+<li><p><strong>max_tool_rounds</strong> – Maximum tool execution rounds</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response chunks and tool execution status updates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.update_config">
+<span class="sig-name descname"><span class="pre">update_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#Agent.update_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.Agent.update_config" title="Link to this definition"></a></dt>
+<dd><p>Update agent configuration.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.brain">
+<span class="sig-name descname"><span class="pre">brain</span></span><a class="headerlink" href="#agentx.core.agent.Agent.brain" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#agentx.core.agent.Agent.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.description">
+<span class="sig-name descname"><span class="pre">description</span></span><a class="headerlink" href="#agentx.core.agent.Agent.description" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.max_iterations">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><a class="headerlink" href="#agentx.core.agent.Agent.max_iterations" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.memory_enabled">
+<span class="sig-name descname"><span class="pre">memory_enabled</span></span><a class="headerlink" href="#agentx.core.agent.Agent.memory_enabled" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#agentx.core.agent.Agent.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.state">
+<span class="sig-name descname"><span class="pre">state</span></span><a class="headerlink" href="#agentx.core.agent.Agent.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.tool_manager">
+<span class="sig-name descname"><span class="pre">tool_manager</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.agent.Agent.tool_manager" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.Agent.tools">
+<span class="sig-name descname"><span class="pre">tools</span></span><a class="headerlink" href="#agentx.core.agent.Agent.tools" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.agent.</span></span><span class="sig-name descname"><span class="pre">AgentState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#AgentState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.AgentState" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<p>Current state of an agent during execution.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.agent_name">
+<span class="sig-name descname"><span class="pre">agent_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.core.agent.AgentState.agent_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.current_step_id">
+<span class="sig-name descname"><span class="pre">current_step_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.current_step_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.errors_encountered">
+<span class="sig-name descname"><span class="pre">errors_encountered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.errors_encountered" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.is_active">
+<span class="sig-name descname"><span class="pre">is_active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.is_active" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.last_response">
+<span class="sig-name descname"><span class="pre">last_response</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.last_response" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.last_response_timestamp">
+<span class="sig-name descname"><span class="pre">last_response_timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.last_response_timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.tokens_used">
+<span class="sig-name descname"><span class="pre">tokens_used</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.tokens_used" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.agent.AgentState.tool_calls_made">
+<span class="sig-name descname"><span class="pre">tool_calls_made</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#agentx.core.agent.AgentState.tool_calls_made" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.agent.create_assistant_agent">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.agent.</span></span><span class="sig-name descname"><span class="pre">create_assistant_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.agent.Agent" title="agentx.core.agent.Agent"><span class="pre">Agent</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/agent.html#create_assistant_agent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.agent.create_assistant_agent" title="Link to this definition"></a></dt>
+<dd><p>Create a simple assistant agent with default configuration.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.core.agent.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.agent.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.core.agent.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

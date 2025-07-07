@@ -1,0 +1,641 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.memory.types &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.memory.types</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.Constraint"><code class="docutils literal notranslate"><span class="pre">Constraint</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.Constraint.type"><code class="docutils literal notranslate"><span class="pre">Constraint.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.DocumentChunk"><code class="docutils literal notranslate"><span class="pre">DocumentChunk</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.DocumentChunk.chunk_index"><code class="docutils literal notranslate"><span class="pre">DocumentChunk.chunk_index</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.DocumentChunk.source_file_path"><code class="docutils literal notranslate"><span class="pre">DocumentChunk.source_file_path</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.DocumentChunk.type"><code class="docutils literal notranslate"><span class="pre">DocumentChunk.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.HotIssue"><code class="docutils literal notranslate"><span class="pre">HotIssue</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.HotIssue.resolved_by_event_id"><code class="docutils literal notranslate"><span class="pre">HotIssue.resolved_by_event_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.HotIssue.type"><code class="docutils literal notranslate"><span class="pre">HotIssue.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory"><code class="docutils literal notranslate"><span class="pre">Memory</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.agent_name"><code class="docutils literal notranslate"><span class="pre">Memory.agent_name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.content"><code class="docutils literal notranslate"><span class="pre">Memory.content</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.id"><code class="docutils literal notranslate"><span class="pre">Memory.id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.importance"><code class="docutils literal notranslate"><span class="pre">Memory.importance</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.is_active"><code class="docutils literal notranslate"><span class="pre">Memory.is_active</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.metadata"><code class="docutils literal notranslate"><span class="pre">Memory.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.source_event_id"><code class="docutils literal notranslate"><span class="pre">Memory.source_event_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.timestamp"><code class="docutils literal notranslate"><span class="pre">Memory.timestamp</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.Memory.type"><code class="docutils literal notranslate"><span class="pre">Memory.type</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem"><code class="docutils literal notranslate"><span class="pre">MemoryItem</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.from_dict"><code class="docutils literal notranslate"><span class="pre">MemoryItem.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.to_dict"><code class="docutils literal notranslate"><span class="pre">MemoryItem.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.agent_name"><code class="docutils literal notranslate"><span class="pre">MemoryItem.agent_name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.content"><code class="docutils literal notranslate"><span class="pre">MemoryItem.content</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.importance"><code class="docutils literal notranslate"><span class="pre">MemoryItem.importance</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.is_active"><code class="docutils literal notranslate"><span class="pre">MemoryItem.is_active</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.memory_id"><code class="docutils literal notranslate"><span class="pre">MemoryItem.memory_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.memory_type"><code class="docutils literal notranslate"><span class="pre">MemoryItem.memory_type</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.metadata"><code class="docutils literal notranslate"><span class="pre">MemoryItem.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.parent_id"><code class="docutils literal notranslate"><span class="pre">MemoryItem.parent_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.source_event_id"><code class="docutils literal notranslate"><span class="pre">MemoryItem.source_event_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.tags"><code class="docutils literal notranslate"><span class="pre">MemoryItem.tags</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.timestamp"><code class="docutils literal notranslate"><span class="pre">MemoryItem.timestamp</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryItem.version"><code class="docutils literal notranslate"><span class="pre">MemoryItem.version</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery"><code class="docutils literal notranslate"><span class="pre">MemoryQuery</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.agent_name"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.agent_name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.exclude_used_sources"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.exclude_used_sources</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.importance_threshold"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.importance_threshold</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.include_metadata"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.include_metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.limit"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.limit</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.max_tokens"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.max_tokens</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.memory_type"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.memory_type</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.metadata_filter"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.metadata_filter</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.query"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.query</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryQuery.time_range"><code class="docutils literal notranslate"><span class="pre">MemoryQuery.time_range</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.to_dict"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.has_more"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.has_more</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.items"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.items</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.query_metadata"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.query_metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.query_time_ms"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.query_time_ms</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemorySearchResult.total_count"><code class="docutils literal notranslate"><span class="pre">MemorySearchResult.total_count</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats"><code class="docutils literal notranslate"><span class="pre">MemoryStats</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.to_dict"><code class="docutils literal notranslate"><span class="pre">MemoryStats.to_dict()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.avg_importance"><code class="docutils literal notranslate"><span class="pre">MemoryStats.avg_importance</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.memories_by_agent"><code class="docutils literal notranslate"><span class="pre">MemoryStats.memories_by_agent</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.memories_by_type"><code class="docutils literal notranslate"><span class="pre">MemoryStats.memories_by_type</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.newest_memory"><code class="docutils literal notranslate"><span class="pre">MemoryStats.newest_memory</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.oldest_memory"><code class="docutils literal notranslate"><span class="pre">MemoryStats.oldest_memory</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.storage_size_mb"><code class="docutils literal notranslate"><span class="pre">MemoryStats.storage_size_mb</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryStats.total_memories"><code class="docutils literal notranslate"><span class="pre">MemoryStats.total_memories</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType"><code class="docutils literal notranslate"><span class="pre">MemoryType</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.__str__"><code class="docutils literal notranslate"><span class="pre">MemoryType.__str__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.CONSTRAINT"><code class="docutils literal notranslate"><span class="pre">MemoryType.CONSTRAINT</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.DOCUMENT_CHUNK"><code class="docutils literal notranslate"><span class="pre">MemoryType.DOCUMENT_CHUNK</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.HOT_ISSUE"><code class="docutils literal notranslate"><span class="pre">MemoryType.HOT_ISSUE</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.JSON"><code class="docutils literal notranslate"><span class="pre">MemoryType.JSON</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.KEY_VALUE"><code class="docutils literal notranslate"><span class="pre">MemoryType.KEY_VALUE</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.TEXT"><code class="docutils literal notranslate"><span class="pre">MemoryType.TEXT</span></code></a></li>
+<li><a class="reference internal" href="#agentx.memory.types.MemoryType.VERSIONED_TEXT"><code class="docutils literal notranslate"><span class="pre">MemoryType.VERSIONED_TEXT</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.memory.types.generate_short_id"><code class="docutils literal notranslate"><span class="pre">generate_short_id()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.memory.types</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/memory/types/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.memory.types">
+<span id="agentx-memory-types"></span><h1>agentx.memory.types<a class="headerlink" href="#module-agentx.memory.types" title="Link to this heading"></a></h1>
+<p>Memory System Types</p>
+<p>Data models and types for the memory backend system.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.Constraint" title="agentx.memory.types.Constraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Constraint</span></code></a></p></td>
+<td><p>Memory representing user constraints, preferences, or rules.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.memory.types.DocumentChunk" title="agentx.memory.types.DocumentChunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DocumentChunk</span></code></a></p></td>
+<td><p>Memory representing a chunk of document content for semantic search.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.HotIssue" title="agentx.memory.types.HotIssue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HotIssue</span></code></a></p></td>
+<td><p>Memory representing active problems that need attention.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.memory.types.Memory" title="agentx.memory.types.Memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Memory</span></code></a></p></td>
+<td><p>Base memory model for synthesis engine.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.MemoryItem" title="agentx.memory.types.MemoryItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoryItem</span></code></a></p></td>
+<td><p>Individual memory item with metadata.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.memory.types.MemoryQuery" title="agentx.memory.types.MemoryQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoryQuery</span></code></a></p></td>
+<td><p>Query parameters for memory operations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.MemorySearchResult" title="agentx.memory.types.MemorySearchResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemorySearchResult</span></code></a></p></td>
+<td><p>Result from memory search operations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.memory.types.MemoryStats" title="agentx.memory.types.MemoryStats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoryStats</span></code></a></p></td>
+<td><p>Memory backend statistics.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.MemoryType" title="agentx.memory.types.MemoryType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoryType</span></code></a></p></td>
+<td><p>Types of memory content.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.memory.types.generate_short_id" title="agentx.memory.types.generate_short_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_short_id</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.Constraint">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">Constraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#Constraint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.Constraint" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.memory.types.Memory" title="agentx.memory.types.Memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Memory</span></code></a></p>
+<p>Memory representing user constraints, preferences, or rules.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Constraint.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'CONSTRAINT'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'CONSTRAINT'</span></em><a class="headerlink" href="#agentx.memory.types.Constraint.type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.DocumentChunk">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">DocumentChunk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#DocumentChunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.DocumentChunk" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.memory.types.Memory" title="agentx.memory.types.Memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Memory</span></code></a></p>
+<p>Memory representing a chunk of document content for semantic search.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.DocumentChunk.chunk_index">
+<span class="sig-name descname"><span class="pre">chunk_index</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#agentx.memory.types.DocumentChunk.chunk_index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.DocumentChunk.source_file_path">
+<span class="sig-name descname"><span class="pre">source_file_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.memory.types.DocumentChunk.source_file_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.DocumentChunk.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'DOCUMENT_CHUNK'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'DOCUMENT_CHUNK'</span></em><a class="headerlink" href="#agentx.memory.types.DocumentChunk.type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.HotIssue">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">HotIssue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#HotIssue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.HotIssue" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.memory.types.Memory" title="agentx.memory.types.Memory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Memory</span></code></a></p>
+<p>Memory representing active problems that need attention.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.HotIssue.resolved_by_event_id">
+<span class="sig-name descname"><span class="pre">resolved_by_event_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.13)"><span class="pre">uuid.UUID</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.HotIssue.resolved_by_event_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.HotIssue.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'HOT_ISSUE'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'HOT_ISSUE'</span></em><a class="headerlink" href="#agentx.memory.types.HotIssue.type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">Memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#Memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.Memory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<p>Base memory model for synthesis engine.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.agent_name">
+<span class="sig-name descname"><span class="pre">agent_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'system'</span></em><a class="headerlink" href="#agentx.memory.types.Memory.agent_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.content">
+<span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.memory.types.Memory.content" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.13)"><span class="pre">uuid.UUID</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.Memory.id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.importance">
+<span class="sig-name descname"><span class="pre">importance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#agentx.memory.types.Memory.importance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.is_active">
+<span class="sig-name descname"><span class="pre">is_active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#agentx.memory.types.Memory.is_active" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.Memory.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.source_event_id">
+<span class="sig-name descname"><span class="pre">source_event_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/uuid.html#uuid.UUID" title="(in Python v3.13)"><span class="pre">uuid.UUID</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.Memory.source_event_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.Memory.timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.Memory.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'CONSTRAINT'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'HOT_ISSUE'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'DOCUMENT_CHUNK'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.Memory.type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">MemoryItem</span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryItem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryItem" title="Link to this definition"></a></dt>
+<dd><p>Individual memory item with metadata.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.from_dict">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.memory.types.MemoryItem" title="agentx.memory.types.MemoryItem"><span class="pre">MemoryItem</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryItem.from_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryItem.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Create MemoryItem from dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryItem.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryItem.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert to dictionary for serialization.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.agent_name">
+<span class="sig-name descname"><span class="pre">agent_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.agent_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.content">
+<span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.content" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.importance">
+<span class="sig-name descname"><span class="pre">importance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.importance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.is_active">
+<span class="sig-name descname"><span class="pre">is_active</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.is_active" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.memory_id">
+<span class="sig-name descname"><span class="pre">memory_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.memory_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.memory_type">
+<span class="sig-name descname"><span class="pre">memory_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#agentx.memory.types.MemoryType" title="agentx.memory.types.MemoryType"><span class="pre">MemoryType</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.memory_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.parent_id">
+<span class="sig-name descname"><span class="pre">parent_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.parent_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.source_event_id">
+<span class="sig-name descname"><span class="pre">source_event_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.source_event_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.tags">
+<span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.tags" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryItem.version">
+<span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryItem.version" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">MemoryQuery</span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryQuery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryQuery" title="Link to this definition"></a></dt>
+<dd><p>Query parameters for memory operations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.agent_name">
+<span class="sig-name descname"><span class="pre">agent_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.agent_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.exclude_used_sources">
+<span class="sig-name descname"><span class="pre">exclude_used_sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.exclude_used_sources" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.importance_threshold">
+<span class="sig-name descname"><span class="pre">importance_threshold</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.importance_threshold" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.include_metadata">
+<span class="sig-name descname"><span class="pre">include_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.include_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.limit">
+<span class="sig-name descname"><span class="pre">limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.limit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.max_tokens">
+<span class="sig-name descname"><span class="pre">max_tokens</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.max_tokens" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.memory_type">
+<span class="sig-name descname"><span class="pre">memory_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#agentx.memory.types.MemoryType" title="agentx.memory.types.MemoryType"><span class="pre">MemoryType</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.memory_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.metadata_filter">
+<span class="sig-name descname"><span class="pre">metadata_filter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.metadata_filter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.query" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryQuery.time_range">
+<span class="sig-name descname"><span class="pre">time_range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryQuery.time_range" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">MemorySearchResult</span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemorySearchResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemorySearchResult" title="Link to this definition"></a></dt>
+<dd><p>Result from memory search operations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemorySearchResult.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert to dictionary for serialization.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.has_more">
+<span class="sig-name descname"><span class="pre">has_more</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.has_more" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.items">
+<span class="sig-name descname"><span class="pre">items</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.memory.types.MemoryItem" title="agentx.memory.types.MemoryItem"><span class="pre">MemoryItem</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.items" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.query_metadata">
+<span class="sig-name descname"><span class="pre">query_metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.query_metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.query_time_ms">
+<span class="sig-name descname"><span class="pre">query_time_ms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.query_time_ms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemorySearchResult.total_count">
+<span class="sig-name descname"><span class="pre">total_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#agentx.memory.types.MemorySearchResult.total_count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">MemoryStats</span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryStats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryStats" title="Link to this definition"></a></dt>
+<dd><p>Memory backend statistics.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryStats.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryStats.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Convert to dictionary for serialization.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.avg_importance">
+<span class="sig-name descname"><span class="pre">avg_importance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.avg_importance" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.memories_by_agent">
+<span class="sig-name descname"><span class="pre">memories_by_agent</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.memories_by_agent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.memories_by_type">
+<span class="sig-name descname"><span class="pre">memories_by_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.memories_by_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.newest_memory">
+<span class="sig-name descname"><span class="pre">newest_memory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.newest_memory" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.oldest_memory">
+<span class="sig-name descname"><span class="pre">oldest_memory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.oldest_memory" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.storage_size_mb">
+<span class="sig-name descname"><span class="pre">storage_size_mb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.storage_size_mb" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryStats.total_memories">
+<span class="sig-name descname"><span class="pre">total_memories</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#agentx.memory.types.MemoryStats.total_memories" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">MemoryType</span></span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryType" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Types of memory content.</p>
+<p>Initialize self.  See help(type(self)) for accurate signature.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/memory/types.html#MemoryType.__str__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.MemoryType.__str__" title="Link to this definition"></a></dt>
+<dd><p>Return str(self).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.CONSTRAINT">
+<span class="sig-name descname"><span class="pre">CONSTRAINT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'constraint'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.CONSTRAINT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.DOCUMENT_CHUNK">
+<span class="sig-name descname"><span class="pre">DOCUMENT_CHUNK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'document_chunk'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.DOCUMENT_CHUNK" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.HOT_ISSUE">
+<span class="sig-name descname"><span class="pre">HOT_ISSUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'hot_issue'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.HOT_ISSUE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.JSON">
+<span class="sig-name descname"><span class="pre">JSON</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'json'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.JSON" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.KEY_VALUE">
+<span class="sig-name descname"><span class="pre">KEY_VALUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'key_value'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.KEY_VALUE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.TEXT">
+<span class="sig-name descname"><span class="pre">TEXT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.TEXT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.memory.types.MemoryType.VERSIONED_TEXT">
+<span class="sig-name descname"><span class="pre">VERSIONED_TEXT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'versioned_text'</span></em><a class="headerlink" href="#agentx.memory.types.MemoryType.VERSIONED_TEXT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.memory.types.generate_short_id">
+<span class="sig-prename descclassname"><span class="pre">agentx.memory.types.</span></span><span class="sig-name descname"><span class="pre">generate_short_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/utils/id.html#generate_short_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.memory.types.generate_short_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,457 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.core.tool &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.core.tool</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.core.tool.Tool"><code class="docutils literal notranslate"><span class="pre">Tool</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.tool.Tool.get_callable_methods"><code class="docutils literal notranslate"><span class="pre">Tool.get_callable_methods()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.Tool.get_tool_schemas"><code class="docutils literal notranslate"><span class="pre">Tool.get_tool_schemas()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.Tool.name"><code class="docutils literal notranslate"><span class="pre">Tool.name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall"><code class="docutils literal notranslate"><span class="pre">ToolCall</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.args"><code class="docutils literal notranslate"><span class="pre">ToolCall.args</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.expected_output_type"><code class="docutils literal notranslate"><span class="pre">ToolCall.expected_output_type</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.id"><code class="docutils literal notranslate"><span class="pre">ToolCall.id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.retry_policy"><code class="docutils literal notranslate"><span class="pre">ToolCall.retry_policy</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.timeout"><code class="docutils literal notranslate"><span class="pre">ToolCall.timeout</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolCall.tool_name"><code class="docutils literal notranslate"><span class="pre">ToolCall.tool_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry"><code class="docutils literal notranslate"><span class="pre">ToolRegistry</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.clear"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.clear()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.execute_tool"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.execute_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.execute_tool_sync"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.execute_tool_sync()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.get_tool"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.get_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.get_tool_schemas"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.get_tool_schemas()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.list_tools"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.list_tools()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolRegistry.register_tool"><code class="docutils literal notranslate"><span class="pre">ToolRegistry.register_tool()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult"><code class="docutils literal notranslate"><span class="pre">ToolResult</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.__post_init__"><code class="docutils literal notranslate"><span class="pre">ToolResult.__post_init__()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.error"><code class="docutils literal notranslate"><span class="pre">ToolResult.error</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.execution_time"><code class="docutils literal notranslate"><span class="pre">ToolResult.execution_time</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.metadata"><code class="docutils literal notranslate"><span class="pre">ToolResult.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.result"><code class="docutils literal notranslate"><span class="pre">ToolResult.result</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.ToolResult.success"><code class="docutils literal notranslate"><span class="pre">ToolResult.success</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.tool.execute_tool"><code class="docutils literal notranslate"><span class="pre">execute_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.get_tool"><code class="docutils literal notranslate"><span class="pre">get_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.get_tool_registry"><code class="docutils literal notranslate"><span class="pre">get_tool_registry()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.get_tool_schemas"><code class="docutils literal notranslate"><span class="pre">get_tool_schemas()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.list_tools"><code class="docutils literal notranslate"><span class="pre">list_tools()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.print_available_tools"><code class="docutils literal notranslate"><span class="pre">print_available_tools()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.register_tool"><code class="docutils literal notranslate"><span class="pre">register_tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.suggest_tools_for_agent"><code class="docutils literal notranslate"><span class="pre">suggest_tools_for_agent()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.tool"><code class="docutils literal notranslate"><span class="pre">tool()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.validate_agent_tools"><code class="docutils literal notranslate"><span class="pre">validate_agent_tools()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.tool.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.core.tool</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/core/tool/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.core.tool">
+<span id="agentx-core-tool"></span><h1>agentx.core.tool<a class="headerlink" href="#module-agentx.core.tool" title="Link to this heading"></a></h1>
+<p>Tool component for function calling and code execution.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.logger" title="agentx.core.tool.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.Tool" title="agentx.core.tool.Tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Tool</span></code></a></p></td>
+<td><p>Base class for tools that provide multiple callable methods for LLMs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.ToolCall" title="agentx.core.tool.ToolCall"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ToolCall</span></code></a></p></td>
+<td><p>Tool call specification with retry policy.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.ToolRegistry" title="agentx.core.tool.ToolRegistry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ToolRegistry</span></code></a></p></td>
+<td><p>Global tool registry that manages all available tools and creates schemas.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.ToolResult" title="agentx.core.tool.ToolResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ToolResult</span></code></a></p></td>
+<td><p>Result of tool execution.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.execute_tool" title="agentx.core.tool.execute_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_tool</span></code></a>(→ ToolResult)</p></td>
+<td><p>Execute a tool from the global registry.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.get_tool" title="agentx.core.tool.get_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tool</span></code></a>(→ Optional[tuple[Tool, Callable, ...)</p></td>
+<td><p>Get a tool from the global registry.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.get_tool_registry" title="agentx.core.tool.get_tool_registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tool_registry</span></code></a>(→ ToolRegistry)</p></td>
+<td><p>Get the global tool registry instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.get_tool_schemas" title="agentx.core.tool.get_tool_schemas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tool_schemas</span></code></a>(→ List[Dict[str, Any]])</p></td>
+<td><p>Get tool schemas from the global registry.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.list_tools" title="agentx.core.tool.list_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_tools</span></code></a>(→ List[str])</p></td>
+<td><p>List all registered tool names.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.print_available_tools" title="agentx.core.tool.print_available_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_available_tools</span></code></a>()</p></td>
+<td><p>Prints a formatted table of all available tools.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.register_tool" title="agentx.core.tool.register_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_tool</span></code></a>(tool)</p></td>
+<td><p>Register a tool with the global registry.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.suggest_tools_for_agent" title="agentx.core.tool.suggest_tools_for_agent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">suggest_tools_for_agent</span></code></a>(→ List[str])</p></td>
+<td><p>Suggest a list of relevant tools for a new agent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.tool.tool" title="agentx.core.tool.tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tool</span></code></a>([description, return_description])</p></td>
+<td><p>Decorator to mark methods as available tool calls.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.tool.validate_agent_tools" title="agentx.core.tool.validate_agent_tools"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_agent_tools</span></code></a>(→ tuple[List[str], List[str]])</p></td>
+<td><p>Validate a list of tool names against the registry.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.tool.Tool">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">Tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#Tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.Tool" title="Link to this definition"></a></dt>
+<dd><p>Base class for tools that provide multiple callable methods for LLMs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.Tool.get_callable_methods">
+<span class="sig-name descname"><span class="pre">get_callable_methods</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#Tool.get_callable_methods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.Tool.get_callable_methods" title="Link to this definition"></a></dt>
+<dd><p>Get all methods marked with &#64;tool decorator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.Tool.get_tool_schemas">
+<span class="sig-name descname"><span class="pre">get_tool_schemas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#Tool.get_tool_schemas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.Tool.get_tool_schemas" title="Link to this definition"></a></dt>
+<dd><p>Get detailed OpenAI function schemas for all callable methods using Pydantic.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.Tool.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#agentx.core.tool.Tool.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">ToolCall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">/</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**data:</span> <span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolCall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolCall" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">pydantic.BaseModel</span></code></p>
+<p>Tool call specification with retry policy.</p>
+<p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises [<cite>ValidationError</cite>][pydantic_core.ValidationError] if the input data cannot be
+validated to form a valid model.</p>
+<p><cite>self</cite> is explicitly positional-only to allow <cite>self</cite> as a field name.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.args">
+<span class="sig-name descname"><span class="pre">args</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.core.tool.ToolCall.args" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.expected_output_type">
+<span class="sig-name descname"><span class="pre">expected_output_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolCall.expected_output_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolCall.id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.retry_policy">
+<span class="sig-name descname"><span class="pre">retry_policy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolCall.retry_policy" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.timeout">
+<span class="sig-name descname"><span class="pre">timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolCall.timeout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolCall.tool_name">
+<span class="sig-name descname"><span class="pre">tool_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.core.tool.ToolCall.tool_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">ToolRegistry</span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry" title="Link to this definition"></a></dt>
+<dd><p>Global tool registry that manages all available tools and creates schemas.</p>
+<p>This is a singleton that holds all registered tools and provides
+schema generation for any subset of tool names.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.clear" title="Link to this definition"></a></dt>
+<dd><p>Clears all registered tools. Primarily for testing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.execute_tool">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execute_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.tool.ToolResult" title="agentx.core.tool.ToolResult"><span class="pre">ToolResult</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.execute_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.execute_tool" title="Link to this definition"></a></dt>
+<dd><p>Execute a tool by name with automatic parameter validation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.execute_tool_sync">
+<span class="sig-name descname"><span class="pre">execute_tool_sync</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.tool.ToolResult" title="agentx.core.tool.ToolResult"><span class="pre">ToolResult</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.execute_tool_sync"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.execute_tool_sync" title="Link to this definition"></a></dt>
+<dd><p>Synchronous wrapper for executing a tool. For use in non-async contexts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.get_tool">
+<span class="sig-name descname"><span class="pre">get_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.core.tool.Tool" title="agentx.core.tool.Tool"><span class="pre">Tool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pydantic.BaseModel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.get_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.get_tool" title="Link to this definition"></a></dt>
+<dd><p>Get a tool, method, and pydantic model by name (for executor use).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.get_tool_schemas">
+<span class="sig-name descname"><span class="pre">get_tool_schemas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.get_tool_schemas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.get_tool_schemas" title="Link to this definition"></a></dt>
+<dd><p>Get detailed OpenAI function schemas for specified tools.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.list_tools">
+<span class="sig-name descname"><span class="pre">list_tools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.list_tools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.list_tools" title="Link to this definition"></a></dt>
+<dd><p>List all registered tool names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolRegistry.register_tool">
+<span class="sig-name descname"><span class="pre">register_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.tool.Tool" title="agentx.core.tool.Tool"><span class="pre">Tool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolRegistry.register_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolRegistry.register_tool" title="Link to this definition"></a></dt>
+<dd><p>Register a tool and all its callable methods.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">ToolResult</span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolResult" title="Link to this definition"></a></dt>
+<dd><p>Result of tool execution.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.__post_init__">
+<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#ToolResult.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.ToolResult.__post_init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.error">
+<span class="sig-name descname"><span class="pre">error</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolResult.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.execution_time">
+<span class="sig-name descname"><span class="pre">execution_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#agentx.core.tool.ToolResult.execution_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.tool.ToolResult.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.result">
+<span class="sig-name descname"><span class="pre">result</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#agentx.core.tool.ToolResult.result" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.tool.ToolResult.success">
+<span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#agentx.core.tool.ToolResult.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.execute_tool">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">execute_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.tool.ToolResult" title="agentx.core.tool.ToolResult"><span class="pre">ToolResult</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#execute_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.execute_tool" title="Link to this definition"></a></dt>
+<dd><p>Execute a tool from the global registry.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.get_tool">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">get_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.core.tool.Tool" title="agentx.core.tool.Tool"><span class="pre">Tool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pydantic.BaseModel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#get_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.get_tool" title="Link to this definition"></a></dt>
+<dd><p>Get a tool from the global registry.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.get_tool_registry">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">get_tool_registry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.tool.ToolRegistry" title="agentx.core.tool.ToolRegistry"><span class="pre">ToolRegistry</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#get_tool_registry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.get_tool_registry" title="Link to this definition"></a></dt>
+<dd><p>Get the global tool registry instance.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.get_tool_schemas">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">get_tool_schemas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#get_tool_schemas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.get_tool_schemas" title="Link to this definition"></a></dt>
+<dd><p>Get tool schemas from the global registry.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.list_tools">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">list_tools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#list_tools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.list_tools" title="Link to this definition"></a></dt>
+<dd><p>List all registered tool names.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.print_available_tools">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">print_available_tools</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#print_available_tools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.print_available_tools" title="Link to this definition"></a></dt>
+<dd><p>Prints a formatted table of all available tools.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.register_tool">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">register_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.tool.Tool" title="agentx.core.tool.Tool"><span class="pre">Tool</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#register_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.register_tool" title="Link to this definition"></a></dt>
+<dd><p>Register a tool with the global registry.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.suggest_tools_for_agent">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">suggest_tools_for_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#suggest_tools_for_agent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.suggest_tools_for_agent" title="Link to this definition"></a></dt>
+<dd><p>Suggest a list of relevant tools for a new agent.
+(This is a placeholder for a more intelligent suggestion mechanism)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.tool">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.tool" title="Link to this definition"></a></dt>
+<dd><p>Decorator to mark methods as available tool calls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>description</strong> – Clear description of what this tool does</p></li>
+<li><p><strong>return_description</strong> – Description of what the tool returns</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.tool.validate_agent_tools">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">validate_agent_tools</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tool_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/tool.html#validate_agent_tools"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.tool.validate_agent_tools" title="Link to this definition"></a></dt>
+<dd><p>Validate a list of tool names against the registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple of (valid_tools, invalid_tools)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.core.tool.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.tool.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.core.tool.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

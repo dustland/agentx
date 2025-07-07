@@ -1,0 +1,123 @@
+agentx.storage.backends
+=======================
+
+.. py:module:: agentx.storage.backends
+
+.. autoapi-nested-parse::
+
+   Storage backend implementations.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.storage.backends.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.storage.backends.LocalFileStorage
+
+
+Module Contents
+---------------
+
+.. py:class:: LocalFileStorage(base_path: Union[str, pathlib.Path])
+
+   Bases: :py:obj:`agentx.storage.interfaces.FileStorage`
+
+
+   Local filesystem storage backend with security constraints.
+
+
+   .. py:method:: append_text(path: str, content: str, encoding: str = 'utf-8') -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Append text content to a file.
+
+
+
+   .. py:method:: create_directory(path: str) -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Create a directory.
+
+
+
+   .. py:method:: delete(path: str) -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Delete a file.
+
+
+
+   .. py:method:: exists(path: str) -> bool
+      :async:
+
+
+      Check if a path exists.
+
+
+
+   .. py:method:: get_info(path: str) -> Optional[agentx.storage.interfaces.FileInfo]
+      :async:
+
+
+      Get information about a file/directory.
+
+
+
+   .. py:method:: list_directory(path: str = '.') -> List[agentx.storage.interfaces.FileInfo]
+      :async:
+
+
+      List contents of a directory.
+
+
+
+   .. py:method:: read_bytes(path: str) -> bytes
+      :async:
+
+
+      Read binary content from a file.
+
+
+
+   .. py:method:: read_text(path: str, encoding: str = 'utf-8') -> str
+      :async:
+
+
+      Read text content from a file.
+
+
+
+   .. py:method:: write_bytes(path: str, content: bytes) -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Write binary content to a file.
+
+
+
+   .. py:method:: write_text(path: str, content: str, encoding: str = 'utf-8') -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Write text content to a file.
+
+
+
+   .. py:attribute:: base_path
+
+
+.. py:data:: logger
+

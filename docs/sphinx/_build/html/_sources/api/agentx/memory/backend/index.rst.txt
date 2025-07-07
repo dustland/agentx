@@ -1,0 +1,216 @@
+agentx.memory.backend
+=====================
+
+.. py:module:: agentx.memory.backend
+
+.. autoapi-nested-parse::
+
+   Memory Backend Interface
+
+   Abstract base class defining the contract for memory backend implementations.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.memory.backend.MemoryBackend
+
+
+Module Contents
+---------------
+
+.. py:class:: MemoryBackend
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract interface for memory storage backends.
+
+   Provides a clean interface for storing and retrieving memories,
+   with support for specialized memory types (constraints, hot issues, document chunks).
+
+
+   .. py:method:: add(content: str, memory_type: agentx.memory.types.MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = 1.0) -> str
+      :abstractmethod:
+
+      :async:
+
+
+      Add a memory to the backend.
+
+      :param content: Memory content
+      :param memory_type: Type of memory (text, constraint, hot_issue, etc.)
+      :param agent_name: Name of the agent creating the memory
+      :param metadata: Additional metadata
+      :param importance: Importance score (0.0 to 3.0)
+
+      :returns: Memory ID
+
+
+
+   .. py:method:: clear(agent_name: str = None) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Clear memories, optionally filtered by agent.
+
+      :param agent_name: Agent name filter (None to clear all)
+
+      :returns: Number of memories cleared
+
+
+
+   .. py:method:: count(**filters) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Count memories with optional filters.
+
+      :param \*\*filters: Filter criteria
+
+      :returns: Number of matching memories
+
+
+
+   .. py:method:: delete(memory_id: str) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Delete a memory.
+
+      :param memory_id: Memory identifier
+
+      :returns: True if deleted successfully, False otherwise
+
+
+
+   .. py:method:: get(memory_id: str) -> Optional[agentx.memory.types.MemoryItem]
+      :abstractmethod:
+
+      :async:
+
+
+      Get a specific memory by ID.
+
+      :param memory_id: Memory identifier
+
+      :returns: Memory item if found, None otherwise
+
+
+
+   .. py:method:: get_active_constraints() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraint memories.
+
+
+
+   .. py:method:: get_active_hot_issues() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active hot issue memories.
+
+
+
+   .. py:method:: get_active_rules() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraints and hot issues.
+
+
+
+   .. py:method:: health() -> Dict[str, Any]
+      :abstractmethod:
+
+      :async:
+
+
+      Get backend health status.
+
+      :returns: Health status information
+
+
+
+   .. py:method:: query(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Alias for search method for backward compatibility.
+
+
+
+   .. py:method:: save_memories(memories: List[Dict[str, Any]]) -> List[str]
+      :async:
+
+
+      Save multiple memories in batch.
+
+      :param memories: List of memory dictionaries
+
+      :returns: List of memory IDs
+
+
+
+   .. py:method:: search(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Search memories using semantic similarity and filters.
+
+      :param query: Search query with filters and parameters
+
+      :returns: Search results with relevant memories
+
+
+
+   .. py:method:: search_documents(query: str, top_k: int = 5) -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Search document chunks for semantic similarity.
+
+
+
+   .. py:method:: stats() -> agentx.memory.types.MemoryStats
+      :abstractmethod:
+
+      :async:
+
+
+      Get memory backend statistics.
+
+      :returns: Statistics about the memory backend
+
+
+
+   .. py:method:: update(memory_id: str, **kwargs) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Update memory metadata or content.
+
+      :param memory_id: Memory identifier
+      :param \*\*kwargs: Fields to update
+
+      :returns: True if updated successfully, False otherwise
+
+
+

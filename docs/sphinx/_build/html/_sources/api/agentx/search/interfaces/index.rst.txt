@@ -1,0 +1,188 @@
+agentx.search.interfaces
+========================
+
+.. py:module:: agentx.search.interfaces
+
+.. autoapi-nested-parse::
+
+   Search interfaces and base classes.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.search.interfaces.SearchBackend
+   agentx.search.interfaces.SearchEngine
+   agentx.search.interfaces.SearchResponse
+   agentx.search.interfaces.SearchResult
+
+
+Module Contents
+---------------
+
+.. py:class:: SearchBackend
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract base class for search backends.
+
+
+   .. py:method:: is_available() -> bool
+      :abstractmethod:
+
+
+      Check if the backend is available and properly configured.
+
+
+
+   .. py:method:: search(query: str, engine: str = 'google', max_results: int = 10, country: str = 'us', language: str = 'en', **kwargs) -> SearchResponse
+      :abstractmethod:
+
+      :async:
+
+
+      Execute a search query.
+
+
+
+   .. py:property:: name
+      :type: str
+
+      :abstractmethod:
+
+
+      Backend name.
+
+
+.. py:class:: SearchEngine
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Supported search engines
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: BAIDU
+      :value: 'baidu'
+
+
+
+   .. py:attribute:: BING
+      :value: 'bing'
+
+
+
+   .. py:attribute:: DUCKDUCKGO
+      :value: 'duckduckgo'
+
+
+
+   .. py:attribute:: GOOGLE
+      :value: 'google'
+
+
+
+   .. py:attribute:: YAHOO
+      :value: 'yahoo'
+
+
+
+   .. py:attribute:: YANDEX
+      :value: 'yandex'
+
+
+
+.. py:class:: SearchResponse
+
+   Represents a complete search response.
+
+
+   .. py:attribute:: engine
+      :type:  str
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: response_time
+      :type:  float
+
+
+   .. py:attribute:: results
+      :type:  List[SearchResult]
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+   .. py:attribute:: timestamp
+      :type:  str
+
+
+   .. py:attribute:: total_results
+      :type:  int
+
+
+.. py:class:: SearchResult
+
+   Represents a single search result.
+
+
+   .. py:attribute:: date
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: displayed_link
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: language
+      :type:  str
+      :value: 'en'
+
+
+
+   .. py:attribute:: position
+      :type:  int
+
+
+   .. py:attribute:: relevance_score
+      :type:  float
+
+
+   .. py:attribute:: snippet
+      :type:  str
+
+
+   .. py:attribute:: summary
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: title
+      :type:  str
+
+
+   .. py:attribute:: url
+      :type:  str
+
+

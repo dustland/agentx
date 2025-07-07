@@ -1,0 +1,363 @@
+agentx.observability.monitor
+============================
+
+.. py:module:: agentx.observability.monitor
+
+.. autoapi-nested-parse::
+
+   AgentX Observability Monitor
+
+   Read-only observability system that monitors AgentX project data:
+   - Reads workspace data from {project_path}/workspace/
+   - Reads configuration from {project_path}/config/
+   - Provides web interface for viewing project data
+   - Does NOT create or modify any files
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.observability.monitor.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.observability.monitor.ArtifactsViewer
+   agentx.observability.monitor.ConfigViewer
+   agentx.observability.monitor.ConversationHistory
+   agentx.observability.monitor.EventCapture
+   agentx.observability.monitor.ObservabilityMonitor
+   agentx.observability.monitor.ProjectStorage
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.observability.monitor.find_project_directory
+   agentx.observability.monitor.get_monitor
+
+
+Module Contents
+---------------
+
+.. py:class:: ArtifactsViewer(storage: ProjectStorage)
+
+   Browse and view workspace files as artifacts.
+
+
+   .. py:method:: get_artifacts_stats() -> Dict[str, Any]
+
+      Get artifacts statistics.
+
+
+
+   .. py:method:: get_file_content(filename: str) -> Dict[str, Any]
+
+      Get file content and metadata.
+
+
+
+   .. py:method:: get_file_list() -> List[Dict[str, Any]]
+
+      Get list of all workspace files.
+
+
+
+   .. py:attribute:: storage
+
+
+.. py:class:: ConfigViewer(storage: ProjectStorage)
+
+   Read configuration files from config/ directory.
+
+
+   .. py:method:: get_config_file(filename: str) -> Dict[str, Any]
+
+      Get specific config file content.
+
+
+
+   .. py:method:: get_config_file_info(filename: str) -> Dict[str, Any]
+
+      Get config file information.
+
+
+
+   .. py:method:: get_config_files() -> List[str]
+
+      Get list of config files.
+
+
+
+   .. py:attribute:: storage
+
+
+.. py:class:: ConversationHistory(storage: ProjectStorage)
+
+   Read conversation history from workspace/conversations.json.
+
+
+   .. py:method:: get_conversation(task_id: str) -> List[Dict[str, Any]]
+
+      Get conversation for a task.
+
+
+
+   .. py:method:: get_recent_tasks(limit: int = 10) -> List[str]
+
+      Get list of recent task IDs.
+
+
+
+   .. py:method:: get_stats() -> Dict[str, Any]
+
+      Get conversation statistics.
+
+
+
+   .. py:method:: get_task_summary(task_id: str) -> Dict[str, Any]
+
+      Get summary of a task.
+
+
+
+   .. py:attribute:: filename
+      :value: 'conversations'
+
+
+
+   .. py:attribute:: storage
+
+
+.. py:class:: EventCapture(storage: ProjectStorage)
+
+   Read events from workspace/events.json.
+
+
+   .. py:method:: get_event_stats() -> Dict[str, Any]
+
+      Get event statistics.
+
+
+
+   .. py:method:: get_events(event_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]
+
+      Get recent events.
+
+
+
+   .. py:method:: get_events_by_type(event_type: str, limit: int = 100) -> List[Dict[str, Any]]
+
+      Get events of a specific type.
+
+
+
+   .. py:attribute:: filename
+      :value: 'events'
+
+
+
+   .. py:attribute:: storage
+
+
+.. py:class:: ObservabilityMonitor(project_path: Optional[str] = None)
+
+   Read-only observability monitor for AgentX project data.
+
+
+   .. py:method:: get_artifact_content(filename: str) -> Dict[str, Any]
+
+      Get artifact file content.
+
+
+
+   .. py:method:: get_artifacts_files() -> List[Dict[str, Any]]
+
+      Get list of artifact files.
+
+
+
+   .. py:method:: get_artifacts_stats() -> Dict[str, Any]
+
+      Get artifacts statistics.
+
+
+
+   .. py:method:: get_config_file(filename: str) -> Dict[str, Any]
+
+      Get config file content.
+
+
+
+   .. py:method:: get_config_files() -> List[str]
+
+      Get list of config files.
+
+
+
+   .. py:method:: get_configuration_data() -> Dict[str, Any]
+
+      Get configuration data for the web interface.
+
+
+
+   .. py:method:: get_dashboard_data() -> Dict[str, Any]
+
+      Get comprehensive dashboard data.
+
+
+
+   .. py:method:: get_events(event_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]
+
+      Get events.
+
+
+
+   .. py:method:: get_project_status() -> Dict[str, Any]
+
+      Get status of the project directories.
+
+
+
+   .. py:method:: get_recent_tasks(limit: int = 10) -> List[str]
+
+      Get recent task IDs.
+
+
+
+   .. py:method:: get_task_conversation(task_id: str) -> List[Dict[str, Any]]
+
+      Get conversation for a specific task.
+
+
+
+   .. py:method:: refresh()
+
+      Refresh data (just updates timestamp since we read files on demand).
+
+
+
+   .. py:method:: start()
+
+      Start the monitor.
+
+
+
+   .. py:method:: stop()
+
+      Stop the monitor.
+
+
+
+   .. py:attribute:: artifacts_viewer
+
+
+   .. py:attribute:: config_viewer
+
+
+   .. py:attribute:: conversation_history
+
+
+   .. py:attribute:: event_capture
+
+
+   .. py:attribute:: is_running
+      :value: False
+
+
+
+   .. py:attribute:: last_refresh
+      :value: None
+
+
+
+   .. py:attribute:: project_path
+      :value: '.'
+
+
+
+   .. py:attribute:: storage
+
+
+.. py:class:: ProjectStorage(project_path: str)
+
+   Read-only project-based storage for observability.
+
+
+   .. py:method:: config_file_exists(filename: str) -> bool
+
+      Check if config file exists.
+
+
+
+   .. py:method:: get_config_file_info(filename: str) -> Dict[str, Any]
+
+      Get config file information.
+
+
+
+   .. py:method:: get_workspace_file_info(filename: str) -> Dict[str, Any]
+
+      Get workspace file information.
+
+
+
+   .. py:method:: list_config_files() -> List[str]
+
+      List all files in config directory.
+
+
+
+   .. py:method:: list_workspace_files() -> List[str]
+
+      List all files in workspace directory.
+
+
+
+   .. py:method:: read_config_file(filename: str) -> Dict[str, Any]
+
+      Read data from config file.
+
+
+
+   .. py:method:: read_workspace_file(filename: str) -> Dict[str, Any]
+
+      Read data from workspace file.
+
+
+
+   .. py:method:: workspace_file_exists(filename: str) -> bool
+
+      Check if workspace file exists.
+
+
+
+   .. py:attribute:: config_dir
+
+
+   .. py:attribute:: project_path
+
+
+   .. py:attribute:: workspace_dir
+
+
+.. py:function:: find_project_directory() -> str
+
+   Find existing project directory with workspace and config subdirectories.
+
+
+.. py:function:: get_monitor(project_path: Optional[str] = None) -> ObservabilityMonitor
+
+   Get or create observability monitor instance.
+
+
+.. py:data:: logger
+

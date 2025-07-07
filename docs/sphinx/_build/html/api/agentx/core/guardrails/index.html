@@ -1,0 +1,512 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.core.guardrails &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.core.guardrails</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.ComplianceRule"><code class="docutils literal notranslate"><span class="pre">ComplianceRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.ComplianceRule.check"><code class="docutils literal notranslate"><span class="pre">ComplianceRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.ComplianceRule.compliance_checks"><code class="docutils literal notranslate"><span class="pre">ComplianceRule.compliance_checks</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentFilterRule"><code class="docutils literal notranslate"><span class="pre">ContentFilterRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentFilterRule.check"><code class="docutils literal notranslate"><span class="pre">ContentFilterRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentFilterRule.keywords"><code class="docutils literal notranslate"><span class="pre">ContentFilterRule.keywords</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentSafetyRule"><code class="docutils literal notranslate"><span class="pre">ContentSafetyRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentSafetyRule.check"><code class="docutils literal notranslate"><span class="pre">ContentSafetyRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.ContentSafetyRule.safety_patterns"><code class="docutils literal notranslate"><span class="pre">ContentSafetyRule.safety_patterns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext"><code class="docutils literal notranslate"><span class="pre">GuardrailContext</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext.agent_name"><code class="docutils literal notranslate"><span class="pre">GuardrailContext.agent_name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext.content_type"><code class="docutils literal notranslate"><span class="pre">GuardrailContext.content_type</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext.metadata"><code class="docutils literal notranslate"><span class="pre">GuardrailContext.metadata</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext.step_id"><code class="docutils literal notranslate"><span class="pre">GuardrailContext.step_id</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext.task_id"><code class="docutils literal notranslate"><span class="pre">GuardrailContext.task_id</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.add_policy"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.add_policy()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.check_content"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.check_content()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.get_policy_names"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.get_policy_names()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.get_policy_stats"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.get_policy_stats()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.should_block_content"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.should_block_content()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.global_rules"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.global_rules</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine.policies"><code class="docutils literal notranslate"><span class="pre">GuardrailEngine.policies</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule"><code class="docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule.check"><code class="docutils literal notranslate"><span class="pre">GuardrailRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule.action"><code class="docutils literal notranslate"><span class="pre">GuardrailRule.action</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule.name"><code class="docutils literal notranslate"><span class="pre">GuardrailRule.name</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule.severity"><code class="docutils literal notranslate"><span class="pre">GuardrailRule.severity</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.InputValidationRule"><code class="docutils literal notranslate"><span class="pre">InputValidationRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.InputValidationRule.check"><code class="docutils literal notranslate"><span class="pre">InputValidationRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.InputValidationRule.patterns"><code class="docutils literal notranslate"><span class="pre">InputValidationRule.patterns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule"><code class="docutils literal notranslate"><span class="pre">RateLimitRule</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule.check"><code class="docutils literal notranslate"><span class="pre">RateLimitRule.check()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule.max_requests"><code class="docutils literal notranslate"><span class="pre">RateLimitRule.max_requests</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule.state"><code class="docutils literal notranslate"><span class="pre">RateLimitRule.state</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule.window_seconds"><code class="docutils literal notranslate"><span class="pre">RateLimitRule.window_seconds</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitState"><code class="docutils literal notranslate"><span class="pre">RateLimitState</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitState.count"><code class="docutils literal notranslate"><span class="pre">RateLimitState.count</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitState.last_request"><code class="docutils literal notranslate"><span class="pre">RateLimitState.last_request</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.RateLimitState.window_start"><code class="docutils literal notranslate"><span class="pre">RateLimitState.window_start</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.core.guardrails.check_content_safety"><code class="docutils literal notranslate"><span class="pre">check_content_safety()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.get_guardrail_engine"><code class="docutils literal notranslate"><span class="pre">get_guardrail_engine()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.core.guardrails.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.core.guardrails</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/core/guardrails/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.core.guardrails">
+<span id="agentx-core-guardrails"></span><h1>agentx.core.guardrails<a class="headerlink" href="#module-agentx.core.guardrails" title="Link to this heading"></a></h1>
+<p>Guardrails Engine - Comprehensive Safety and Compliance System</p>
+<p>This module implements multi-layered safety mechanisms including input validation,
+output filtering, rate limiting, content safety, and policy compliance checks.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.logger" title="agentx.core.guardrails.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.ComplianceRule" title="agentx.core.guardrails.ComplianceRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ComplianceRule</span></code></a></p></td>
+<td><p>Compliance rule for organizational and regulatory requirements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.guardrails.ContentFilterRule" title="agentx.core.guardrails.ContentFilterRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContentFilterRule</span></code></a></p></td>
+<td><p>Content filtering rule for blocking inappropriate content.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.ContentSafetyRule" title="agentx.core.guardrails.ContentSafetyRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ContentSafetyRule</span></code></a></p></td>
+<td><p>Content safety rule using pattern matching and heuristics.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailContext</span></code></a></p></td>
+<td><p>Context information for guardrail checks.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine" title="agentx.core.guardrails.GuardrailEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailEngine</span></code></a></p></td>
+<td><p>Comprehensive guardrails engine for safety and compliance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p></td>
+<td><p>Abstract base class for guardrail rules.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.InputValidationRule" title="agentx.core.guardrails.InputValidationRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InputValidationRule</span></code></a></p></td>
+<td><p>Input validation rule for sanitizing user inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.guardrails.RateLimitRule" title="agentx.core.guardrails.RateLimitRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RateLimitRule</span></code></a></p></td>
+<td><p>Rate limiting rule for preventing abuse.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.RateLimitState" title="agentx.core.guardrails.RateLimitState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RateLimitState</span></code></a></p></td>
+<td><p>Rate limiting state tracking.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.core.guardrails.check_content_safety" title="agentx.core.guardrails.check_content_safety"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_content_safety</span></code></a>(→ agentx.core.message.GuardrailPart)</p></td>
+<td><p>Convenience function to check content safety.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.core.guardrails.get_guardrail_engine" title="agentx.core.guardrails.get_guardrail_engine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_guardrail_engine</span></code></a>(→ GuardrailEngine)</p></td>
+<td><p>Get the global guardrail engine instance.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ComplianceRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">ComplianceRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compliance_checks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ComplianceRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ComplianceRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p>
+<p>Compliance rule for organizational and regulatory requirements.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ComplianceRule.check">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ComplianceRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ComplianceRule.check" title="Link to this definition"></a></dt>
+<dd><p>Check content for compliance violations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ComplianceRule.compliance_checks">
+<span class="sig-name descname"><span class="pre">compliance_checks</span></span><a class="headerlink" href="#agentx.core.guardrails.ComplianceRule.compliance_checks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentFilterRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">ContentFilterRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">keywords</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ContentFilterRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ContentFilterRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p>
+<p>Content filtering rule for blocking inappropriate content.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentFilterRule.check">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ContentFilterRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ContentFilterRule.check" title="Link to this definition"></a></dt>
+<dd><p>Check content for inappropriate keywords.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentFilterRule.keywords">
+<span class="sig-name descname"><span class="pre">keywords</span></span><a class="headerlink" href="#agentx.core.guardrails.ContentFilterRule.keywords" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentSafetyRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">ContentSafetyRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">safety_patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ContentSafetyRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ContentSafetyRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p>
+<p>Content safety rule using pattern matching and heuristics.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentSafetyRule.check">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#ContentSafetyRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.ContentSafetyRule.check" title="Link to this definition"></a></dt>
+<dd><p>Check content for safety violations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.ContentSafetyRule.safety_patterns">
+<span class="sig-name descname"><span class="pre">safety_patterns</span></span><a class="headerlink" href="#agentx.core.guardrails.ContentSafetyRule.safety_patterns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">GuardrailContext</span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailContext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext" title="Link to this definition"></a></dt>
+<dd><p>Context information for guardrail checks.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext.agent_name">
+<span class="sig-name descname"><span class="pre">agent_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext.agent_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext.content_type">
+<span class="sig-name descname"><span class="pre">content_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext.content_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext.step_id">
+<span class="sig-name descname"><span class="pre">step_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext.step_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailContext.task_id">
+<span class="sig-name descname"><span class="pre">task_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailContext.task_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">GuardrailEngine</span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine" title="Link to this definition"></a></dt>
+<dd><p>Comprehensive guardrails engine for safety and compliance.</p>
+<p>Implements multi-layered safety mechanisms including input validation,
+output filtering, rate limiting, content safety, and policy compliance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.add_policy">
+<span class="sig-name descname"><span class="pre">add_policy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">policy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../config/index.html#agentx.core.config.GuardrailPolicy" title="agentx.core.config.GuardrailPolicy"><span class="pre">agentx.core.config.GuardrailPolicy</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine.add_policy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.add_policy" title="Link to this definition"></a></dt>
+<dd><p>Add a guardrail policy to the engine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.check_content">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailPart" title="agentx.core.message.GuardrailPart"><span class="pre">agentx.core.message.GuardrailPart</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine.check_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.check_content" title="Link to this definition"></a></dt>
+<dd><p>Check content against guardrail policies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content</strong> – Content to check</p></li>
+<li><p><strong>context</strong> – Context information</p></li>
+<li><p><strong>policy_names</strong> – Specific policies to check (None for all applicable)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GuardrailPart with check results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.get_policy_names">
+<span class="sig-name descname"><span class="pre">get_policy_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine.get_policy_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.get_policy_names" title="Link to this definition"></a></dt>
+<dd><p>Get list of available policy names.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.get_policy_stats">
+<span class="sig-name descname"><span class="pre">get_policy_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine.get_policy_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.get_policy_stats" title="Link to this definition"></a></dt>
+<dd><p>Get statistics about guardrail policies and checks.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.should_block_content">
+<span class="sig-name descname"><span class="pre">should_block_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">guardrail_part</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailPart" title="agentx.core.message.GuardrailPart"><span class="pre">agentx.core.message.GuardrailPart</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailEngine.should_block_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.should_block_content" title="Link to this definition"></a></dt>
+<dd><p>Determine if content should be blocked based on guardrail results.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.global_rules">
+<span class="sig-name descname"><span class="pre">global_rules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><span class="pre">GuardrailRule</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.global_rules" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailEngine.policies">
+<span class="sig-name descname"><span class="pre">policies</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><span class="pre">GuardrailRule</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailEngine.policies" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">GuardrailRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">severity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'medium'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'warn'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract base class for guardrail rules.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailRule.check">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#GuardrailRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.GuardrailRule.check" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Check content against this rule.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailRule.action">
+<span class="sig-name descname"><span class="pre">action</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'warn'</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailRule.action" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailRule.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#agentx.core.guardrails.GuardrailRule.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.GuardrailRule.severity">
+<span class="sig-name descname"><span class="pre">severity</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'medium'</span></em><a class="headerlink" href="#agentx.core.guardrails.GuardrailRule.severity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.InputValidationRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">InputValidationRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">patterns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#InputValidationRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.InputValidationRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p>
+<p>Input validation rule for sanitizing user inputs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.InputValidationRule.check">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#InputValidationRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.InputValidationRule.check" title="Link to this definition"></a></dt>
+<dd><p>Check input against validation patterns.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.InputValidationRule.patterns">
+<span class="sig-name descname"><span class="pre">patterns</span></span><a class="headerlink" href="#agentx.core.guardrails.InputValidationRule.patterns" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitRule">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">RateLimitRule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_requests</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_seconds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#RateLimitRule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.RateLimitRule" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.core.guardrails.GuardrailRule" title="agentx.core.guardrails.GuardrailRule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GuardrailRule</span></code></a></p>
+<p>Rate limiting rule for preventing abuse.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitRule.check">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">context</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#agentx.core.guardrails.GuardrailContext" title="agentx.core.guardrails.GuardrailContext"><span class="pre">GuardrailContext</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailCheck" title="agentx.core.message.GuardrailCheck"><span class="pre">agentx.core.message.GuardrailCheck</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#RateLimitRule.check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.RateLimitRule.check" title="Link to this definition"></a></dt>
+<dd><p>Check rate limits for the agent.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitRule.max_requests">
+<span class="sig-name descname"><span class="pre">max_requests</span></span><a class="headerlink" href="#agentx.core.guardrails.RateLimitRule.max_requests" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitRule.state">
+<span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#agentx.core.guardrails.RateLimitState" title="agentx.core.guardrails.RateLimitState"><span class="pre">RateLimitState</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.core.guardrails.RateLimitRule.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitRule.window_seconds">
+<span class="sig-name descname"><span class="pre">window_seconds</span></span><a class="headerlink" href="#agentx.core.guardrails.RateLimitRule.window_seconds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitState">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">RateLimitState</span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#RateLimitState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.RateLimitState" title="Link to this definition"></a></dt>
+<dd><p>Rate limiting state tracking.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitState.count">
+<span class="sig-name descname"><span class="pre">count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#agentx.core.guardrails.RateLimitState.count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitState.last_request">
+<span class="sig-name descname"><span class="pre">last_request</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a></em><a class="headerlink" href="#agentx.core.guardrails.RateLimitState.last_request" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.core.guardrails.RateLimitState.window_start">
+<span class="sig-name descname"><span class="pre">window_start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.13)"><span class="pre">datetime.datetime</span></a></em><a class="headerlink" href="#agentx.core.guardrails.RateLimitState.window_start" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.guardrails.check_content_safety">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">check_content_safety</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../message/index.html#agentx.core.message.GuardrailPart" title="agentx.core.message.GuardrailPart"><span class="pre">agentx.core.message.GuardrailPart</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#check_content_safety"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.check_content_safety" title="Link to this definition"></a></dt>
+<dd><p>Convenience function to check content safety.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content</strong> – Content to check</p></li>
+<li><p><strong>agent_name</strong> – Name of the agent</p></li>
+<li><p><strong>policy_names</strong> – Specific policies to check</p></li>
+<li><p><strong>task_id</strong> – Optional task ID</p></li>
+<li><p><strong>step_id</strong> – Optional step ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GuardrailPart with check results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.core.guardrails.get_guardrail_engine">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">get_guardrail_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.core.guardrails.GuardrailEngine" title="agentx.core.guardrails.GuardrailEngine"><span class="pre">GuardrailEngine</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/core/guardrails.html#get_guardrail_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.core.guardrails.get_guardrail_engine" title="Link to this definition"></a></dt>
+<dd><p>Get the global guardrail engine instance.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.core.guardrails.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.core.guardrails.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.core.guardrails.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

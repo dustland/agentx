@@ -1,0 +1,762 @@
+agentx.event
+============
+
+.. py:module:: agentx.event
+
+.. autoapi-nested-parse::
+
+   Event system for AgentX framework.
+
+   This package provides a comprehensive event bus system for publish/subscribe
+   patterns, enabling proper observability and monitoring.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/agentx/event/api/index
+   /api/agentx/event/bus/index
+   /api/agentx/event/middleware/index
+   /api/agentx/event/models/index
+   /api/agentx/event/subscribers/index
+   /api/agentx/event/types/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.event.EventFilter
+   agentx.event.EventHandler
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.event.AsyncEventSubscriber
+   agentx.event.Event
+   agentx.event.EventBus
+   agentx.event.EventMiddleware
+   agentx.event.EventPriority
+   agentx.event.EventSubscriber
+   agentx.event.LoggingMiddleware
+   agentx.event.MetricsMiddleware
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.event.get_active_subscriptions
+   agentx.event.get_event_bus
+   agentx.event.get_event_stats
+   agentx.event.get_event_system_health
+   agentx.event.initialize_event_bus
+   agentx.event.publish_agent_event
+   agentx.event.publish_event
+   agentx.event.publish_event_sync
+   agentx.event.publish_task_event
+   agentx.event.publish_tool_event
+   agentx.event.subscribe_to_events
+   agentx.event.unsubscribe_from_events
+
+
+Package Contents
+----------------
+
+.. py:class:: AsyncEventSubscriber(name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for async event subscribers.
+
+
+   .. py:method:: get_event_types() -> List[str]
+      :abstractmethod:
+
+
+      Return list of event types this subscriber handles.
+
+
+
+   .. py:method:: get_filter() -> Optional[agentx.event.types.EventFilter]
+
+      Return optional filter function for events.
+
+
+
+   .. py:method:: get_priority() -> agentx.event.types.EventPriority
+
+      Return subscription priority.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Handle an event asynchronously.
+
+
+
+   .. py:method:: is_active() -> bool
+
+      Check if subscriber is active.
+
+
+
+   .. py:method:: start() -> None
+
+      Start subscribing to events.
+
+
+
+   .. py:method:: stop() -> None
+
+      Stop subscribing to events.
+
+
+
+   .. py:attribute:: event_bus
+      :value: None
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: subscription_ids
+      :type:  List[str]
+      :value: []
+
+
+
+.. py:class:: Event(/, **data: Any)
+
+   Bases: :py:obj:`agentx.event.models.BaseModel`, :py:obj:`Generic`\ [\ :py:obj:`T`\ ]
+
+
+   Base event wrapper with metadata.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: data
+      :type:  T
+
+
+   .. py:property:: event_id
+      :type: str
+
+
+      Get the event ID.
+
+
+   .. py:property:: event_type
+      :type: str
+
+
+      Get the event type from the data.
+
+
+   .. py:attribute:: metadata
+      :type:  EventMetadata
+
+
+   .. py:property:: timestamp
+      :type: agentx.event.models.datetime
+
+
+      Get the event timestamp.
+
+
+.. py:class:: EventBus(name: str = 'default')
+
+   Centralized event bus for publish/subscribe messaging.
+
+   Features:
+   - Async/sync event publishing
+   - Priority-based event processing
+   - Event filtering and routing
+   - Middleware support
+   - Comprehensive statistics
+   - Error handling and retries
+
+
+   .. py:method:: add_middleware(middleware: agentx.event.middleware.EventMiddleware) -> None
+
+      Add middleware to the event bus.
+
+
+
+   .. py:method:: get_stats() -> agentx.event.types.EventBusStats
+
+      Get event bus statistics.
+
+
+
+   .. py:method:: get_subscriptions() -> Dict[str, List[str]]
+
+      Get current subscriptions by event type.
+
+
+
+   .. py:method:: health_check() -> Dict[str, Any]
+      :async:
+
+
+      Perform health check.
+
+
+
+   .. py:method:: publish(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+      :async:
+
+
+      Publish an event.
+
+      :param event_data: Event data (should be a Pydantic model)
+      :param event_type: Optional event type override
+      :param priority: Event priority
+      :param source: Event source identifier
+      :param correlation_id: Correlation ID for tracing
+      :param tags: Additional tags
+
+      :returns: Event ID
+
+
+
+   .. py:method:: publish_sync(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+
+      Synchronous wrapper for publish.
+
+      Note: This creates a task but doesn't wait for it in sync context.
+      Use publish() in async contexts for proper awaiting.
+
+
+
+   .. py:method:: start() -> None
+      :async:
+
+
+      Start the event bus worker.
+
+
+
+   .. py:method:: stop() -> None
+      :async:
+
+
+      Stop the event bus worker.
+
+
+
+   .. py:method:: subscribe(event_types: Union[str, List[str]], handler: agentx.event.types.EventHandler, filter_func: Optional[agentx.event.types.EventFilter] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, subscription_id: Optional[str] = None) -> str
+
+      Subscribe to events.
+
+      :param event_types: Event type(s) to subscribe to. Supports wildcards:
+                          - "*" matches any characters
+                          - "?" matches single character
+                          - "Agent*" matches "AgentStartEvent", "AgentCompleteEvent", etc.
+                          - "*Event" matches all events ending with "Event"
+      :param handler: Event handler function
+      :param filter_func: Optional filter function
+      :param priority: Subscription priority
+      :param subscription_id: Optional custom subscription ID
+
+      :returns: Subscription ID
+
+
+
+   .. py:method:: unsubscribe(subscription_id: str) -> bool
+
+      Unsubscribe from events.
+
+      :param subscription_id: Subscription ID to remove
+
+      :returns: True if subscription was found and removed
+
+
+
+   .. py:attribute:: name
+      :value: 'default'
+
+
+
+.. py:class:: EventMiddleware
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for event middleware.
+
+
+   .. py:method:: after_process(event: agentx.event.types.Event) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Called after an event is processed.
+
+
+
+   .. py:method:: before_process(event: agentx.event.types.Event) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Called before an event is processed.
+
+
+
+   .. py:method:: before_publish(event: agentx.event.types.Event) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Called before an event is published.
+
+
+
+   .. py:method:: on_error(event: agentx.event.types.Event, error: Exception) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Called when an error occurs during event processing.
+
+
+
+.. py:class:: EventPriority(*args, **kwds)
+
+   Bases: :py:obj:`agentx.event.models.Enum`
+
+
+   Event priority levels.
+
+
+   .. py:attribute:: CRITICAL
+      :value: 4
+
+
+
+   .. py:attribute:: HIGH
+      :value: 3
+
+
+
+   .. py:attribute:: LOW
+      :value: 1
+
+
+
+   .. py:attribute:: NORMAL
+      :value: 2
+
+
+
+.. py:class:: EventSubscriber(name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for event subscribers.
+
+
+   .. py:method:: get_event_types() -> List[str]
+      :abstractmethod:
+
+
+      Return list of event types this subscriber handles.
+
+
+
+   .. py:method:: get_filter() -> Optional[agentx.event.types.EventFilter]
+
+      Return optional filter function for events.
+
+
+
+   .. py:method:: get_priority() -> agentx.event.types.EventPriority
+
+      Return subscription priority.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :abstractmethod:
+
+
+      Handle an event.
+
+
+
+   .. py:method:: is_active() -> bool
+
+      Check if subscriber is active.
+
+
+
+   .. py:method:: start() -> None
+
+      Start subscribing to events.
+
+
+
+   .. py:method:: stop() -> None
+
+      Stop subscribing to events.
+
+
+
+   .. py:attribute:: event_bus
+      :value: None
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: subscription_ids
+      :type:  List[str]
+      :value: []
+
+
+
+.. py:class:: LoggingMiddleware(log_level: int = logging.INFO)
+
+   Bases: :py:obj:`EventMiddleware`
+
+
+   Middleware for logging events.
+
+
+   .. py:method:: after_process(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Log event processing completion.
+
+
+
+   .. py:method:: before_process(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Log event processing start.
+
+
+
+   .. py:method:: before_publish(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Log event publication.
+
+
+
+   .. py:method:: on_error(event: agentx.event.types.Event, error: Exception) -> None
+      :async:
+
+
+      Log event processing error.
+
+
+
+   .. py:attribute:: log_level
+      :value: 20
+
+
+
+   .. py:attribute:: logger
+
+
+.. py:class:: MetricsMiddleware
+
+   Bases: :py:obj:`EventMiddleware`
+
+
+   Middleware for collecting event metrics.
+
+
+   .. py:method:: after_process(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Record processing completion metrics.
+
+
+
+   .. py:method:: before_process(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Record processing start time.
+
+
+
+   .. py:method:: before_publish(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Record event publication metrics.
+
+
+
+   .. py:method:: get_metrics() -> Dict[str, Any]
+
+      Get current metrics.
+
+
+
+   .. py:method:: on_error(event: agentx.event.types.Event, error: Exception) -> None
+      :async:
+
+
+      Record error metrics.
+
+
+
+   .. py:method:: reset_metrics() -> None
+
+      Reset all metrics.
+
+
+
+   .. py:attribute:: metrics
+      :type:  Dict[str, Any]
+
+
+.. py:function:: get_active_subscriptions() -> Dict[str, List[str]]
+
+   Get current active subscriptions by event type.
+
+   :returns: Dictionary mapping event types to lists of subscription IDs
+
+   .. rubric:: Example
+
+   ```python
+   from agentx.event import get_active_subscriptions
+
+   subscriptions = get_active_subscriptions()
+   for event_type, sub_ids in subscriptions.items():
+       print(f"{event_type}: {len(sub_ids)} subscribers")
+   ```
+
+
+.. py:function:: get_event_bus(name: str = 'default') -> EventBus
+
+   Get or create the global event bus instance.
+
+
+.. py:function:: get_event_stats() -> agentx.event.types.EventBusStats
+
+   Get event system statistics.
+
+   :returns: EventBusStats object with current statistics
+
+   .. rubric:: Example
+
+   ```python
+   from agentx.event import get_event_stats
+
+   stats = get_event_stats()
+   print(f"Total events published: {stats.total_events_published}")
+   print(f"Total events processed: {stats.total_events_processed}")
+   print(f"Active subscriptions: {stats.active_subscriptions}")
+   ```
+
+
+.. py:function:: get_event_system_health() -> Dict[str, Any]
+   :async:
+
+
+   Get event system health information.
+
+   :returns: Dictionary with health information
+
+   .. rubric:: Example
+
+   ```python
+   from agentx.event import get_event_system_health
+
+   health = await get_event_system_health()
+   print(f"Event system running: {health['running']}")
+   print(f"Queue size: {health['queue_size']}")
+   ```
+
+
+.. py:function:: initialize_event_bus(name: str = 'default') -> EventBus
+   :async:
+
+
+   Initialize and start the global event bus.
+
+
+.. py:function:: publish_agent_event(event_data: Any, agent_name: str, task_id: Optional[str] = None, **kwargs) -> str
+   :async:
+
+
+   Convenience function for publishing agent-related events.
+
+   :param event_data: Agent event data
+   :param agent_name: Agent name
+   :param task_id: Optional task ID for correlation
+   :param \*\*kwargs: Additional arguments passed to publish_event
+
+   :returns: Event ID
+
+
+.. py:function:: publish_event(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+   :async:
+
+
+       Publish an event to the event system.
+
+       Args:
+           event_data: Event data (should be a Pydantic model)
+           event_type: Optional event type override
+           priority: Event priority (LOW, NORMAL, HIGH, CRITICAL)
+           source: Event source identifier
+           correlation_id: Correlation ID for tracing related events
+           tags: Additional tags for filtering and categorization
+
+       Returns:
+           Event ID
+
+       Example:
+           ```python
+           from agentx.event import publish_event
+   from .models import TaskStartEvent
+
+           event_id = await publish_event(
+               TaskStartEvent(
+                   task_id="task123",
+                   timestamp=datetime.now(),
+                   initial_prompt="Hello world",
+                   execution_mode="autonomous",
+                   team_config={}
+               ),
+               source="orchestrator",
+               correlation_id="session_abc"
+           )
+           ```
+
+
+
+.. py:function:: publish_event_sync(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+
+   Synchronous wrapper for publish_event.
+
+   Note: This creates a task but doesn't wait for it in sync context.
+   Use publish_event() in async contexts for proper awaiting.
+
+   :param event_data: Event data (should be a Pydantic model)
+   :param event_type: Optional event type override
+   :param priority: Event priority (LOW, NORMAL, HIGH, CRITICAL)
+   :param source: Event source identifier
+   :param correlation_id: Correlation ID for tracing related events
+   :param tags: Additional tags for filtering and categorization
+
+   :returns: Event ID (or "pending" in async contexts)
+
+
+.. py:function:: publish_task_event(event_data: Any, task_id: str, **kwargs) -> str
+   :async:
+
+
+   Convenience function for publishing task-related events.
+
+   :param event_data: Task event data
+   :param task_id: Task ID for correlation
+   :param \*\*kwargs: Additional arguments passed to publish_event
+
+   :returns: Event ID
+
+
+.. py:function:: publish_tool_event(event_data: Any, tool_name: str, agent_name: Optional[str] = None, **kwargs) -> str
+   :async:
+
+
+   Convenience function for publishing tool-related events.
+
+   :param event_data: Tool event data
+   :param tool_name: Tool name
+   :param agent_name: Optional agent name
+   :param \*\*kwargs: Additional arguments passed to publish_event
+
+   :returns: Event ID
+
+
+.. py:function:: subscribe_to_events(event_types: Union[str, List[str]], handler: agentx.event.types.EventHandler, filter_func: Optional[agentx.event.types.EventFilter] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, subscription_id: Optional[str] = None) -> str
+
+   Subscribe to events.
+
+   :param event_types: Event type(s) to subscribe to
+   :param handler: Event handler function (sync or async)
+   :param filter_func: Optional filter function to apply to events
+   :param priority: Subscription priority (higher priority handlers run first)
+   :param subscription_id: Optional custom subscription ID
+
+   :returns: Subscription ID
+
+   .. rubric:: Example
+
+   ```python
+   from agentx.event import subscribe_to_events
+
+   def handle_task_events(event_data):
+       print(f"Task event: {event_data.type}")
+
+   subscription_id = subscribe_to_events(
+       event_types=["event_task_start", "event_task_complete"],
+       handler=handle_task_events,
+       priority=EventPriority.HIGH
+   )
+   ```
+
+
+.. py:function:: unsubscribe_from_events(subscription_id: str) -> bool
+
+   Unsubscribe from events.
+
+   :param subscription_id: Subscription ID to remove
+
+   :returns: True if subscription was found and removed
+
+   .. rubric:: Example
+
+   ```python
+   from agentx.event import unsubscribe_from_events
+
+   success = unsubscribe_from_events("my_subscription_123")
+   if success:
+       print("Successfully unsubscribed")
+   ```
+
+
+.. py:data:: EventFilter
+
+.. py:data:: EventHandler
+

@@ -1,0 +1,265 @@
+agentx.core.tool
+================
+
+.. py:module:: agentx.core.tool
+
+.. autoapi-nested-parse::
+
+   Tool component for function calling and code execution.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.core.tool.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.core.tool.Tool
+   agentx.core.tool.ToolCall
+   agentx.core.tool.ToolRegistry
+   agentx.core.tool.ToolResult
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.core.tool.execute_tool
+   agentx.core.tool.get_tool
+   agentx.core.tool.get_tool_registry
+   agentx.core.tool.get_tool_schemas
+   agentx.core.tool.list_tools
+   agentx.core.tool.print_available_tools
+   agentx.core.tool.register_tool
+   agentx.core.tool.suggest_tools_for_agent
+   agentx.core.tool.tool
+   agentx.core.tool.validate_agent_tools
+
+
+Module Contents
+---------------
+
+.. py:class:: Tool(name: str = '')
+
+   Base class for tools that provide multiple callable methods for LLMs.
+
+
+   .. py:method:: get_callable_methods() -> Dict[str, Callable]
+
+      Get all methods marked with @tool decorator.
+
+
+
+   .. py:method:: get_tool_schemas() -> Dict[str, Dict[str, Any]]
+
+      Get detailed OpenAI function schemas for all callable methods using Pydantic.
+
+
+
+   .. py:attribute:: name
+      :value: ''
+
+
+
+.. py:class:: ToolCall(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Tool call specification with retry policy.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: args
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: expected_output_type
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: retry_policy
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: timeout
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  str
+
+
+.. py:class:: ToolRegistry
+
+   Global tool registry that manages all available tools and creates schemas.
+
+   This is a singleton that holds all registered tools and provides
+   schema generation for any subset of tool names.
+
+
+   .. py:method:: clear()
+
+      Clears all registered tools. Primarily for testing.
+
+
+
+   .. py:method:: execute_tool(name: str, **kwargs) -> ToolResult
+      :async:
+
+
+      Execute a tool by name with automatic parameter validation.
+
+
+
+   .. py:method:: execute_tool_sync(name: str, **kwargs) -> ToolResult
+
+      Synchronous wrapper for executing a tool. For use in non-async contexts.
+
+
+
+   .. py:method:: get_tool(name: str) -> Optional[tuple[Tool, Callable, Optional[pydantic.BaseModel]]]
+
+      Get a tool, method, and pydantic model by name (for executor use).
+
+
+
+   .. py:method:: get_tool_schemas(tool_names: List[str]) -> List[Dict[str, Any]]
+
+      Get detailed OpenAI function schemas for specified tools.
+
+
+
+   .. py:method:: list_tools() -> List[str]
+
+      List all registered tool names.
+
+
+
+   .. py:method:: register_tool(tool: Tool)
+
+      Register a tool and all its callable methods.
+
+
+
+.. py:class:: ToolResult
+
+   Result of tool execution.
+
+
+   .. py:method:: __post_init__()
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_time
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: result
+      :type:  Any
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+.. py:function:: execute_tool(name: str, **kwargs) -> ToolResult
+   :async:
+
+
+   Execute a tool from the global registry.
+
+
+.. py:function:: get_tool(name: str) -> Optional[tuple[Tool, Callable, Optional[pydantic.BaseModel]]]
+
+   Get a tool from the global registry.
+
+
+.. py:function:: get_tool_registry() -> ToolRegistry
+
+   Get the global tool registry instance.
+
+
+.. py:function:: get_tool_schemas(tool_names: List[str]) -> List[Dict[str, Any]]
+
+   Get tool schemas from the global registry.
+
+
+.. py:function:: list_tools() -> List[str]
+
+   List all registered tool names.
+
+
+.. py:function:: print_available_tools()
+
+   Prints a formatted table of all available tools.
+
+
+.. py:function:: register_tool(tool: Tool)
+
+   Register a tool with the global registry.
+
+
+.. py:function:: suggest_tools_for_agent(agent_name: str, agent_description: str = '') -> List[str]
+
+   Suggest a list of relevant tools for a new agent.
+   (This is a placeholder for a more intelligent suggestion mechanism)
+
+
+.. py:function:: tool(description: str = '', return_description: str = '')
+
+   Decorator to mark methods as available tool calls.
+
+   :param description: Clear description of what this tool does
+   :param return_description: Description of what the tool returns
+
+
+.. py:function:: validate_agent_tools(tool_names: List[str]) -> tuple[List[str], List[str]]
+
+   Validate a list of tool names against the registry.
+
+   :returns: A tuple of (valid_tools, invalid_tools)
+
+
+.. py:data:: logger
+

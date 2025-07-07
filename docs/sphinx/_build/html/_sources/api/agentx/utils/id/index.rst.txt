@@ -1,0 +1,33 @@
+agentx.utils.id
+===============
+
+.. py:module:: agentx.utils.id
+
+.. autoapi-nested-parse::
+
+   ID generation utilities for AgentX.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.utils.id.generate_short_id
+
+
+Module Contents
+---------------
+
+.. py:function:: generate_short_id(length: int = 8) -> str
+
+   Generate a short, URL-friendly, cryptographically secure random ID.
+
+   :param length: The desired length of the ID. Defaults to 8.
+   :type length: int
+
+   :returns: A new short ID.
+   :rtype: str
+
+

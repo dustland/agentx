@@ -1,0 +1,113 @@
+agentx.config.team_loader
+=========================
+
+.. py:module:: agentx.config.team_loader
+
+.. autoapi-nested-parse::
+
+   Team configuration loading system.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.config.team_loader.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.config.team_loader.TeamLoader
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.config.team_loader.create_team_from_config
+   agentx.config.team_loader.list_preset_agents
+   agentx.config.team_loader.load_team_config
+   agentx.config.team_loader.validate_team_config
+
+
+Module Contents
+---------------
+
+.. py:class:: TeamLoader(config_dir: Optional[str] = None)
+
+   Loads team configurations from YAML files, supporting standard presets.
+
+
+   .. py:method:: create_agents(team_config: agentx.core.config.TeamConfig) -> List[tuple]
+
+      Create agents from team configuration.
+
+      :returns: List of (agent_config, tools) tuples
+
+
+
+   .. py:method:: load_agent_config(agent_config_data: dict | str) -> agentx.core.config.AgentConfig
+
+
+   .. py:method:: load_preset_agent(agent_name: str) -> agentx.core.config.AgentConfig
+
+      Load a preset agent from the framework's agents configuration.
+
+
+
+   .. py:method:: load_team_config(config_path: str) -> agentx.core.config.TeamConfig
+
+
+   .. py:attribute:: config_dir
+      :value: None
+
+
+
+   .. py:attribute:: logger
+
+
+   .. py:attribute:: prompt_loader
+      :value: None
+
+
+
+   .. py:attribute:: standard_agents_dir
+
+
+.. py:function:: create_team_from_config(team_config: agentx.core.config.TeamConfig)
+
+   Create a Team object from team configuration.
+   This would be the Team.from_config() method.
+
+   :param team_config: Team configuration
+
+   :returns: Team object
+
+
+.. py:function:: list_preset_agents() -> List[str]
+
+   List all available preset agents in the framework.
+
+
+.. py:function:: load_team_config(config_path: str) -> agentx.core.config.TeamConfig
+
+   Loads a team configuration from a given path.
+
+
+.. py:function:: validate_team_config(config_path: str) -> Dict[str, Any]
+
+   Validate a team configuration file.
+
+   :param config_path: Path to team.yaml file
+
+   :returns: Dictionary with validation results
+
+
+.. py:data:: logger
+

@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.builtin_tools &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.builtin_tools</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li><a class="reference internal" href="#agentx.builtin_tools.MemoryTool"><code class="docutils literal notranslate"><span class="pre">MemoryTool</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.builtin_tools.MemoryTool.execute"><code class="docutils literal notranslate"><span class="pre">MemoryTool.execute()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.MemoryTool.memory"><code class="docutils literal notranslate"><span class="pre">MemoryTool.memory</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.builtin_tools.SearchTool"><code class="docutils literal notranslate"><span class="pre">SearchTool</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.builtin_tools.SearchTool.image_search"><code class="docutils literal notranslate"><span class="pre">SearchTool.image_search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.SearchTool.news_search"><code class="docutils literal notranslate"><span class="pre">SearchTool.news_search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.SearchTool.web_search"><code class="docutils literal notranslate"><span class="pre">SearchTool.web_search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.SearchTool.api_key"><code class="docutils literal notranslate"><span class="pre">SearchTool.api_key</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool"><code class="docutils literal notranslate"><span class="pre">WebTool</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool.automate_browser"><code class="docutils literal notranslate"><span class="pre">WebTool.automate_browser()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool.crawl_website"><code class="docutils literal notranslate"><span class="pre">WebTool.crawl_website()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool.extract_content"><code class="docutils literal notranslate"><span class="pre">WebTool.extract_content()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool.extract_content_with_visuals"><code class="docutils literal notranslate"><span class="pre">WebTool.extract_content_with_visuals()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.builtin_tools.WebTool.jina_api_key"><code class="docutils literal notranslate"><span class="pre">WebTool.jina_api_key</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.builtin_tools</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/api/agentx/builtin_tools/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.builtin_tools">
+<span id="agentx-builtin-tools"></span><h1>agentx.builtin_tools<a class="headerlink" href="#module-agentx.builtin_tools" title="Link to this heading"></a></h1>
+<p>This directory contains the implementations of the builtin tools.</p>
+<p>This __init__.py file is special. It contains the function that
+registers all the builtin tools with the core ToolRegistry.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="context/index.html">agentx.builtin_tools.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file/index.html">agentx.builtin_tools.file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="memory/index.html">agentx.builtin_tools.memory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="search/index.html">agentx.builtin_tools.search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="web/index.html">agentx.builtin_tools.web</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.builtin_tools.MemoryTool" title="agentx.builtin_tools.MemoryTool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MemoryTool</span></code></a></p></td>
+<td><p>Memory management capabilities using Memory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.builtin_tools.SearchTool" title="agentx.builtin_tools.SearchTool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SearchTool</span></code></a></p></td>
+<td><p>Web search tool using SerpAPI.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.builtin_tools.WebTool" title="agentx.builtin_tools.WebTool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WebTool</span></code></a></p></td>
+<td><p>Web content extraction and browser automation tool.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.builtin_tools.MemoryTool">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.builtin_tools.</span></span><span class="sig-name descname"><span class="pre">MemoryTool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../memory/models/index.html#agentx.memory.models.MemoryBackend" title="agentx.memory.models.MemoryBackend"><span class="pre">agentx.memory.models.MemoryBackend</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/memory.html#MemoryTool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.MemoryTool" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../tool/models/index.html#agentx.tool.models.Tool" title="agentx.tool.models.Tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agentx.tool.models.Tool</span></code></a></p>
+<p>Memory management capabilities using Memory.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.MemoryTool.execute">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/memory.html#MemoryTool.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.MemoryTool.execute" title="Link to this definition"></a></dt>
+<dd><p>Execute memory operations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.builtin_tools.MemoryTool.memory">
+<span class="sig-name descname"><span class="pre">memory</span></span><a class="headerlink" href="#agentx.builtin_tools.MemoryTool.memory" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.builtin_tools.SearchTool">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.builtin_tools.</span></span><span class="sig-name descname"><span class="pre">SearchTool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/search.html#SearchTool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.SearchTool" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../tool/models/index.html#agentx.tool.models.Tool" title="agentx.tool.models.Tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agentx.tool.models.Tool</span></code></a></p>
+<p>Web search tool using SerpAPI.</p>
+<p>Provides access to multiple search engines including Google, Bing,
+DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.SearchTool.image_search">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">image_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'google'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">safe_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'moderate'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/search.html#SearchTool.image_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.SearchTool.image_search" title="Link to this definition"></a></dt>
+<dd><p>Search for images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – Image search query (required)</p></li>
+<li><p><strong>engine</strong> – Search engine to use - google or bing (default: google)</p></li>
+<li><p><strong>max_results</strong> – Maximum number of image results (default: 10)</p></li>
+<li><p><strong>safe_search</strong> – Safe search setting - off, moderate, strict (default: moderate)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult containing image search results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.SearchTool.news_search">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">news_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'google'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/search.html#SearchTool.news_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.SearchTool.news_search" title="Link to this definition"></a></dt>
+<dd><p>Search for news articles.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – News search query (required)</p></li>
+<li><p><strong>engine</strong> – Search engine to use - google or bing (default: google)</p></li>
+<li><p><strong>max_results</strong> – Maximum number of news results (default: 10)</p></li>
+<li><p><strong>country</strong> – Country code for localized news (default: us)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult containing news search results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.SearchTool.web_search">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">web_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'google'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">language</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'en'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/search.html#SearchTool.web_search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.SearchTool.web_search" title="Link to this definition"></a></dt>
+<dd><p>Search the web using various search engines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – Search query to execute (required)</p></li>
+<li><p><strong>engine</strong> – Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)</p></li>
+<li><p><strong>max_results</strong> – Maximum number of results to return, max 20 (default: 10)</p></li>
+<li><p><strong>country</strong> – Country code for localized results (default: us)</p></li>
+<li><p><strong>language</strong> – Language code for results (default: en)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult containing search results and metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.builtin_tools.SearchTool.api_key">
+<span class="sig-name descname"><span class="pre">api_key</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.builtin_tools.SearchTool.api_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.builtin_tools.</span></span><span class="sig-name descname"><span class="pre">WebTool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jina_api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/web.html#WebTool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.WebTool" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../tool/models/index.html#agentx.tool.models.Tool" title="agentx.tool.models.Tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agentx.tool.models.Tool</span></code></a></p>
+<p>Web content extraction and browser automation tool.</p>
+<p>Combines Firecrawl for content extraction and browser-use for automation.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool.automate_browser">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">automate_browser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instruction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/web.html#WebTool.automate_browser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.WebTool.automate_browser" title="Link to this definition"></a></dt>
+<dd><p>Perform browser automation using natural language instructions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instruction</strong> – Natural language instruction for browser action (required)</p></li>
+<li><p><strong>url</strong> – Optional URL to navigate to first</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult with BrowserAction containing action result</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool.crawl_website">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crawl_website</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/web.html#WebTool.crawl_website"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.WebTool.crawl_website" title="Link to this definition"></a></dt>
+<dd><p>Crawl multiple pages from a website.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> – The base URL to start crawling from (required)</p></li>
+<li><p><strong>limit</strong> – Maximum number of pages to crawl, defaults to 10</p></li>
+<li><p><strong>exclude_paths</strong> – URL paths to exclude from crawling (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult with list of WebContent objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool.extract_content">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">urls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Extract</span> <span class="pre">the</span> <span class="pre">main</span> <span class="pre">content</span> <span class="pre">from</span> <span class="pre">this</span> <span class="pre">webpage'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/web.html#WebTool.extract_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.WebTool.extract_content" title="Link to this definition"></a></dt>
+<dd><p>Extract clean content from one or more URLs using Jina Reader.</p>
+<p>Jina Reader is specifically designed for AI content extraction and handles
+anti-bot protection, JavaScript rendering, and modern web challenges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>urls</strong> – A single URL or list of URLs to extract content from</p></li>
+<li><p><strong>prompt</strong> – Description of what content to focus on (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult with extracted content</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool.extract_content_with_visuals">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_content_with_visuals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">capture_screenshot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_web_search</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../tool/models/index.html#agentx.tool.models.ToolResult" title="agentx.tool.models.ToolResult"><span class="pre">agentx.tool.models.ToolResult</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/builtin_tools/web.html#WebTool.extract_content_with_visuals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.builtin_tools.WebTool.extract_content_with_visuals" title="Link to this definition"></a></dt>
+<dd><p>Enhanced content extraction that captures both textual and visual data from web pages.
+This method is specifically designed to extract data from charts, graphs, infographics,
+and other visual elements that traditional text extraction might miss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> – Single URL to extract content from (required)</p></li>
+<li><p><strong>prompt</strong> – Detailed prompt describing what to extract, including visual elements (required)</p></li>
+<li><p><strong>capture_screenshot</strong> – Whether to capture full-page screenshot for visual analysis, defaults to True</p></li>
+<li><p><strong>enable_web_search</strong> – Whether to expand search beyond the URL, defaults to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ToolResult with comprehensive extracted content including visual data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.builtin_tools.WebTool.jina_api_key">
+<span class="sig-name descname"><span class="pre">jina_api_key</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.builtin_tools.WebTool.jina_api_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,848 @@
+agentx.memory
+=============
+
+.. py:module:: agentx.memory
+
+.. autoapi-nested-parse::
+
+   Memory System Package
+
+   Provides intelligent memory management with event-driven synthesis and context injection.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/agentx/memory/backend/index
+   /api/agentx/memory/factory/index
+   /api/agentx/memory/mem0_backend/index
+   /api/agentx/memory/memory_system/index
+   /api/agentx/memory/models/index
+   /api/agentx/memory/synthesis_engine/index
+   /api/agentx/memory/types/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.memory.Constraint
+   agentx.memory.DocumentChunk
+   agentx.memory.HotIssue
+   agentx.memory.Memory
+   agentx.memory.MemoryBackend
+   agentx.memory.MemoryItem
+   agentx.memory.MemoryQuery
+   agentx.memory.MemorySearchResult
+   agentx.memory.MemoryStats
+   agentx.memory.MemorySynthesisEngine
+   agentx.memory.MemorySystem
+   agentx.memory.MemoryType
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.memory.create_default_memory_backend
+   agentx.memory.create_memory_backend
+   agentx.memory.create_memory_system
+
+
+Package Contents
+----------------
+
+.. py:class:: Constraint(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing user constraints, preferences, or rules.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT']
+      :value: 'CONSTRAINT'
+
+
+
+.. py:class:: DocumentChunk(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing a chunk of document content for semantic search.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: chunk_index
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: source_file_path
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['DOCUMENT_CHUNK']
+      :value: 'DOCUMENT_CHUNK'
+
+
+
+.. py:class:: HotIssue(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing active problems that need attention.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: resolved_by_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['HOT_ISSUE']
+      :value: 'HOT_ISSUE'
+
+
+
+.. py:class:: Memory(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Base memory model for synthesis engine.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+      :value: 'system'
+
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: id
+      :type:  uuid.UUID
+      :value: None
+
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT', 'HOT_ISSUE', 'DOCUMENT_CHUNK']
+
+
+.. py:class:: MemoryBackend
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract interface for memory storage backends.
+
+   Provides a clean interface for storing and retrieving memories,
+   with support for specialized memory types (constraints, hot issues, document chunks).
+
+
+   .. py:method:: add(content: str, memory_type: agentx.memory.types.MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = 1.0) -> str
+      :abstractmethod:
+
+      :async:
+
+
+      Add a memory to the backend.
+
+      :param content: Memory content
+      :param memory_type: Type of memory (text, constraint, hot_issue, etc.)
+      :param agent_name: Name of the agent creating the memory
+      :param metadata: Additional metadata
+      :param importance: Importance score (0.0 to 3.0)
+
+      :returns: Memory ID
+
+
+
+   .. py:method:: clear(agent_name: str = None) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Clear memories, optionally filtered by agent.
+
+      :param agent_name: Agent name filter (None to clear all)
+
+      :returns: Number of memories cleared
+
+
+
+   .. py:method:: count(**filters) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Count memories with optional filters.
+
+      :param \*\*filters: Filter criteria
+
+      :returns: Number of matching memories
+
+
+
+   .. py:method:: delete(memory_id: str) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Delete a memory.
+
+      :param memory_id: Memory identifier
+
+      :returns: True if deleted successfully, False otherwise
+
+
+
+   .. py:method:: get(memory_id: str) -> Optional[agentx.memory.types.MemoryItem]
+      :abstractmethod:
+
+      :async:
+
+
+      Get a specific memory by ID.
+
+      :param memory_id: Memory identifier
+
+      :returns: Memory item if found, None otherwise
+
+
+
+   .. py:method:: get_active_constraints() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraint memories.
+
+
+
+   .. py:method:: get_active_hot_issues() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active hot issue memories.
+
+
+
+   .. py:method:: get_active_rules() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraints and hot issues.
+
+
+
+   .. py:method:: health() -> Dict[str, Any]
+      :abstractmethod:
+
+      :async:
+
+
+      Get backend health status.
+
+      :returns: Health status information
+
+
+
+   .. py:method:: query(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Alias for search method for backward compatibility.
+
+
+
+   .. py:method:: save_memories(memories: List[Dict[str, Any]]) -> List[str]
+      :async:
+
+
+      Save multiple memories in batch.
+
+      :param memories: List of memory dictionaries
+
+      :returns: List of memory IDs
+
+
+
+   .. py:method:: search(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Search memories using semantic similarity and filters.
+
+      :param query: Search query with filters and parameters
+
+      :returns: Search results with relevant memories
+
+
+
+   .. py:method:: search_documents(query: str, top_k: int = 5) -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Search document chunks for semantic similarity.
+
+
+
+   .. py:method:: stats() -> agentx.memory.types.MemoryStats
+      :abstractmethod:
+
+      :async:
+
+
+      Get memory backend statistics.
+
+      :returns: Statistics about the memory backend
+
+
+
+   .. py:method:: update(memory_id: str, **kwargs) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Update memory metadata or content.
+
+      :param memory_id: Memory identifier
+      :param \*\*kwargs: Fields to update
+
+      :returns: True if updated successfully, False otherwise
+
+
+
+.. py:class:: MemoryItem
+
+   Individual memory item with metadata.
+
+
+   .. py:method:: from_dict(data: Dict[str, Any]) -> MemoryItem
+      :classmethod:
+
+
+      Create MemoryItem from dictionary.
+
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: memory_id
+      :type:  str
+      :value: ''
+
+
+
+   .. py:attribute:: memory_type
+      :type:  MemoryType
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: parent_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tags
+      :type:  List[str]
+      :value: []
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: version
+      :type:  Optional[int]
+      :value: None
+
+
+
+.. py:class:: MemoryQuery
+
+   Query parameters for memory operations.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: exclude_used_sources
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: importance_threshold
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: include_metadata
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: limit
+      :type:  int
+      :value: 10
+
+
+
+   .. py:attribute:: max_tokens
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: memory_type
+      :type:  Optional[MemoryType]
+      :value: None
+
+
+
+   .. py:attribute:: metadata_filter
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: time_range
+      :type:  Optional[Tuple[datetime.datetime, datetime.datetime]]
+      :value: None
+
+
+
+.. py:class:: MemorySearchResult
+
+   Result from memory search operations.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: has_more
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: items
+      :type:  List[MemoryItem]
+
+
+   .. py:attribute:: query_metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: query_time_ms
+      :type:  float
+
+
+   .. py:attribute:: total_count
+      :type:  int
+
+
+.. py:class:: MemoryStats
+
+   Memory backend statistics.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: avg_importance
+      :type:  float
+
+
+   .. py:attribute:: memories_by_agent
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: memories_by_type
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: newest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: oldest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: storage_size_mb
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: total_memories
+      :type:  int
+
+
+.. py:class:: MemorySynthesisEngine(memory_backend: agentx.memory.backend.MemoryBackend, brain: Optional[agentx.core.brain.Brain] = None)
+
+   The logical core of the Memory System that analyzes events and creates memories.
+
+   Implements the event-driven analysis logic specified in the architecture:
+   - Analyzes user messages for constraints/preferences
+   - Detects tool failures and creates hot issues
+   - Resolves hot issues when tools succeed
+   - Chunks document content for semantic search
+
+
+   .. py:method:: get_relevant_context(last_user_message: str, agent_name: str = None) -> str
+      :async:
+
+
+      Get relevant context for injection into agent prompts.
+
+      This implements the context retrieval logic from the architecture document.
+
+
+
+   .. py:method:: on_event(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Main event handler - routes events to appropriate analysis methods.
+
+      This implements the event handling logic from the architecture document.
+
+
+
+   .. py:attribute:: backend
+
+
+   .. py:attribute:: brain
+      :value: None
+
+
+
+.. py:class:: MemorySystem(backend: agentx.memory.backend.MemoryBackend, synthesis_engine: agentx.memory.synthesis_engine.MemorySynthesisEngine = None)
+
+   Coordinated Memory System that integrates storage, synthesis, and retrieval.
+
+   This is the main interface for the memory system that provides:
+   - Event-driven memory synthesis
+   - Context-aware memory retrieval
+   - Specialized memory management (constraints, hot issues, document chunks)
+
+
+   .. py:method:: add_memory(content: str, memory_type: agentx.memory.types.MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = 1.0) -> str
+      :async:
+
+
+      Add a memory to the system.
+
+
+
+   .. py:method:: delete_memory(memory_id: str) -> bool
+      :async:
+
+
+      Delete a memory.
+
+
+
+   .. py:method:: get_active_constraints() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraint memories.
+
+
+
+   .. py:method:: get_active_hot_issues() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active hot issue memories.
+
+
+
+   .. py:method:: get_memory(memory_id: str) -> Optional[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get a specific memory by ID.
+
+
+
+   .. py:method:: get_relevant_context(last_user_message: str, agent_name: str = None) -> str
+      :async:
+
+
+      Get memory-derived context for agent prompt injection.
+
+      This implements the context retrieval pipeline from the architecture.
+
+
+
+   .. py:method:: get_system_status() -> Dict[str, Any]
+      :async:
+
+
+      Get comprehensive system status.
+
+
+
+   .. py:method:: initialize() -> None
+      :async:
+
+
+      Initialize the memory system.
+
+
+
+   .. py:method:: on_event(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Handle events for memory synthesis.
+
+      This is the main event handler that gets called by the event bus.
+
+
+
+   .. py:method:: search_documents(query: str, top_k: int = 5) -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Search document chunks for semantic similarity.
+
+
+
+   .. py:method:: search_memories(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :async:
+
+
+      Search memories in the system.
+
+
+
+   .. py:method:: update_memory(memory_id: str, **kwargs) -> bool
+      :async:
+
+
+      Update memory fields.
+
+
+
+   .. py:attribute:: backend
+
+
+   .. py:attribute:: synthesis_engine
+
+
+.. py:class:: MemoryType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of memory content.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:method:: __str__()
+
+      Return str(self).
+
+
+
+   .. py:attribute:: CONSTRAINT
+      :value: 'constraint'
+
+
+
+   .. py:attribute:: DOCUMENT_CHUNK
+      :value: 'document_chunk'
+
+
+
+   .. py:attribute:: HOT_ISSUE
+      :value: 'hot_issue'
+
+
+
+   .. py:attribute:: JSON
+      :value: 'json'
+
+
+
+   .. py:attribute:: KEY_VALUE
+      :value: 'key_value'
+
+
+
+   .. py:attribute:: TEXT
+      :value: 'text'
+
+
+
+   .. py:attribute:: VERSIONED_TEXT
+      :value: 'versioned_text'
+
+
+
+.. py:function:: create_default_memory_backend() -> agentx.memory.backend.MemoryBackend
+
+   Create a memory backend with default configuration.
+
+   :returns: Memory backend instance with default settings
+
+
+.. py:function:: create_memory_backend(config=None) -> agentx.memory.backend.MemoryBackend
+
+   Create a memory backend instance based on configuration.
+
+   :param config: Memory configuration. If None, uses default Mem0 config.
+
+   :returns: Memory backend instance
+
+   :raises ValueError: If backend type is not supported
+   :raises ImportError: If required dependencies are not installed
+
+
+.. py:function:: create_memory_system(backend: agentx.memory.backend.MemoryBackend, brain: Optional[agentx.core.brain.Brain] = None) -> MemorySystem
+
+   Create a memory system with synthesis engine.
+
+

@@ -1,0 +1,684 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.event.models &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.event.models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.event.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Event subsystem models - Self-contained data models for event management.</span>
+
+<span class="sd">This module contains all data models related to event management, following the</span>
+<span class="sd">architectural rule that subsystems should be self-contained and not import from core.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Awaitable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="c1"># Internal utilities (avoid importing from core/utils)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">string</span>
+
+<div class="viewcode-block" id="generate_short_id">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.generate_short_id">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_short_id</span><span class="p">(</span><span class="n">length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a short, URL-friendly, cryptographically secure random ID.&quot;&quot;&quot;</span>
+    <span class="n">alphabet</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">secrets</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT TYPE DEFINITIONS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventType">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventType</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Types of events in the system.&quot;&quot;&quot;</span>
+    <span class="c1"># Task lifecycle events</span>
+    <span class="n">TASK_STARTED</span> <span class="o">=</span> <span class="s2">&quot;task_started&quot;</span>
+    <span class="n">TASK_COMPLETED</span> <span class="o">=</span> <span class="s2">&quot;task_completed&quot;</span>
+    <span class="n">TASK_FAILED</span> <span class="o">=</span> <span class="s2">&quot;task_failed&quot;</span>
+    <span class="n">TASK_PAUSED</span> <span class="o">=</span> <span class="s2">&quot;task_paused&quot;</span>
+    <span class="n">TASK_RESUMED</span> <span class="o">=</span> <span class="s2">&quot;task_resumed&quot;</span>
+    
+    <span class="c1"># Agent events</span>
+    <span class="n">AGENT_STARTED</span> <span class="o">=</span> <span class="s2">&quot;agent_started&quot;</span>
+    <span class="n">AGENT_COMPLETED</span> <span class="o">=</span> <span class="s2">&quot;agent_completed&quot;</span>
+    <span class="n">AGENT_FAILED</span> <span class="o">=</span> <span class="s2">&quot;agent_failed&quot;</span>
+    <span class="n">AGENT_HANDOFF</span> <span class="o">=</span> <span class="s2">&quot;agent_handoff&quot;</span>
+    
+    <span class="c1"># Tool events</span>
+    <span class="n">TOOL_CALL_STARTED</span> <span class="o">=</span> <span class="s2">&quot;tool_call_started&quot;</span>
+    <span class="n">TOOL_CALL_COMPLETED</span> <span class="o">=</span> <span class="s2">&quot;tool_call_completed&quot;</span>
+    <span class="n">TOOL_CALL_FAILED</span> <span class="o">=</span> <span class="s2">&quot;tool_call_failed&quot;</span>
+    <span class="n">TOOL_VALIDATION_ERROR</span> <span class="o">=</span> <span class="s2">&quot;tool_validation_error&quot;</span>
+    
+    <span class="c1"># Memory events</span>
+    <span class="n">MEMORY_ADDED</span> <span class="o">=</span> <span class="s2">&quot;memory_added&quot;</span>
+    <span class="n">MEMORY_RETRIEVED</span> <span class="o">=</span> <span class="s2">&quot;memory_retrieved&quot;</span>
+    <span class="n">MEMORY_SYNTHESIZED</span> <span class="o">=</span> <span class="s2">&quot;memory_synthesized&quot;</span>
+    
+    <span class="c1"># Storage events</span>
+    <span class="n">ARTIFACT_CREATED</span> <span class="o">=</span> <span class="s2">&quot;artifact_created&quot;</span>
+    <span class="n">ARTIFACT_UPDATED</span> <span class="o">=</span> <span class="s2">&quot;artifact_updated&quot;</span>
+    <span class="n">ARTIFACT_DELETED</span> <span class="o">=</span> <span class="s2">&quot;artifact_deleted&quot;</span>
+    
+    <span class="c1"># System events</span>
+    <span class="n">SYSTEM_ERROR</span> <span class="o">=</span> <span class="s2">&quot;system_error&quot;</span>
+    <span class="n">SYSTEM_WARNING</span> <span class="o">=</span> <span class="s2">&quot;system_warning&quot;</span>
+    <span class="n">SYSTEM_INFO</span> <span class="o">=</span> <span class="s2">&quot;system_info&quot;</span>
+    
+    <span class="c1"># Custom events</span>
+    <span class="n">CUSTOM</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="EventPriority">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventPriority">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventPriority</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event priority levels.&quot;&quot;&quot;</span>
+    <span class="n">LOW</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">NORMAL</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">HIGH</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">CRITICAL</span> <span class="o">=</span> <span class="mi">4</span></div>
+
+
+
+<div class="viewcode-block" id="EventStatus">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventStatus">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventStatus</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event processing status.&quot;&quot;&quot;</span>
+    <span class="n">PENDING</span> <span class="o">=</span> <span class="s2">&quot;pending&quot;</span>
+    <span class="n">PROCESSING</span> <span class="o">=</span> <span class="s2">&quot;processing&quot;</span>
+    <span class="n">COMPLETED</span> <span class="o">=</span> <span class="s2">&quot;completed&quot;</span>
+    <span class="n">FAILED</span> <span class="o">=</span> <span class="s2">&quot;failed&quot;</span>
+    <span class="n">RETRYING</span> <span class="o">=</span> <span class="s2">&quot;retrying&quot;</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># CORE EVENT MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="Event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.Event">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Event</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base event model for the AgentX framework.&quot;&quot;&quot;</span>
+    <span class="n">event_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;evt_</span><span class="si">{</span><span class="n">generate_short_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">EventType</span>
+    <span class="n">timestamp</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
+    <span class="n">source</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Component that generated the event</span>
+    
+    <span class="c1"># Event content</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    
+    <span class="c1"># Event context</span>
+    <span class="n">task_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># Event properties</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="n">EventPriority</span> <span class="o">=</span> <span class="n">EventPriority</span><span class="o">.</span><span class="n">NORMAL</span>
+    <span class="n">status</span><span class="p">:</span> <span class="n">EventStatus</span> <span class="o">=</span> <span class="n">EventStatus</span><span class="o">.</span><span class="n">PENDING</span>
+    <span class="n">correlation_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">parent_event_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="Event.to_dict">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.Event.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to dictionary for serialization.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;event_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id</span><span class="p">,</span>
+            <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+            <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+            <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_id</span><span class="p">,</span>
+            <span class="s2">&quot;agent_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_name</span><span class="p">,</span>
+            <span class="s2">&quot;tool_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tool_name</span><span class="p">,</span>
+            <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">priority</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s2">&quot;correlation_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">correlation_id</span><span class="p">,</span>
+            <span class="s2">&quot;parent_event_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_event_id</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># SPECIFIC EVENT MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="TaskEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.TaskEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Task-related events.&quot;&quot;&quot;</span>
+    <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_STARTED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_COMPLETED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_FAILED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_PAUSED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_RESUMED</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TaskStartEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.TaskStartEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskStartEvent</span><span class="p">(</span><span class="n">TaskEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a task starts.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TASK_STARTED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_STARTED</span>
+    <span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">initial_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="TaskCompleteEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.TaskCompleteEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskCompleteEvent</span><span class="p">(</span><span class="n">TaskEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a task completes.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TASK_COMPLETED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_COMPLETED</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">execution_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">total_rounds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+
+<div class="viewcode-block" id="TaskFailEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.TaskFailEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskFailEvent</span><span class="p">(</span><span class="n">TaskEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a task fails.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TASK_FAILED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TASK_FAILED</span>
+    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">error_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">stack_trace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="AgentEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.AgentEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AgentEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Agent-related events.&quot;&quot;&quot;</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_STARTED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_COMPLETED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_FAILED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_HANDOFF</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="AgentStartEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.AgentStartEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AgentStartEvent</span><span class="p">(</span><span class="n">AgentEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when an agent starts processing.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_STARTED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_STARTED</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AgentCompleteEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.AgentCompleteEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AgentCompleteEvent</span><span class="p">(</span><span class="n">AgentEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when an agent completes processing.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_COMPLETED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_COMPLETED</span>
+    <span class="n">response</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">execution_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">tool_calls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="AgentHandoffEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.AgentHandoffEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AgentHandoffEvent</span><span class="p">(</span><span class="n">AgentEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when an agent hands off to another agent.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_HANDOFF</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">AGENT_HANDOFF</span>
+    <span class="n">from_agent</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">to_agent</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">handoff_reason</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="ToolEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.ToolEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tool-related events.&quot;&quot;&quot;</span>
+    <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_STARTED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_COMPLETED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_FAILED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_VALIDATION_ERROR</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="ToolCallStartEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.ToolCallStartEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolCallStartEvent</span><span class="p">(</span><span class="n">ToolEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a tool call starts.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_STARTED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_STARTED</span>
+    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ToolCallCompleteEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.ToolCallCompleteEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolCallCompleteEvent</span><span class="p">(</span><span class="n">ToolEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a tool call completes.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_COMPLETED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_COMPLETED</span>
+    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">execution_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="ToolCallFailEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.ToolCallFailEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ToolCallFailEvent</span><span class="p">(</span><span class="n">ToolEvent</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event emitted when a tool call fails.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_FAILED</span><span class="p">]</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">TOOL_CALL_FAILED</span>
+    <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">error</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">error_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="MemoryEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.MemoryEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MemoryEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Memory-related events.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">MEMORY_ADDED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">MEMORY_RETRIEVED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">MEMORY_SYNTHESIZED</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="StorageEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.StorageEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StorageEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Storage-related events.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">ARTIFACT_CREATED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">ARTIFACT_UPDATED</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">ARTIFACT_DELETED</span>
+    <span class="p">]</span>
+    <span class="n">artifact_path</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+
+<div class="viewcode-block" id="SystemEvent">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.SystemEvent">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;System-related events.&quot;&quot;&quot;</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">SYSTEM_ERROR</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">SYSTEM_WARNING</span><span class="p">,</span>
+        <span class="n">EventType</span><span class="o">.</span><span class="n">SYSTEM_INFO</span>
+    <span class="p">]</span>
+    <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">component</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT HANDLER TYPES</span>
+<span class="c1"># ============================================================================</span>
+
+<span class="n">EventHandler</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">Event</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">Callable</span><span class="p">[[</span><span class="n">Event</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span>
+<span class="p">]</span>
+
+<span class="n">EventFilter</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Event</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span>
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT SUBSCRIPTION MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventSubscription">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventSubscription">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventSubscription</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event subscription configuration.&quot;&quot;&quot;</span>
+    <span class="n">subscription_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;sub_</span><span class="si">{</span><span class="n">generate_short_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">event_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EventType</span><span class="p">]</span>
+    <span class="n">handler_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="n">EventPriority</span> <span class="o">=</span> <span class="n">EventPriority</span><span class="o">.</span><span class="n">NORMAL</span>
+    <span class="n">active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="EventSubscriptionStats">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventSubscriptionStats">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventSubscriptionStats</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistics for event subscriptions.&quot;&quot;&quot;</span>
+    <span class="n">subscription_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">events_processed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">events_failed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">last_event_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">average_processing_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">total_processing_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT BUS MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventBusConfig">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventBusConfig">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventBusConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for the event bus.&quot;&quot;&quot;</span>
+    <span class="n">max_queue_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">flush_interval_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">retry_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">retry_delay_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">enable_persistence</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">persistence_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="EventBusStats">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventBusStats">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventBusStats</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event bus statistics.&quot;&quot;&quot;</span>
+    <span class="n">events_published</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">events_processed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">events_failed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">active_subscriptions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">queue_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">average_processing_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">uptime_seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span></div>
+
+
+
+<div class="viewcode-block" id="EventBusHealth">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventBusHealth">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventBusHealth</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event bus health status.&quot;&quot;&quot;</span>
+    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># &quot;healthy&quot;, &quot;degraded&quot;, &quot;unhealthy&quot;</span>
+    <span class="n">queue_utilization</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># 0.0 to 1.0</span>
+    <span class="n">processing_lag_ms</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">error_rate</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># 0.0 to 1.0</span>
+    <span class="n">last_event_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">datetime</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">warnings</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT MIDDLEWARE MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventMiddleware">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventMiddleware">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventMiddleware</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for event middleware.&quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="EventMiddleware.process_event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventMiddleware.process_event">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">Event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process an event and return the modified event.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    
+<div class="viewcode-block" id="EventMiddleware.get_name">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventMiddleware.get_name">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the middleware name.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EventMiddlewareConfig">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventMiddlewareConfig">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventMiddlewareConfig</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for event middleware.&quot;&quot;&quot;</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT LOGGING AND AUDIT MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventLogEntry">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventLogEntry">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventLogEntry</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event log entry for audit purposes.&quot;&quot;&quot;</span>
+    <span class="n">log_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;log_</span><span class="si">{</span><span class="n">generate_short_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">event</span><span class="p">:</span> <span class="n">Event</span>
+    <span class="n">processing_time_ms</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">handler_results</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">logged_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="EventAuditFilter">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventAuditFilter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventAuditFilter</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter for event audit queries.&quot;&quot;&quot;</span>
+    <span class="n">event_types</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">EventType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">task_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tool_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">priority</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EventPriority</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">time_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">datetime</span><span class="p">,</span> <span class="n">datetime</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT STREAMING MODELS</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="EventStream">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventStream">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventStream</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event stream configuration.&quot;&quot;&quot;</span>
+    <span class="n">stream_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;stream_</span><span class="si">{</span><span class="n">generate_short_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">event_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">EventType</span><span class="p">]</span>
+    <span class="n">filter_expression</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">buffer_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">batch_timeout_ms</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span>
+    <span class="n">active</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="EventBatch">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.EventBatch">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventBatch</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Batch of events for streaming.&quot;&quot;&quot;</span>
+    <span class="n">batch_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;batch_</span><span class="si">{</span><span class="n">generate_short_id</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">events</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Event</span><span class="p">]</span>
+    <span class="n">stream_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
+    <span class="n">sequence_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+
+
+<span class="c1"># ============================================================================</span>
+<span class="c1"># EVENT UTILITIES</span>
+<span class="c1"># ============================================================================</span>
+
+<div class="viewcode-block" id="create_event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.create_event">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_event</span><span class="p">(</span><span class="n">event_type</span><span class="p">:</span> <span class="n">EventType</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">priority</span><span class="p">:</span> <span class="n">EventPriority</span> <span class="o">=</span> <span class="n">EventPriority</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Event</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new event with the specified parameters.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Event</span><span class="p">(</span>
+        <span class="n">event_type</span><span class="o">=</span><span class="n">event_type</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span> <span class="ow">or</span> <span class="p">{},</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+        <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+        <span class="n">priority</span><span class="o">=</span><span class="n">priority</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_task_start_event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.create_task_start_event">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_task_start_event</span><span class="p">(</span><span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">task_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">initial_prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TaskStartEvent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a task start event.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">TaskStartEvent</span><span class="p">(</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+        <span class="n">task_config</span><span class="o">=</span><span class="n">task_config</span> <span class="ow">or</span> <span class="p">{},</span>
+        <span class="n">initial_prompt</span><span class="o">=</span><span class="n">initial_prompt</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_tool_call_event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.create_tool_call_event">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_tool_call_event</span><span class="p">(</span><span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tool_call_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolCallStartEvent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a tool call start event.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ToolCallStartEvent</span><span class="p">(</span>
+        <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span>
+        <span class="n">tool_call_id</span><span class="o">=</span><span class="n">tool_call_id</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">=</span><span class="n">args</span> <span class="ow">or</span> <span class="p">{},</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+        <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_agent_handoff_event">
+<a class="viewcode-back" href="../../../api/agentx/event/models/index.html#agentx.event.models.create_agent_handoff_event">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_agent_handoff_event</span><span class="p">(</span><span class="n">from_agent</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">to_agent</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                              <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">handoff_reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentHandoffEvent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an agent handoff event.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">AgentHandoffEvent</span><span class="p">(</span>
+        <span class="n">agent_name</span><span class="o">=</span><span class="n">from_agent</span><span class="p">,</span>
+        <span class="n">from_agent</span><span class="o">=</span><span class="n">from_agent</span><span class="p">,</span>
+        <span class="n">to_agent</span><span class="o">=</span><span class="n">to_agent</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+        <span class="n">handoff_reason</span><span class="o">=</span><span class="n">handoff_reason</span>
+    <span class="p">)</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

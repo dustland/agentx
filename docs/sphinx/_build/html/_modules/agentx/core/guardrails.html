@@ -1,0 +1,673 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.core.guardrails &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.core.guardrails</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.core.guardrails</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Guardrails Engine - Comprehensive Safety and Compliance System</span>
+
+<span class="sd">This module implements multi-layered safety mechanisms including input validation,</span>
+<span class="sd">output filtering, rate limiting, content safety, and policy compliance checks.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.id</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_short_id</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuardrailPolicy</span><span class="p">,</span> <span class="n">GuardrailType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.message</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuardrailCheck</span><span class="p">,</span> <span class="n">GuardrailPart</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.event</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuardrailViolationEvent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..event</span><span class="w"> </span><span class="kn">import</span> <span class="n">publish_event</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GuardrailContext">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailContext">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuardrailContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Context information for guardrail checks.&quot;&quot;&quot;</span>
+    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">task_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">step_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;text&quot;</span>  <span class="c1"># &quot;text&quot;, &quot;tool_call&quot;, &quot;tool_result&quot;</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="RateLimitState">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.RateLimitState">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateLimitState</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rate limiting state tracking.&quot;&quot;&quot;</span>
+    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">window_start</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span>
+    <span class="n">last_request</span><span class="p">:</span> <span class="n">datetime</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="GuardrailRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuardrailRule</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for guardrail rules.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">severity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">severity</span> <span class="o">=</span> <span class="n">severity</span>  <span class="c1"># &quot;low&quot;, &quot;medium&quot;, &quot;high&quot;, &quot;critical&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">action</span>  <span class="c1"># &quot;block&quot;, &quot;warn&quot;, &quot;log&quot;</span>
+    
+<div class="viewcode-block" id="GuardrailRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailRule.check">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check content against this rule.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="InputValidationRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.InputValidationRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InputValidationRule</span><span class="p">(</span><span class="n">GuardrailRule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input validation rule for sanitizing user inputs.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="InputValidationRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.InputValidationRule.check">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check input against validation patterns.&quot;&quot;&quot;</span>
+        <span class="n">check_id</span> <span class="o">=</span> <span class="n">generate_short_id</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                    <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                    <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;input_validation&quot;</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Input validation failed: content matches prohibited pattern&quot;</span><span class="p">,</span>
+                    <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+                <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+            <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;input_validation&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;passed&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Input validation passed&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ContentFilterRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ContentFilterRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContentFilterRule</span><span class="p">(</span><span class="n">GuardrailRule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Content filtering rule for blocking inappropriate content.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">keywords</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="p">[</span><span class="n">keyword</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="ContentFilterRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ContentFilterRule.check">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check content for inappropriate keywords.&quot;&quot;&quot;</span>
+        <span class="n">check_id</span> <span class="o">=</span> <span class="n">generate_short_id</span><span class="p">()</span>
+        <span class="n">content_lower</span> <span class="o">=</span> <span class="n">content</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">content_lower</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                    <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                    <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;content_filter&quot;</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Content filter triggered: inappropriate content detected&quot;</span><span class="p">,</span>
+                    <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+                <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+            <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;content_filter&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;passed&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Content filter passed&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RateLimitRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.RateLimitRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RateLimitRule</span><span class="p">(</span><span class="n">GuardrailRule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rate limiting rule for preventing abuse.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_requests</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">window_seconds</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_requests</span> <span class="o">=</span> <span class="n">max_requests</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">window_seconds</span> <span class="o">=</span> <span class="n">window_seconds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">RateLimitState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    
+<div class="viewcode-block" id="RateLimitRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.RateLimitRule.check">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check rate limits for the agent.&quot;&quot;&quot;</span>
+        <span class="n">check_id</span> <span class="o">=</span> <span class="n">generate_short_id</span><span class="p">()</span>
+        <span class="n">agent_key</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">agent_name</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        
+        <span class="c1"># Get or create state for this agent</span>
+        <span class="k">if</span> <span class="n">agent_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">agent_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">RateLimitState</span><span class="p">()</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">agent_key</span><span class="p">]</span>
+        
+        <span class="c1"># Check if we need to reset the window</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">now</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">window_start</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_seconds</span><span class="p">:</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">window_start</span> <span class="o">=</span> <span class="n">now</span>
+        
+        <span class="c1"># Increment count</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">last_request</span> <span class="o">=</span> <span class="n">now</span>
+        
+        <span class="c1"># Check if rate limit exceeded</span>
+        <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">count</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_requests</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;rate_limit&quot;</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Rate limit exceeded: </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_requests</span><span class="si">}</span><span class="s2"> requests in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">window_seconds</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">,</span>
+                <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+            <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+            <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;rate_limit&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;passed&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Rate limit check passed: </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_requests</span><span class="si">}</span><span class="s2"> requests&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ContentSafetyRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ContentSafetyRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContentSafetyRule</span><span class="p">(</span><span class="n">GuardrailRule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Content safety rule using pattern matching and heuristics.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">safety_patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safety_patterns</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span> <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">safety_patterns</span><span class="p">]</span>
+    
+<div class="viewcode-block" id="ContentSafetyRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ContentSafetyRule.check">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check content for safety violations.&quot;&quot;&quot;</span>
+        <span class="n">check_id</span> <span class="o">=</span> <span class="n">generate_short_id</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">safety_patterns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                    <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                    <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;content_safety&quot;</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Content safety violation detected&quot;</span><span class="p">,</span>
+                    <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+                <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+            <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;content_safety&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;passed&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Content safety check passed&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ComplianceRule">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ComplianceRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ComplianceRule</span><span class="p">(</span><span class="n">GuardrailRule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compliance rule for organizational and regulatory requirements.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">compliance_checks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">compliance_checks</span> <span class="o">=</span> <span class="n">compliance_checks</span>
+    
+<div class="viewcode-block" id="ComplianceRule.check">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.ComplianceRule.check">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailCheck</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check content for compliance violations.&quot;&quot;&quot;</span>
+        <span class="n">check_id</span> <span class="o">=</span> <span class="n">generate_short_id</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compliance_checks</span><span class="p">:</span>
+            <span class="n">check_type</span> <span class="o">=</span> <span class="n">check</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;pattern&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">check_type</span> <span class="o">==</span> <span class="s2">&quot;pattern&quot;</span><span class="p">:</span>
+                <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">check</span><span class="p">[</span><span class="s2">&quot;pattern&quot;</span><span class="p">],</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pattern</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                        <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                        <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;compliance&quot;</span><span class="p">,</span>
+                        <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                        <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Compliance violation: </span><span class="si">{</span><span class="n">check</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;Policy violation&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+                    <span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="n">check_type</span> <span class="o">==</span> <span class="s2">&quot;length&quot;</span><span class="p">:</span>
+                <span class="n">max_length</span> <span class="o">=</span> <span class="n">check</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_length</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+                        <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+                        <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;compliance&quot;</span><span class="p">,</span>
+                        <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                        <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Content length exceeds limit: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="si">}</span><span class="s2"> &gt; </span><span class="si">{</span><span class="n">max_length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">policy_violated</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">severity</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">severity</span>
+                    <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailCheck</span><span class="p">(</span>
+            <span class="n">check_id</span><span class="o">=</span><span class="n">check_id</span><span class="p">,</span>
+            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;compliance&quot;</span><span class="p">,</span>
+            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;passed&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Compliance check passed&quot;</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GuardrailEngine">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuardrailEngine</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Comprehensive guardrails engine for safety and compliance.</span>
+<span class="sd">    </span>
+<span class="sd">    Implements multi-layered safety mechanisms including input validation,</span>
+<span class="sd">    output filtering, rate limiting, content safety, and policy compliance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">GuardrailRule</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_rules</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GuardrailRule</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Initialize default safety rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_default_rules</span><span class="p">()</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Guardrails engine initialized&quot;</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_default_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize default safety rules.&quot;&quot;&quot;</span>
+        <span class="c1"># Default input validation patterns</span>
+        <span class="n">dangerous_patterns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">r</span><span class="s1">&#39;&lt;script[^&gt;]*&gt;.*?&lt;/script&gt;&#39;</span><span class="p">,</span>  <span class="c1"># Script injection</span>
+            <span class="sa">r</span><span class="s1">&#39;javascript:&#39;</span><span class="p">,</span>  <span class="c1"># JavaScript URLs</span>
+            <span class="sa">r</span><span class="s1">&#39;data:text/html&#39;</span><span class="p">,</span>  <span class="c1"># Data URLs</span>
+            <span class="sa">r</span><span class="s1">&#39;eval\s*\(&#39;</span><span class="p">,</span>  <span class="c1"># Eval calls</span>
+            <span class="sa">r</span><span class="s1">&#39;exec\s*\(&#39;</span><span class="p">,</span>  <span class="c1"># Exec calls</span>
+        <span class="p">]</span>
+        
+        <span class="c1"># Default content safety patterns</span>
+        <span class="n">safety_patterns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">r</span><span class="s1">&#39;\b(password|secret|token|key)\s*[:=]\s*[&quot;</span><span class="se">\&#39;</span><span class="s1">]?[\w\-]+[&quot;</span><span class="se">\&#39;</span><span class="s1">]?&#39;</span><span class="p">,</span>  <span class="c1"># Credentials</span>
+            <span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{4}</span><span class="s1">[-\s]?\d</span><span class="si">{4}</span><span class="s1">[-\s]?\d</span><span class="si">{4}</span><span class="s1">[-\s]?\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span>  <span class="c1"># Credit card numbers</span>
+            <span class="sa">r</span><span class="s1">&#39;\b\d</span><span class="si">{3}</span><span class="s1">-\d</span><span class="si">{2}</span><span class="s1">-\d</span><span class="si">{4}</span><span class="s1">\b&#39;</span><span class="p">,</span>  <span class="c1"># SSN patterns</span>
+        <span class="p">]</span>
+        
+        <span class="c1"># Add default rules</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_rules</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="n">InputValidationRule</span><span class="p">(</span><span class="s2">&quot;default_input_validation&quot;</span><span class="p">,</span> <span class="n">dangerous_patterns</span><span class="p">,</span> <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;block&quot;</span><span class="p">),</span>
+            <span class="n">ContentSafetyRule</span><span class="p">(</span><span class="s2">&quot;default_content_safety&quot;</span><span class="p">,</span> <span class="n">safety_patterns</span><span class="p">,</span> <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;warn&quot;</span><span class="p">),</span>
+            <span class="n">RateLimitRule</span><span class="p">(</span><span class="s2">&quot;default_rate_limit&quot;</span><span class="p">,</span> <span class="n">max_requests</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">window_seconds</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;warn&quot;</span><span class="p">)</span>
+        <span class="p">])</span>
+    
+<div class="viewcode-block" id="GuardrailEngine.add_policy">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine.add_policy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy</span><span class="p">:</span> <span class="n">GuardrailPolicy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a guardrail policy to the engine.&quot;&quot;&quot;</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">rule_config</span> <span class="ow">in</span> <span class="n">policy</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_rule_from_config</span><span class="p">(</span><span class="n">policy</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">rule_config</span><span class="p">,</span> <span class="n">policy</span><span class="o">.</span><span class="n">severity</span><span class="p">,</span> <span class="n">policy</span><span class="o">.</span><span class="n">action</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rule</span><span class="p">:</span>
+                <span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="p">[</span><span class="n">policy</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rules</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Added guardrail policy &#39;</span><span class="si">{</span><span class="n">policy</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span><span class="si">}</span><span class="s2"> rules&quot;</span><span class="p">)</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_rule_from_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">rule_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> 
+                                <span class="n">severity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GuardrailRule</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a guardrail rule from configuration.&quot;&quot;&quot;</span>
+        <span class="n">rule_type</span> <span class="o">=</span> <span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="s2">&quot;input_validation&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">InputValidationRule</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">policy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;validation&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">patterns</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;patterns&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span>
+            <span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="s2">&quot;content_filter&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ContentFilterRule</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">policy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;filter&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">keywords</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;keywords&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span>
+            <span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="s2">&quot;rate_limit&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">RateLimitRule</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">policy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;rate_limit&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">max_requests</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_requests&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+                <span class="n">window_seconds</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;window_seconds&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span>
+            <span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="s2">&quot;content_safety&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ContentSafetyRule</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">policy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;safety&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">safety_patterns</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;patterns&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span>
+            <span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="n">rule_type</span> <span class="o">==</span> <span class="s2">&quot;compliance&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ComplianceRule</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">policy_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;compliance&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">compliance_checks</span><span class="o">=</span><span class="n">rule_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;checks&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">severity</span><span class="p">,</span>
+                <span class="n">action</span><span class="o">=</span><span class="n">action</span>
+            <span class="p">)</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown guardrail rule type: </span><span class="si">{</span><span class="n">rule_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    
+<div class="viewcode-block" id="GuardrailEngine.check_content">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine.check_content">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">,</span> 
+                          <span class="n">policy_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailPart</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check content against guardrail policies.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            content: Content to check</span>
+<span class="sd">            context: Context information</span>
+<span class="sd">            policy_names: Specific policies to check (None for all applicable)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            GuardrailPart with check results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">checks</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1"># Always run global rules</span>
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_rules</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">check</span> <span class="o">=</span> <span class="k">await</span> <span class="n">rule</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+                <span class="n">checks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error running global rule </span><span class="si">{</span><span class="n">rule</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">checks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GuardrailCheck</span><span class="p">(</span>
+                    <span class="n">check_id</span><span class="o">=</span><span class="n">generate_short_id</span><span class="p">(),</span>
+                    <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                    <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Rule execution error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">policy_violated</span><span class="o">=</span><span class="n">rule</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span>
+                <span class="p">))</span>
+        
+        <span class="c1"># Run policy-specific rules</span>
+        <span class="n">policies_to_check</span> <span class="o">=</span> <span class="n">policy_names</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        
+        <span class="k">for</span> <span class="n">policy_name</span> <span class="ow">in</span> <span class="n">policies_to_check</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">policy_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">check</span> <span class="o">=</span> <span class="k">await</span> <span class="n">rule</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+                        <span class="n">checks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">check</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error running policy rule </span><span class="si">{</span><span class="n">rule</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="n">checks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GuardrailCheck</span><span class="p">(</span>
+                            <span class="n">check_id</span><span class="o">=</span><span class="n">generate_short_id</span><span class="p">(),</span>
+                            <span class="n">check_type</span><span class="o">=</span><span class="s2">&quot;error&quot;</span><span class="p">,</span>
+                            <span class="n">status</span><span class="o">=</span><span class="s2">&quot;failed&quot;</span><span class="p">,</span>
+                            <span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Rule execution error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">policy_violated</span><span class="o">=</span><span class="n">rule</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                            <span class="n">severity</span><span class="o">=</span><span class="s2">&quot;high&quot;</span>
+                        <span class="p">))</span>
+        
+        <span class="c1"># Determine overall status</span>
+        <span class="n">failed_checks</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">checks</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;failed&quot;</span><span class="p">]</span>
+        <span class="n">warning_checks</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">checks</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;warning&quot;</span><span class="p">]</span>
+        
+        <span class="k">if</span> <span class="n">failed_checks</span><span class="p">:</span>
+            <span class="n">overall_status</span> <span class="o">=</span> <span class="s2">&quot;failed&quot;</span>
+        <span class="k">elif</span> <span class="n">warning_checks</span><span class="p">:</span>
+            <span class="n">overall_status</span> <span class="o">=</span> <span class="s2">&quot;warning&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">overall_status</span> <span class="o">=</span> <span class="s2">&quot;passed&quot;</span>
+        
+        <span class="c1"># Emit violation events for failed checks</span>
+        <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">failed_checks</span><span class="p">:</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_emit_violation_event</span><span class="p">(</span><span class="n">check</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">GuardrailPart</span><span class="p">(</span>
+            <span class="n">checks</span><span class="o">=</span><span class="n">checks</span><span class="p">,</span>
+            <span class="n">overall_status</span><span class="o">=</span><span class="n">overall_status</span>
+        <span class="p">)</span></div>
+
+    
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_emit_violation_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check</span><span class="p">:</span> <span class="n">GuardrailCheck</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">GuardrailContext</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Emit a guardrail violation event.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Create content sample (first 100 chars)</span>
+            <span class="n">content_sample</span> <span class="o">=</span> <span class="n">content</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;...&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span> <span class="k">else</span> <span class="n">content</span>
+            
+            <span class="n">event</span> <span class="o">=</span> <span class="n">GuardrailViolationEvent</span><span class="p">(</span>
+                <span class="n">violation_id</span><span class="o">=</span><span class="n">check</span><span class="o">.</span><span class="n">check_id</span><span class="p">,</span>
+                <span class="n">check_type</span><span class="o">=</span><span class="n">check</span><span class="o">.</span><span class="n">check_type</span><span class="p">,</span>
+                <span class="n">severity</span><span class="o">=</span><span class="n">check</span><span class="o">.</span><span class="n">severity</span> <span class="ow">or</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span>
+                <span class="n">policy_violated</span><span class="o">=</span><span class="n">check</span><span class="o">.</span><span class="n">policy_violated</span> <span class="ow">or</span> <span class="s2">&quot;unknown&quot;</span><span class="p">,</span>
+                <span class="n">agent_name</span><span class="o">=</span><span class="n">context</span><span class="o">.</span><span class="n">agent_name</span><span class="p">,</span>
+                <span class="n">content_sample</span><span class="o">=</span><span class="n">content_sample</span><span class="p">,</span>
+                <span class="n">action_taken</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_action_for_check</span><span class="p">(</span><span class="n">check</span><span class="p">),</span>
+                <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="p">)</span>
+            
+            <span class="k">await</span> <span class="n">publish_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to emit guardrail violation event: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_action_for_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">check</span><span class="p">:</span> <span class="n">GuardrailCheck</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the action taken for a failed check.&quot;&quot;&quot;</span>
+        <span class="c1"># This would normally be determined by the rule&#39;s action setting</span>
+        <span class="c1"># For now, return a default based on severity</span>
+        <span class="k">if</span> <span class="n">check</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;critical&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;blocked&quot;</span>
+        <span class="k">elif</span> <span class="n">check</span><span class="o">.</span><span class="n">severity</span> <span class="o">==</span> <span class="s2">&quot;high&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;warned&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;logged&quot;</span>
+    
+<div class="viewcode-block" id="GuardrailEngine.should_block_content">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine.should_block_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_block_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">guardrail_part</span><span class="p">:</span> <span class="n">GuardrailPart</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine if content should be blocked based on guardrail results.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">guardrail_part</span><span class="o">.</span><span class="n">checks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">check</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;failed&quot;</span> <span class="ow">and</span> <span class="n">check</span><span class="o">.</span><span class="n">severity</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;critical&quot;</span><span class="p">,</span> <span class="s2">&quot;high&quot;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="GuardrailEngine.get_policy_names">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine.get_policy_names">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_policy_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of available policy names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+    
+<div class="viewcode-block" id="GuardrailEngine.get_policy_stats">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.GuardrailEngine.get_policy_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_policy_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get statistics about guardrail policies and checks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;total_policies&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="p">),</span>
+            <span class="s2">&quot;global_rules&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rules</span><span class="p">),</span>
+            <span class="s2">&quot;policy_rules&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">policies</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<span class="c1"># Global guardrail engine instance</span>
+<span class="n">_guardrail_engine</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GuardrailEngine</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_guardrail_engine">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.get_guardrail_engine">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_guardrail_engine</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">GuardrailEngine</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the global guardrail engine instance.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_guardrail_engine</span>
+    <span class="k">if</span> <span class="n">_guardrail_engine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_guardrail_engine</span> <span class="o">=</span> <span class="n">GuardrailEngine</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">_guardrail_engine</span></div>
+
+
+
+<div class="viewcode-block" id="check_content_safety">
+<a class="viewcode-back" href="../../../api/agentx/core/guardrails/index.html#agentx.core.guardrails.check_content_safety">[docs]</a>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">check_content_safety</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+                             <span class="n">policy_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">task_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                             <span class="n">step_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuardrailPart</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convenience function to check content safety.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        content: Content to check</span>
+<span class="sd">        agent_name: Name of the agent</span>
+<span class="sd">        policy_names: Specific policies to check</span>
+<span class="sd">        task_id: Optional task ID</span>
+<span class="sd">        step_id: Optional step ID</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        GuardrailPart with check results</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">get_guardrail_engine</span><span class="p">()</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">GuardrailContext</span><span class="p">(</span>
+        <span class="n">agent_name</span><span class="o">=</span><span class="n">agent_name</span><span class="p">,</span>
+        <span class="n">task_id</span><span class="o">=</span><span class="n">task_id</span><span class="p">,</span>
+        <span class="n">step_id</span><span class="o">=</span><span class="n">step_id</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="k">await</span> <span class="n">engine</span><span class="o">.</span><span class="n">check_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">policy_names</span><span class="p">)</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

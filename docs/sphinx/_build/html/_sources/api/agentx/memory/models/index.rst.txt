@@ -1,0 +1,1185 @@
+agentx.memory.models
+====================
+
+.. py:module:: agentx.memory.models
+
+.. autoapi-nested-parse::
+
+   Memory subsystem models - Self-contained data models for memory management.
+
+   This module contains all data models related to memory management, following the
+   architectural rule that subsystems should be self-contained and not import from core.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.memory.models.Constraint
+   agentx.memory.models.DocumentChunk
+   agentx.memory.models.HotIssue
+   agentx.memory.models.Memory
+   agentx.memory.models.MemoryBackend
+   agentx.memory.models.MemoryBackendType
+   agentx.memory.models.MemoryConfig
+   agentx.memory.models.MemoryContext
+   agentx.memory.models.MemoryEvent
+   agentx.memory.models.MemoryHealth
+   agentx.memory.models.MemoryInjection
+   agentx.memory.models.MemoryItem
+   agentx.memory.models.MemoryOperation
+   agentx.memory.models.MemoryOperationResult
+   agentx.memory.models.MemoryQuery
+   agentx.memory.models.MemorySearchResult
+   agentx.memory.models.MemoryStats
+   agentx.memory.models.MemoryType
+   agentx.memory.models.SynthesisResult
+   agentx.memory.models.SynthesisRule
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.memory.models.calculate_memory_importance
+   agentx.memory.models.create_memory_item
+   agentx.memory.models.generate_short_id
+
+
+Module Contents
+---------------
+
+.. py:class:: Constraint(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing user constraints, preferences, or rules.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: constraint_category
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: enforcement_level
+      :type:  str
+      :value: 'strict'
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT']
+      :value: 'CONSTRAINT'
+
+
+
+.. py:class:: DocumentChunk(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing a chunk of document content for semantic search.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: chunk_index
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: chunk_size
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: overlap_tokens
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: source_file_path
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['DOCUMENT_CHUNK']
+      :value: 'DOCUMENT_CHUNK'
+
+
+
+.. py:class:: HotIssue(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing active problems that need attention.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: issue_category
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: resolved_by_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: severity
+      :type:  str
+      :value: 'medium'
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['HOT_ISSUE']
+      :value: 'HOT_ISSUE'
+
+
+
+.. py:class:: Memory(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Base memory model for synthesis engine.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+      :value: 'system'
+
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: id
+      :type:  uuid.UUID
+      :value: None
+
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT', 'HOT_ISSUE', 'DOCUMENT_CHUNK']
+
+
+.. py:class:: MemoryBackend
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract interface for memory backend implementations.
+
+
+   .. py:method:: add(content: str, memory_type: MemoryType, agent_name: str, metadata: dict = None, importance: float = 1.0) -> str
+      :abstractmethod:
+
+      :async:
+
+
+      Add a new memory item.
+
+
+
+   .. py:method:: clear(agent_name: str = None) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Clear memories, optionally filtered by agent.
+
+
+
+   .. py:method:: count(**filters) -> int
+      :abstractmethod:
+
+      :async:
+
+
+      Count memories with optional filters.
+
+
+
+   .. py:method:: delete(memory_id: str) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Delete a memory item.
+
+
+
+   .. py:method:: get(memory_id: str) -> Optional[MemoryItem]
+      :abstractmethod:
+
+      :async:
+
+
+      Get a specific memory by ID.
+
+
+
+   .. py:method:: health() -> Dict[str, Any]
+      :abstractmethod:
+
+      :async:
+
+
+      Get backend health information.
+
+
+
+   .. py:method:: query(query: MemoryQuery) -> MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Query memories with structured parameters.
+
+
+
+   .. py:method:: search(query: MemoryQuery) -> MemorySearchResult
+      :abstractmethod:
+
+      :async:
+
+
+      Semantic search across memories.
+
+
+
+   .. py:method:: stats() -> MemoryStats
+      :abstractmethod:
+
+      :async:
+
+
+      Get memory backend statistics.
+
+
+
+   .. py:method:: update(memory_id: str, **kwargs) -> bool
+      :abstractmethod:
+
+      :async:
+
+
+      Update a memory item.
+
+
+
+.. py:class:: MemoryBackendType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of memory backends.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: CHROMA
+      :value: 'chroma'
+
+
+
+   .. py:attribute:: LOCAL
+      :value: 'local'
+
+
+
+   .. py:attribute:: MEM0
+      :value: 'mem0'
+
+
+
+   .. py:attribute:: PINECONE
+      :value: 'pinecone'
+
+
+
+   .. py:attribute:: REDIS
+      :value: 'redis'
+
+
+
+   .. py:attribute:: WEAVIATE
+      :value: 'weaviate'
+
+
+
+.. py:class:: MemoryConfig(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Configuration for memory system.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: backend
+      :type:  MemoryBackendType
+
+
+   .. py:attribute:: batch_size
+      :type:  int
+      :value: 100
+
+
+
+   .. py:attribute:: cache_enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: cache_ttl
+      :type:  int
+      :value: 300
+
+
+
+   .. py:attribute:: config
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: context_enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: importance_threshold
+      :type:  float
+      :value: 0.5
+
+
+
+   .. py:attribute:: max_context_memories
+      :type:  int
+      :value: 10
+
+
+
+   .. py:attribute:: max_memories
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: retention_days
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: synthesis_enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: synthesis_interval
+      :type:  int
+      :value: 3600
+
+
+
+.. py:class:: MemoryContext(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Context for memory retrieval and injection.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: exclude_types
+      :type:  List[MemoryType]
+      :value: None
+
+
+
+   .. py:attribute:: importance_threshold
+      :type:  float
+      :value: 0.5
+
+
+
+   .. py:attribute:: include_types
+      :type:  List[MemoryType]
+      :value: None
+
+
+
+   .. py:attribute:: max_memories
+      :type:  int
+      :value: 10
+
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: time_window_hours
+      :type:  Optional[int]
+      :value: None
+
+
+
+.. py:class:: MemoryEvent(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event emitted by memory operations.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: memory_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: operation
+      :type:  MemoryOperation
+
+
+   .. py:attribute:: success
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+.. py:class:: MemoryHealth(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Memory backend health status.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: backend_type
+      :type:  str
+
+
+   .. py:attribute:: connection_status
+      :type:  bool
+
+
+   .. py:attribute:: error_count
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: last_operation_time
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: metrics
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: status
+      :type:  str
+
+
+   .. py:attribute:: warnings
+      :type:  List[str]
+      :value: None
+
+
+
+.. py:class:: MemoryInjection(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Memory content injected into agent context.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context_metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: memories
+      :type:  List[MemoryItem]
+
+
+   .. py:attribute:: retrieval_query
+      :type:  str
+
+
+   .. py:attribute:: retrieval_time_ms
+      :type:  float
+
+
+   .. py:attribute:: total_tokens
+      :type:  int
+
+
+.. py:class:: MemoryItem
+
+   Individual memory item with metadata.
+
+
+   .. py:method:: from_dict(data: Dict[str, Any]) -> MemoryItem
+      :classmethod:
+
+
+      Create MemoryItem from dictionary.
+
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: memory_id
+      :type:  str
+      :value: ''
+
+
+
+   .. py:attribute:: memory_type
+      :type:  MemoryType
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: parent_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tags
+      :type:  List[str]
+      :value: []
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: version
+      :type:  Optional[int]
+      :value: None
+
+
+
+.. py:class:: MemoryOperation
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of memory operations.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: ADD
+      :value: 'add'
+
+
+
+   .. py:attribute:: CLEAR
+      :value: 'clear'
+
+
+
+   .. py:attribute:: DELETE
+      :value: 'delete'
+
+
+
+   .. py:attribute:: QUERY
+      :value: 'query'
+
+
+
+   .. py:attribute:: SEARCH
+      :value: 'search'
+
+
+
+   .. py:attribute:: SYNTHESIZE
+      :value: 'synthesize'
+
+
+
+   .. py:attribute:: UPDATE
+      :value: 'update'
+
+
+
+.. py:class:: MemoryOperationResult(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Result of a memory operation.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: memory_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: operation
+      :type:  MemoryOperation
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+.. py:class:: MemoryQuery
+
+   Query parameters for memory operations.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: exclude_used_sources
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: importance_threshold
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: include_metadata
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: limit
+      :type:  int
+      :value: 10
+
+
+
+   .. py:attribute:: max_tokens
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: memory_type
+      :type:  Optional[MemoryType]
+      :value: None
+
+
+
+   .. py:attribute:: metadata_filter
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: rerank_results
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: semantic_similarity_threshold
+      :type:  float
+      :value: 0.7
+
+
+
+   .. py:attribute:: time_range
+      :type:  Optional[Tuple[datetime.datetime, datetime.datetime]]
+      :value: None
+
+
+
+.. py:class:: MemorySearchResult
+
+   Result from memory search operations.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: has_more
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: items
+      :type:  List[MemoryItem]
+
+
+   .. py:attribute:: query_metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: query_time_ms
+      :type:  float
+
+
+   .. py:attribute:: similarity_scores
+      :type:  List[float]
+      :value: []
+
+
+
+   .. py:attribute:: total_count
+      :type:  int
+
+
+.. py:class:: MemoryStats
+
+   Memory backend statistics.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: avg_importance
+      :type:  float
+
+
+   .. py:attribute:: backend_type
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: memories_by_agent
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: memories_by_type
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: newest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: oldest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: storage_size_mb
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: total_memories
+      :type:  int
+
+
+.. py:class:: MemoryType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of memory content.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:method:: __str__()
+
+      Return str(self).
+
+
+
+   .. py:attribute:: CONSTRAINT
+      :value: 'constraint'
+
+
+
+   .. py:attribute:: DOCUMENT_CHUNK
+      :value: 'document_chunk'
+
+
+
+   .. py:attribute:: HOT_ISSUE
+      :value: 'hot_issue'
+
+
+
+   .. py:attribute:: JSON
+      :value: 'json'
+
+
+
+   .. py:attribute:: KEY_VALUE
+      :value: 'key_value'
+
+
+
+   .. py:attribute:: TEXT
+      :value: 'text'
+
+
+
+   .. py:attribute:: VERSIONED_TEXT
+      :value: 'versioned_text'
+
+
+
+.. py:class:: SynthesisResult(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Result of memory synthesis operation.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: deleted_memories
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: new_memories
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: processed_memories
+      :type:  int
+
+
+   .. py:attribute:: synthesis_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: updated_memories
+      :type:  List[str]
+      :value: None
+
+
+
+.. py:class:: SynthesisRule(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Rule for memory synthesis.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: actions
+      :type:  List[str]
+
+
+   .. py:attribute:: conditions
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: description
+      :type:  str
+
+
+   .. py:attribute:: enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: priority
+      :type:  int
+      :value: 0
+
+
+
+.. py:function:: calculate_memory_importance(content: str, agent_name: str, memory_type: MemoryType, metadata: Dict[str, Any] = None) -> float
+
+   Calculate importance score for a memory item.
+
+
+.. py:function:: create_memory_item(content: str, memory_type: MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = None) -> MemoryItem
+
+   Create a new memory item with calculated importance.
+
+
+.. py:function:: generate_short_id(length: int = 8) -> str
+
+   Generate a short, URL-friendly, cryptographically secure random ID.
+
+

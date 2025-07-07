@@ -1,0 +1,54 @@
+agentx.builtin_tools.memory
+===========================
+
+.. py:module:: agentx.builtin_tools.memory
+
+.. autoapi-nested-parse::
+
+   Memory Tools - Clean implementation using Memory.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.memory.MemoryTool
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.memory.create_memory_tools
+
+
+Module Contents
+---------------
+
+.. py:class:: MemoryTool(memory: agentx.memory.models.MemoryBackend)
+
+   Bases: :py:obj:`agentx.tool.models.Tool`
+
+
+   Memory management capabilities using Memory.
+
+
+   .. py:method:: execute(action: str, **kwargs) -> dict
+      :async:
+
+
+      Execute memory operations.
+
+
+
+   .. py:attribute:: memory
+
+
+.. py:function:: create_memory_tools(memory: agentx.memory.models.MemoryBackend) -> list[MemoryTool]
+
+   Factory function to create memory tools.
+
+

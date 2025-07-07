@@ -1,0 +1,50 @@
+agentx.core.orchestrator
+========================
+
+.. py:module:: agentx.core.orchestrator
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.core.orchestrator.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.core.orchestrator.Orchestrator
+
+
+Module Contents
+---------------
+
+.. py:class:: Orchestrator(team_config: agentx.core.config.TeamConfig, message_queue: agentx.core.message.MessageQueue, tool_manager: agentx.tool.manager.ToolManager, agents: Dict[str, agentx.core.agent.Agent])
+
+   .. py:method:: run(task: agentx.core.task.Task) -> AsyncGenerator[agentx.core.message.Message, None]
+      :async:
+
+
+
+   .. py:attribute:: agents
+
+
+   .. py:attribute:: message_queue
+
+
+   .. py:attribute:: routing_brain
+      :type:  Optional[agentx.core.brain.Brain]
+
+
+   .. py:attribute:: team_config
+
+
+   .. py:attribute:: tool_manager
+
+
+.. py:data:: logger
+

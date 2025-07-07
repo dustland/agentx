@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.event.middleware &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.event.middleware</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.after_process"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.after_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.before_process"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.before_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.before_publish"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.before_publish()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.cleanup_old_correlations"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.cleanup_old_correlations()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.get_correlation_trace"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.get_correlation_trace()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.on_error"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.on_error()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware.correlation_map"><code class="docutils literal notranslate"><span class="pre">CorrelationMiddleware.correlation_map</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.event.middleware.EventMiddleware"><code class="docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.EventMiddleware.after_process"><code class="docutils literal notranslate"><span class="pre">EventMiddleware.after_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.EventMiddleware.before_process"><code class="docutils literal notranslate"><span class="pre">EventMiddleware.before_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.EventMiddleware.before_publish"><code class="docutils literal notranslate"><span class="pre">EventMiddleware.before_publish()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.EventMiddleware.on_error"><code class="docutils literal notranslate"><span class="pre">EventMiddleware.on_error()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware.after_process"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware.after_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware.before_process"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware.before_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware.before_publish"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware.before_publish()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware.on_error"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware.on_error()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware.filter_func"><code class="docutils literal notranslate"><span class="pre">FilterMiddleware.filter_func</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.after_process"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.after_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.before_process"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.before_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.before_publish"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.before_publish()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.on_error"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.on_error()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.log_level"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.log_level</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware.logger"><code class="docutils literal notranslate"><span class="pre">LoggingMiddleware.logger</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.after_process"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.after_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.before_process"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.before_process()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.before_publish"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.before_publish()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.get_metrics"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.get_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.on_error"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.on_error()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.reset_metrics"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.reset_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware.metrics"><code class="docutils literal notranslate"><span class="pre">MetricsMiddleware.metrics</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.event.middleware.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.event.middleware</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/event/middleware/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.event.middleware">
+<span id="agentx-event-middleware"></span><h1>agentx.event.middleware<a class="headerlink" href="#module-agentx.event.middleware" title="Link to this heading"></a></h1>
+<p>Event middleware for the AgentX event system.</p>
+<p>Provides middleware components for logging, metrics, and custom event processing.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.event.middleware.logger" title="agentx.event.middleware.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.event.middleware.CorrelationMiddleware" title="agentx.event.middleware.CorrelationMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CorrelationMiddleware</span></code></a></p></td>
+<td><p>Middleware for handling event correlation and tracing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.event.middleware.EventMiddleware" title="agentx.event.middleware.EventMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a></p></td>
+<td><p>Base class for event middleware.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.event.middleware.FilterMiddleware" title="agentx.event.middleware.FilterMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilterMiddleware</span></code></a></p></td>
+<td><p>Middleware for filtering events based on custom criteria.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.event.middleware.LoggingMiddleware" title="agentx.event.middleware.LoggingMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoggingMiddleware</span></code></a></p></td>
+<td><p>Middleware for logging events.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.event.middleware.MetricsMiddleware" title="agentx.event.middleware.MetricsMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetricsMiddleware</span></code></a></p></td>
+<td><p>Middleware for collecting event metrics.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">CorrelationMiddleware</span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.event.middleware.EventMiddleware" title="agentx.event.middleware.EventMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a></p>
+<p>Middleware for handling event correlation and tracing.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.after_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.after_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.after_process" title="Link to this definition"></a></dt>
+<dd><p>Track correlation after processing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.before_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.before_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.before_process" title="Link to this definition"></a></dt>
+<dd><p>Track correlation before processing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.before_publish">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.before_publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.before_publish" title="Link to this definition"></a></dt>
+<dd><p>Track correlation before publishing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.cleanup_old_correlations">
+<span class="sig-name descname"><span class="pre">cleanup_old_correlations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_age_hours</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">24</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.cleanup_old_correlations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.cleanup_old_correlations" title="Link to this definition"></a></dt>
+<dd><p>Clean up old correlation traces.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.get_correlation_trace">
+<span class="sig-name descname"><span class="pre">get_correlation_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">correlation_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.get_correlation_trace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.get_correlation_trace" title="Link to this definition"></a></dt>
+<dd><p>Get the trace for a correlation ID.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.on_error">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#CorrelationMiddleware.on_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.on_error" title="Link to this definition"></a></dt>
+<dd><p>Track correlation on error.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.event.middleware.CorrelationMiddleware.correlation_map">
+<span class="sig-name descname"><span class="pre">correlation_map</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.event.middleware.CorrelationMiddleware.correlation_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.event.middleware.EventMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">EventMiddleware</span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#EventMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.EventMiddleware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Base class for event middleware.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.EventMiddleware.after_process">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#EventMiddleware.after_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.EventMiddleware.after_process" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Called after an event is processed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.EventMiddleware.before_process">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#EventMiddleware.before_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.EventMiddleware.before_process" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Called before an event is processed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.EventMiddleware.before_publish">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#EventMiddleware.before_publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.EventMiddleware.before_publish" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Called before an event is published.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.EventMiddleware.on_error">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#EventMiddleware.on_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.EventMiddleware.on_error" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Called when an error occurs during event processing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">FilterMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#FilterMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.event.middleware.EventMiddleware" title="agentx.event.middleware.EventMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a></p>
+<p>Middleware for filtering events based on custom criteria.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware.after_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#FilterMiddleware.after_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware.after_process" title="Link to this definition"></a></dt>
+<dd><p>No action needed after processing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware.before_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#FilterMiddleware.before_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware.before_process" title="Link to this definition"></a></dt>
+<dd><p>Apply filter before processing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware.before_publish">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#FilterMiddleware.before_publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware.before_publish" title="Link to this definition"></a></dt>
+<dd><p>Apply filter before publishing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware.on_error">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#FilterMiddleware.on_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware.on_error" title="Link to this definition"></a></dt>
+<dd><p>No action needed on error.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.event.middleware.FilterMiddleware.filter_func">
+<span class="sig-name descname"><span class="pre">filter_func</span></span><a class="headerlink" href="#agentx.event.middleware.FilterMiddleware.filter_func" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">LoggingMiddleware</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">logging.INFO</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#LoggingMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.event.middleware.EventMiddleware" title="agentx.event.middleware.EventMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a></p>
+<p>Middleware for logging events.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.after_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#LoggingMiddleware.after_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.after_process" title="Link to this definition"></a></dt>
+<dd><p>Log event processing completion.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.before_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#LoggingMiddleware.before_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.before_process" title="Link to this definition"></a></dt>
+<dd><p>Log event processing start.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.before_publish">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#LoggingMiddleware.before_publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.before_publish" title="Link to this definition"></a></dt>
+<dd><p>Log event publication.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.on_error">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#LoggingMiddleware.on_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.on_error" title="Link to this definition"></a></dt>
+<dd><p>Log event processing error.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.log_level">
+<span class="sig-name descname"><span class="pre">log_level</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.log_level" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.event.middleware.LoggingMiddleware.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.event.middleware.LoggingMiddleware.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">MetricsMiddleware</span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#agentx.event.middleware.EventMiddleware" title="agentx.event.middleware.EventMiddleware"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EventMiddleware</span></code></a></p>
+<p>Middleware for collecting event metrics.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.after_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">after_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.after_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.after_process" title="Link to this definition"></a></dt>
+<dd><p>Record processing completion metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.before_process">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.before_process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.before_process" title="Link to this definition"></a></dt>
+<dd><p>Record processing start time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.before_publish">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">before_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.before_publish"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.before_publish" title="Link to this definition"></a></dt>
+<dd><p>Record event publication metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.get_metrics">
+<span class="sig-name descname"><span class="pre">get_metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.get_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.get_metrics" title="Link to this definition"></a></dt>
+<dd><p>Get current metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.on_error">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">on_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../types/index.html#agentx.event.types.Event" title="agentx.event.types.Event"><span class="pre">agentx.event.types.Event</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><span class="pre">Exception</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.on_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.on_error" title="Link to this definition"></a></dt>
+<dd><p>Record error metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.reset_metrics">
+<span class="sig-name descname"><span class="pre">reset_metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/event/middleware.html#MetricsMiddleware.reset_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.reset_metrics" title="Link to this definition"></a></dt>
+<dd><p>Reset all metrics.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.event.middleware.MetricsMiddleware.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.event.middleware.MetricsMiddleware.metrics" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.event.middleware.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.event.middleware.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.event.middleware.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

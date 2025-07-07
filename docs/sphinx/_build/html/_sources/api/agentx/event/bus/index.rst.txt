@@ -1,0 +1,170 @@
+agentx.event.bus
+================
+
+.. py:module:: agentx.event.bus
+
+.. autoapi-nested-parse::
+
+   Event Bus implementation for AgentX framework.
+
+   Provides a centralized event system with publish/subscribe patterns,
+   middleware support, and comprehensive observability features.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.event.bus.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.event.bus.EventBus
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.event.bus.get_event_bus
+   agentx.event.bus.initialize_event_bus
+
+
+Module Contents
+---------------
+
+.. py:class:: EventBus(name: str = 'default')
+
+   Centralized event bus for publish/subscribe messaging.
+
+   Features:
+   - Async/sync event publishing
+   - Priority-based event processing
+   - Event filtering and routing
+   - Middleware support
+   - Comprehensive statistics
+   - Error handling and retries
+
+
+   .. py:method:: add_middleware(middleware: agentx.event.middleware.EventMiddleware) -> None
+
+      Add middleware to the event bus.
+
+
+
+   .. py:method:: get_stats() -> agentx.event.types.EventBusStats
+
+      Get event bus statistics.
+
+
+
+   .. py:method:: get_subscriptions() -> Dict[str, List[str]]
+
+      Get current subscriptions by event type.
+
+
+
+   .. py:method:: health_check() -> Dict[str, Any]
+      :async:
+
+
+      Perform health check.
+
+
+
+   .. py:method:: publish(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+      :async:
+
+
+      Publish an event.
+
+      :param event_data: Event data (should be a Pydantic model)
+      :param event_type: Optional event type override
+      :param priority: Event priority
+      :param source: Event source identifier
+      :param correlation_id: Correlation ID for tracing
+      :param tags: Additional tags
+
+      :returns: Event ID
+
+
+
+   .. py:method:: publish_sync(event_data: Any, event_type: Optional[str] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, source: Optional[str] = None, correlation_id: Optional[str] = None, tags: Optional[Dict[str, str]] = None) -> str
+
+      Synchronous wrapper for publish.
+
+      Note: This creates a task but doesn't wait for it in sync context.
+      Use publish() in async contexts for proper awaiting.
+
+
+
+   .. py:method:: start() -> None
+      :async:
+
+
+      Start the event bus worker.
+
+
+
+   .. py:method:: stop() -> None
+      :async:
+
+
+      Stop the event bus worker.
+
+
+
+   .. py:method:: subscribe(event_types: Union[str, List[str]], handler: agentx.event.types.EventHandler, filter_func: Optional[agentx.event.types.EventFilter] = None, priority: agentx.event.types.EventPriority = EventPriority.NORMAL, subscription_id: Optional[str] = None) -> str
+
+      Subscribe to events.
+
+      :param event_types: Event type(s) to subscribe to. Supports wildcards:
+                          - "*" matches any characters
+                          - "?" matches single character
+                          - "Agent*" matches "AgentStartEvent", "AgentCompleteEvent", etc.
+                          - "*Event" matches all events ending with "Event"
+      :param handler: Event handler function
+      :param filter_func: Optional filter function
+      :param priority: Subscription priority
+      :param subscription_id: Optional custom subscription ID
+
+      :returns: Subscription ID
+
+
+
+   .. py:method:: unsubscribe(subscription_id: str) -> bool
+
+      Unsubscribe from events.
+
+      :param subscription_id: Subscription ID to remove
+
+      :returns: True if subscription was found and removed
+
+
+
+   .. py:attribute:: name
+      :value: 'default'
+
+
+
+.. py:function:: get_event_bus(name: str = 'default') -> EventBus
+
+   Get or create the global event bus instance.
+
+
+.. py:function:: initialize_event_bus(name: str = 'default') -> EventBus
+   :async:
+
+
+   Initialize and start the global event bus.
+
+
+.. py:data:: logger
+

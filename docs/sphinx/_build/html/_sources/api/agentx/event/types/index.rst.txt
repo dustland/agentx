@@ -1,0 +1,285 @@
+agentx.event.types
+==================
+
+.. py:module:: agentx.event.types
+
+.. autoapi-nested-parse::
+
+   Event system type definitions.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.event.types.EventFilter
+   agentx.event.types.EventHandler
+   agentx.event.types.T
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.event.types.Event
+   agentx.event.types.EventBusStats
+   agentx.event.types.EventMetadata
+   agentx.event.types.EventPriority
+   agentx.event.types.EventSubscription
+
+
+Module Contents
+---------------
+
+.. py:class:: Event(/, **data: Any)
+
+   Bases: :py:obj:`agentx.event.models.BaseModel`, :py:obj:`Generic`\ [\ :py:obj:`T`\ ]
+
+
+   Base event wrapper with metadata.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: data
+      :type:  T
+
+
+   .. py:property:: event_id
+      :type: str
+
+
+      Get the event ID.
+
+
+   .. py:property:: event_type
+      :type: str
+
+
+      Get the event type from the data.
+
+
+   .. py:attribute:: metadata
+      :type:  EventMetadata
+
+
+   .. py:property:: timestamp
+      :type: agentx.event.models.datetime
+
+
+      Get the event timestamp.
+
+
+.. py:class:: EventBusStats(/, **data: Any)
+
+   Bases: :py:obj:`agentx.event.models.BaseModel`
+
+
+   Event bus statistics.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: active_subscriptions
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: average_processing_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: event_types_count
+      :type:  agentx.event.models.Dict[str, int]
+      :value: None
+
+
+
+   .. py:attribute:: last_event_timestamp
+      :type:  agentx.event.models.Optional[agentx.event.models.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: total_events_failed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: total_events_processed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: total_events_published
+      :type:  int
+      :value: 0
+
+
+
+.. py:class:: EventMetadata(/, **data: Any)
+
+   Bases: :py:obj:`agentx.event.models.BaseModel`
+
+
+   Metadata for events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: correlation_id
+      :type:  agentx.event.models.Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_id
+      :type:  str
+
+
+   .. py:attribute:: max_retries
+      :type:  int
+      :value: 3
+
+
+
+   .. py:attribute:: priority
+      :type:  EventPriority
+
+
+   .. py:attribute:: retry_count
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: source
+      :type:  agentx.event.models.Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tags
+      :type:  agentx.event.models.Dict[str, str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  agentx.event.models.datetime
+      :value: None
+
+
+
+.. py:class:: EventPriority(*args, **kwds)
+
+   Bases: :py:obj:`agentx.event.models.Enum`
+
+
+   Event priority levels.
+
+
+   .. py:attribute:: CRITICAL
+      :value: 4
+
+
+
+   .. py:attribute:: HIGH
+      :value: 3
+
+
+
+   .. py:attribute:: LOW
+      :value: 1
+
+
+
+   .. py:attribute:: NORMAL
+      :value: 2
+
+
+
+.. py:class:: EventSubscription(/, **data: Any)
+
+   Bases: :py:obj:`agentx.event.models.BaseModel`
+
+
+   Event subscription configuration.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: created_at
+      :type:  agentx.event.models.datetime
+      :value: None
+
+
+
+   .. py:attribute:: event_types
+      :type:  agentx.event.models.List[str]
+
+
+   .. py:attribute:: filter_func
+      :type:  agentx.event.models.Optional[EventFilter]
+      :value: None
+
+
+
+   .. py:attribute:: handler
+      :type:  EventHandler
+
+
+   .. py:attribute:: metadata
+      :type:  agentx.event.models.Dict[str, agentx.event.models.Any]
+      :value: None
+
+
+
+   .. py:attribute:: priority
+      :type:  EventPriority
+
+
+   .. py:attribute:: subscription_id
+      :type:  str
+
+
+.. py:data:: EventFilter
+
+.. py:data:: EventHandler
+
+.. py:data:: T
+

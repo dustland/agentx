@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.search &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.search</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li><a class="reference internal" href="#agentx.search.SearchBackend"><code class="docutils literal notranslate"><span class="pre">SearchBackend</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.search.SearchBackend.is_available"><code class="docutils literal notranslate"><span class="pre">SearchBackend.is_available()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchBackend.search"><code class="docutils literal notranslate"><span class="pre">SearchBackend.search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchBackend.name"><code class="docutils literal notranslate"><span class="pre">SearchBackend.name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.search.SearchManager"><code class="docutils literal notranslate"><span class="pre">SearchManager</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.search.SearchManager.add_backend"><code class="docutils literal notranslate"><span class="pre">SearchManager.add_backend()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchManager.get_backend"><code class="docutils literal notranslate"><span class="pre">SearchManager.get_backend()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchManager.list_backends"><code class="docutils literal notranslate"><span class="pre">SearchManager.list_backends()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchManager.search"><code class="docutils literal notranslate"><span class="pre">SearchManager.search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchManager.backends"><code class="docutils literal notranslate"><span class="pre">SearchManager.backends</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchManager.default_backend"><code class="docutils literal notranslate"><span class="pre">SearchManager.default_backend</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse"><code class="docutils literal notranslate"><span class="pre">SearchResponse</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.engine"><code class="docutils literal notranslate"><span class="pre">SearchResponse.engine</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.error"><code class="docutils literal notranslate"><span class="pre">SearchResponse.error</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.query"><code class="docutils literal notranslate"><span class="pre">SearchResponse.query</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.response_time"><code class="docutils literal notranslate"><span class="pre">SearchResponse.response_time</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.results"><code class="docutils literal notranslate"><span class="pre">SearchResponse.results</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.success"><code class="docutils literal notranslate"><span class="pre">SearchResponse.success</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.timestamp"><code class="docutils literal notranslate"><span class="pre">SearchResponse.timestamp</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResponse.total_results"><code class="docutils literal notranslate"><span class="pre">SearchResponse.total_results</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.search.SearchResult"><code class="docutils literal notranslate"><span class="pre">SearchResult</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.search.SearchResult.date"><code class="docutils literal notranslate"><span class="pre">SearchResult.date</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.displayed_link"><code class="docutils literal notranslate"><span class="pre">SearchResult.displayed_link</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.language"><code class="docutils literal notranslate"><span class="pre">SearchResult.language</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.position"><code class="docutils literal notranslate"><span class="pre">SearchResult.position</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.relevance_score"><code class="docutils literal notranslate"><span class="pre">SearchResult.relevance_score</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.snippet"><code class="docutils literal notranslate"><span class="pre">SearchResult.snippet</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.summary"><code class="docutils literal notranslate"><span class="pre">SearchResult.summary</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.title"><code class="docutils literal notranslate"><span class="pre">SearchResult.title</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SearchResult.url"><code class="docutils literal notranslate"><span class="pre">SearchResult.url</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.search.SerpAPIBackend"><code class="docutils literal notranslate"><span class="pre">SerpAPIBackend</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.search.SerpAPIBackend.is_available"><code class="docutils literal notranslate"><span class="pre">SerpAPIBackend.is_available()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SerpAPIBackend.search"><code class="docutils literal notranslate"><span class="pre">SerpAPIBackend.search()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SerpAPIBackend.api_key"><code class="docutils literal notranslate"><span class="pre">SerpAPIBackend.api_key</span></code></a></li>
+<li><a class="reference internal" href="#agentx.search.SerpAPIBackend.name"><code class="docutils literal notranslate"><span class="pre">SerpAPIBackend.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.search</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/api/agentx/search/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.search">
+<span id="agentx-search"></span><h1>agentx.search<a class="headerlink" href="#module-agentx.search" title="Link to this heading"></a></h1>
+<p>AgentX Search Module</p>
+<p>Provides web search capabilities with multiple backend implementations.</p>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interfaces/index.html">agentx.search.interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="search_manager/index.html">agentx.search.search_manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serpapi_backend/index.html">agentx.search.serpapi_backend</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.search.SearchBackend" title="agentx.search.SearchBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SearchBackend</span></code></a></p></td>
+<td><p>Abstract base class for search backends.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.search.SearchManager" title="agentx.search.SearchManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SearchManager</span></code></a></p></td>
+<td><p>Manages multiple search backends and provides unified search interface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.search.SearchResponse" title="agentx.search.SearchResponse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SearchResponse</span></code></a></p></td>
+<td><p>Represents a complete search response.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.search.SearchResult" title="agentx.search.SearchResult"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SearchResult</span></code></a></p></td>
+<td><p>Represents a single search result.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.search.SerpAPIBackend" title="agentx.search.SerpAPIBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SerpAPIBackend</span></code></a></p></td>
+<td><p>Search backend using SerpAPI service.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.search.SearchBackend">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.search.</span></span><span class="sig-name descname"><span class="pre">SearchBackend</span></span><a class="reference internal" href="../../../_modules/agentx/search/interfaces.html#SearchBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchBackend" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/abc.html#abc.ABC" title="(in Python v3.13)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></a></p>
+<p>Abstract base class for search backends.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchBackend.is_available">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/interfaces.html#SearchBackend.is_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchBackend.is_available" title="Link to this definition"></a></dt>
+<dd><p>Check if the backend is available and properly configured.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchBackend.search">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'google'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">language</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'en'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#agentx.search.SearchResponse" title="agentx.search.SearchResponse"><span class="pre">SearchResponse</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/interfaces.html#SearchBackend.search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchBackend.search" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Async<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Execute a search query.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="agentx.search.SearchBackend.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchBackend.name" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Abstractmethod<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<p>Backend name.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.search.SearchManager">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.search.</span></span><span class="sig-name descname"><span class="pre">SearchManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'serpapi'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">backend_configs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/search/search_manager.html#SearchManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchManager" title="Link to this definition"></a></dt>
+<dd><p>Manages multiple search backends and provides unified search interface.</p>
+<p>Initialize search manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>default_backend</strong> – Default backend to use for searches</p></li>
+<li><p><strong>**backend_configs</strong> – Configuration for different backends</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.add_backend">
+<span class="sig-name descname"><span class="pre">add_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchBackend" title="agentx.search.interfaces.SearchBackend"><span class="pre">agentx.search.interfaces.SearchBackend</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/search_manager.html#SearchManager.add_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchManager.add_backend" title="Link to this definition"></a></dt>
+<dd><p>Add a new search backend.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.get_backend">
+<span class="sig-name descname"><span class="pre">get_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchBackend" title="agentx.search.interfaces.SearchBackend"><span class="pre">agentx.search.interfaces.SearchBackend</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/search_manager.html#SearchManager.get_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchManager.get_backend" title="Link to this definition"></a></dt>
+<dd><p>Get a search backend by name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.list_backends">
+<span class="sig-name descname"><span class="pre">list_backends</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/search/search_manager.html#SearchManager.list_backends"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchManager.list_backends" title="Link to this definition"></a></dt>
+<dd><p>List all backends and their availability status.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.search">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchResponse" title="agentx.search.interfaces.SearchResponse"><span class="pre">agentx.search.interfaces.SearchResponse</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/search_manager.html#SearchManager.search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchManager.search" title="Link to this definition"></a></dt>
+<dd><p>Execute a search using the specified or default backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – Search query</p></li>
+<li><p><strong>backend</strong> – Backend to use (defaults to default_backend)</p></li>
+<li><p><strong>**kwargs</strong> – Additional search parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SearchResponse with results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.backends">
+<span class="sig-name descname"><span class="pre">backends</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchBackend" title="agentx.search.interfaces.SearchBackend"><span class="pre">agentx.search.interfaces.SearchBackend</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.search.SearchManager.backends" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchManager.default_backend">
+<span class="sig-name descname"><span class="pre">default_backend</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'serpapi'</span></em><a class="headerlink" href="#agentx.search.SearchManager.default_backend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.search.</span></span><span class="sig-name descname"><span class="pre">SearchResponse</span></span><a class="reference internal" href="../../../_modules/agentx/search/interfaces.html#SearchResponse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchResponse" title="Link to this definition"></a></dt>
+<dd><p>Represents a complete search response.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.engine">
+<span class="sig-name descname"><span class="pre">engine</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.engine" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.error">
+<span class="sig-name descname"><span class="pre">error</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.search.SearchResponse.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.query">
+<span class="sig-name descname"><span class="pre">query</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.query" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.response_time">
+<span class="sig-name descname"><span class="pre">response_time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.response_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.results">
+<span class="sig-name descname"><span class="pre">results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#agentx.search.SearchResult" title="agentx.search.SearchResult"><span class="pre">SearchResult</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#agentx.search.SearchResponse.results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.success">
+<span class="sig-name descname"><span class="pre">success</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.timestamp">
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.timestamp" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResponse.total_results">
+<span class="sig-name descname"><span class="pre">total_results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#agentx.search.SearchResponse.total_results" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.search.SearchResult">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.search.</span></span><span class="sig-name descname"><span class="pre">SearchResult</span></span><a class="reference internal" href="../../../_modules/agentx/search/interfaces.html#SearchResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SearchResult" title="Link to this definition"></a></dt>
+<dd><p>Represents a single search result.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.date">
+<span class="sig-name descname"><span class="pre">date</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.search.SearchResult.date" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.displayed_link">
+<span class="sig-name descname"><span class="pre">displayed_link</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.search.SearchResult.displayed_link" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.language">
+<span class="sig-name descname"><span class="pre">language</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'en'</span></em><a class="headerlink" href="#agentx.search.SearchResult.language" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.position">
+<span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#agentx.search.SearchResult.position" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.relevance_score">
+<span class="sig-name descname"><span class="pre">relevance_score</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#agentx.search.SearchResult.relevance_score" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.snippet">
+<span class="sig-name descname"><span class="pre">snippet</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResult.snippet" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.search.SearchResult.summary" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.title">
+<span class="sig-name descname"><span class="pre">title</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResult.title" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SearchResult.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SearchResult.url" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.search.SerpAPIBackend">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.search.</span></span><span class="sig-name descname"><span class="pre">SerpAPIBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/search/serpapi_backend.html#SerpAPIBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SerpAPIBackend" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchBackend" title="agentx.search.interfaces.SearchBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">agentx.search.interfaces.SearchBackend</span></code></a></p>
+<p>Search backend using SerpAPI service.</p>
+<p>Initialize SerpAPI backend.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>api_key</strong> – SerpAPI key. If not provided, uses SERPAPI_KEY environment variable.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SerpAPIBackend.is_available">
+<span class="sig-name descname"><span class="pre">is_available</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/serpapi_backend.html#SerpAPIBackend.is_available"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SerpAPIBackend.is_available" title="Link to this definition"></a></dt>
+<dd><p>Check if SerpAPI backend is available.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.search.SerpAPIBackend.search">
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'google'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'us'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">language</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'en'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="interfaces/index.html#agentx.search.interfaces.SearchResponse" title="agentx.search.interfaces.SearchResponse"><span class="pre">agentx.search.interfaces.SearchResponse</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/search/serpapi_backend.html#SerpAPIBackend.search"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.search.SerpAPIBackend.search" title="Link to this definition"></a></dt>
+<dd><p>Execute search using SerpAPI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – Search query</p></li>
+<li><p><strong>engine</strong> – Search engine to use</p></li>
+<li><p><strong>max_results</strong> – Maximum number of results (capped at 20)</p></li>
+<li><p><strong>country</strong> – Country code for localization</p></li>
+<li><p><strong>language</strong> – Language code for results</p></li>
+<li><p><strong>**kwargs</strong> – Additional search parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>SearchResponse with results and metadata</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.search.SerpAPIBackend.api_key">
+<span class="sig-name descname"><span class="pre">api_key</span></span><a class="headerlink" href="#agentx.search.SerpAPIBackend.api_key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="agentx.search.SerpAPIBackend.name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#agentx.search.SerpAPIBackend.name" title="Link to this definition"></a></dt>
+<dd><p>Backend name.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+agentx.search.search_manager
+============================
+
+.. py:module:: agentx.search.search_manager
+
+.. autoapi-nested-parse::
+
+   Search manager that coordinates different search backends.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.search.search_manager.SearchManager
+
+
+Module Contents
+---------------
+
+.. py:class:: SearchManager(default_backend: str = 'serpapi', **backend_configs)
+
+   Manages multiple search backends and provides unified search interface.
+
+   Initialize search manager.
+
+   :param default_backend: Default backend to use for searches
+   :param \*\*backend_configs: Configuration for different backends
+
+
+   .. py:method:: add_backend(name: str, backend: agentx.search.interfaces.SearchBackend) -> None
+
+      Add a new search backend.
+
+
+
+   .. py:method:: get_backend(name: Optional[str] = None) -> agentx.search.interfaces.SearchBackend
+
+      Get a search backend by name.
+
+
+
+   .. py:method:: list_backends() -> Dict[str, bool]
+
+      List all backends and their availability status.
+
+
+
+   .. py:method:: search(query: str, backend: Optional[str] = None, **kwargs) -> agentx.search.interfaces.SearchResponse
+      :async:
+
+
+      Execute a search using the specified or default backend.
+
+      :param query: Search query
+      :param backend: Backend to use (defaults to default_backend)
+      :param \*\*kwargs: Additional search parameters
+
+      :returns: SearchResponse with results
+
+
+
+   .. py:attribute:: backends
+      :type:  Dict[str, agentx.search.interfaces.SearchBackend]
+
+
+   .. py:attribute:: default_backend
+      :value: 'serpapi'
+
+
+

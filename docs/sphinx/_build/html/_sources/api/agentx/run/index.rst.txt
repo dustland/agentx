@@ -1,0 +1,45 @@
+agentx.run
+==========
+
+.. py:module:: agentx.run
+
+.. autoapi-nested-parse::
+
+   Simple runner functions for AgentX examples
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.run.monitor
+   agentx.run.run_example
+   agentx.run.start
+   agentx.run.web
+
+
+Module Contents
+---------------
+
+.. py:function:: monitor(project_path: Optional[str] = None)
+
+   Run observability monitor in independent mode (post-mortem analysis).
+
+
+.. py:function:: run_example(example_name: str = 'superwriter') -> int
+
+   Run an example.
+
+
+.. py:function:: start()
+
+   Start the AgentX API server with integrated observability.
+
+
+.. py:function:: web(project_path: Optional[str] = None, host: str = '0.0.0.0', port: int = 8501)
+
+   Start the modern web-based observability dashboard.
+
+

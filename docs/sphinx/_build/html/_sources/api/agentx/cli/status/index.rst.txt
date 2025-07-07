@@ -1,0 +1,47 @@
+agentx.cli.status
+=================
+
+.. py:module:: agentx.cli.status
+
+.. autoapi-nested-parse::
+
+   CLI Status Commands
+
+   Handles status, version, and configuration display functionality.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.cli.status.init_config
+   agentx.cli.status.show_config
+   agentx.cli.status.show_status
+   agentx.cli.status.show_version
+
+
+Module Contents
+---------------
+
+.. py:function:: init_config() -> None
+
+   Initialize default configuration.
+
+
+.. py:function:: show_config() -> None
+
+   Show current configuration.
+
+
+.. py:function:: show_status() -> None
+
+   Show system status.
+
+
+.. py:function:: show_version() -> None
+
+   Show version information.
+
+

@@ -1,0 +1,466 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.observability.web_app &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.observability.web_app</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.observability.web_app</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Modern Web Interface for AgentX Observability</span>
+
+<span class="sd">FastAPI + HTMX + Jinja2 + TailwindCSS + Preline UI</span>
+<span class="sd">A beautiful, responsive web dashboard for monitoring AgentX project data.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Depends</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTMLResponse</span><span class="p">,</span> <span class="n">JSONResponse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.staticfiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">StaticFiles</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.templating</span><span class="w"> </span><span class="kn">import</span> <span class="n">Jinja2Templates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uvicorn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_monitor</span><span class="p">,</span> <span class="n">ObservabilityMonitor</span>
+
+<span class="c1"># Global variable to store project_path for the web app</span>
+<span class="n">_web_app_project_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="c1"># Pydantic models for API requests</span>
+<div class="viewcode-block" id="ChangeProjectPathRequest">
+<a class="viewcode-back" href="../../../api/agentx/observability/web_app/index.html#agentx.observability.ChangeProjectPathRequest">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ChangeProjectPathRequest</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span></div>
+
+
+<div class="viewcode-block" id="create_web_app">
+<a class="viewcode-back" href="../../../api/agentx/observability/web_app/index.html#agentx.observability.create_web_app">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_web_app</span><span class="p">(</span><span class="n">project_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FastAPI</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create the FastAPI web application.&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_web_app_project_path</span>
+    <span class="n">_web_app_project_path</span> <span class="o">=</span> <span class="n">project_path</span>
+    
+    <span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;AgentX Observability Dashboard&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Modern web interface for AgentX project observability&quot;</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0.0&quot;</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># Set up templates and static files</span>
+    <span class="n">current_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">templates_dir</span> <span class="o">=</span> <span class="n">current_dir</span> <span class="o">/</span> <span class="s2">&quot;templates&quot;</span>
+    <span class="n">static_dir</span> <span class="o">=</span> <span class="n">current_dir</span> <span class="o">/</span> <span class="s2">&quot;static&quot;</span>
+    
+    <span class="c1"># Create directories if they don&#39;t exist</span>
+    <span class="n">templates_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">static_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">templates</span> <span class="o">=</span> <span class="n">Jinja2Templates</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">templates_dir</span><span class="p">))</span>
+    
+    <span class="c1"># Mount static files</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">mount</span><span class="p">(</span><span class="s2">&quot;/static&quot;</span><span class="p">,</span> <span class="n">StaticFiles</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">static_dir</span><span class="p">)),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;static&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Dependency to get monitor</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_monitor_dependency</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">ObservabilityMonitor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">get_monitor</span><span class="p">(</span><span class="n">_web_app_project_path</span><span class="p">)</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">dashboard</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main dashboard page.&quot;&quot;&quot;</span>
+        <span class="n">dashboard_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_dashboard_data</span><span class="p">()</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;dashboard.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;dashboard_data&quot;</span><span class="p">:</span> <span class="n">dashboard_data</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Dashboard&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/tasks&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">tasks_page</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Tasks page.&quot;&quot;&quot;</span>
+        <span class="n">recent_tasks</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_recent_tasks</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;tasks.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;recent_tasks&quot;</span><span class="p">:</span> <span class="n">recent_tasks</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Tasks&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/events&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">events_page</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Events page.&quot;&quot;&quot;</span>
+        <span class="n">event_stats</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">event_capture</span><span class="o">.</span><span class="n">get_event_stats</span><span class="p">()</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;events.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;event_stats&quot;</span><span class="p">:</span> <span class="n">event_stats</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Events&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/artifacts&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">artifacts_page</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Artifacts page.&quot;&quot;&quot;</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="n">artifacts_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_artifacts_files</span><span class="p">(),</span>
+            <span class="s2">&quot;stats&quot;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_artifacts_stats</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;artifacts.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;artifacts_data&quot;</span><span class="p">:</span> <span class="n">artifacts_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Artifacts&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/configuration&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">configuration_page</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configuration page.&quot;&quot;&quot;</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;configuration.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Configuration&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/messages&quot;</span><span class="p">,</span> <span class="n">response_class</span><span class="o">=</span><span class="n">HTMLResponse</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">messages_page</span><span class="p">(</span><span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Messages page - conversation history between agents.&quot;&quot;&quot;</span>
+        <span class="n">all_tasks</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_recent_tasks</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># Get more tasks for messages view</span>
+        <span class="n">config_data</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_configuration_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">templates</span><span class="o">.</span><span class="n">TemplateResponse</span><span class="p">(</span><span class="s2">&quot;messages.jinja2&quot;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="n">request</span><span class="p">,</span>
+            <span class="s2">&quot;all_tasks&quot;</span><span class="p">:</span> <span class="n">all_tasks</span><span class="p">,</span>
+            <span class="s2">&quot;config_data&quot;</span><span class="p">:</span> <span class="n">config_data</span><span class="p">,</span>
+            <span class="s2">&quot;page_title&quot;</span><span class="p">:</span> <span class="s2">&quot;Messages&quot;</span>
+        <span class="p">})</span>
+    
+    <span class="c1"># HTMX API endpoints</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/dashboard-stats&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">dashboard_stats</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dashboard statistics for HTMX updates.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_dashboard_data</span><span class="p">()</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/task/</span><span class="si">{task_id}</span><span class="s2">/conversation&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">task_conversation</span><span class="p">(</span><span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get conversation history for a task.&quot;&quot;&quot;</span>
+        <span class="n">conversation</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_task_conversation</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;conversation&quot;</span><span class="p">:</span> <span class="n">conversation</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/events&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span>
+        <span class="n">event_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get events with optional filtering.&quot;&quot;&quot;</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">event_type</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="n">events</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/artifacts/files&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_artifacts_files</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of artifact files.&quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_artifacts_files</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="n">files</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/artifacts/file/</span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_artifact_file</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get artifact file content.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_artifact_content</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/artifacts/download/</span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">download_artifact_file</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download artifact file.&quot;&quot;&quot;</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileResponse</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="n">FileResponse</span><span class="p">(</span>
+                    <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">),</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+                    <span class="n">media_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;File not found&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/messages/tasks&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_messages_tasks</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get all tasks for messages interface.&quot;&quot;&quot;</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_recent_tasks</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># Get more tasks for messages</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tasks&quot;</span><span class="p">:</span> <span class="n">tasks</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/messages/conversation/</span><span class="si">{task_id}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_messages_conversation</span><span class="p">(</span>
+        <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get full conversation for a task.&quot;&quot;&quot;</span>
+        <span class="n">conversation</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_task_conversation</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="n">task_summary</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">conversation_history</span><span class="o">.</span><span class="n">get_task_summary</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span>
+            <span class="s2">&quot;conversation&quot;</span><span class="p">:</span> <span class="n">conversation</span><span class="p">,</span>
+            <span class="s2">&quot;message_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">conversation</span><span class="p">),</span>
+            <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="n">task_summary</span>
+        <span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/task/</span><span class="si">{task_id}</span><span class="s2">/summary&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_task_summary</span><span class="p">(</span>
+        <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get task summary information.&quot;&quot;&quot;</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">conversation_history</span><span class="o">.</span><span class="n">get_task_summary</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="n">summary</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/events/timerange&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_events_by_timerange</span><span class="p">(</span>
+        <span class="n">start_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">end_time</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get events within a time range.&quot;&quot;&quot;</span>
+        <span class="c1"># For now, just return recent events since we don&#39;t have time filtering implemented</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="n">events</span><span class="p">,</span> <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">start_time</span><span class="p">,</span> <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="n">end_time</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/artifacts/stats&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_artifacts_stats</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get artifacts statistics.&quot;&quot;&quot;</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_artifacts_stats</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;stats&quot;</span><span class="p">:</span> <span class="n">stats</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/monitor/start&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">start_monitor</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the monitor.&quot;&quot;&quot;</span>
+        <span class="n">monitor</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;started&quot;</span><span class="p">,</span> <span class="s2">&quot;is_running&quot;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">is_running</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/monitor/stop&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stop_monitor</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the monitor.&quot;&quot;&quot;</span>
+        <span class="n">monitor</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;stopped&quot;</span><span class="p">,</span> <span class="s2">&quot;is_running&quot;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">is_running</span><span class="p">}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/monitor/refresh&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">refresh_monitor</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refresh monitor data.&quot;&quot;&quot;</span>
+        <span class="n">monitor</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;refreshed&quot;</span><span class="p">,</span> <span class="s2">&quot;last_refresh&quot;</span><span class="p">:</span> <span class="n">monitor</span><span class="o">.</span><span class="n">last_refresh</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="n">monitor</span><span class="o">.</span><span class="n">last_refresh</span> <span class="k">else</span> <span class="kc">None</span><span class="p">}</span>
+    
+    <span class="c1"># Project Directory Management APIs</span>
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/project/info&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_project_info</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get information about the current project.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">project_status</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_project_status</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;project_status&quot;</span><span class="p">:</span> <span class="n">project_status</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/api/project/change&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">change_project_path</span><span class="p">(</span>
+        <span class="n">request</span><span class="p">:</span> <span class="n">ChangeProjectPathRequest</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change the project path.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+            
+            <span class="n">new_path</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">new_path</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Path is required&quot;</span><span class="p">}</span>
+            
+            <span class="n">new_project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">new_path</span><span class="p">)</span>
+            
+            <span class="c1"># Validate the path</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">new_project_path</span><span class="o">.</span><span class="n">is_absolute</span><span class="p">():</span>
+                <span class="c1"># Make it absolute relative to current working directory</span>
+                <span class="n">new_project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span> <span class="o">/</span> <span class="n">new_project_path</span>
+            
+            <span class="c1"># Check if it&#39;s a valid project directory</span>
+            <span class="n">workspace_dir</span> <span class="o">=</span> <span class="n">new_project_path</span> <span class="o">/</span> <span class="s2">&quot;workspace&quot;</span>
+            <span class="n">config_dir</span> <span class="o">=</span> <span class="n">new_project_path</span> <span class="o">/</span> <span class="s2">&quot;config&quot;</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">new_project_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Project directory does not exist: </span><span class="si">{</span><span class="n">new_project_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">workspace_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Workspace directory not found: </span><span class="si">{</span><span class="n">workspace_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">config_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Config directory not found: </span><span class="si">{</span><span class="n">config_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+            
+            <span class="c1"># Update the global project path and recreate monitor</span>
+            <span class="k">global</span> <span class="n">_web_app_project_path</span>
+            <span class="n">_web_app_project_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_project_path</span><span class="p">)</span>
+            
+            <span class="c1"># Force recreation of monitor with new path</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.monitor</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_monitor</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">get_monitor</span><span class="p">,</span> <span class="s1">&#39;_instance&#39;</span><span class="p">):</span>
+                <span class="nb">delattr</span><span class="p">(</span><span class="n">get_monitor</span><span class="p">,</span> <span class="s1">&#39;_instance&#39;</span><span class="p">)</span>
+            
+            <span class="c1"># Create new monitor instance with the new path</span>
+            <span class="n">new_monitor</span> <span class="o">=</span> <span class="n">get_monitor</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">new_project_path</span><span class="p">))</span>
+            
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> 
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Project path changed to </span><span class="si">{</span><span class="n">new_project_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;new_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">new_project_path</span><span class="p">)</span>
+            <span class="p">}</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/config/files&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config_files</span><span class="p">(</span><span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of configuration files.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_config_files</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="n">files</span><span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span>
+    
+    <span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/api/config/file/</span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file</span><span class="p">(</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">monitor</span><span class="p">:</span> <span class="n">ObservabilityMonitor</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_monitor_dependency</span><span class="p">)</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get specific configuration file content.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">file_info</span> <span class="o">=</span> <span class="n">monitor</span><span class="o">.</span><span class="n">config_viewer</span><span class="o">.</span><span class="n">get_config_file_info</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+                <span class="s2">&quot;file_info&quot;</span><span class="p">:</span> <span class="n">file_info</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span>
+    
+    <span class="k">return</span> <span class="n">app</span></div>
+
+
+
+<div class="viewcode-block" id="run_web_app">
+<a class="viewcode-back" href="../../../api/agentx/observability/web_app/index.html#agentx.observability.run_web_app">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_web_app</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8501</span><span class="p">,</span> <span class="n">project_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the web application.&quot;&quot;&quot;</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">create_web_app</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+    <span class="n">uvicorn</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">run_web_app</span><span class="p">()</span> 
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

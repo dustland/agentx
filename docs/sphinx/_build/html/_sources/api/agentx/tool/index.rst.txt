@@ -1,0 +1,401 @@
+agentx.tool
+===========
+
+.. py:module:: agentx.tool
+
+.. autoapi-nested-parse::
+
+   Tool execution framework for AgentX.
+
+   This module provides:
+   - Tool registration and discovery
+   - Secure tool execution with performance monitoring
+   - Tool result formatting and error handling
+   - Unified tool management for task isolation
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/agentx/tool/executor/index
+   /api/agentx/tool/manager/index
+   /api/agentx/tool/models/index
+   /api/agentx/tool/registry/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.tool.Tool
+   agentx.tool.ToolManager
+   agentx.tool.ToolRegistry
+   agentx.tool.ToolResult
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.tool.get_tool_schemas
+   agentx.tool.list_tools
+   agentx.tool.register_function
+   agentx.tool.register_tool
+   agentx.tool.suggest_tools_for_agent
+   agentx.tool.validate_agent_tools
+
+
+Package Contents
+----------------
+
+.. py:class:: Tool(name: str = '')
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for tools that provide multiple callable methods for LLMs.
+
+
+   .. py:method:: get_callable_methods() -> Dict[str, Callable]
+
+      Get all methods marked with @tool decorator.
+
+
+
+   .. py:method:: get_tool_schemas() -> Dict[str, Dict[str, Any]]
+
+      Get detailed OpenAI function schemas for all callable methods using Pydantic.
+
+
+
+   .. py:attribute:: name
+      :value: ''
+
+
+
+.. py:class:: ToolManager(task_id: str = 'default')
+
+   Unified tool manager that combines registry and execution.
+
+   This class provides task-level tool isolation by maintaining
+   its own registry and executor. Each task gets its own ToolManager
+   instance to prevent tool conflicts between tasks.
+
+   Initialize tool manager with task isolation.
+
+   :param task_id: Unique identifier for this task (for logging/debugging)
+
+
+   .. py:method:: __repr__() -> str
+
+
+   .. py:method:: __str__() -> str
+
+
+   .. py:method:: clear_tools() -> None
+
+      Clear all registered tools (useful for testing).
+
+
+
+   .. py:method:: execute_tool(tool_name: str, agent_name: str = 'default', **kwargs) -> agentx.tool.executor.ToolResult
+      :async:
+
+
+      Execute a single tool.
+
+
+
+   .. py:method:: execute_tools(tool_calls: List[Any], agent_name: str = 'default') -> List[Dict[str, Any]]
+      :async:
+
+
+      Execute multiple tool calls.
+
+
+
+   .. py:method:: get_builtin_tools() -> List[str]
+
+      Get list of all builtin tool names.
+
+
+
+   .. py:method:: get_custom_tools() -> List[str]
+
+      Get list of all custom (non-builtin) tool names.
+
+
+
+   .. py:method:: get_execution_stats() -> Dict[str, Any]
+
+      Get execution statistics.
+
+
+
+   .. py:method:: get_tool(name: str)
+
+      Get a tool instance by name for direct access.
+
+
+
+   .. py:method:: get_tool_count() -> int
+
+      Get the number of registered tools.
+
+
+
+   .. py:method:: get_tool_function(name: str)
+
+      Get a tool function by name.
+
+
+
+   .. py:method:: get_tool_schemas(tool_names: List[str] = None) -> List[Dict[str, Any]]
+
+      Get JSON schemas for tools.
+
+
+
+   .. py:method:: list_tools() -> List[str]
+
+      Get list of all registered tool names.
+
+
+
+   .. py:method:: register_tool(tool: agentx.tool.models.Tool) -> None
+
+      Register a tool with this task's registry.
+
+
+
+   .. py:attribute:: executor
+
+
+   .. py:attribute:: registry
+
+
+   .. py:attribute:: task_id
+      :value: 'default'
+
+
+
+.. py:class:: ToolRegistry
+
+   A thread-safe registry for managing tools and their configurations.
+
+
+   .. py:method:: clear()
+
+      Clear all registered tools and toolsets. Useful for testing.
+
+
+
+   .. py:method:: get_builtin_tools() -> List[str]
+
+      Get list of all builtin tool names.
+
+
+
+   .. py:method:: get_custom_tools() -> List[str]
+
+      Get list of all custom (non-builtin) tool names.
+
+
+
+   .. py:method:: get_tool(name: str)
+
+      Get a tool instance by name for direct access.
+
+
+
+   .. py:method:: get_tool_function(name: str) -> Optional[agentx.tool.models.ToolFunction]
+
+      Retrieve a tool function by its name.
+
+
+
+   .. py:method:: get_tool_names() -> List[str]
+
+      Get all registered tool names (alias for list_tools).
+
+
+
+   .. py:method:: get_tool_schema(name: str) -> Optional[Dict[str, Any]]
+
+      Get the JSON schema for a single tool.
+
+
+
+   .. py:method:: get_tool_schemas(tool_names: Optional[List[str]] = None) -> List[Dict[str, Any]]
+
+      Get a list of all tool schemas, optionally filtered.
+
+
+
+   .. py:method:: list_tools() -> List[str]
+
+      List all registered tool names.
+
+
+
+   .. py:method:: list_toolsets() -> List[str]
+
+      List all registered toolset names.
+
+
+
+   .. py:method:: register_function(func: Callable, name: Optional[str] = None)
+
+      Register a standalone function as a tool.
+
+
+
+   .. py:method:: register_tool(tool: agentx.tool.models.Tool)
+
+      Register all callable methods of a Tool instance.
+      Each method marked with @tool is registered as a separate tool function.
+
+
+
+   .. py:method:: register_toolset(name: str, tool_names: List[str])
+
+      Register a collection of tools as a named toolset.
+
+
+
+.. py:class:: ToolResult(**data)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Canonical tool execution result model.
+
+   This is the single source of truth for tool execution results across the framework.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:method:: error_result(error: str, **kwargs) -> ToolResult
+      :classmethod:
+
+
+      Create an error result.
+
+
+
+   .. py:method:: success_result(result: Any, **kwargs) -> ToolResult
+      :classmethod:
+
+
+      Create a successful result.
+
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for JSON serialization.
+
+
+
+   .. py:method:: to_json() -> str
+
+      Convert to JSON string.
+
+
+
+   .. py:attribute:: artifacts
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_time
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: exit_code
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: resource_usage
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: result
+      :type:  Any
+      :value: None
+
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+   .. py:attribute:: timestamp
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tool_call_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:function:: get_tool_schemas(tool_names=None)
+
+.. py:function:: list_tools()
+
+.. py:function:: register_function(func, name=None)
+
+.. py:function:: register_tool(tool: models.Tool)
+
+.. py:function:: suggest_tools_for_agent(agent_name: str, agent_description: str = '') -> list[str]
+
+   Suggest a list of relevant tools for a new agent.
+   (This is a placeholder for a more intelligent suggestion mechanism)
+
+
+.. py:function:: validate_agent_tools(tool_names: list[str]) -> tuple[list[str], list[str]]
+
+   Validate a list of tool names against the registry.
+
+   :returns: A tuple of (valid_tools, invalid_tools)
+
+

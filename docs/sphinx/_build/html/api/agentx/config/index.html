@@ -1,0 +1,395 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.config &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.config</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#package-contents">Package Contents</a><ul>
+<li><a class="reference internal" href="#agentx.config.PromptLoader"><code class="docutils literal notranslate"><span class="pre">PromptLoader</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.clear_cache"><code class="docutils literal notranslate"><span class="pre">PromptLoader.clear_cache()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.get_template_variables"><code class="docutils literal notranslate"><span class="pre">PromptLoader.get_template_variables()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.list_available_prompts"><code class="docutils literal notranslate"><span class="pre">PromptLoader.list_available_prompts()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.load_prompt"><code class="docutils literal notranslate"><span class="pre">PromptLoader.load_prompt()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.render_prompt_with_fallbacks"><code class="docutils literal notranslate"><span class="pre">PromptLoader.render_prompt_with_fallbacks()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.validate_template"><code class="docutils literal notranslate"><span class="pre">PromptLoader.validate_template()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.jinja_env"><code class="docutils literal notranslate"><span class="pre">PromptLoader.jinja_env</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.PromptLoader.prompts_dir"><code class="docutils literal notranslate"><span class="pre">PromptLoader.prompts_dir</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.config.create_single_agent_template"><code class="docutils literal notranslate"><span class="pre">create_single_agent_template()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.create_team_config_template"><code class="docutils literal notranslate"><span class="pre">create_team_config_template()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.load_agents_config"><code class="docutils literal notranslate"><span class="pre">load_agents_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.load_single_agent_config"><code class="docutils literal notranslate"><span class="pre">load_single_agent_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.load_team_config"><code class="docutils literal notranslate"><span class="pre">load_team_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.validate_config_file"><code class="docutils literal notranslate"><span class="pre">validate_config_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.config</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/api/agentx/config/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.config">
+<span id="agentx-config"></span><h1>agentx.config<a class="headerlink" href="#module-agentx.config" title="Link to this heading"></a></h1>
+<p>Configuration loading system for AgentX.</p>
+<p>Public API:
+- load_team_config: Load team configuration from YAML files (if needed)
+- MemoryConfig: Memory system configuration (used by memory backends)
+- TeamConfig, LLMProviderConfig: Core config models (if needed)</p>
+<dl class="simple">
+<dt>Recommended usage:</dt><dd><p>from agentx import execute_task
+result = execute_task(“config_dir”, “Your task here”)</p>
+</dd>
+</dl>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="agent_loader/index.html">agentx.config.agent_loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prompt_loader/index.html">agentx.config.prompt_loader</a></li>
+<li class="toctree-l1"><a class="reference internal" href="team_loader/index.html">agentx.config.team_loader</a></li>
+</ul>
+</div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.PromptLoader" title="agentx.config.PromptLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PromptLoader</span></code></a></p></td>
+<td><p>Loads and processes prompt templates from markdown files.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.create_single_agent_template" title="agentx.config.create_single_agent_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_single_agent_template</span></code></a>(→ str)</p></td>
+<td><p>Create a YAML config template for a single agent.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.config.create_team_config_template" title="agentx.config.create_team_config_template"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_team_config_template</span></code></a>(→ str)</p></td>
+<td><p>Create a YAML config template for a team with multiple agents.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.load_agents_config" title="agentx.config.load_agents_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_agents_config</span></code></a>(→ List[agentx.core.config.AgentConfig])</p></td>
+<td><p>Load agent configurations from a YAML file, handling presets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.config.load_single_agent_config" title="agentx.config.load_single_agent_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_single_agent_config</span></code></a>(...)</p></td>
+<td><p>Load a single agent configuration from YAML file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.load_team_config" title="agentx.config.load_team_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_team_config</span></code></a>(→ agentx.core.config.TeamConfig)</p></td>
+<td><p>Loads a team configuration from a given path.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.config.validate_config_file" title="agentx.config.validate_config_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_config_file</span></code></a>(→ Dict[str, Any])</p></td>
+<td><p>Validate a config file (single agent or team) and return validation results.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">PromptLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompts_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader" title="Link to this definition"></a></dt>
+<dd><p>Loads and processes prompt templates from markdown files.
+Supports Jinja2 templating with {{ variable_name }} syntax.</p>
+<p>Initialize the prompt loader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prompts_dir</strong> – Directory containing prompt markdown files</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.clear_cache" title="Link to this definition"></a></dt>
+<dd><p>Clear the prompt cache.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.get_template_variables">
+<span class="sig-name descname"><span class="pre">get_template_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.get_template_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.get_template_variables" title="Link to this definition"></a></dt>
+<dd><p>Extract template variables from a prompt file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prompt_file</strong> – Name of the prompt file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of variable names found in the template</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.list_available_prompts">
+<span class="sig-name descname"><span class="pre">list_available_prompts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.list_available_prompts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.list_available_prompts" title="Link to this definition"></a></dt>
+<dd><p>List all available prompt files in the prompts directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of prompt file names</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.load_prompt">
+<span class="sig-name descname"><span class="pre">load_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.load_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.load_prompt" title="Link to this definition"></a></dt>
+<dd><p>Load a prompt from a markdown file with Jinja2 variable substitution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt_file</strong> – Name of the prompt file (e.g., “writer_agent.md”)</p></li>
+<li><p><strong>variables</strong> – Dictionary of variables for substitution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Processed prompt text with variables substituted</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/config/index.html#agentx.core.config.ConfigurationError" title="agentx.core.config.ConfigurationError"><strong>ConfigurationError</strong></a> – If prompt file not found or rendering fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.render_prompt_with_fallbacks">
+<span class="sig-name descname"><span class="pre">render_prompt_with_fallbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.render_prompt_with_fallbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.render_prompt_with_fallbacks" title="Link to this definition"></a></dt>
+<dd><p>Render a prompt with fallback values for missing variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt_file</strong> – Name of the prompt file</p></li>
+<li><p><strong>variables</strong> – Primary variables dictionary</p></li>
+<li><p><strong>fallback_values</strong> – Fallback values for missing variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Rendered prompt text</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.validate_template">
+<span class="sig-name descname"><span class="pre">validate_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/prompt_loader.html#PromptLoader.validate_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.PromptLoader.validate_template" title="Link to this definition"></a></dt>
+<dd><p>Validate that a template can be rendered with given variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt_file</strong> – Name of the prompt file</p></li>
+<li><p><strong>variables</strong> – Variables to test with</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if template renders successfully</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/config/index.html#agentx.core.config.ConfigurationError" title="agentx.core.config.ConfigurationError"><strong>ConfigurationError</strong></a> – If template validation fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.jinja_env">
+<span class="sig-name descname"><span class="pre">jinja_env</span></span><a class="headerlink" href="#agentx.config.PromptLoader.jinja_env" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.PromptLoader.prompts_dir">
+<span class="sig-name descname"><span class="pre">prompts_dir</span></span><a class="headerlink" href="#agentx.config.PromptLoader.prompts_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.create_single_agent_template">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">create_single_agent_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_suggestions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/agent_loader.html#create_single_agent_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.create_single_agent_template" title="Link to this definition"></a></dt>
+<dd><p>Create a YAML config template for a single agent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>agent_name</strong> – Name of the agent</p></li>
+<li><p><strong>output_path</strong> – Where to save the template</p></li>
+<li><p><strong>include_suggestions</strong> – Whether to include suggested tools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to created template file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.create_team_config_template">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">create_team_config_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_suggestions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/agent_loader.html#create_team_config_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.create_team_config_template" title="Link to this definition"></a></dt>
+<dd><p>Create a YAML config template for a team with multiple agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>team_name</strong> – Name of the team</p></li>
+<li><p><strong>agent_names</strong> – List of agent names to include</p></li>
+<li><p><strong>output_path</strong> – Where to save the template</p></li>
+<li><p><strong>include_suggestions</strong> – Whether to include suggested tools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to created template file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.load_agents_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">load_agents_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../core/config/index.html#agentx.core.config.AgentConfig" title="agentx.core.config.AgentConfig"><span class="pre">agentx.core.config.AgentConfig</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/config/agent_loader.html#load_agents_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.load_agents_config" title="Link to this definition"></a></dt>
+<dd><p>Load agent configurations from a YAML file, handling presets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_path</strong> – Path to the main team config YAML file.</p></li>
+<li><p><strong>model_override</strong> – Optional model name to override for all agents.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of agent configuration dictionaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.load_single_agent_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">load_single_agent_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">agent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_tools</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../core/config/index.html#agentx.core.config.AgentConfig" title="agentx.core.config.AgentConfig"><span class="pre">agentx.core.config.AgentConfig</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/config/agent_loader.html#load_single_agent_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.load_single_agent_config" title="Link to this definition"></a></dt>
+<dd><p>Load a single agent configuration from YAML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_path</strong> – Path to YAML config file</p></li>
+<li><p><strong>agent_name</strong> – Specific agent name to load (if file contains multiple agents)</p></li>
+<li><p><strong>validate_tools</strong> – Whether to validate tool names against registry</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (AgentConfig, tools)</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../core/config/index.html#agentx.core.config.ConfigurationError" title="agentx.core.config.ConfigurationError"><strong>ConfigurationError</strong></a> – If config is invalid or agent not found</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.load_team_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">load_team_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../core/config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a></span></span><a class="reference internal" href="../../../_modules/agentx/config/team_loader.html#load_team_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.load_team_config" title="Link to this definition"></a></dt>
+<dd><p>Loads a team configuration from a given path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.validate_config_file">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.</span></span><span class="sig-name descname"><span class="pre">validate_config_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/agentx/config/agent_loader.html#validate_config_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.validate_config_file" title="Link to this definition"></a></dt>
+<dd><p>Validate a config file (single agent or team) and return validation results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> – Path to config file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with validation results</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,559 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.cli.templates &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.cli.templates</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.cli.templates</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Bootstrap Template Generation</span>
+
+<span class="sd">Handles generation of project templates, configurations, and files for the bootstrap system.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+
+<div class="viewcode-block" id="generate_template_config">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.generate_template_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_template_config</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate team configuration based on template using preset agents.&quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;writing&quot;</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s2">_project&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;AgentX writing workflow with professional research and content creation&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orchestrator&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;max_rounds&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span>
+                <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">1800</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;agents&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;researcher&quot;</span><span class="p">,</span>    <span class="c1"># Professional market researcher</span>
+                <span class="s2">&quot;writer&quot;</span><span class="p">,</span>        <span class="c1"># Strategic business writer  </span>
+                <span class="s2">&quot;reviewer&quot;</span><span class="p">,</span>      <span class="c1"># Quality assurance specialist</span>
+                <span class="s2">&quot;web_designer&quot;</span>   <span class="c1"># Professional web designer for HTML/CSS</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+        
+    <span class="k">elif</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;coding&quot;</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s2">_project&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;AgentX coding workflow with architecture, development, and testing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orchestrator&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;max_rounds&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+                <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">2400</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;agents&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;planner&quot;</span><span class="p">,</span>       <span class="c1"># Strategic planning and architecture</span>
+                <span class="s2">&quot;developer&quot;</span><span class="p">,</span>     <span class="c1"># Code implementation (would need to be added to preset configs)</span>
+                <span class="s2">&quot;reviewer&quot;</span>       <span class="c1"># Quality assurance and testing</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+        
+    <span class="k">elif</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;operating&quot;</span><span class="p">:</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s2">_project&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;AgentX operating workflow with analysis, execution, and monitoring&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;orchestrator&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;max_rounds&quot;</span><span class="p">:</span> <span class="mi">25</span><span class="p">,</span>
+                <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">3600</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;agents&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;researcher&quot;</span><span class="p">,</span>    <span class="c1"># Data analyst for requirements</span>
+                <span class="s2">&quot;planner&quot;</span><span class="p">,</span>       <span class="c1"># Operations planning</span>
+                <span class="s2">&quot;reviewer&quot;</span>       <span class="c1"># Results monitoring</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+        
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># custom</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s2">_project&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;AgentX custom workflow with general-purpose assistant&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;orchestrator&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;max_rounds&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+                <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">1200</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;agents&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;researcher&quot;</span><span class="p">,</span>    <span class="c1"># For information gathering</span>
+                <span class="s2">&quot;writer&quot;</span><span class="p">,</span>        <span class="c1"># For content creation</span>
+                <span class="s2">&quot;reviewer&quot;</span>       <span class="c1"># For quality assurance</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="generate_template_prompts">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.generate_template_prompts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_template_prompts</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate prompt files based on template - now minimal since we use presets.&quot;&quot;&quot;</span>
+    
+    <span class="c1"># With preset agents, we only need to generate custom prompts if any</span>
+    <span class="c1"># For now, all templates use preset agents, so no custom prompts needed</span>
+    <span class="k">return</span> <span class="p">{}</span></div>
+
+
+
+<div class="viewcode-block" id="generate_main_py">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.generate_main_py">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_main_py</span><span class="p">(</span><span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate main.py file for the project.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;#!/usr/bin/env python3</span>
+<span class="s1">&quot;&quot;&quot;</span>
+<span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s1"> - AgentX </span><span class="si">{</span><span class="n">template</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span><span class="s1"> Project</span>
+
+<span class="s1">This project was generated using AgentX bootstrap with the </span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s1"> template.</span>
+<span class="s1">It demonstrates the Vibe-X philosophy of human-AI collaboration using preset agents.</span>
+<span class="s1">&quot;&quot;&quot;</span>
+
+<span class="s1">import asyncio</span>
+<span class="s1">from pathlib import Path</span>
+<span class="s1">from agentx.core.task import TaskExecutor</span>
+
+
+<span class="s1">async def main():</span>
+<span class="s1">    &quot;&quot;&quot;Main application entry point.&quot;&quot;&quot;</span>
+<span class="s1">    print(&quot;🚀 Starting </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s1">&quot;)</span>
+<span class="s1">    print(&quot;=&quot; * 50)</span>
+<span class="s1">    </span>
+<span class="s1">    # Configuration</span>
+<span class="s1">    config_path = Path(&quot;config/team.yaml&quot;)</span>
+<span class="s1">    </span>
+<span class="s1">    if not config_path.exists():</span>
+<span class="s1">        print(&quot;❌ Configuration file not found: </span><span class="se">{{</span><span class="s1">config_path</span><span class="se">}}</span><span class="s1">&quot;)</span>
+<span class="s1">        print(&quot;Make sure you&#39;re running from the project root directory.&quot;)</span>
+<span class="s1">        return</span>
+<span class="s1">    </span>
+<span class="s1">    # Start task</span>
+<span class="s1">    task_executor = TaskExecutor(config_path)</span>
+<span class="s1">    task_id = await task_executor.start_task()</span>
+<span class="s1">    </span>
+<span class="s1">    print(f&quot;📋 Task ID: </span><span class="se">{{</span><span class="s1">task_id</span><span class="se">}}</span><span class="s1">&quot;)</span>
+<span class="s1">    print(f&quot;📁 Workspace: </span><span class="se">{{</span><span class="s1">task_executor.task.workspace_path</span><span class="se">}}</span><span class="s1">&quot;)</span>
+<span class="s1">    print(&quot;</span><span class="se">\\</span><span class="s1">n🤖 AI agents are ready! What would you like to work on?&quot;)</span>
+<span class="s1">    </span>
+<span class="s1">    try:</span>
+<span class="s1">        # Interactive session</span>
+<span class="s1">        while True:</span>
+<span class="s1">            user_input = input(&quot;</span><span class="se">\\</span><span class="s1">n👤 You: &quot;).strip()</span>
+<span class="s1">            </span>
+<span class="s1">            if user_input.lower() in [&#39;quit&#39;, &#39;exit&#39;, &#39;bye&#39;]:</span>
+<span class="s1">                break</span>
+<span class="s1">                </span>
+<span class="s1">            if not user_input:</span>
+<span class="s1">                continue</span>
+<span class="s1">            </span>
+<span class="s1">            print(&quot;</span><span class="se">\\</span><span class="s1">n🤖 AI:&quot;)</span>
+<span class="s1">            async for chunk in task_executor.step(user_input, stream=True):</span>
+<span class="s1">                if chunk.get(&#39;type&#39;) == &#39;agent_response&#39;:</span>
+<span class="s1">                    print(chunk.get(&#39;content&#39;, &#39;&#39;), end=&#39;&#39;, flush=True)</span>
+<span class="s1">            print()  # New line after streaming</span>
+<span class="s1">            </span>
+<span class="s1">    except KeyboardInterrupt:</span>
+<span class="s1">        print(&quot;</span><span class="se">\\</span><span class="s1">n</span><span class="se">\\</span><span class="s1">n👋 Session ended. Your work is saved in the workspace!&quot;)</span>
+<span class="s1">    </span>
+<span class="s1">    print(f&quot;</span><span class="se">\\</span><span class="s1">n📁 Check your results in: </span><span class="se">{{</span><span class="s1">task_executor.task.workspace_path</span><span class="se">}}</span><span class="s1">&quot;)</span>
+
+
+<span class="s1">if __name__ == &quot;__main__&quot;:</span>
+<span class="s1">    asyncio.run(main())</span>
+<span class="s1">&#39;&#39;&#39;</span></div>
+
+
+
+<div class="viewcode-block" id="generate_env_example">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.generate_env_example">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_env_example</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate .env.example file with API key templates.&quot;&quot;&quot;</span>
+    <span class="n">env_content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;# AgentX Environment Configuration</span>
+<span class="s2"># Copy this file to .env and fill in your API keys</span>
+
+<span class="s2"># Primary LLM Provider: </span><span class="si">{</span><span class="n">model</span><span class="si">}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;deepseek&quot;</span><span class="p">:</span>
+        <span class="n">env_content</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;DEEPSEEK_API_KEY=your_deepseek_api_key_here</span>
+<span class="s2"># Get your key at: https://platform.deepseek.com</span>
+
+<span class="s2"># Optional: Other providers for mixed workflows</span>
+<span class="s2"># OPENAI_API_KEY=your_openai_api_key_here</span>
+<span class="s2"># ANTHROPIC_API_KEY=your_anthropic_api_key_here</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;openai&quot;</span><span class="p">:</span>
+        <span class="n">env_content</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;OPENAI_API_KEY=your_openai_api_key_here</span>
+<span class="s2"># Get your key at: https://platform.openai.com</span>
+
+<span class="s2"># Optional: Other providers for cost optimization</span>
+<span class="s2"># DEEPSEEK_API_KEY=your_deepseek_api_key_here</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;claude&quot;</span><span class="p">:</span>
+        <span class="n">env_content</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;ANTHROPIC_API_KEY=your_anthropic_api_key_here</span>
+<span class="s2"># Get your key at: https://console.anthropic.com</span>
+
+<span class="s2"># Optional: Other providers for different use cases</span>
+<span class="s2"># DEEPSEEK_API_KEY=your_deepseek_api_key_here</span>
+<span class="s2"># OPENAI_API_KEY=your_openai_api_key_here</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;gemini&quot;</span><span class="p">:</span>
+        <span class="n">env_content</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;GOOGLE_API_KEY=your_google_api_key_here</span>
+<span class="s2"># Get your key at: https://makersuite.google.com</span>
+
+<span class="s2"># Optional: Other providers</span>
+<span class="s2"># DEEPSEEK_API_KEY=your_deepseek_api_key_here</span>
+<span class="s2"># OPENAI_API_KEY=your_openai_api_key_here</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    
+    <span class="n">env_content</span> <span class="o">+=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2"># Optional: AgentX Configuration</span>
+<span class="s2"># AGENTX_LOG_LEVEL=INFO</span>
+<span class="s2"># AGENTX_WORKSPACE_DIR=./workspace</span>
+<span class="s2"># AGENTX_MAX_ROUNDS=50</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    
+    <span class="k">return</span> <span class="n">env_content</span></div>
+
+
+
+<div class="viewcode-block" id="generate_readme">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.generate_readme">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_readme</span><span class="p">(</span><span class="n">project_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate README.md for the project.&quot;&quot;&quot;</span>
+    
+    <span class="n">template_descriptions</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;writing&quot;</span><span class="p">:</span> <span class="s2">&quot;document creation, research papers, and content workflows&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;coding&quot;</span><span class="p">:</span> <span class="s2">&quot;software development, debugging, and testing workflows&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;operating&quot;</span><span class="p">:</span> <span class="s2">&quot;automation, API integration, and real-world action workflows&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;custom&quot;</span><span class="p">:</span> <span class="s2">&quot;general-purpose AI assistance workflows&quot;</span>
+    <span class="p">}</span>
+    
+    <span class="n">description</span> <span class="o">=</span> <span class="n">template_descriptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="s2">&quot;AI workflow&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;# </span><span class="si">{</span><span class="n">project_name</span><span class="si">}</span>
+
+<span class="s1">An AgentX project optimized for </span><span class="si">{</span><span class="n">description</span><span class="si">}</span><span class="s1"> using **preset agents**.</span>
+
+<span class="s1">## Overview</span>
+
+<span class="s1">This project was generated using the AgentX bootstrap wizard with the **</span><span class="si">{</span><span class="n">template</span><span class="si">}</span><span class="s1">** template. It follows the Vibe-X philosophy of human-AI collaboration, providing persistent workspaces, transparent feedback loops, and cost-aware model orchestration.</span>
+
+<span class="s1">## Quick Start</span>
+
+<span class="s1">1. **Install Dependencies**</span>
+<span class="s1">   ```bash</span>
+<span class="s1">   pip install agentx-py</span>
+<span class="s1">   ```</span>
+
+<span class="s1">2. **Configure API Keys**</span>
+<span class="s1">   ```bash</span>
+<span class="s1">   cp .env.example .env</span>
+<span class="s1">   # Edit .env with your API keys</span>
+<span class="s1">   ```</span>
+
+<span class="s1">3. **Run the Project**</span>
+<span class="s1">   ```bash</span>
+<span class="s1">   python main.py</span>
+<span class="s1">   ```</span>
+
+<span class="s1">## Project Structure</span>
+
+<span class="s1">```</span>
+<span class="si">{</span><span class="n">project_name</span><span class="si">}</span><span class="s1">/</span>
+<span class="s1">├── config/</span>
+<span class="s1">│   └── team.yaml          # Preset agent configuration (ultra-clean!)</span>
+<span class="s1">├── workspace/             # Project workspace (auto-generated)</span>
+<span class="s1">├── main.py               # Application entry point</span>
+<span class="s1">├── .env.example          # Environment template</span>
+<span class="s1">└── README.md            # This file</span>
+<span class="s1">```</span>
+
+<span class="s1">## Template: </span><span class="si">{</span><span class="n">template</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="si">}</span>
+
+<span class="si">{</span><span class="n">get_template_description</span><span class="p">(</span><span class="n">template</span><span class="p">)</span><span class="si">}</span>
+
+<span class="s1">## Preset Agents - Zero Configuration!</span>
+
+<span class="s1">This project uses **AgentX preset agents**, eliminating the need for custom agent configuration:</span>
+
+<span class="si">{</span><span class="n">get_agents_description</span><span class="p">(</span><span class="n">template</span><span class="p">)</span><span class="si">}</span>
+
+<span class="s1">**Why preset agents?**</span>
+<span class="s1">- ✅ **Zero configuration** - No custom agent files needed</span>
+<span class="s1">- ✅ **Professional quality** - Enterprise-grade prompts and configurations</span>
+<span class="s1">- ✅ **Automatic updates** - Framework improvements benefit all projects</span>
+<span class="s1">- ✅ **Consistent behavior** - Proven agent patterns across projects</span>
+
+<span class="s1">## Configuration</span>
+
+<span class="s1">The entire team configuration is just **</span><span class="si">{</span><span class="n">get_config_lines</span><span class="p">(</span><span class="n">template</span><span class="p">)</span><span class="si">}</span><span class="s1"> lines**:</span>
+
+<span class="s1">```yaml</span>
+<span class="si">{</span><span class="n">get_sample_config</span><span class="p">(</span><span class="n">template</span><span class="p">)</span><span class="si">}</span>
+<span class="s1">```</span>
+
+<span class="s1">Compare this to traditional frameworks requiring 50-200+ lines of custom configuration!</span>
+
+<span class="s1">## Cost Optimization</span>
+
+<span class="s1">This project is configured for cost-effective operation:</span>
+
+<span class="s1">- **Smart Model Selection**: Uses </span><span class="si">{</span><span class="n">model</span><span class="si">}</span><span class="s1"> for optimal cost/performance balance</span>
+<span class="s1">- **Preset Efficiency**: Agents are pre-optimized for minimal token usage</span>
+<span class="s1">- **Collaborative Workflow**: Agents work together to minimize redundant work</span>
+
+<span class="s1">## Next Steps</span>
+
+<span class="s1">1. **Experiment**: Start asking questions and see how preset agents collaborate</span>
+<span class="s1">2. **Scale**: Add more preset agents like `web_designer` for enhanced output formatting</span>
+<span class="s1">3. **Customize**: Only create custom agents when presets don&#39;t meet your needs</span>
+<span class="s1">4. **Deploy**: Use `agentx start` to run as a service</span>
+
+<span class="s1">## Learn More</span>
+
+<span class="s1">- [AgentX Documentation](https://github.com/dustland/agentx)</span>
+<span class="s1">- [Preset Agent System](https://github.com/dustland/agentx/blob/main/docs/preset-agents.md)</span>
+<span class="s1">- [Vibe-X Philosophy](https://github.com/dustland/agentx/blob/main/docs/content/docs/design/vibe-x-philosophy.mdx)</span>
+
+<span class="s1">## Support</span>
+
+<span class="s1">- 🐛 [Report Issues](https://github.com/dustland/agentx/issues)</span>
+<span class="s1">- 💬 [Discussions](https://github.com/dustland/agentx/discussions)</span>
+<span class="s1">- 📧 [Contact](mailto:support@agentx.dev)</span>
+
+<span class="s1">---</span>
+
+<span class="s1">*Generated with ❤️ by AgentX Bootstrap using Preset Agents*</span>
+<span class="s1">&#39;&#39;&#39;</span></div>
+
+
+
+<div class="viewcode-block" id="get_template_description">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.get_template_description">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_template_description</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get detailed description for template.&quot;&quot;&quot;</span>
+    <span class="n">descriptions</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;writing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;This template optimizes for **Vibe-Writing** workflows using preset agents:</span>
+
+<span class="s2">- **Researcher**: Professional market researcher with industry expertise</span>
+<span class="s2">- **Writer**: Strategic business writer producing executive-quality content  </span>
+<span class="s2">- **Reviewer**: Quality assurance specialist ensuring executive-level standards</span>
+<span class="s2">- **Web Designer**: Professional web designer for modern, responsive HTML websites and visualizations</span>
+
+<span class="s2">Perfect for creating research papers, technical documentation, marketing content, and comprehensive reports with beautiful web presentation.&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;coding&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;This template optimizes for **Vibe-Coding** workflows using preset agents:</span>
+
+<span class="s2">- **Planner**: Strategic planning and task decomposition specialist</span>
+<span class="s2">- **Developer**: Code implementation specialist (custom recommended)</span>
+<span class="s2">- **Reviewer**: Quality assurance specialist ensuring code quality</span>
+
+<span class="s2">Perfect for building applications, creating libraries, debugging systems, and implementing technical solutions.&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;operating&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;This template optimizes for **Vibe-Operating** workflows using preset agents:</span>
+
+<span class="s2">- **Researcher**: Data analyst for understanding requirements and context</span>
+<span class="s2">- **Planner**: Plans operations and execution strategies</span>
+<span class="s2">- **Reviewer**: Validates results and provides feedback&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;custom&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;This template provides a general-purpose foundation using preset agents:</span>
+
+<span class="s2">- **Researcher**: For information gathering and analysis</span>
+<span class="s2">- **Writer**: For content creation and documentation</span>
+<span class="s2">- **Reviewer**: For quality assurance and optimization&quot;&quot;&quot;</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">descriptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="s2">&quot;A flexible AgentX project template.&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_default_model">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.get_default_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_default_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get default model name for provider.&quot;&quot;&quot;</span>
+    <span class="n">models</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;deepseek&quot;</span><span class="p">:</span> <span class="s2">&quot;deepseek-chat&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;openai&quot;</span><span class="p">:</span> <span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span> 
+        <span class="s2">&quot;claude&quot;</span><span class="p">:</span> <span class="s2">&quot;claude-3-haiku-20240307&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gemini&quot;</span><span class="p">:</span> <span class="s2">&quot;gemini-1.5-flash&quot;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">models</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;deepseek-chat&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_agents_description">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.get_agents_description">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_agents_description</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get agents description for template.&quot;&quot;&quot;</span>
+    <span class="n">descriptions</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;writing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;- **Researcher**: Gathers comprehensive information and credible sources</span>
+<span class="s2">- **Writer**: Creates compelling, well-structured content</span>
+<span class="s2">- **Reviewer**: Provides quality assurance and polish</span>
+<span class="s2">- **Web Designer**: Creates modern, responsive HTML websites and data visualizations&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;coding&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;- **Planner**: Plans system design and technical approach</span>
+<span class="s2">- **Developer**: Implements clean, maintainable code (custom recommended)</span>
+<span class="s2">- **Reviewer**: Ensures quality through comprehensive review&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;operating&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;- **Researcher**: Understands requirements and gathers context</span>
+<span class="s2">- **Planner**: Plans operations and execution strategies</span>
+<span class="s2">- **Reviewer**: Validates results and provides feedback&quot;&quot;&quot;</span><span class="p">,</span>
+
+        <span class="s2">&quot;custom&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;&quot;- **Researcher**: Flexible information gathering and analysis</span>
+<span class="s2">- **Writer**: General content creation and documentation</span>
+<span class="s2">- **Reviewer**: Quality assurance and optimization&quot;&quot;&quot;</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">descriptions</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="s2">&quot;General-purpose preset agents&quot;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_config_lines">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.get_config_lines">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_config_lines</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get number of configuration lines for template.&quot;&quot;&quot;</span>
+    <span class="c1"># All preset configurations are ultra-clean</span>
+    <span class="k">return</span> <span class="s2">&quot;8-12&quot;</span></div>
+
+
+
+<div class="viewcode-block" id="get_sample_config">
+<a class="viewcode-back" href="../../../api/agentx/cli/templates/index.html#agentx.cli.templates.get_sample_config">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sample_config</span><span class="p">(</span><span class="n">template</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get sample configuration for template.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;writing&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;&#39;name: &quot;writing_project&quot;</span>
+<span class="s1">description: &quot;AgentX writing workflow with professional research and content creation&quot;</span>
+<span class="s1">orchestrator:</span>
+<span class="s1">  max_rounds: 15</span>
+<span class="s1">  timeout: 1800</span>
+<span class="s1">agents:</span>
+<span class="s1">  - &quot;researcher&quot;</span>
+<span class="s1">  - &quot;writer&quot; </span>
+<span class="s1">  - &quot;reviewer&quot;</span>
+<span class="s1">  - &quot;web_designer&quot;&#39;&#39;&#39;</span>
+    <span class="k">elif</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;coding&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;&#39;name: &quot;coding_project&quot;</span>
+<span class="s1">description: &quot;AgentX coding workflow with architecture, development, and testing&quot;</span>
+<span class="s1">orchestrator:</span>
+<span class="s1">  max_rounds: 20</span>
+<span class="s1">  timeout: 2400</span>
+<span class="s1">agents:</span>
+<span class="s1">  - &quot;planner&quot;</span>
+<span class="s1">  - &quot;developer&quot;</span>
+<span class="s1">  - &quot;reviewer&quot;&#39;&#39;&#39;</span>
+    <span class="k">elif</span> <span class="n">template</span> <span class="o">==</span> <span class="s2">&quot;operating&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;&#39;name: &quot;operating_project&quot;</span>
+<span class="s1">description: &quot;AgentX operating workflow with analysis, execution, and monitoring&quot;</span>
+<span class="s1">orchestrator:</span>
+<span class="s1">  max_rounds: 25</span>
+<span class="s1">  timeout: 3600</span>
+<span class="s1">agents:</span>
+<span class="s1">  - &quot;researcher&quot;</span>
+<span class="s1">  - &quot;planner&quot;</span>
+<span class="s1">  - &quot;reviewer&quot;&#39;&#39;&#39;</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># custom</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;&#39;name: &quot;custom_project&quot;</span>
+<span class="s1">description: &quot;AgentX custom workflow with general-purpose assistant&quot;</span>
+<span class="s1">orchestrator:</span>
+<span class="s1">  max_rounds: 10</span>
+<span class="s1">  timeout: 1200</span>
+<span class="s1">agents:</span>
+<span class="s1">  - &quot;researcher&quot;</span>
+<span class="s1">  - &quot;writer&quot;</span>
+<span class="s1">  - &quot;reviewer&quot;&#39;&#39;&#39;</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

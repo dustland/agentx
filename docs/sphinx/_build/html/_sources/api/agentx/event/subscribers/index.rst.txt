@@ -1,0 +1,253 @@
+agentx.event.subscribers
+========================
+
+.. py:module:: agentx.event.subscribers
+
+.. autoapi-nested-parse::
+
+   Event subscribers for the AgentX event system.
+
+   Provides base classes and utilities for creating event subscribers.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.event.subscribers.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.event.subscribers.AsyncEventSubscriber
+   agentx.event.subscribers.EventSubscriber
+   agentx.event.subscribers.MetricsSubscriber
+   agentx.event.subscribers.ObservabilitySubscriber
+
+
+Module Contents
+---------------
+
+.. py:class:: AsyncEventSubscriber(name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for async event subscribers.
+
+
+   .. py:method:: get_event_types() -> List[str]
+      :abstractmethod:
+
+
+      Return list of event types this subscriber handles.
+
+
+
+   .. py:method:: get_filter() -> Optional[agentx.event.types.EventFilter]
+
+      Return optional filter function for events.
+
+
+
+   .. py:method:: get_priority() -> agentx.event.types.EventPriority
+
+      Return subscription priority.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :abstractmethod:
+
+      :async:
+
+
+      Handle an event asynchronously.
+
+
+
+   .. py:method:: is_active() -> bool
+
+      Check if subscriber is active.
+
+
+
+   .. py:method:: start() -> None
+
+      Start subscribing to events.
+
+
+
+   .. py:method:: stop() -> None
+
+      Stop subscribing to events.
+
+
+
+   .. py:attribute:: event_bus
+      :value: None
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: subscription_ids
+      :type:  List[str]
+      :value: []
+
+
+
+.. py:class:: EventSubscriber(name: str)
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for event subscribers.
+
+
+   .. py:method:: get_event_types() -> List[str]
+      :abstractmethod:
+
+
+      Return list of event types this subscriber handles.
+
+
+
+   .. py:method:: get_filter() -> Optional[agentx.event.types.EventFilter]
+
+      Return optional filter function for events.
+
+
+
+   .. py:method:: get_priority() -> agentx.event.types.EventPriority
+
+      Return subscription priority.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :abstractmethod:
+
+
+      Handle an event.
+
+
+
+   .. py:method:: is_active() -> bool
+
+      Check if subscriber is active.
+
+
+
+   .. py:method:: start() -> None
+
+      Start subscribing to events.
+
+
+
+   .. py:method:: stop() -> None
+
+      Stop subscribing to events.
+
+
+
+   .. py:attribute:: event_bus
+      :value: None
+
+
+
+   .. py:attribute:: name
+
+
+   .. py:attribute:: subscription_ids
+      :type:  List[str]
+      :value: []
+
+
+
+.. py:class:: MetricsSubscriber(name: str = 'metrics')
+
+   Bases: :py:obj:`AsyncEventSubscriber`
+
+
+   Subscriber for collecting metrics from events.
+
+
+   .. py:method:: get_event_types() -> List[str]
+
+      Subscribe to metric-relevant events.
+
+
+
+   .. py:method:: get_metrics() -> Dict[str, Any]
+
+      Get current metrics.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :async:
+
+
+      Handle metric events.
+
+
+
+   .. py:method:: reset_metrics() -> None
+
+      Reset all metrics.
+
+
+
+   .. py:attribute:: metrics
+      :type:  Dict[str, Any]
+
+
+.. py:class:: ObservabilitySubscriber(name: str = 'observability')
+
+   Bases: :py:obj:`AsyncEventSubscriber`
+
+
+   Subscriber for observability events.
+
+
+   .. py:method:: get_event_types() -> List[str]
+
+      Subscribe to all event types for observability.
+
+
+
+   .. py:method:: get_events_by_type(event_type: str, limit: int = 100) -> List[Dict[str, Any]]
+
+      Get events of a specific type.
+
+
+
+   .. py:method:: get_recent_events(limit: int = 100) -> List[Dict[str, Any]]
+
+      Get recent events for observability.
+
+
+
+   .. py:method:: handle_event(event_data: Any) -> None
+      :async:
+
+
+      Handle observability events.
+
+
+
+   .. py:attribute:: events_received
+      :type:  List[Dict[str, Any]]
+      :value: []
+
+
+
+.. py:data:: logger
+

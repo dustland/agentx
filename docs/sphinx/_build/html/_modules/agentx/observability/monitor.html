@@ -1,0 +1,818 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.observability.monitor &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.observability.monitor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.observability.monitor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">AgentX Observability Monitor</span>
+
+<span class="sd">Read-only observability system that monitors AgentX project data:</span>
+<span class="sd">- Reads workspace data from {project_path}/workspace/</span>
+<span class="sd">- Reads configuration from {project_path}/config/</span>
+<span class="sd">- Provides web interface for viewing project data</span>
+<span class="sd">- Does NOT create or modify any files</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ProjectStorage">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProjectStorage</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-only project-based storage for observability.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workspace_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;workspace&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;config&quot;</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_workspace_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get full path for a workspace data file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">+=</span> <span class="s1">&#39;.json&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">workspace_dir</span> <span class="o">/</span> <span class="n">filename</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_config_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get full path for a config file.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span> <span class="o">/</span> <span class="n">filename</span>
+    
+<div class="viewcode-block" id="ProjectStorage.read_workspace_file">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.read_workspace_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read data from workspace file.&quot;&quot;&quot;</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="c1"># Remove metadata for clean data</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;_metadata&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">data</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to read workspace file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.read_config_file">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.read_config_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read data from config file.&quot;&quot;&quot;</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_config_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{}</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># For non-JSON config files, return as text</span>
+                    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()}</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">,</span> <span class="ne">IOError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to read config file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.workspace_file_exists">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.workspace_file_exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">workspace_file_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if workspace file exists.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.config_file_exists">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.config_file_exists">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">config_file_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if config file exists.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_config_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.get_workspace_file_info">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.get_workspace_file_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_workspace_file_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get workspace file information.&quot;&quot;&quot;</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stat</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span>
+                <span class="s2">&quot;size_mb&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">st_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="s2">&quot;modified&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting workspace file info for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.get_config_file_info">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.get_config_file_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get config file information.&quot;&quot;&quot;</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_config_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">stat</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span>
+                <span class="s2">&quot;size_mb&quot;</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">st_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="s2">&quot;modified&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting config file info for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.list_workspace_files">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.list_workspace_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_workspace_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all files in workspace directory.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">workspace_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">workspace_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error listing workspace files: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+
+    
+<div class="viewcode-block" id="ProjectStorage.list_config_files">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ProjectStorage.list_config_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_config_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List all files in config directory.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_dir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">is_file</span><span class="p">()]</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error listing config files: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConversationHistory">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConversationHistory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConversationHistory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read conversation history from workspace/conversations.json.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">ProjectStorage</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;conversations&quot;</span>
+    
+<div class="viewcode-block" id="ConversationHistory.get_conversation">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConversationHistory.get_conversation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_conversation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get conversation for a task.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="p">[])</span></div>
+
+    
+<div class="viewcode-block" id="ConversationHistory.get_recent_tasks">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConversationHistory.get_recent_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_recent_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of recent task IDs.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        
+        <span class="c1"># Sort by last message timestamp</span>
+        <span class="n">task_times</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">messages</span><span class="p">:</span>
+                <span class="n">last_msg</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">timestamp</span> <span class="o">=</span> <span class="n">last_msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;1970-01-01T00:00:00&#39;</span><span class="p">)</span>
+                <span class="n">task_times</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">task_id</span><span class="p">))</span>
+        
+        <span class="n">task_times</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">task_id</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">task_id</span> <span class="ow">in</span> <span class="n">task_times</span><span class="p">[:</span><span class="n">limit</span><span class="p">]]</span></div>
+
+    
+<div class="viewcode-block" id="ConversationHistory.get_task_summary">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConversationHistory.get_task_summary">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_task_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get summary of a task.&quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_conversation</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">messages</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span> <span class="s2">&quot;message_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        
+        <span class="n">first_msg</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">last_msg</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;task_id&quot;</span><span class="p">:</span> <span class="n">task_id</span><span class="p">,</span>
+            <span class="s2">&quot;message_count&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">),</span>
+            <span class="s2">&quot;started_at&quot;</span><span class="p">:</span> <span class="n">first_msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timestamp&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;last_activity&quot;</span><span class="p">:</span> <span class="n">last_msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timestamp&#39;</span><span class="p">),</span>
+            <span class="s2">&quot;agents_involved&quot;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;agent_name&#39;</span><span class="p">,</span> <span class="s1">&#39;unknown&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;agent_name&#39;</span><span class="p">)))</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="ConversationHistory.get_stats">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConversationHistory.get_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get conversation statistics.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;tasks&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">tasks</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;total_tasks&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;total_messages&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        
+        <span class="n">total_messages</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span> <span class="k">for</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">tasks</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;agent_name&#39;</span><span class="p">):</span>
+                    <span class="n">agents</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;agent_name&#39;</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;total_tasks&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">),</span>
+            <span class="s2">&quot;total_messages&quot;</span><span class="p">:</span> <span class="n">total_messages</span><span class="p">,</span>
+            <span class="s2">&quot;unique_agents&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">),</span>
+            <span class="s2">&quot;agent_names&quot;</span><span class="p">:</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">agents</span><span class="p">))</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EventCapture">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.EventCapture">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EventCapture</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read events from workspace/events.json.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">ProjectStorage</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;events&quot;</span>
+    
+<div class="viewcode-block" id="EventCapture.get_events">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.EventCapture.get_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get recent events.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        
+        <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">events</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="n">event_type</span><span class="p">]</span>
+        
+        <span class="k">return</span> <span class="n">events</span><span class="p">[</span><span class="o">-</span><span class="n">limit</span><span class="p">:]</span></div>
+
+    
+<div class="viewcode-block" id="EventCapture.get_event_stats">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.EventCapture.get_event_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get event statistics.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">events</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;total_events&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;event_types&quot;</span><span class="p">:</span> <span class="p">{}}</span>
+        
+        <span class="n">event_types</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+            <span class="n">event_types</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">)]</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;total_events&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">events</span><span class="p">),</span>
+            <span class="s2">&quot;event_types&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">event_types</span><span class="p">),</span>
+            <span class="s2">&quot;oldest_event&quot;</span><span class="p">:</span> <span class="n">events</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">events</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">&quot;newest_event&quot;</span><span class="p">:</span> <span class="n">events</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">events</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="EventCapture.get_events_by_type">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.EventCapture.get_events_by_type">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get events of a specific type.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">event_type</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ArtifactsViewer">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ArtifactsViewer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArtifactsViewer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Browse and view workspace files as artifacts.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">ProjectStorage</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+    
+<div class="viewcode-block" id="ArtifactsViewer.get_file_list">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ArtifactsViewer.get_file_list">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_file_list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of all workspace files.&quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">workspace_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">list_workspace_files</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">workspace_files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">file_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get_workspace_file_info</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size_human&quot;</span><span class="p">,</span> <span class="s2">&quot;0 B&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size_bytes&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                    <span class="s2">&quot;modified&quot;</span><span class="p">:</span> <span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;last_modified&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;is_text&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_text_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="p">})</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting info for file </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                    <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;file&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;size_bytes&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="s2">&quot;modified&quot;</span><span class="p">:</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;is_text&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_text_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                <span class="p">})</span>
+        
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span></div>
+
+    
+<div class="viewcode-block" id="ArtifactsViewer.get_file_content">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ArtifactsViewer.get_file_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_file_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get file content and metadata.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">file_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get_workspace_file_info</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">is_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_text_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">is_text</span><span class="p">:</span>
+                <span class="c1"># Try to read as text</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.json&#39;</span><span class="p">):</span>
+                        <span class="c1"># For JSON files, read as dict and format nicely</span>
+                        <span class="n">content_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_workspace_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                        <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+                        <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">content_dict</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># For other text files, read raw content</span>
+                        <span class="n">file_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                    
+                    <span class="n">lines</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+                    
+                    <span class="k">return</span> <span class="p">{</span>
+                        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+                        <span class="s2">&quot;file_info&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="o">**</span><span class="n">file_info</span><span class="p">,</span>
+                            <span class="s2">&quot;is_text&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                            <span class="s2">&quot;lines&quot;</span><span class="p">:</span> <span class="n">lines</span><span class="p">,</span>
+                            <span class="s2">&quot;mime_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_mime_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="k">except</span> <span class="ne">UnicodeDecodeError</span><span class="p">:</span>
+                    <span class="c1"># File is not actually text</span>
+                    <span class="n">is_text</span> <span class="o">=</span> <span class="kc">False</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_text</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">&quot;file_info&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="o">**</span><span class="n">file_info</span><span class="p">,</span>
+                        <span class="s2">&quot;is_text&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s2">&quot;mime_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_mime_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="ArtifactsViewer.get_artifacts_stats">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ArtifactsViewer.get_artifacts_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_artifacts_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get artifacts statistics.&quot;&quot;&quot;</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span>
+        
+        <span class="n">total_files</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        <span class="n">total_size_bytes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;size_bytes&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">)</span>
+        <span class="n">text_files</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;is_text&quot;</span><span class="p">])</span>
+        
+        <span class="c1"># Format total size</span>
+        <span class="k">if</span> <span class="n">total_size_bytes</span> <span class="o">&lt;</span> <span class="mi">1024</span><span class="p">:</span>
+            <span class="n">total_size</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">total_size_bytes</span><span class="si">}</span><span class="s2"> B&quot;</span>
+        <span class="k">elif</span> <span class="n">total_size_bytes</span> <span class="o">&lt;</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">:</span>
+            <span class="n">total_size</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">total_size_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1024</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> KB&quot;</span>
+        <span class="k">elif</span> <span class="n">total_size_bytes</span> <span class="o">&lt;</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">:</span>
+            <span class="n">total_size</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">total_size_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> MB&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_size</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">total_size_bytes</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> GB&quot;</span>
+        
+        <span class="c1"># Get most recent modification time</span>
+        <span class="n">last_modified</span> <span class="o">=</span> <span class="s2">&quot;Unknown&quot;</span>
+        <span class="k">if</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+                <span class="n">modified_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="s2">&quot;modified&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span> <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="s2">&quot;modified&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">modified_times</span><span class="p">:</span>
+                    <span class="c1"># Assuming ISO format timestamps</span>
+                    <span class="n">latest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">modified_times</span><span class="p">)</span>
+                    <span class="n">last_modified</span> <span class="o">=</span> <span class="n">latest</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;total_files&quot;</span><span class="p">:</span> <span class="n">total_files</span><span class="p">,</span>
+            <span class="s2">&quot;total_size&quot;</span><span class="p">:</span> <span class="n">total_size</span><span class="p">,</span>
+            <span class="s2">&quot;text_files&quot;</span><span class="p">:</span> <span class="n">text_files</span><span class="p">,</span>
+            <span class="s2">&quot;binary_files&quot;</span><span class="p">:</span> <span class="n">total_files</span> <span class="o">-</span> <span class="n">text_files</span><span class="p">,</span>
+            <span class="s2">&quot;last_modified&quot;</span><span class="p">:</span> <span class="n">last_modified</span>
+        <span class="p">}</span></div>
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_text_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if file is likely a text file based on extension.&quot;&quot;&quot;</span>
+        <span class="n">text_extensions</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;.json&#39;</span><span class="p">,</span> <span class="s1">&#39;.yaml&#39;</span><span class="p">,</span> <span class="s1">&#39;.yml&#39;</span><span class="p">,</span> <span class="s1">&#39;.md&#39;</span><span class="p">,</span> <span class="s1">&#39;.py&#39;</span><span class="p">,</span> <span class="s1">&#39;.js&#39;</span><span class="p">,</span> <span class="s1">&#39;.html&#39;</span><span class="p">,</span> <span class="s1">&#39;.css&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;.log&#39;</span><span class="p">,</span> <span class="s1">&#39;.conf&#39;</span><span class="p">,</span> <span class="s1">&#39;.cfg&#39;</span><span class="p">,</span> <span class="s1">&#39;.ini&#39;</span><span class="p">,</span> <span class="s1">&#39;.toml&#39;</span><span class="p">,</span> <span class="s1">&#39;.sh&#39;</span><span class="p">,</span> <span class="s1">&#39;.bat&#39;</span>
+        <span class="p">}</span>
+        
+        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">text_extensions</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">ext</span>  <span class="c1"># Files without extension might be text</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_mime_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get MIME type for file.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        
+        <span class="n">mime_types</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;.json&#39;</span><span class="p">:</span> <span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.yaml&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-yaml&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.yml&#39;</span><span class="p">:</span> <span class="s1">&#39;application/x-yaml&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.md&#39;</span><span class="p">:</span> <span class="s1">&#39;text/markdown&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.py&#39;</span><span class="p">:</span> <span class="s1">&#39;text/x-python&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.js&#39;</span><span class="p">:</span> <span class="s1">&#39;text/javascript&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.html&#39;</span><span class="p">:</span> <span class="s1">&#39;text/html&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.css&#39;</span><span class="p">:</span> <span class="s1">&#39;text/css&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.xml&#39;</span><span class="p">:</span> <span class="s1">&#39;application/xml&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.csv&#39;</span><span class="p">:</span> <span class="s1">&#39;text/csv&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.log&#39;</span><span class="p">:</span> <span class="s1">&#39;text/plain&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;.txt&#39;</span><span class="p">:</span> <span class="s1">&#39;text/plain&#39;</span>
+        <span class="p">}</span>
+        
+        <span class="k">return</span> <span class="n">mime_types</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="s1">&#39;text/plain&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_text_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;application/octet-stream&#39;</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ConfigViewer">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConfigViewer">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ConfigViewer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read configuration files from config/ directory.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storage</span><span class="p">:</span> <span class="n">ProjectStorage</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">storage</span>
+    
+<div class="viewcode-block" id="ConfigViewer.get_config_files">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConfigViewer.get_config_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of config files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">list_config_files</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ConfigViewer.get_config_file">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConfigViewer.get_config_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get specific config file content.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">read_config_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ConfigViewer.get_config_file_info">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ConfigViewer.get_config_file_info">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get config file information.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">get_config_file_info</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ObservabilityMonitor">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ObservabilityMonitor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read-only observability monitor for AgentX project data.&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="ow">or</span> <span class="s2">&quot;.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage</span> <span class="o">=</span> <span class="n">ProjectStorage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">)</span>
+        
+        <span class="c1"># Initialize read-only components</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conversation_history</span> <span class="o">=</span> <span class="n">ConversationHistory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_capture</span> <span class="o">=</span> <span class="n">EventCapture</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">artifacts_viewer</span> <span class="o">=</span> <span class="n">ArtifactsViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_viewer</span> <span class="o">=</span> <span class="n">ConfigViewer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_refresh</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Read-only observability monitor initialized for project: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="ObservabilityMonitor.start">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the monitor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_refresh</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Observability monitor started (read-only mode)&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.stop">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the monitor.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Observability monitor stopped&quot;</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.refresh">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.refresh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Refresh data (just updates timestamp since we read files on demand).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_refresh</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_project_status">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_project_status">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_project_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get status of the project directories.&quot;&quot;&quot;</span>
+        <span class="n">project_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">)</span>
+        <span class="n">workspace_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;workspace&quot;</span>
+        <span class="n">config_path</span> <span class="o">=</span> <span class="n">project_path</span> <span class="o">/</span> <span class="s2">&quot;config&quot;</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;project_path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">project_path</span><span class="o">.</span><span class="n">absolute</span><span class="p">()),</span>
+            <span class="s2">&quot;workspace&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="n">workspace_path</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">workspace_path</span><span class="p">),</span>
+                <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">list_workspace_files</span><span class="p">()</span> <span class="k">if</span> <span class="n">workspace_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;exists&quot;</span><span class="p">:</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">(),</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">config_path</span><span class="p">),</span>
+                <span class="s2">&quot;files&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">list_config_files</span><span class="p">()</span> <span class="k">if</span> <span class="n">config_path</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="p">}</span>
+        <span class="p">}</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_dashboard_data">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_dashboard_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dashboard_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get comprehensive dashboard data.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{</span>
+                <span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;is_running&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">,</span>
+                    <span class="s2">&quot;project_path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span>
+                    <span class="s2">&quot;last_refresh&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_refresh</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_refresh</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">&quot;project_status&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_project_status</span><span class="p">()</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;conversations&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">conversation_history</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(),</span>
+                <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_capture</span><span class="o">.</span><span class="n">get_event_stats</span><span class="p">(),</span>
+                <span class="s2">&quot;artifacts&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">artifacts_viewer</span><span class="o">.</span><span class="n">get_artifacts_stats</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error getting dashboard data: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)}</span></div>
+
+    
+    <span class="c1"># Conversation methods</span>
+<div class="viewcode-block" id="ObservabilityMonitor.get_task_conversation">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_task_conversation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_task_conversation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get conversation for a specific task.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conversation_history</span><span class="o">.</span><span class="n">get_conversation</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_recent_tasks">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_recent_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_recent_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get recent task IDs.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conversation_history</span><span class="o">.</span><span class="n">get_recent_tasks</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span></div>
+
+    
+    <span class="c1"># Artifacts methods</span>
+<div class="viewcode-block" id="ObservabilityMonitor.get_artifacts_files">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_artifacts_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_artifacts_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of artifact files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">artifacts_viewer</span><span class="o">.</span><span class="n">get_file_list</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_artifact_content">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_artifact_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_artifact_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get artifact file content.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">artifacts_viewer</span><span class="o">.</span><span class="n">get_file_content</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_artifacts_stats">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_artifacts_stats">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_artifacts_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get artifacts statistics.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">artifacts_viewer</span><span class="o">.</span><span class="n">get_artifacts_stats</span><span class="p">()</span></div>
+
+    
+    <span class="c1"># Event methods</span>
+<div class="viewcode-block" id="ObservabilityMonitor.get_events">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_events">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get events.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_capture</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">event_type</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span></div>
+
+    
+    <span class="c1"># Config methods</span>
+<div class="viewcode-block" id="ObservabilityMonitor.get_config_files">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_config_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get list of config files.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_viewer</span><span class="o">.</span><span class="n">get_config_files</span><span class="p">()</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_config_file">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_config_file">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get config file content.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_viewer</span><span class="o">.</span><span class="n">get_config_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="ObservabilityMonitor.get_configuration_data">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.ObservabilityMonitor.get_configuration_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_configuration_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get configuration data for the web interface.&quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">platform</span>
+        
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;project_path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span>
+            <span class="s2">&quot;system&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;project_path&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_path</span><span class="p">,</span>
+                <span class="s2">&quot;python_version&quot;</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;platform&quot;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">(),</span>
+                <span class="s2">&quot;is_running&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">,</span>
+                <span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;Read-Only Project Monitor&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;data_directory&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">workspace_dir</span><span class="p">)</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;storage&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;workspace_dir&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">workspace_dir</span><span class="p">),</span>
+                <span class="s2">&quot;config_dir&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">config_dir</span><span class="p">),</span>
+                <span class="s2">&quot;conversations_file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="s2">&quot;conversations&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;events_file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="s2">&quot;events&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;memory_file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage</span><span class="o">.</span><span class="n">_get_workspace_file_path</span><span class="p">(</span><span class="s2">&quot;memory&quot;</span><span class="p">))</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;project_status&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_project_status</span><span class="p">()</span>
+        <span class="p">}</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_monitor">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.get_monitor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_monitor</span><span class="p">(</span><span class="n">project_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ObservabilityMonitor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get or create observability monitor instance.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">get_monitor</span><span class="p">,</span> <span class="s1">&#39;_instance&#39;</span><span class="p">):</span>
+        <span class="n">get_monitor</span><span class="o">.</span><span class="n">_instance</span> <span class="o">=</span> <span class="n">ObservabilityMonitor</span><span class="p">(</span><span class="n">project_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_monitor</span><span class="o">.</span><span class="n">_instance</span></div>
+
+
+
+<div class="viewcode-block" id="find_project_directory">
+<a class="viewcode-back" href="../../../api/agentx/observability/monitor/index.html#agentx.observability.find_project_directory">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_project_directory</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find existing project directory with workspace and config subdirectories.&quot;&quot;&quot;</span>
+    <span class="n">current_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
+    
+    <span class="c1"># Check current directory</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">current_dir</span> <span class="o">/</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">current_dir</span> <span class="o">/</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>
+    
+    <span class="c1"># Check parent directories</span>
+    <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="p">[</span><span class="n">current_dir</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">current_dir</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">current_dir</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">parent</span> <span class="o">==</span> <span class="n">current_dir</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;workspace&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;config&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+    
+    <span class="c1"># Return current directory as default</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span> </div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

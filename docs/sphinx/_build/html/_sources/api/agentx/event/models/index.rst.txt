@@ -1,0 +1,1358 @@
+agentx.event.models
+===================
+
+.. py:module:: agentx.event.models
+
+.. autoapi-nested-parse::
+
+   Event subsystem models - Self-contained data models for event management.
+
+   This module contains all data models related to event management, following the
+   architectural rule that subsystems should be self-contained and not import from core.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.event.models.EventFilter
+   agentx.event.models.EventHandler
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.event.models.AgentCompleteEvent
+   agentx.event.models.AgentEvent
+   agentx.event.models.AgentHandoffEvent
+   agentx.event.models.AgentStartEvent
+   agentx.event.models.Event
+   agentx.event.models.EventAuditFilter
+   agentx.event.models.EventBatch
+   agentx.event.models.EventBusConfig
+   agentx.event.models.EventBusHealth
+   agentx.event.models.EventBusStats
+   agentx.event.models.EventLogEntry
+   agentx.event.models.EventMiddleware
+   agentx.event.models.EventMiddlewareConfig
+   agentx.event.models.EventPriority
+   agentx.event.models.EventStatus
+   agentx.event.models.EventStream
+   agentx.event.models.EventSubscription
+   agentx.event.models.EventSubscriptionStats
+   agentx.event.models.EventType
+   agentx.event.models.MemoryEvent
+   agentx.event.models.StorageEvent
+   agentx.event.models.SystemEvent
+   agentx.event.models.TaskCompleteEvent
+   agentx.event.models.TaskEvent
+   agentx.event.models.TaskFailEvent
+   agentx.event.models.TaskStartEvent
+   agentx.event.models.ToolCallCompleteEvent
+   agentx.event.models.ToolCallFailEvent
+   agentx.event.models.ToolCallStartEvent
+   agentx.event.models.ToolEvent
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.event.models.create_agent_handoff_event
+   agentx.event.models.create_event
+   agentx.event.models.create_task_start_event
+   agentx.event.models.create_tool_call_event
+   agentx.event.models.generate_short_id
+
+
+Module Contents
+---------------
+
+.. py:class:: AgentCompleteEvent(/, **data: Any)
+
+   Bases: :py:obj:`AgentEvent`
+
+
+   Event emitted when an agent completes processing.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: response
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tool_calls
+      :type:  List[str]
+      :value: None
+
+
+
+.. py:class:: AgentEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   Agent-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType, EventType]
+
+
+.. py:class:: AgentHandoffEvent(/, **data: Any)
+
+   Bases: :py:obj:`AgentEvent`
+
+
+   Event emitted when an agent hands off to another agent.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: from_agent
+      :type:  str
+
+
+   .. py:attribute:: handoff_reason
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: to_agent
+      :type:  str
+
+
+.. py:class:: AgentStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`AgentEvent`
+
+
+   Event emitted when an agent starts processing.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: context
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: prompt
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:class:: Event(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Base event model for the AgentX framework.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: correlation_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: data
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: event_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  EventType
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: parent_event_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: priority
+      :type:  EventPriority
+
+
+   .. py:attribute:: source
+      :type:  str
+
+
+   .. py:attribute:: status
+      :type:  EventStatus
+
+
+   .. py:attribute:: task_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:class:: EventAuditFilter(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Filter for event audit queries.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_types
+      :type:  Optional[List[EventType]]
+      :value: None
+
+
+
+   .. py:attribute:: limit
+      :type:  int
+      :value: 100
+
+
+
+   .. py:attribute:: offset
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: priority
+      :type:  Optional[EventPriority]
+      :value: None
+
+
+
+   .. py:attribute:: task_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: time_range
+      :type:  Optional[tuple[datetime.datetime, datetime.datetime]]
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:class:: EventBatch(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Batch of events for streaming.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: batch_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: created_at
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: events
+      :type:  List[Event]
+
+
+   .. py:attribute:: sequence_number
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: stream_id
+      :type:  str
+
+
+.. py:class:: EventBusConfig(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Configuration for the event bus.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: batch_size
+      :type:  int
+      :value: 100
+
+
+
+   .. py:attribute:: enable_persistence
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: flush_interval_ms
+      :type:  int
+      :value: 1000
+
+
+
+   .. py:attribute:: max_queue_size
+      :type:  int
+      :value: 10000
+
+
+
+   .. py:attribute:: persistence_path
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: retry_attempts
+      :type:  int
+      :value: 3
+
+
+
+   .. py:attribute:: retry_delay_ms
+      :type:  int
+      :value: 1000
+
+
+
+.. py:class:: EventBusHealth(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event bus health status.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: error_rate
+      :type:  float
+
+
+   .. py:attribute:: last_event_time
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: processing_lag_ms
+      :type:  float
+
+
+   .. py:attribute:: queue_utilization
+      :type:  float
+
+
+   .. py:attribute:: status
+      :type:  str
+
+
+   .. py:attribute:: warnings
+      :type:  List[str]
+      :value: None
+
+
+
+.. py:class:: EventBusStats(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event bus statistics.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: active_subscriptions
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: average_processing_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: events_failed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: events_processed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: events_published
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: queue_size
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: uptime_seconds
+      :type:  float
+      :value: 0.0
+
+
+
+.. py:class:: EventLogEntry(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event log entry for audit purposes.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: errors
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: event
+      :type:  Event
+
+
+   .. py:attribute:: handler_results
+      :type:  List[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: log_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: logged_at
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: processing_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+.. py:class:: EventMiddleware
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract base class for event middleware.
+
+
+   .. py:method:: get_name() -> str
+      :abstractmethod:
+
+
+      Get the middleware name.
+
+
+
+   .. py:method:: process_event(event: Event) -> Event
+      :abstractmethod:
+
+      :async:
+
+
+      Process an event and return the modified event.
+
+
+
+.. py:class:: EventMiddlewareConfig(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Configuration for event middleware.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: config
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: enabled
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: priority
+      :type:  int
+      :value: 0
+
+
+
+.. py:class:: EventPriority(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Event priority levels.
+
+
+   .. py:attribute:: CRITICAL
+      :value: 4
+
+
+
+   .. py:attribute:: HIGH
+      :value: 3
+
+
+
+   .. py:attribute:: LOW
+      :value: 1
+
+
+
+   .. py:attribute:: NORMAL
+      :value: 2
+
+
+
+.. py:class:: EventStatus
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Event processing status.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: COMPLETED
+      :value: 'completed'
+
+
+
+   .. py:attribute:: FAILED
+      :value: 'failed'
+
+
+
+   .. py:attribute:: PENDING
+      :value: 'pending'
+
+
+
+   .. py:attribute:: PROCESSING
+      :value: 'processing'
+
+
+
+   .. py:attribute:: RETRYING
+      :value: 'retrying'
+
+
+
+.. py:class:: EventStream(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event stream configuration.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: batch_timeout_ms
+      :type:  int
+      :value: 5000
+
+
+
+   .. py:attribute:: buffer_size
+      :type:  int
+      :value: 1000
+
+
+
+   .. py:attribute:: created_at
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: event_types
+      :type:  List[EventType]
+
+
+   .. py:attribute:: filter_expression
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: stream_id
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: EventSubscription(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Event subscription configuration.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: created_at
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: event_types
+      :type:  List[EventType]
+
+
+   .. py:attribute:: filter_expression
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: handler_name
+      :type:  str
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: priority
+      :type:  EventPriority
+
+
+   .. py:attribute:: subscription_id
+      :type:  str
+      :value: None
+
+
+
+.. py:class:: EventSubscriptionStats(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Statistics for event subscriptions.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: average_processing_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: events_failed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: events_processed
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: last_event_time
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: subscription_id
+      :type:  str
+
+
+   .. py:attribute:: total_processing_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+.. py:class:: EventType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of events in the system.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:attribute:: AGENT_COMPLETED
+      :value: 'agent_completed'
+
+
+
+   .. py:attribute:: AGENT_FAILED
+      :value: 'agent_failed'
+
+
+
+   .. py:attribute:: AGENT_HANDOFF
+      :value: 'agent_handoff'
+
+
+
+   .. py:attribute:: AGENT_STARTED
+      :value: 'agent_started'
+
+
+
+   .. py:attribute:: ARTIFACT_CREATED
+      :value: 'artifact_created'
+
+
+
+   .. py:attribute:: ARTIFACT_DELETED
+      :value: 'artifact_deleted'
+
+
+
+   .. py:attribute:: ARTIFACT_UPDATED
+      :value: 'artifact_updated'
+
+
+
+   .. py:attribute:: CUSTOM
+      :value: 'custom'
+
+
+
+   .. py:attribute:: MEMORY_ADDED
+      :value: 'memory_added'
+
+
+
+   .. py:attribute:: MEMORY_RETRIEVED
+      :value: 'memory_retrieved'
+
+
+
+   .. py:attribute:: MEMORY_SYNTHESIZED
+      :value: 'memory_synthesized'
+
+
+
+   .. py:attribute:: SYSTEM_ERROR
+      :value: 'system_error'
+
+
+
+   .. py:attribute:: SYSTEM_INFO
+      :value: 'system_info'
+
+
+
+   .. py:attribute:: SYSTEM_WARNING
+      :value: 'system_warning'
+
+
+
+   .. py:attribute:: TASK_COMPLETED
+      :value: 'task_completed'
+
+
+
+   .. py:attribute:: TASK_FAILED
+      :value: 'task_failed'
+
+
+
+   .. py:attribute:: TASK_PAUSED
+      :value: 'task_paused'
+
+
+
+   .. py:attribute:: TASK_RESUMED
+      :value: 'task_resumed'
+
+
+
+   .. py:attribute:: TASK_STARTED
+      :value: 'task_started'
+
+
+
+   .. py:attribute:: TOOL_CALL_COMPLETED
+      :value: 'tool_call_completed'
+
+
+
+   .. py:attribute:: TOOL_CALL_FAILED
+      :value: 'tool_call_failed'
+
+
+
+   .. py:attribute:: TOOL_CALL_STARTED
+      :value: 'tool_call_started'
+
+
+
+   .. py:attribute:: TOOL_VALIDATION_ERROR
+      :value: 'tool_validation_error'
+
+
+
+.. py:class:: MemoryEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   Memory-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType]
+
+
+.. py:class:: StorageEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   Storage-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: artifact_path
+      :type:  str
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType]
+
+
+.. py:class:: SystemEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   System-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: component
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType]
+
+
+   .. py:attribute:: message
+      :type:  str
+
+
+.. py:class:: TaskCompleteEvent(/, **data: Any)
+
+   Bases: :py:obj:`TaskEvent`
+
+
+   Event emitted when a task completes.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: result
+      :type:  Any
+      :value: None
+
+
+
+   .. py:attribute:: total_rounds
+      :type:  int
+      :value: 0
+
+
+
+.. py:class:: TaskEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   Task-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType, EventType, EventType]
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+.. py:class:: TaskFailEvent(/, **data: Any)
+
+   Bases: :py:obj:`TaskEvent`
+
+
+   Event emitted when a task fails.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: error
+      :type:  str
+
+
+   .. py:attribute:: error_type
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: stack_trace
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:class:: TaskStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`TaskEvent`
+
+
+   Event emitted when a task starts.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: initial_prompt
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: task_config
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+.. py:class:: ToolCallCompleteEvent(/, **data: Any)
+
+   Bases: :py:obj:`ToolEvent`
+
+
+   Event emitted when a tool call completes.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: execution_time_ms
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: result
+      :type:  Any
+      :value: None
+
+
+
+   .. py:attribute:: tool_call_id
+      :type:  str
+
+
+.. py:class:: ToolCallFailEvent(/, **data: Any)
+
+   Bases: :py:obj:`ToolEvent`
+
+
+   Event emitted when a tool call fails.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: error
+      :type:  str
+
+
+   .. py:attribute:: error_type
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: tool_call_id
+      :type:  str
+
+
+.. py:class:: ToolCallStartEvent(/, **data: Any)
+
+   Bases: :py:obj:`ToolEvent`
+
+
+   Event emitted when a tool call starts.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: args
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType]
+
+
+   .. py:attribute:: tool_call_id
+      :type:  str
+
+
+.. py:class:: ToolEvent(/, **data: Any)
+
+   Bases: :py:obj:`Event`
+
+
+   Tool-related events.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: event_type
+      :type:  Literal[EventType, EventType, EventType, EventType]
+
+
+   .. py:attribute:: tool_name
+      :type:  str
+
+
+.. py:function:: create_agent_handoff_event(from_agent: str, to_agent: str, source: str, task_id: str = None, handoff_reason: str = None) -> AgentHandoffEvent
+
+   Create an agent handoff event.
+
+
+.. py:function:: create_event(event_type: EventType, source: str, data: Dict[str, Any] = None, task_id: str = None, agent_name: str = None, tool_name: str = None, priority: EventPriority = EventPriority.NORMAL) -> Event
+
+   Create a new event with the specified parameters.
+
+
+.. py:function:: create_task_start_event(task_id: str, source: str, task_config: Dict[str, Any] = None, initial_prompt: str = None) -> TaskStartEvent
+
+   Create a task start event.
+
+
+.. py:function:: create_tool_call_event(tool_name: str, tool_call_id: str, source: str, args: Dict[str, Any] = None, task_id: str = None, agent_name: str = None) -> ToolCallStartEvent
+
+   Create a tool call start event.
+
+
+.. py:function:: generate_short_id(length: int = 8) -> str
+
+   Generate a short, URL-friendly, cryptographically secure random ID.
+
+
+.. py:data:: EventFilter
+
+.. py:data:: EventHandler
+

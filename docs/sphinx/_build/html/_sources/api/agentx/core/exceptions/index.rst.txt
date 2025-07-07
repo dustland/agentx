@@ -1,0 +1,27 @@
+agentx.core.exceptions
+======================
+
+.. py:module:: agentx.core.exceptions
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   agentx.core.exceptions.ConfigurationError
+
+
+Module Contents
+---------------
+
+.. py:exception:: ConfigurationError
+
+   Bases: :py:obj:`Exception`
+
+
+   Common base class for all non-exit exceptions.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+

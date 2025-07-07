@@ -1,0 +1,459 @@
+agentx.memory.types
+===================
+
+.. py:module:: agentx.memory.types
+
+.. autoapi-nested-parse::
+
+   Memory System Types
+
+   Data models and types for the memory backend system.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.memory.types.Constraint
+   agentx.memory.types.DocumentChunk
+   agentx.memory.types.HotIssue
+   agentx.memory.types.Memory
+   agentx.memory.types.MemoryItem
+   agentx.memory.types.MemoryQuery
+   agentx.memory.types.MemorySearchResult
+   agentx.memory.types.MemoryStats
+   agentx.memory.types.MemoryType
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.memory.types.generate_short_id
+
+
+Module Contents
+---------------
+
+.. py:class:: Constraint(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing user constraints, preferences, or rules.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT']
+      :value: 'CONSTRAINT'
+
+
+
+.. py:class:: DocumentChunk(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing a chunk of document content for semantic search.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: chunk_index
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: source_file_path
+      :type:  str
+
+
+   .. py:attribute:: type
+      :type:  Literal['DOCUMENT_CHUNK']
+      :value: 'DOCUMENT_CHUNK'
+
+
+
+.. py:class:: HotIssue(/, **data: Any)
+
+   Bases: :py:obj:`Memory`
+
+
+   Memory representing active problems that need attention.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: resolved_by_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['HOT_ISSUE']
+      :value: 'HOT_ISSUE'
+
+
+
+.. py:class:: Memory(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Base memory model for synthesis engine.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+      :value: 'system'
+
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: id
+      :type:  uuid.UUID
+      :value: None
+
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[uuid.UUID]
+      :value: None
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: type
+      :type:  Literal['CONSTRAINT', 'HOT_ISSUE', 'DOCUMENT_CHUNK']
+
+
+.. py:class:: MemoryItem
+
+   Individual memory item with metadata.
+
+
+   .. py:method:: from_dict(data: Dict[str, Any]) -> MemoryItem
+      :classmethod:
+
+
+      Create MemoryItem from dictionary.
+
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: agent_name
+      :type:  str
+
+
+   .. py:attribute:: content
+      :type:  str
+
+
+   .. py:attribute:: importance
+      :type:  float
+      :value: 1.0
+
+
+
+   .. py:attribute:: is_active
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: memory_id
+      :type:  str
+      :value: ''
+
+
+
+   .. py:attribute:: memory_type
+      :type:  MemoryType
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: parent_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: source_event_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tags
+      :type:  List[str]
+      :value: []
+
+
+
+   .. py:attribute:: timestamp
+      :type:  datetime.datetime
+
+
+   .. py:attribute:: version
+      :type:  Optional[int]
+      :value: None
+
+
+
+.. py:class:: MemoryQuery
+
+   Query parameters for memory operations.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: exclude_used_sources
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: importance_threshold
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: include_metadata
+      :type:  bool
+      :value: True
+
+
+
+   .. py:attribute:: limit
+      :type:  int
+      :value: 10
+
+
+
+   .. py:attribute:: max_tokens
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: memory_type
+      :type:  Optional[MemoryType]
+      :value: None
+
+
+
+   .. py:attribute:: metadata_filter
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: query
+      :type:  str
+
+
+   .. py:attribute:: time_range
+      :type:  Optional[Tuple[datetime.datetime, datetime.datetime]]
+      :value: None
+
+
+
+.. py:class:: MemorySearchResult
+
+   Result from memory search operations.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: has_more
+      :type:  bool
+      :value: False
+
+
+
+   .. py:attribute:: items
+      :type:  List[MemoryItem]
+
+
+   .. py:attribute:: query_metadata
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: query_time_ms
+      :type:  float
+
+
+   .. py:attribute:: total_count
+      :type:  int
+
+
+.. py:class:: MemoryStats
+
+   Memory backend statistics.
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for serialization.
+
+
+
+   .. py:attribute:: avg_importance
+      :type:  float
+
+
+   .. py:attribute:: memories_by_agent
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: memories_by_type
+      :type:  Dict[str, int]
+
+
+   .. py:attribute:: newest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: oldest_memory
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: storage_size_mb
+      :type:  Optional[float]
+      :value: None
+
+
+
+   .. py:attribute:: total_memories
+      :type:  int
+
+
+.. py:class:: MemoryType
+
+   Bases: :py:obj:`str`, :py:obj:`enum.Enum`
+
+
+   Types of memory content.
+
+   Initialize self.  See help(type(self)) for accurate signature.
+
+
+   .. py:method:: __str__()
+
+      Return str(self).
+
+
+
+   .. py:attribute:: CONSTRAINT
+      :value: 'constraint'
+
+
+
+   .. py:attribute:: DOCUMENT_CHUNK
+      :value: 'document_chunk'
+
+
+
+   .. py:attribute:: HOT_ISSUE
+      :value: 'hot_issue'
+
+
+
+   .. py:attribute:: JSON
+      :value: 'json'
+
+
+
+   .. py:attribute:: KEY_VALUE
+      :value: 'key_value'
+
+
+
+   .. py:attribute:: TEXT
+      :value: 'text'
+
+
+
+   .. py:attribute:: VERSIONED_TEXT
+      :value: 'versioned_text'
+
+
+
+.. py:function:: generate_short_id()
+

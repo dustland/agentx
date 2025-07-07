@@ -1,0 +1,166 @@
+agentx.memory.memory_system
+===========================
+
+.. py:module:: agentx.memory.memory_system
+
+.. autoapi-nested-parse::
+
+   Memory System - Coordinated Memory Management
+
+   This module provides the main Memory System interface that coordinates:
+   - Memory backend for storage
+   - Synthesis engine for event-driven analysis
+   - Context retrieval for agent prompt enhancement
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.memory.memory_system.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.memory.memory_system.MemorySystem
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.memory.memory_system.create_memory_system
+
+
+Module Contents
+---------------
+
+.. py:class:: MemorySystem(backend: agentx.memory.backend.MemoryBackend, synthesis_engine: agentx.memory.synthesis_engine.MemorySynthesisEngine = None)
+
+   Coordinated Memory System that integrates storage, synthesis, and retrieval.
+
+   This is the main interface for the memory system that provides:
+   - Event-driven memory synthesis
+   - Context-aware memory retrieval
+   - Specialized memory management (constraints, hot issues, document chunks)
+
+
+   .. py:method:: add_memory(content: str, memory_type: agentx.memory.types.MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = 1.0) -> str
+      :async:
+
+
+      Add a memory to the system.
+
+
+
+   .. py:method:: delete_memory(memory_id: str) -> bool
+      :async:
+
+
+      Delete a memory.
+
+
+
+   .. py:method:: get_active_constraints() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active constraint memories.
+
+
+
+   .. py:method:: get_active_hot_issues() -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get all active hot issue memories.
+
+
+
+   .. py:method:: get_memory(memory_id: str) -> Optional[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Get a specific memory by ID.
+
+
+
+   .. py:method:: get_relevant_context(last_user_message: str, agent_name: str = None) -> str
+      :async:
+
+
+      Get memory-derived context for agent prompt injection.
+
+      This implements the context retrieval pipeline from the architecture.
+
+
+
+   .. py:method:: get_system_status() -> Dict[str, Any]
+      :async:
+
+
+      Get comprehensive system status.
+
+
+
+   .. py:method:: initialize() -> None
+      :async:
+
+
+      Initialize the memory system.
+
+
+
+   .. py:method:: on_event(event: agentx.event.types.Event) -> None
+      :async:
+
+
+      Handle events for memory synthesis.
+
+      This is the main event handler that gets called by the event bus.
+
+
+
+   .. py:method:: search_documents(query: str, top_k: int = 5) -> List[agentx.memory.types.MemoryItem]
+      :async:
+
+
+      Search document chunks for semantic similarity.
+
+
+
+   .. py:method:: search_memories(query: agentx.memory.types.MemoryQuery) -> agentx.memory.types.MemorySearchResult
+      :async:
+
+
+      Search memories in the system.
+
+
+
+   .. py:method:: update_memory(memory_id: str, **kwargs) -> bool
+      :async:
+
+
+      Update memory fields.
+
+
+
+   .. py:attribute:: backend
+
+
+   .. py:attribute:: synthesis_engine
+
+
+.. py:function:: create_memory_system(backend: agentx.memory.backend.MemoryBackend, brain: Optional[agentx.core.brain.Brain] = None) -> MemorySystem
+
+   Create a memory system with synthesis engine.
+
+
+.. py:data:: logger
+

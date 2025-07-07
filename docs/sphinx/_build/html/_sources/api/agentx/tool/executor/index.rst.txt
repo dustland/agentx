@@ -1,0 +1,157 @@
+agentx.tool.executor
+====================
+
+.. py:module:: agentx.tool.executor
+
+.. autoapi-nested-parse::
+
+   Tool executor for secure and performant tool execution.
+
+   The executor is responsible for:
+   - Secure tool execution with validation
+   - Performance monitoring and resource limits
+   - Error handling and result formatting
+   - Security policies and audit logging
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.tool.executor.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.tool.executor.SecurityPolicy
+   agentx.tool.executor.ToolExecutor
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.tool.executor.safe_json_dumps
+   agentx.tool.executor.safe_json_serialize
+
+
+Module Contents
+---------------
+
+.. py:class:: SecurityPolicy
+
+   Security policies for tool execution.
+
+
+   .. py:attribute:: BLOCKED_TOOLS
+      :value: ['system_command', 'exec', 'eval', 'delete_all']
+
+
+
+   .. py:attribute:: MAX_CONCURRENT_EXECUTIONS
+      :value: 3
+
+
+
+   .. py:attribute:: MAX_EXECUTION_TIME
+      :value: 60.0
+
+
+
+   .. py:attribute:: MAX_TOOLS_PER_BATCH
+      :value: 10
+
+
+
+   .. py:attribute:: TOOL_PERMISSIONS
+
+
+.. py:class:: ToolExecutor(registry: Optional[agentx.tool.registry.ToolRegistry] = None)
+
+   Secure tool executor with performance monitoring and security policies.
+
+   This class handles the actual execution of tools with:
+   - Security validation and permissions
+   - Resource limits and monitoring
+   - Error handling and logging
+   - Audit trails
+
+   Initialize tool executor.
+
+   :param registry: Tool registry to use (defaults to global registry)
+
+
+   .. py:method:: clear_history()
+
+      Clear execution history.
+
+
+
+   .. py:method:: execute_tool(tool_name: str, agent_name: str = 'default', **kwargs) -> agentx.tool.models.ToolResult
+      :async:
+
+
+      Execute a single tool with security validation.
+
+      :param tool_name: Name of the tool to execute
+      :param agent_name: Name of the agent requesting execution (for permissions)
+      :param \*\*kwargs: Tool arguments
+
+      :returns: ToolResult with execution outcome
+
+
+
+   .. py:method:: execute_tools(tool_calls: List[Any], agent_name: str = 'default') -> List[Dict[str, Any]]
+      :async:
+
+
+      Execute multiple tool calls and return formatted results for LLM.
+
+      :param tool_calls: List of tool call objects from LLM response
+      :param agent_name: Name of the agent requesting execution
+
+      :returns: List of tool result messages formatted for LLM conversation
+
+
+
+   .. py:method:: get_execution_stats() -> Dict[str, Any]
+
+      Get execution statistics.
+
+
+
+   .. py:attribute:: active_executions
+      :value: 0
+
+
+
+   .. py:attribute:: execution_history
+      :type:  List[Dict[str, Any]]
+      :value: []
+
+
+
+   .. py:attribute:: registry
+
+
+   .. py:attribute:: security_policy
+
+
+.. py:function:: safe_json_dumps(obj, **kwargs)
+
+   Safely convert object to JSON string, handling complex nested objects.
+
+
+.. py:function:: safe_json_serialize(obj)
+
+   Safely serialize objects to JSON, handling dataclasses, Pydantic models, and other complex types.
+
+
+.. py:data:: logger
+

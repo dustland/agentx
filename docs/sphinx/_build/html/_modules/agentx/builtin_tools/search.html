@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.builtin_tools.search &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">agentx.builtin_tools.search</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for agentx.builtin_tools.search</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Search Tools - Web search capabilities using SerpAPI.</span>
+
+<span class="sd">Built-in integration with SerpAPI for comprehensive web search across</span>
+<span class="sd">multiple search engines (Google, Bing, DuckDuckGo, etc.).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils.logger</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..tool.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tool</span><span class="p">,</span> <span class="n">tool</span><span class="p">,</span> <span class="n">ToolResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..search.serpapi_backend</span><span class="w"> </span><span class="kn">import</span> <span class="n">SerpAPIBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..search.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">SearchEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SearchResult">
+<a class="viewcode-back" href="../../../api/agentx/builtin_tools/search/index.html#agentx.builtin_tools.SearchResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SearchResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Individual search result.&quot;&quot;&quot;</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">url</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">snippet</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">position</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">relevance_score</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">displayed_link</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">summary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="SearchTool">
+<a class="viewcode-back" href="../../../api/agentx/builtin_tools/search/index.html#agentx.builtin_tools.SearchTool">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SearchTool</span><span class="p">(</span><span class="n">Tool</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Web search tool using SerpAPI.</span>
+<span class="sd">    </span>
+<span class="sd">    Provides access to multiple search engines including Google, Bing,</span>
+<span class="sd">    DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;search&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_backend</span><span class="p">()</span>
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize SerpAPI backend.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span> <span class="o">=</span> <span class="n">SerpAPIBackend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">api_key</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SerpAPI search backend initialized&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to initialize SerpAPI backend: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error initializing search backend: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="SearchTool.web_search">
+<a class="viewcode-back" href="../../../api/agentx/builtin_tools/search/index.html#agentx.builtin_tools.SearchTool.web_search">[docs]</a>
+    <span class="nd">@tool</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Search the web using Google, Bing, DuckDuckGo or other search engines&quot;</span><span class="p">,</span>
+        <span class="n">return_description</span><span class="o">=</span><span class="s2">&quot;ToolResult containing list of search results with titles, URLs, and snippets&quot;</span>
+    <span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">web_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;google&quot;</span><span class="p">,</span> 
+                        <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span><span class="p">,</span> 
+                        <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search the web using various search engines.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            query: Search query to execute (required)</span>
+<span class="sd">            engine: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)</span>
+<span class="sd">            max_results: Maximum number of results to return, max 20 (default: 10)</span>
+<span class="sd">            country: Country code for localized results (default: us)</span>
+<span class="sd">            language: Language code for results (default: en)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ToolResult containing search results and metadata</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="s2">&quot;Search backend not available. Check SERPAPI_KEY environment variable.&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Execute search</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+                <span class="n">max_results</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">max_results</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>  <span class="c1"># Cap at 20</span>
+                <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
+                <span class="n">language</span><span class="o">=</span><span class="n">language</span>
+            <span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="c1"># Convert to our SearchResult format</span>
+                <span class="n">search_results</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">SearchResult</span><span class="p">(</span>
+                        <span class="n">title</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+                        <span class="n">url</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">url</span><span class="p">,</span>
+                        <span class="n">snippet</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">snippet</span><span class="p">,</span>
+                        <span class="n">position</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+                        <span class="n">relevance_score</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">relevance_score</span><span class="p">,</span>
+                        <span class="n">language</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">language</span><span class="p">,</span>
+                        <span class="n">date</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">date</span><span class="p">,</span>
+                        <span class="n">displayed_link</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">displayed_link</span><span class="p">,</span>
+                        <span class="n">summary</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">summary</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">results</span>
+                <span class="p">]</span>
+                
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="n">search_results</span><span class="p">,</span>
+                    <span class="n">execution_time</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">response_time</span><span class="p">,</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                        <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="n">engine</span><span class="p">,</span>
+                        <span class="s2">&quot;total_results&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">total_results</span><span class="p">,</span>
+                        <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="n">country</span><span class="p">,</span>
+                        <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="n">language</span><span class="p">,</span>
+                        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">timestamp</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">error</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">error</span> <span class="ow">or</span> <span class="s2">&quot;Search failed&quot;</span><span class="p">,</span>
+                    <span class="n">execution_time</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">response_time</span>
+                <span class="p">)</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Web search failed for query &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SearchTool.news_search">
+<a class="viewcode-back" href="../../../api/agentx/builtin_tools/search/index.html#agentx.builtin_tools.SearchTool.news_search">[docs]</a>
+    <span class="nd">@tool</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Search for news articles using Google News or Bing News&quot;</span><span class="p">,</span>
+        <span class="n">return_description</span><span class="o">=</span><span class="s2">&quot;ToolResult containing list of news search results with articles and publication dates&quot;</span>
+    <span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">news_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;google&quot;</span><span class="p">,</span> 
+                         <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">country</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;us&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search for news articles.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            query: News search query (required)</span>
+<span class="sd">            engine: Search engine to use - google or bing (default: google)</span>
+<span class="sd">            max_results: Maximum number of news results (default: 10)</span>
+<span class="sd">            country: Country code for localized news (default: us)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ToolResult containing news search results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="s2">&quot;Search backend not available&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Add news-specific parameters</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+                <span class="n">max_results</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">max_results</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                <span class="n">country</span><span class="o">=</span><span class="n">country</span><span class="p">,</span>
+                <span class="n">tbm</span><span class="o">=</span><span class="s2">&quot;nws&quot;</span>  <span class="c1"># Google News search</span>
+            <span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+                    <span class="n">execution_time</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">response_time</span><span class="p">,</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                        <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="n">engine</span><span class="p">,</span>
+                        <span class="s2">&quot;search_type&quot;</span><span class="p">:</span> <span class="s2">&quot;news&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;total_results&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">total_results</span><span class="p">,</span>
+                        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">timestamp</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">error</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">error</span> <span class="ow">or</span> <span class="s2">&quot;News search failed&quot;</span>
+                <span class="p">)</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;News search failed for query &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="SearchTool.image_search">
+<a class="viewcode-back" href="../../../api/agentx/builtin_tools/search/index.html#agentx.builtin_tools.SearchTool.image_search">[docs]</a>
+    <span class="nd">@tool</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Search for images using Google Images or Bing Images&quot;</span><span class="p">,</span>
+        <span class="n">return_description</span><span class="o">=</span><span class="s2">&quot;ToolResult containing list of image search results with URLs and metadata&quot;</span>
+    <span class="p">)</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">image_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">engine</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;google&quot;</span><span class="p">,</span> 
+                          <span class="n">max_results</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">safe_search</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;moderate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Search for images.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            query: Image search query (required)</span>
+<span class="sd">            engine: Search engine to use - google or bing (default: google)</span>
+<span class="sd">            max_results: Maximum number of image results (default: 10)</span>
+<span class="sd">            safe_search: Safe search setting - off, moderate, strict (default: moderate)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            ToolResult containing image search results</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="s2">&quot;Search backend not available&quot;</span>
+            <span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backend</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+                <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span>
+                <span class="n">max_results</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">max_results</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                <span class="n">tbm</span><span class="o">=</span><span class="s2">&quot;isch&quot;</span><span class="p">,</span>  <span class="c1"># Google Images search</span>
+                <span class="n">safe</span><span class="o">=</span><span class="n">safe_search</span>
+            <span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">results</span><span class="p">,</span>
+                    <span class="n">execution_time</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">response_time</span><span class="p">,</span>
+                    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span>
+                        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+                        <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="n">engine</span><span class="p">,</span>
+                        <span class="s2">&quot;search_type&quot;</span><span class="p">:</span> <span class="s2">&quot;images&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;safe_search&quot;</span><span class="p">:</span> <span class="n">safe_search</span><span class="p">,</span>
+                        <span class="s2">&quot;total_results&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">total_results</span><span class="p">,</span>
+                        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">timestamp</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                    <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">error</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">error</span> <span class="ow">or</span> <span class="s2">&quot;Image search failed&quot;</span>
+                <span class="p">)</span>
+                
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Image search failed for query &#39;</span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ToolResult</span><span class="p">(</span>
+                <span class="n">success</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># Export main classes and functions</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;SearchTool&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SearchResult&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

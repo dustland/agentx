@@ -1,0 +1,137 @@
+agentx.builtin_tools.search
+===========================
+
+.. py:module:: agentx.builtin_tools.search
+
+.. autoapi-nested-parse::
+
+   Search Tools - Web search capabilities using SerpAPI.
+
+   Built-in integration with SerpAPI for comprehensive web search across
+   multiple search engines (Google, Bing, DuckDuckGo, etc.).
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.builtin_tools.search.SearchResult
+   agentx.builtin_tools.search.SearchTool
+
+
+Module Contents
+---------------
+
+.. py:class:: SearchResult
+
+   Individual search result.
+
+
+   .. py:attribute:: date
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: displayed_link
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: language
+      :type:  str
+      :value: 'en'
+
+
+
+   .. py:attribute:: position
+      :type:  int
+
+
+   .. py:attribute:: relevance_score
+      :type:  float
+
+
+   .. py:attribute:: snippet
+      :type:  str
+
+
+   .. py:attribute:: summary
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: title
+      :type:  str
+
+
+   .. py:attribute:: url
+      :type:  str
+
+
+.. py:class:: SearchTool(api_key: Optional[str] = None)
+
+   Bases: :py:obj:`agentx.tool.models.Tool`
+
+
+   Web search tool using SerpAPI.
+
+   Provides access to multiple search engines including Google, Bing,
+   DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.
+
+
+   .. py:method:: image_search(query: str, engine: str = 'google', max_results: int = 10, safe_search: str = 'moderate') -> agentx.tool.models.ToolResult
+      :async:
+
+
+      Search for images.
+
+      :param query: Image search query (required)
+      :param engine: Search engine to use - google or bing (default: google)
+      :param max_results: Maximum number of image results (default: 10)
+      :param safe_search: Safe search setting - off, moderate, strict (default: moderate)
+
+      :returns: ToolResult containing image search results
+
+
+
+   .. py:method:: news_search(query: str, engine: str = 'google', max_results: int = 10, country: str = 'us') -> agentx.tool.models.ToolResult
+      :async:
+
+
+      Search for news articles.
+
+      :param query: News search query (required)
+      :param engine: Search engine to use - google or bing (default: google)
+      :param max_results: Maximum number of news results (default: 10)
+      :param country: Country code for localized news (default: us)
+
+      :returns: ToolResult containing news search results
+
+
+
+   .. py:method:: web_search(query: str, engine: str = 'google', max_results: int = 10, country: str = 'us', language: str = 'en') -> agentx.tool.models.ToolResult
+      :async:
+
+
+      Search the web using various search engines.
+
+      :param query: Search query to execute (required)
+      :param engine: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)
+      :param max_results: Maximum number of results to return, max 20 (default: 10)
+      :param country: Country code for localized results (default: us)
+      :param language: Language code for results (default: en)
+
+      :returns: ToolResult containing search results and metadata
+
+
+
+   .. py:attribute:: api_key
+      :value: None
+
+
+

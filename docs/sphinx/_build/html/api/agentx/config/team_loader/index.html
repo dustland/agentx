@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>agentx.config.team_loader &mdash; AgentX 0.13.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=ec68e10f"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            AgentX
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">agentx.config.team_loader</a><ul>
+<li><a class="reference internal" href="#attributes">Attributes</a></li>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader"><code class="docutils literal notranslate"><span class="pre">TeamLoader</span></code></a><ul>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.create_agents"><code class="docutils literal notranslate"><span class="pre">TeamLoader.create_agents()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.load_agent_config"><code class="docutils literal notranslate"><span class="pre">TeamLoader.load_agent_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.load_preset_agent"><code class="docutils literal notranslate"><span class="pre">TeamLoader.load_preset_agent()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.load_team_config"><code class="docutils literal notranslate"><span class="pre">TeamLoader.load_team_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.config_dir"><code class="docutils literal notranslate"><span class="pre">TeamLoader.config_dir</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.logger"><code class="docutils literal notranslate"><span class="pre">TeamLoader.logger</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.prompt_loader"><code class="docutils literal notranslate"><span class="pre">TeamLoader.prompt_loader</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.TeamLoader.standard_agents_dir"><code class="docutils literal notranslate"><span class="pre">TeamLoader.standard_agents_dir</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#agentx.config.team_loader.create_team_from_config"><code class="docutils literal notranslate"><span class="pre">create_team_from_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.list_preset_agents"><code class="docutils literal notranslate"><span class="pre">list_preset_agents()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.load_team_config"><code class="docutils literal notranslate"><span class="pre">load_team_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.validate_team_config"><code class="docutils literal notranslate"><span class="pre">validate_team_config()</span></code></a></li>
+<li><a class="reference internal" href="#agentx.config.team_loader.logger"><code class="docutils literal notranslate"><span class="pre">logger</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">AgentX</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">agentx.config.team_loader</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/api/agentx/config/team_loader/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-agentx.config.team_loader">
+<span id="agentx-config-team-loader"></span><h1>agentx.config.team_loader<a class="headerlink" href="#module-agentx.config.team_loader" title="Link to this heading"></a></h1>
+<p>Team configuration loading system.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.team_loader.logger" title="agentx.config.team_loader.logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.team_loader.TeamLoader" title="agentx.config.team_loader.TeamLoader"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TeamLoader</span></code></a></p></td>
+<td><p>Loads team configurations from YAML files, supporting standard presets.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.team_loader.create_team_from_config" title="agentx.config.team_loader.create_team_from_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_team_from_config</span></code></a>(team_config)</p></td>
+<td><p>Create a Team object from team configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.config.team_loader.list_preset_agents" title="agentx.config.team_loader.list_preset_agents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_preset_agents</span></code></a>(→ List[str])</p></td>
+<td><p>List all available preset agents in the framework.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#agentx.config.team_loader.load_team_config" title="agentx.config.team_loader.load_team_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_team_config</span></code></a>(→ agentx.core.config.TeamConfig)</p></td>
+<td><p>Loads a team configuration from a given path.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#agentx.config.team_loader.validate_team_config" title="agentx.config.team_loader.validate_team_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_team_config</span></code></a>(→ Dict[str, Any])</p></td>
+<td><p>Validate a team configuration file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">TeamLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#TeamLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.TeamLoader" title="Link to this definition"></a></dt>
+<dd><p>Loads team configurations from YAML files, supporting standard presets.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.create_agents">
+<span class="sig-name descname"><span class="pre">create_agents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#TeamLoader.create_agents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.create_agents" title="Link to this definition"></a></dt>
+<dd><p>Create agents from team configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of (agent_config, tools) tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.load_agent_config">
+<span class="sig-name descname"><span class="pre">load_agent_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_config_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.AgentConfig" title="agentx.core.config.AgentConfig"><span class="pre">agentx.core.config.AgentConfig</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#TeamLoader.load_agent_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.load_agent_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.load_preset_agent">
+<span class="sig-name descname"><span class="pre">load_preset_agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">agent_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.AgentConfig" title="agentx.core.config.AgentConfig"><span class="pre">agentx.core.config.AgentConfig</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#TeamLoader.load_preset_agent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.load_preset_agent" title="Link to this definition"></a></dt>
+<dd><p>Load a preset agent from the framework’s agents configuration.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.load_team_config">
+<span class="sig-name descname"><span class="pre">load_team_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#TeamLoader.load_team_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.load_team_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.config_dir">
+<span class="sig-name descname"><span class="pre">config_dir</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.config_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.prompt_loader">
+<span class="sig-name descname"><span class="pre">prompt_loader</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.prompt_loader" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="agentx.config.team_loader.TeamLoader.standard_agents_dir">
+<span class="sig-name descname"><span class="pre">standard_agents_dir</span></span><a class="headerlink" href="#agentx.config.team_loader.TeamLoader.standard_agents_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.team_loader.create_team_from_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">create_team_from_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">team_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#create_team_from_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.create_team_from_config" title="Link to this definition"></a></dt>
+<dd><p>Create a Team object from team configuration.
+This would be the Team.from_config() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>team_config</strong> – Team configuration</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Team object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.team_loader.list_preset_agents">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">list_preset_agents</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#list_preset_agents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.list_preset_agents" title="Link to this definition"></a></dt>
+<dd><p>List all available preset agents in the framework.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.team_loader.load_team_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">load_team_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../../core/config/index.html#agentx.core.config.TeamConfig" title="agentx.core.config.TeamConfig"><span class="pre">agentx.core.config.TeamConfig</span></a></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#load_team_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.load_team_config" title="Link to this definition"></a></dt>
+<dd><p>Loads a team configuration from a given path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="agentx.config.team_loader.validate_team_config">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">validate_team_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/agentx/config/team_loader.html#validate_team_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#agentx.config.team_loader.validate_team_config" title="Link to this definition"></a></dt>
+<dd><p>Validate a team configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_path</strong> – Path to team.yaml file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary with validation results</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="agentx.config.team_loader.logger">
+<span class="sig-prename descclassname"><span class="pre">agentx.config.team_loader.</span></span><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#agentx.config.team_loader.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, AgentX Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

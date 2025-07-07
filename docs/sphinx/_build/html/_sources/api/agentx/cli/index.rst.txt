@@ -1,0 +1,21 @@
+agentx.cli
+==========
+
+.. py:module:: agentx.cli
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/agentx/cli/bootstrap/index
+   /api/agentx/cli/debug/index
+   /api/agentx/cli/main/index
+   /api/agentx/cli/parser/index
+   /api/agentx/cli/status/index
+   /api/agentx/cli/templates/index
+   /api/agentx/cli/tools/index
+
+

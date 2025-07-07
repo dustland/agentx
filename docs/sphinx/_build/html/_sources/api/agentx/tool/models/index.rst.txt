@@ -1,0 +1,467 @@
+agentx.tool.models
+==================
+
+.. py:module:: agentx.tool.models
+
+.. autoapi-nested-parse::
+
+   Tool subsystem models - Self-contained data models for tool execution.
+
+   This module contains all data models related to tool execution, following the
+   architectural rule that subsystems should be self-contained and not import from core.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.tool.models.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.tool.models.Tool
+   agentx.tool.models.ToolCall
+   agentx.tool.models.ToolExecutionContext
+   agentx.tool.models.ToolExecutionStats
+   agentx.tool.models.ToolFunction
+   agentx.tool.models.ToolRegistryEntry
+   agentx.tool.models.ToolResult
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   agentx.tool.models.generate_short_id
+   agentx.tool.models.safe_json_dumps
+   agentx.tool.models.safe_json_serialize
+   agentx.tool.models.tool
+
+
+Module Contents
+---------------
+
+.. py:class:: Tool(name: str = '')
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base class for tools that provide multiple callable methods for LLMs.
+
+
+   .. py:method:: get_callable_methods() -> Dict[str, Callable]
+
+      Get all methods marked with @tool decorator.
+
+
+
+   .. py:method:: get_tool_schemas() -> Dict[str, Dict[str, Any]]
+
+      Get detailed OpenAI function schemas for all callable methods using Pydantic.
+
+
+
+   .. py:attribute:: name
+      :value: ''
+
+
+
+.. py:class:: ToolCall(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Tool call specification with retry policy.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: args
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: expected_output_type
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: retry_policy
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: timeout
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  str
+
+
+.. py:class:: ToolExecutionContext(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Context information for tool execution.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: agent_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_id
+      :type:  str
+      :value: None
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: started_at
+      :type:  datetime.datetime
+      :value: None
+
+
+
+   .. py:attribute:: task_id
+      :type:  str
+
+
+   .. py:attribute:: timeout
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: workspace_path
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:class:: ToolExecutionStats(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Statistics for tool execution.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:attribute:: average_execution_time
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: error_rate
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: failed_calls
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: last_execution
+      :type:  Optional[datetime.datetime]
+      :value: None
+
+
+
+   .. py:attribute:: successful_calls
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: total_calls
+      :type:  int
+      :value: 0
+
+
+
+   .. py:attribute:: total_execution_time
+      :type:  float
+      :value: 0.0
+
+
+
+.. py:class:: ToolFunction(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   A single callable function within a tool.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:class:: Config
+
+      .. py:attribute:: arbitrary_types_allowed
+         :value: True
+
+
+
+
+   .. py:attribute:: description
+      :type:  str
+
+
+   .. py:attribute:: function
+      :type:  Optional[Callable]
+      :value: None
+
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: parameters
+      :type:  Dict[str, Any]
+
+
+   .. py:attribute:: return_description
+      :type:  str
+      :value: ''
+
+
+
+.. py:class:: ToolRegistryEntry(/, **data: Any)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Entry in the tool registry.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:class:: Config
+
+      .. py:attribute:: arbitrary_types_allowed
+         :value: True
+
+
+
+
+   .. py:attribute:: callable_func
+      :type:  Callable
+      :value: None
+
+
+
+   .. py:attribute:: description
+      :type:  str
+
+
+   .. py:attribute:: name
+      :type:  str
+
+
+   .. py:attribute:: pydantic_model
+      :type:  Optional[pydantic.BaseModel]
+      :value: None
+
+
+
+   .. py:attribute:: tool
+      :type:  Tool
+      :value: None
+
+
+
+   .. py:attribute:: tool_schema
+      :type:  Dict[str, Any]
+
+
+.. py:class:: ToolResult(**data)
+
+   Bases: :py:obj:`pydantic.BaseModel`
+
+
+   Canonical tool execution result model.
+
+   This is the single source of truth for tool execution results across the framework.
+
+   Create a new model by parsing and validating input data from keyword arguments.
+
+   Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+   validated to form a valid model.
+
+   `self` is explicitly positional-only to allow `self` as a field name.
+
+
+   .. py:method:: error_result(error: str, **kwargs) -> ToolResult
+      :classmethod:
+
+
+      Create an error result.
+
+
+
+   .. py:method:: success_result(result: Any, **kwargs) -> ToolResult
+      :classmethod:
+
+
+      Create a successful result.
+
+
+
+   .. py:method:: to_dict() -> Dict[str, Any]
+
+      Convert to dictionary for JSON serialization.
+
+
+
+   .. py:method:: to_json() -> str
+
+      Convert to JSON string.
+
+
+
+   .. py:attribute:: artifacts
+      :type:  List[str]
+      :value: None
+
+
+
+   .. py:attribute:: error
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: execution_time
+      :type:  float
+      :value: 0.0
+
+
+
+   .. py:attribute:: exit_code
+      :type:  Optional[int]
+      :value: None
+
+
+
+   .. py:attribute:: metadata
+      :type:  Dict[str, Any]
+      :value: None
+
+
+
+   .. py:attribute:: resource_usage
+      :type:  Optional[Dict[str, Any]]
+      :value: None
+
+
+
+   .. py:attribute:: result
+      :type:  Any
+      :value: None
+
+
+
+   .. py:attribute:: success
+      :type:  bool
+
+
+   .. py:attribute:: timestamp
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tool_call_id
+      :type:  Optional[str]
+      :value: None
+
+
+
+   .. py:attribute:: tool_name
+      :type:  Optional[str]
+      :value: None
+
+
+
+.. py:function:: generate_short_id(length: int = 8) -> str
+
+   Generate a short, URL-friendly, cryptographically secure random ID.
+
+
+.. py:function:: safe_json_dumps(obj: Any, **kwargs) -> str
+
+   Safely dump complex objects to JSON string.
+   Uses safe_json_serialize to handle complex types.
+
+
+.. py:function:: safe_json_serialize(obj: Any) -> Any
+
+   Safely serialize complex objects to JSON-compatible format.
+   Handles dataclasses, Pydantic models, and other complex types.
+
+
+.. py:function:: tool(description: str = '', return_description: str = '')
+
+   Decorator to mark a method as a callable tool for an LLM.
+
+
+.. py:data:: logger
+

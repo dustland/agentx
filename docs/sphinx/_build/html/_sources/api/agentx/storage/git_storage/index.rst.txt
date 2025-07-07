@@ -1,0 +1,163 @@
+agentx.storage.git_storage
+==========================
+
+.. py:module:: agentx.storage.git_storage
+
+.. autoapi-nested-parse::
+
+   Git-based artifact storage - Uses Git for proper versioning.
+
+   Provides Git-based versioning for artifacts, especially useful for code generation
+   where we need proper diffs, branching, and version history.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   agentx.storage.git_storage.GIT_AVAILABLE
+   agentx.storage.git_storage.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   agentx.storage.git_storage.GitArtifactStorage
+
+
+Module Contents
+---------------
+
+.. py:class:: GitArtifactStorage(workspace_path: Union[str, pathlib.Path] = None, base_path: Union[str, pathlib.Path] = None, task_id: str = None)
+
+   Git-based artifact storage with proper version control.
+
+   Uses Git for versioning artifacts, providing:
+   - Proper diffs and history
+   - Branching and merging capabilities
+   - Standard Git tooling integration
+   - Efficient storage with delta compression
+   - Meaningful commit messages
+
+
+   .. py:method:: __del__()
+
+      Cleanup thread pool.
+
+
+
+   .. py:method:: create_directory(path: str) -> Any
+      :async:
+
+
+      Create directory (no-op for git storage).
+
+
+
+   .. py:method:: delete_artifact(name: str, version: Optional[str] = None) -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Delete an artifact or specific version.
+
+
+
+   .. py:method:: exists(path: str) -> bool
+      :async:
+
+
+      Check if artifact exists.
+
+
+
+   .. py:method:: get_artifact(name: str, version: Optional[str] = None) -> Optional[str]
+      :async:
+
+
+      Get artifact content at specific version (commit).
+
+
+
+   .. py:method:: get_artifact_diff(name: str, version1: str, version2: str) -> Optional[str]
+      :async:
+
+
+      Get diff between two versions of an artifact.
+
+
+
+   .. py:method:: get_artifact_versions(name: str) -> List[str]
+      :async:
+
+
+      Get all versions (commits) of an artifact.
+
+
+
+   .. py:method:: list_artifacts() -> List[Dict[str, Any]]
+      :async:
+
+
+      List all artifacts with their Git history.
+
+
+
+   .. py:method:: list_directory(path: str = '') -> List[Any]
+      :async:
+
+
+      List directory contents (returns artifacts for compatibility).
+
+
+
+   .. py:method:: read_text(path: str) -> str
+      :async:
+
+
+      Read text content (alias for get_artifact).
+
+
+
+   .. py:method:: store_artifact(name: str, content: Union[str, bytes], content_type: str = 'text/plain', metadata: Optional[Dict[str, Any]] = None, commit_message: Optional[str] = None) -> agentx.storage.interfaces.StorageResult
+      :async:
+
+
+      Store an artifact with Git versioning.
+
+
+
+   .. py:method:: write_bytes(path: str, content: bytes) -> Any
+      :async:
+
+
+      Write bytes content (alias for store_artifact).
+
+
+
+   .. py:method:: write_text(path: str, content: str) -> Any
+      :async:
+
+
+      Write text content (alias for store_artifact).
+
+
+
+   .. py:attribute:: artifacts_path
+
+
+   .. py:attribute:: executor
+
+
+   .. py:attribute:: repo
+
+
+.. py:data:: GIT_AVAILABLE
+   :value: True
+
+
+.. py:data:: logger
+
