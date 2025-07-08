@@ -436,7 +436,7 @@ def main():
                 f.write(markdown)
 
         # Process other Python files in the module
-        for py_file in module_path.glob("*.py"):
+        for py_file in sorted(module_path.glob("*.py")):
             if py_file.name != "__init__.py" and not py_file.name.startswith("_"):
                 file_name = py_file.stem
                 module_data = process_module(py_file, f"agentx.{module_name}.{file_name}")
