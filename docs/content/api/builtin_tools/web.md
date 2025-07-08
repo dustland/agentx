@@ -5,8 +5,8 @@
 Web Tools - Opinionated web automation and content extraction.
 
 Built-in integrations:
-- Firecrawl: Superior web content extraction (with fallback)
-- requests + BeautifulSoup: Reliable fallback for content extraction
+- Firecrawl: Web content extraction
+- requests + BeautifulSoup: Content extraction
 - browser-use: AI-first browser automation (better than Playwright for agents)
 
 ## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L21" class="source-link" title="View source code">source</a>

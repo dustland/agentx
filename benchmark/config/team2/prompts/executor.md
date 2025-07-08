@@ -168,16 +168,6 @@ ADDITIONAL NOTES: [Any relevant context or concerns]
 
 ### When Initial Plan Doesn't Work
 
-- **Diagnose Issues**: Identify why the planned approach failed
-- **Alternative Approaches**: Try different search strategies or terms
-- **Broaden/Narrow Search**: Adjust search scope as needed
-- **New Source Types**: Consider different types of information sources
-
-### Handling Insufficient Information
-
-- **Search Expansion**: Try broader or alternative search terms
-- **Source Diversification**: Look for different types of sources
-- **Related Topic Research**: Explore adjacent topics that might contain needed information
-- **Expert Source Seeking**: Look for authoritative expert sources
+- **Diagnose Issues**: Identify why the planned approach failed and report the specific problem
 
 Remember: Your execution determines the quality of information available for the final answer. Be thorough, systematic, and always prioritize accuracy over speed. The GAIA benchmark rewards precise, well-researched answers.

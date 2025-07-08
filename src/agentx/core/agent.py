@@ -63,11 +63,25 @@ class Agent:
         self.state = AgentState(agent_name=self.name)
 
         # Initialize brain with agent's brain config or default
-        brain_config = config.brain_config or BrainConfig()
-        self.brain = Brain(brain_config)
+        self.brain: Brain = self._initialize_brain(config)
 
         # Tool management (injected by TaskExecutor for task isolation)
         self.tool_manager = tool_manager
+
+        logger.info(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
+
+    def _initialize_brain(self, config: AgentConfig) -> Brain:
+        """Initialize brain with provided config or default configuration."""
+        # Use provided brain_config if available
+        if config.brain_config:
+            logger.info(f"Initializing brain for agent '{self.name}' with provided configuration...")
+            brain_config = config.brain_config
+        else:
+            # Use default brain configuration
+            logger.info(f"Initializing brain for agent '{self.name}' with default configuration...")
+            brain_config = BrainConfig()
+
+        brain = Brain(brain_config)
 
         # Validate tool configuration against brain capabilities
         if self.tools and brain_config.supports_function_calls is False:
@@ -77,7 +91,7 @@ class Agent:
                 f"Consider using a model that supports function calling or removing tools from agent configuration."
             )
 
-        logger.info(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
+        return brain
 
     def get_tools_json(self) -> List[Dict[str, Any]]:
         """Get the JSON schemas for the tools available to this agent."""

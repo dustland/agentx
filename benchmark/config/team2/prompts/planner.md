@@ -20,7 +20,6 @@ Transform complex GAIA questions into structured, step-by-step action plans that
 - **Research Strategy**: Plan the most effective search approach
 - **Information Hierarchy**: Prioritize which information to find first
 - **Verification Plan**: Determine how to confirm accuracy
-- **Contingency Planning**: Prepare backup approaches if initial plan fails
 
 ### 3. Task Sequencing
 
@@ -77,7 +76,6 @@ STEP 1: [First action to take]
 STEP 2: [Second action to take]
 ...
 SUCCESS CHECK: [How to know if step succeeded]
-FALLBACK: [What to do if step fails]
 ```
 
 ## Planning Strategies by Question Type
@@ -143,7 +141,6 @@ Phase 3: [Final verification and synthesis]
 
 KEY RISKS:
 - [Potential issues that could derail the plan]
-- [Backup strategies for each risk]
 
 QUALITY GATES:
 - [Checkpoints for verification]
@@ -161,7 +158,6 @@ QUALITY GATES:
 
 - Prioritize recency of sources
 - Plan to verify information currency
-- Include backup strategies if recent information unavailable
 
 ## Efficiency Principles
 

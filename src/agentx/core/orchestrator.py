@@ -1,17 +1,14 @@
 from __future__ import annotations
-import asyncio
 import json
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Dict, Optional
+from typing import TYPE_CHECKING, Dict, Optional
 
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import TeamConfig
-from agentx.core.message import TaskStep, TextPart, MessageQueue, Message
-from agentx.core.plan import Plan, PlanItem, TaskStatus
+from agentx.core.message import MessageQueue
+from agentx.core.plan import Plan, PlanItem
 from agentx.tool.manager import ToolManager
 from agentx.utils.logger import get_logger
-from agentx.utils.id import generate_short_id
 
 if TYPE_CHECKING:
     from agentx.core.task import Task
@@ -21,9 +18,9 @@ logger = get_logger(__name__)
 
 class Orchestrator:
     """
-    The central process manager of the system. It executes the Plan with unwavering precision,
-    operating as a state machine that moves the system from one task to the next according to
-    the instructions in the Plan.
+    The central coordinator of the system. It manages task state, creates execution plans,
+    and routes work to specialist agents. It makes strategic decisions about workflow
+    while delegating tactical execution to agents.
     """
 
     def __init__(
@@ -37,15 +34,33 @@ class Orchestrator:
         self.message_queue = message_queue
         self.tool_manager = tool_manager
         self.agents = agents
-        self.routing_brain: Optional[Brain] = self._initialize_routing_brain()
-        self.current_plan: Optional[Plan] = None
+        self.brain: Brain = self._initialize_brain()
+        self.plan: Optional[Plan] = None
 
-    def _initialize_routing_brain(self) -> Optional[Brain]:
+    def _initialize_brain(self) -> Brain:
+        """Initialize brain with provided config or default configuration."""
+        # Use provided brain_config if available
         if self.team_config.orchestrator and self.team_config.orchestrator.brain_config:
-            logger.info("Initializing routing brain...")
+            logger.info("Initializing orchestrator brain with provided configuration...")
             return Brain.from_config(self.team_config.orchestrator.brain_config)
-        logger.info("No routing brain configured. Using heuristic routing.")
-        return None
+
+        # Fall back to default brain config
+        logger.info("Initializing orchestrator brain with default configuration...")
+        if self.team_config.orchestrator:
+            default_config = self.team_config.orchestrator.get_default_brain_config()
+        else:
+            # Create minimal default config if no orchestrator config at all
+            from agentx.core.config import BrainConfig
+            default_config = BrainConfig(
+                provider="deepseek",
+                model="deepseek-chat",
+                temperature=0.3,
+                max_tokens=2000,
+                timeout=120
+            )
+        return Brain.from_config(default_config)
+
+
 
     async def step(self, messages: list[dict], task: "Task") -> str:
         """
@@ -62,18 +77,18 @@ class Orchestrator:
         8. Continue or Terminate
         """
         # Step 1: Initialize and Generate Plan (If Needed)
-        if not self.current_plan:
+        if not self.plan:
             await self._initialize_plan(messages, task)
 
         # Step 8: Check if plan is complete
-        if self.current_plan.is_complete():
+        if self.plan.is_complete():
             logger.info("All tasks in plan completed")
             return "Task completed successfully. All plan items have been finished."
 
         # Step 2: Identify Next Actionable Task
-        next_task = self.current_plan.get_next_actionable_task()
+        next_task = self.plan.get_next_actionable_task()
         if not next_task:
-            if self.current_plan.has_failed_tasks():
+            if self.plan.has_failed_tasks():
                 return "Task execution halted due to failed tasks."
             else:
                 return "No actionable tasks available. Waiting for dependencies to complete."
@@ -87,7 +102,7 @@ class Orchestrator:
 
         # Step 5: Dispatch and Monitor
         logger.info(f"Dispatching task '{next_task.name}' to agent '{agent_name}'")
-        self.current_plan.update_task_status(next_task.id, "in_progress")
+        self.plan.update_task_status(next_task.id, "in_progress")
 
         try:
             # Execute the specific micro-task
@@ -96,19 +111,31 @@ class Orchestrator:
                 orchestrator=self
             )
 
-            # Step 6: Process Completion Signal (assume success for now)
-            self.current_plan.update_task_status(next_task.id, "completed")
-            logger.info(f"Task '{next_task.name}' completed successfully")
+            # Step 6: Process Completion Signal - CHECK ACTUAL SUCCESS/FAILURE
+            task_success = await self._evaluate_task_success(response, next_task)
 
-            # Step 7: Persist State
-            await self._persist_plan(task)
+            if task_success:
+                self.plan.update_task_status(next_task.id, "completed")
+                logger.info(f"Task '{next_task.name}' completed successfully")
+                await self._persist_plan(task)
+                return f"Completed task: {next_task.name}\n\n{response}"
+            else:
+                # Task failed - apply failure policy
+                logger.error(f"Task '{next_task.name}' failed - agent response indicates failure")
+                self.plan.update_task_status(next_task.id, "failed")
 
-            return f"Completed task: {next_task.name}\n\n{response}"
+                # Apply failure policy
+                if next_task.on_failure == "halt":
+                    return f"Task execution halted due to failure in '{next_task.name}': Agent could not complete the task successfully"
+                elif next_task.on_failure == "escalate_to_user":
+                    return f"Task '{next_task.name}' failed and requires user intervention: Agent could not complete the task successfully"
+                else:  # proceed
+                    return f"Task '{next_task.name}' failed but continuing with next tasks: Agent could not complete the task successfully"
 
         except Exception as e:
             # Step 6: Process Failure Signal
             logger.error(f"Task '{next_task.name}' failed: {e}")
-            self.current_plan.update_task_status(next_task.id, "failed")
+            self.plan.update_task_status(next_task.id, "failed")
 
             # Apply failure policy
             if next_task.on_failure == "halt":
@@ -120,97 +147,61 @@ class Orchestrator:
 
     async def _initialize_plan(self, messages: list[dict], task: "Task") -> None:
         """Initialize and generate plan if needed (Step 1)."""
-        plan_file = task.workspace.get_workspace_path() / "plan.json"
+        # Try to load existing plan through Task
+        existing_plan = await task.load_plan()
+        if existing_plan:
+            self.plan = existing_plan
+            return
 
-        # Try to load existing plan
-        if plan_file.exists():
-            try:
-                plan_data = json.loads(plan_file.read_text())
-                self.current_plan = Plan(**plan_data)
-                logger.info("Loaded existing plan from plan.json")
-                return
-            except Exception as e:
-                logger.warning(f"Failed to load existing plan: {e}")
-
-        # Generate new plan
+        # Generate new plan using Brain
         logger.info("Generating new plan...")
-        self.current_plan = await self._generate_plan(messages, task)
-        await self._persist_plan(task)
+        self.plan = await self._generate_plan(messages, task)
+        # Use Task's plan management and persist the plan
+        task.update_plan(self.plan)
+        await task._persist_plan()
 
     async def _generate_plan(self, messages: list[dict], task: "Task") -> Plan:
         """Generate a plan using the Brain."""
-        if not self.routing_brain:
-            # Fallback: create a simple single-task plan
-            return Plan(
-                goal=task.initial_prompt,
-                tasks=[
-                    PlanItem(
-                        id="main_task",
-                        name="Complete main task",
-                        goal=task.initial_prompt,
-                        agent=None,  # Will be routed automatically
-                        dependencies=[],
-                        status="pending"
-                    )
-                ]
-            )
-
-        # Use Brain to generate structured plan
         plan_prompt = f"""
-        Create a detailed plan to achieve this goal: {task.initial_prompt}
+Create a detailed execution plan to achieve this goal: {task.initial_prompt}
 
-        Available agents: {', '.join(self.agents.keys())}
+Available agents: {', '.join(self.agents.keys())}
 
-        Break down the goal into specific, actionable tasks. Each task should:
-        - Have a clear, measurable goal
-        - Be assignable to one of the available agents
-        - Have clear dependencies if needed
+Break down the goal into specific, actionable tasks. Each task should:
+- Have a clear, measurable goal
+- Be assignable to one of the available agents
+- Have clear dependencies if needed
 
-        Respond with a JSON structure like this:
+Respond with a JSON structure like this:
+{{
+    "goal": "The main objective",
+    "tasks": [
         {{
-            "goal": "The main objective",
-            "tasks": [
-                {{
-                    "id": "task_1",
-                    "name": "Short task name",
-                    "goal": "Specific, measurable goal for this task",
-                    "agent": "agent_name or null for auto-routing",
-                    "dependencies": [],
-                    "status": "pending"
-                }}
-            ]
+            "id": "task_1",
+            "name": "Short task name",
+            "goal": "Specific, measurable goal for this task",
+            "agent": "agent_name or null for auto-routing",
+            "dependencies": [],
+            "status": "pending"
         }}
-        """
+    ]
+}}
+"""
+
+        response = await self.brain.generate_response(
+            messages=[{"role": "user", "content": plan_prompt}],
+            json_mode=True
+        )
+
+        # Parse the JSON response
+        if not response.content:
+            raise ValueError("Empty response from Brain during plan generation")
 
         try:
-            response = await self.routing_brain.generate_response(
-                messages=[{"role": "user", "content": plan_prompt}],
-                json_mode=True
-            )
-
-            # Parse the JSON response
-            if not response.content:
-                raise ValueError("Empty response from Brain")
-
             plan_data = json.loads(response.content)
             return Plan(**plan_data)
-
-        except Exception as e:
-            logger.error(f"Failed to generate plan with Brain: {e}")
-            # Fallback to simple plan
-            return Plan(
-                goal=task.initial_prompt,
-                tasks=[
-                    PlanItem(
-                        id="main_task",
-                        name="Complete main task",
-                        goal=task.initial_prompt,
-                        agent=None,
-                        dependencies=[],
-                        status="pending"
-                    )
-                ]
-            )
+        except (json.JSONDecodeError, ValueError) as e:
+            raise ValueError(f"Failed to parse plan from Brain response: {e}")
 
     async def _select_agent_for_task(self, task_item: PlanItem) -> str:
         """Select agent for a specific task (Step 3)."""
@@ -222,40 +213,34 @@ class Orchestrator:
         if len(self.agents) == 1:
             return next(iter(self.agents.keys()))
 
-        # Use routing brain for multi-agent teams
-        if self.routing_brain:
-            return await self._route_task_with_brain(task_item)
+        # Use brain for multi-agent teams
+        return await self._route_task(task_item)
 
-        # Fallback: use first agent
-        return next(iter(self.agents.keys()))
-
-    async def _route_task_with_brain(self, task_item: PlanItem) -> str:
-        """Use routing brain to select best agent for a task."""
+    async def _route_task(self, task_item: PlanItem) -> str:
+        """Use brain to select best agent for a task."""
         agent_list = ", ".join(self.agents.keys())
         routing_prompt = f"""
-        Given this specific task and the available agents, which agent is best suited?
+Given this specific task and the available agents, which agent is best suited?
 
-        Task: {task_item.name}
-        Goal: {task_item.goal}
+Task: {task_item.name}
+Goal: {task_item.goal}
 
-        Available agents: {agent_list}
+Available agents: {agent_list}
 
-        Respond with only the agent name.
-        """
+Respond with only the agent name.
+"""
 
-        try:
-            response = await self.routing_brain.generate_response(
-                messages=[{"role": "user", "content": routing_prompt}]
-            )
+        response = await self.brain.generate_response(
+            messages=[{"role": "user", "content": routing_prompt}]
+        )
 
-            agent_name = response.content.strip()
-            if agent_name in self.agents:
-                return agent_name
-        except Exception as e:
-            logger.error(f"Failed to route task with brain: {e}")
+        agent_name = response.content.strip()
+        if agent_name in self.agents:
+            return agent_name
 
-        # Fallback to first agent
-        return next(iter(self.agents.keys()))
+        # Brain gave invalid response - this is an error that should be fixed
+        available_agents = list(self.agents.keys())
+        raise ValueError(f"Brain returned invalid agent '{agent_name}'. Available agents: {available_agents}")
 
     def _prepare_task_briefing(self, task_item: PlanItem, messages: list[dict], task: "Task") -> list[dict]:
         """Prepare isolated task briefing for the agent (Step 4)."""
@@ -278,7 +263,6 @@ Original user request: {task.initial_prompt}
 
         # Add the latest user message for context
         if messages:
-            latest_message = messages[-1]
             briefing.append({
                 "role": "user",
                 "content": f"Please complete this task: {task_item.goal}"
@@ -287,14 +271,56 @@ Original user request: {task.initial_prompt}
         return briefing
 
     async def _persist_plan(self, task: "Task") -> None:
-        """Persist the current plan to plan.json (Step 7)."""
-        if not self.current_plan:
+        """Persist the plan via Task's plan management (Step 7)."""
+        if not self.plan:
             return
 
-        plan_file = task.workspace.get_workspace_path() / "plan.json"
-        try:
-            plan_data = self.current_plan.model_dump()
-            plan_file.write_text(json.dumps(plan_data, indent=2))
-            logger.debug("Plan persisted to plan.json")
-        except Exception as e:
-            logger.error(f"Failed to persist plan: {e}")
+        # Delegate to Task's plan management instead of direct file operations
+        task.update_plan(self.plan)
+
+    async def _evaluate_task_success(self, response: str, task_item: PlanItem) -> bool:
+        """Evaluate if a task was actually completed successfully by analyzing the response."""
+        # Look for failure indicators in the response
+        failure_indicators = [
+            "connection refused",
+            "max retries exceeded",
+            "failed to establish",
+            "tool failed",
+            "error occurred",
+            "could not",
+            "unable to",
+            "no results found",
+            "search failed",
+            "api error"
+        ]
+
+        response_lower = response.lower()
+
+        # Check for explicit failure indicators
+        for indicator in failure_indicators:
+            if indicator in response_lower:
+                logger.warning(f"Task failure detected: '{indicator}' found in response")
+                return False
+
+        # For research tasks, check if actual content was generated
+        if "research" in task_item.name.lower():
+            if len(response.strip()) < 100:  # Very short response likely indicates failure
+                logger.warning(f"Research task appears to have failed: response too short ({len(response)} chars)")
+                return False
+
+            # Check if response contains only generic/placeholder content
+            generic_phrases = [
+                "explore the latest",
+                "discover the",
+                "learn how",
+                "understand the modern",
+                "it seems there was an issue"
+            ]
+
+            for phrase in generic_phrases:
+                if phrase in response_lower:
+                    logger.warning(f"Research task appears to have failed: generic content detected")
+                    return False
+
+        # If no failure indicators found, assume success
+        return True

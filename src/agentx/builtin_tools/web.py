@@ -2,8 +2,8 @@
 Web Tools - Opinionated web automation and content extraction.
 
 Built-in integrations:
-- Firecrawl: Superior web content extraction (with fallback)
-- requests + BeautifulSoup: Reliable fallback for content extraction
+- Firecrawl: Web content extraction
+- requests + BeautifulSoup: Content extraction
 - browser-use: AI-first browser automation (better than Playwright for agents)
 """
 
@@ -444,53 +444,7 @@ class WebTool(Tool):
                 error=str(e)
             )
 
-    def _extract_with_jina(self, url: str) -> ToolResult:
-        """
-        Fallback content extraction using Jina Reader.
-        More reliable than Firecrawl for many websites.
-        """
-        try:
-            import requests
 
-            # Jina Reader API - free and reliable
-            jina_url = f"https://r.jina.ai/{url}"
-
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0; +https://github.com/agentx)',
-                'Accept': 'text/plain'
-            }
-
-            response = requests.get(jina_url, headers=headers, timeout=30)
-            response.raise_for_status()
-
-            content = response.text
-
-            # Extract title from first line if available
-            lines = content.split('\n')
-            title = lines[0] if lines else url
-
-            web_content = WebContent(
-                url=url,
-                title=title,
-                content=content,
-                markdown=content,
-                metadata={"extraction_method": "jina_reader"},
-                success=True
-            )
-
-            return ToolResult(
-                success=True,
-                result=web_content,
-                metadata={"url": url, "extraction_method": "jina_reader"}
-            )
-
-        except Exception as e:
-            logger.error(f"Jina Reader extraction failed for {url}: {e}")
-            return ToolResult(
-                success=False,
-                error=f"Jina Reader extraction failed: {str(e)}",
-                metadata={"url": url}
-            )
 
 
 # Export main classes and functions

@@ -35,8 +35,8 @@ async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
 
     try:
-        # Start task and get executor
-        executor = start_task(user_prompt, config_path)
+        # Start task (creates executor and initializes conversation in one call)
+        executor = await start_task(user_prompt, config_path)
 
         # Register custom weather tool
         weather_tool = WeatherTool()
@@ -44,9 +44,6 @@ async def main():
 
         # Debug: Check what tools are registered
         print(f"🔧 Registered tools: {executor.tool_manager.list_tools()}")
-
-        # Start the conversation
-        await executor.start(user_prompt)
 
         # Get the agent to check tool schemas
         agent = list(executor.agents.values())[0]

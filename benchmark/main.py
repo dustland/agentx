@@ -136,7 +136,7 @@ Please provide a direct, factual answer. Be concise and specific.
         start_time = time.time()
 
         # Start the task and set up cost tracking
-        task = start_task(task_content, team_config_path)
+        task = await start_task(task_content, team_config_path)
 
         # Set up usage tracking via Brain wrapping (simpler than callbacks)
         wrapped_agents = []
@@ -174,30 +174,23 @@ Please provide a direct, factual answer. Be concise and specific.
             print(f"{Colors.CYAN}📋 Question: {question['Question'][:100]}{'...' if len(question['Question']) > 100 else ''}{Colors.RESET}")
             print(f"{Colors.YELLOW}💭 Agent thinking...{Colors.RESET}\n")
 
-            async for result in task.step(stream=True):
-                if result.get("type") == "content":
-                    content = result.get("content", "")
-                    print(content, end="", flush=True)  # Stream the response in real-time
-                    final_response_parts.append(content)
-                elif result.get("type") == "tool_call":
-                    # Tool call data is directly in result, not nested under "tool_call"
-                    tool_name = result.get("name", "unknown")
-                    tool_args = result.get("arguments", {})
-                    tool_calls_made.append({"name": tool_name, "arguments": tool_args})
-                    print(f"\n{Colors.MAGENTA}🔧 Tool Call: {tool_name}{Colors.RESET}")
-                    if verbose and tool_args:
-                        print(f"{Colors.MAGENTA}   Args: {tool_args}{Colors.RESET}")
-                elif result.get("type") == "tool_result":
-                    # Tool result data is directly in result, not nested under "tool_result"
-                    tool_name = result.get("name", "unknown")
-                    success = result.get("success", False)
-                    if success:
-                        print(f"{Colors.GREEN}✅ Tool completed: {tool_name}{Colors.RESET}")
-                    else:
-                        error_msg = result.get("error", "Unknown error")
-                        print(f"{Colors.RED}❌ Tool failed: {tool_name} - {error_msg}{Colors.RESET}")
-                elif result.get("type") == "routing_decision" and result.get("action") == "COMPLETE":
-                    break
+            # Execute the task autonomously
+            async for message in task.execute(task_content, stream=True):
+                # Extract text content from the message
+                if hasattr(message, 'content') and message.content:
+                    print(message.content, end="", flush=True)
+                    final_response_parts.append(message.content)
+                elif hasattr(message, 'parts'):
+                    # Extract text from parts
+                    for part in message.parts:
+                        if hasattr(part, 'type') and part.type == "text":
+                            print(part.text, end="", flush=True)
+                            final_response_parts.append(part.text)
+                        elif hasattr(part, 'type') and part.type == "tool_call":
+                            tool_calls_made.append({"name": part.tool_name, "arguments": part.args})
+                            print(f"\n{Colors.MAGENTA}🔧 Tool Call: {part.tool_name}{Colors.RESET}")
+                            if verbose and part.args:
+                                print(f"{Colors.MAGENTA}   Args: {part.args}{Colors.RESET}")
 
             print("\n")  # Add newline after completion
             return "".join(final_response_parts).strip()

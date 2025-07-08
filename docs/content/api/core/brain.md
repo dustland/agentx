@@ -70,7 +70,7 @@ def remove_usage_callback(self, callback)
 
 Remove a usage callback.
 
-### generate_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L210" class="source-link" title="View source code">source</a>
+### generate_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L209" class="source-link" title="View source code">source</a>
 
 ```python
 async def generate_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None, temperature: Optional[float] = None, tools: Optional[List[Dict[str, Any]]] = None, json_mode: bool = False) -> BrainResponse
@@ -91,7 +91,7 @@ the orchestrator to handle.
 **Returns:**
     LLM response (may contain tool call requests)
 
-### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L268" class="source-link" title="View source code">source</a>
+### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L267" class="source-link" title="View source code">source</a>
 
 ```python
 async def stream_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None, temperature: Optional[float] = None, tools: Optional[List[Dict[str, Any]]] = None) -> AsyncGenerator[Dict[str, Any], None]

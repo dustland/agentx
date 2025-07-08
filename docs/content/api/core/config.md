@@ -67,14 +67,14 @@ def get_default_brain_config(self) -> BrainConfig
 
 Get default Brain config for orchestrator if none specified.
 
-## TaskConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L154" class="source-link" title="View source code">source</a>
+## TaskConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L156" class="source-link" title="View source code">source</a>
 
 Task-specific configuration for execution control.
 
-## TeamConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L176" class="source-link" title="View source code">source</a>
+## TeamConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L178" class="source-link" title="View source code">source</a>
 
 Configuration for a team of agents.
 
-## ConfigurationError <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L206" class="source-link" title="View source code">source</a>
+## ConfigurationError <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/config.py#L208" class="source-link" title="View source code">source</a>
 
 Custom exception for configuration errors.

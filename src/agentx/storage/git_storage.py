@@ -100,6 +100,9 @@ class GitArtifactStorage:
             extension = self._should_add_extension(name, content_type)
             artifact_path = self.artifacts_path / f"{name}{extension}"
 
+            # Ensure parent directories exist
+            artifact_path.parent.mkdir(parents=True, exist_ok=True)
+
             # Write content to file
             if isinstance(content, str):
                 artifact_path.write_text(content, encoding='utf-8')
@@ -109,6 +112,8 @@ class GitArtifactStorage:
             # Store metadata if provided
             if metadata:
                 metadata_path = self.artifacts_path / f"{name}.meta.json"
+                # Ensure parent directories exist for metadata
+                metadata_path.parent.mkdir(parents=True, exist_ok=True)
                 metadata_with_info = {
                     "name": name,
                     "content_type": content_type,

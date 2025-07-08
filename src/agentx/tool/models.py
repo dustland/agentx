@@ -236,8 +236,8 @@ def safe_json_serialize(obj: Any) -> Any:
     elif isinstance(obj, (str, int, float, bool)) or obj is None:
         return obj
     else:
-        # Fallback to string representation
-        return str(obj)
+        # Unknown type - this should be handled explicitly
+        raise ValueError(f"Cannot serialize object of type {type(obj).__name__}: {obj!r}")
 
 
 def safe_json_dumps(obj: Any, **kwargs) -> str:

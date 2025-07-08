@@ -366,53 +366,31 @@ class WorkspaceStorage:
             logger.error(f"Failed to get conversation history: {e}")
             return []
 
-    # Execution Plan Management
-    async def store_execution_plan(self, plan: Dict[str, Any], plan_id: Optional[str] = None) -> StorageResult:
-        """Store an execution plan."""
+    # Plan Management
+    async def store_plan(self, plan: Dict[str, Any]) -> StorageResult:
+        """Store the workspace plan as plan.json."""
         try:
-            await self._ensure_directory("plans")
-
-            if plan_id is None:
-                plan_id = str(uuid.uuid4())[:8]
-
-            timestamp = datetime.now().isoformat()
-            plan_data = {
-                "id": plan_id,
-                "created_at": timestamp,
-                **plan
-            }
-
-            plan_path = f"plans/{plan_id}_{timestamp}.json"
             result = await self.file_storage.write_text(
-                plan_path,
-                json.dumps(plan_data, indent=2)
+                "plan.json",
+                json.dumps(plan, indent=2)
             )
-
             return result
 
         except Exception as e:
-            logger.error(f"Failed to store execution plan: {e}")
+            logger.error(f"Failed to store plan: {e}")
             return StorageResult(success=False, error=str(e))
 
-    async def get_execution_plan(self, plan_id: str) -> Optional[Dict[str, Any]]:
-        """Get an execution plan."""
+    async def get_plan(self) -> Optional[Dict[str, Any]]:
+        """Get the workspace plan from plan.json."""
         try:
-            files = await self.file_storage.list_directory("plans")
-            plan_files = [
-                f for f in files
-                if f.path.startswith(f"plans/{plan_id}_") and f.path.endswith(".json")
-            ]
-
-            if not plan_files:
+            if not await self.file_storage.exists("plan.json"):
                 return None
 
-            # Get the latest version
-            latest_file = sorted(plan_files, key=lambda x: x.path)[-1]
-            content = await self.file_storage.read_text(latest_file.path)
+            content = await self.file_storage.read_text("plan.json")
             return json.loads(content)
 
         except Exception as e:
-            logger.error(f"Failed to get execution plan {plan_id}: {e}")
+            logger.error(f"Failed to get plan: {e}")
             return None
 
     # Directory Management

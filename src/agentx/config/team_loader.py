@@ -192,13 +192,9 @@ class TeamLoader:
                 try:
                     prompt_template = absolute_prompt_path.read_text(encoding='utf-8')
                 except Exception as e:
-                    logger.warning(f"Failed to read prompt file {absolute_prompt_path}: {e}")
-                    # Fallback to system_message if available
-                    prompt_template = agent_config_data.get("system_message", "")
+                    raise ConfigurationError(f"Failed to read prompt file {absolute_prompt_path}: {e}")
             else:
-                logger.warning(f"Prompt file not found: {absolute_prompt_path}")
-                # Fallback to system_message if available
-                prompt_template = agent_config_data.get("system_message", "")
+                raise ConfigurationError(f"Prompt file not found: {absolute_prompt_path}")
         elif "system_message" in agent_config_data:
             prompt_template = agent_config_data["system_message"]
         elif "prompt_template" in agent_config_data:

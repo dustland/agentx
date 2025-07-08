@@ -31,7 +31,7 @@ Load a preset agent from the framework's agents configuration.
 ```python
 def load_agent_config(self, agent_config_data: dict | str) -> AgentConfig
 ```
-### create_agents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L220" class="source-link" title="View source code">source</a>
+### create_agents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L216" class="source-link" title="View source code">source</a>
 
 ```python
 def create_agents(self, team_config: TeamConfig) -> List[tuple]
@@ -44,7 +44,7 @@ Create agents from team configuration.
 
 ## Functions
 
-## load_team_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L260" class="source-link" title="View source code">source</a>
+## load_team_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L256" class="source-link" title="View source code">source</a>
 
 ```python
 def load_team_config(config_path: str) -> TeamConfig
@@ -52,7 +52,7 @@ def load_team_config(config_path: str) -> TeamConfig
 
 Loads a team configuration from a given path.
 
-## create_team_from_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L266" class="source-link" title="View source code">source</a>
+## create_team_from_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L262" class="source-link" title="View source code">source</a>
 
 ```python
 def create_team_from_config(team_config: TeamConfig)
@@ -67,7 +67,7 @@ This would be the Team.from_config() method.
 **Returns:**
     Team object
 
-## validate_team_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L281" class="source-link" title="View source code">source</a>
+## validate_team_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L277" class="source-link" title="View source code">source</a>
 
 ```python
 def validate_team_config(config_path: str) -> Dict[str, Any]
@@ -81,7 +81,7 @@ Validate a team configuration file.
 **Returns:**
     Dictionary with validation results
 
-## list_preset_agents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L316" class="source-link" title="View source code">source</a>
+## list_preset_agents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/config/team_loader.py#L312" class="source-link" title="View source code">source</a>
 
 ```python
 def list_preset_agents() -> List[str]

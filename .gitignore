@@ -194,6 +194,11 @@ workspace/
 !workspace/.gitkeep
 roboco_workspace/
 
+# Test workspaces (generated during test runs)
+tests/test_workspaces/
+!tests/test_workspaces/.gitkeep
+!tests/test_workspaces/sample_team/
+
 # User data
 user_data/
 user_data/*

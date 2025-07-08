@@ -26,18 +26,15 @@ async def main():
     print(f"📋 Task: {prompt[:100]}...")
     print("-" * 80)
 
-    # Start the task and get the executor
-    executor = start_task(prompt, str(config_path))
-
-    # Initialize the conversation
-    await executor.start(prompt)
+    # Start the task (creates executor and initializes conversation in one call)
+    executor = await start_task(prompt, str(config_path))
 
     print(f"📋 Task ID: {executor.task.task_id}")
     print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
     print("-" * 80)
 
     # Execute the task step by step
-    while not executor.is_complete():
+    while not executor.is_complete:
         response = await executor.step()
 
         # Print agent responses with better formatting

@@ -107,13 +107,8 @@ class LocalFileStorage(FileStorage):
         if not await aiofiles.os.path.isfile(file_path):
             raise IsADirectoryError(f"Path is not a file: {path}")
 
-        try:
-            async with aiofiles.open(file_path, 'r', encoding=encoding) as f:
-                return await f.read()
-        except UnicodeDecodeError:
-            # Fallback to latin-1 encoding
-            async with aiofiles.open(file_path, 'r', encoding='latin-1') as f:
-                return await f.read()
+        async with aiofiles.open(file_path, 'r', encoding=encoding) as f:
+            return await f.read()
 
     async def write_text(self, path: str, content: str, encoding: str = "utf-8") -> StorageResult:
         """Write text content to a file."""

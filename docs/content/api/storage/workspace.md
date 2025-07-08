@@ -91,23 +91,23 @@ async def get_conversation_history(self, conversation_id: str = 'default') -> Li
 
 Get conversation history.
 
-### store_execution_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L370" class="source-link" title="View source code">source</a>
+### store_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L370" class="source-link" title="View source code">source</a>
 
 ```python
-async def store_execution_plan(self, plan: Dict[str, Any], plan_id: Optional[str] = None) -> StorageResult
+async def store_plan(self, plan: Dict[str, Any]) -> StorageResult
 ```
 
-Store an execution plan.
+Store the workspace plan as plan.json.
 
-### get_execution_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L397" class="source-link" title="View source code">source</a>
+### get_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L383" class="source-link" title="View source code">source</a>
 
 ```python
-async def get_execution_plan(self, plan_id: str) -> Optional[Dict[str, Any]]
+async def get_plan(self) -> Optional[Dict[str, Any]]
 ```
 
-Get an execution plan.
+Get the workspace plan from plan.json.
 
-### list_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L419" class="source-link" title="View source code">source</a>
+### list_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L397" class="source-link" title="View source code">source</a>
 
 ```python
 async def list_directory(self, path: str = '') -> Dict[str, Any]
@@ -115,7 +115,7 @@ async def list_directory(self, path: str = '') -> Dict[str, Any]
 
 List contents of a directory in the workspace.
 
-### get_workspace_summary <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L452" class="source-link" title="View source code">source</a>
+### get_workspace_summary <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/workspace.py#L430" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_workspace_summary(self) -> Dict[str, Any]

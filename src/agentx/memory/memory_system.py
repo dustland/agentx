@@ -79,40 +79,12 @@ class MemorySystem:
         if not self._initialized:
             await self.initialize()
 
-        if self.synthesis_engine:
-            return await self.synthesis_engine.get_relevant_context(last_user_message, agent_name)
-        else:
-            # Fallback to basic backend search
-            return await self._basic_context_retrieval(last_user_message, agent_name)
+        if not self.synthesis_engine:
+            raise ValueError("No synthesis engine available - memory system not properly configured")
 
-    async def _basic_context_retrieval(self, query: str, agent_name: str = None) -> str:
-        """Basic context retrieval without synthesis engine."""
-        try:
-            # Search for relevant memories
-            search_query = MemoryQuery(
-                query=query,
-                agent_name=agent_name,
-                limit=5
-            )
+        return await self.synthesis_engine.get_relevant_context(last_user_message, agent_name)
 
-            results = await self.backend.search(search_query)
 
-            if not results.items:
-                return ""
-
-            # Format basic context
-            context_parts = ["CONTEXT:", "---"]
-
-            for item in results.items:
-                context_parts.append(f"- {item.content[:200]}...")
-
-            context_parts.append("---")
-
-            return "\n".join(context_parts)
-
-        except Exception as e:
-            logger.error(f"Error in basic context retrieval: {e}")
-            return ""
 
     # Delegate methods to backend
     async def add_memory(

@@ -6,9 +6,8 @@ including plan creation, persistence, loading, and context integration.
 """
 
 import pytest
-import json
-from unittest.mock import Mock, patch
-from pathlib import Path
+import asyncio
+from unittest.mock import Mock, patch, AsyncMock
 from agentx.core.task import Task
 from agentx.core.plan import Plan, PlanItem
 from agentx.core.config import TaskConfig
@@ -21,8 +20,8 @@ from agentx.storage.workspace import WorkspaceStorage
 def mock_workspace():
     """Mock workspace for testing."""
     workspace = Mock(spec=WorkspaceStorage)
-    workspace_path = Path("/tmp/test_workspace")
-    workspace.get_workspace_path.return_value = workspace_path
+    workspace.store_plan = AsyncMock()
+    workspace.get_plan = AsyncMock()
     return workspace
 
 
@@ -77,13 +76,11 @@ def test_task_initialization_with_planning(task_instance):
 def test_create_plan(task_instance, sample_plan):
     """Test creating a plan through the Task class."""
     # Act
-    with patch.object(task_instance, '_persist_plan') as mock_persist:
-        task_instance.create_plan(sample_plan)
+    task_instance.create_plan(sample_plan)
 
     # Assert
     assert task_instance.current_plan == sample_plan
     assert task_instance.get_plan() == sample_plan
-    mock_persist.assert_called_once()
 
 
 def test_update_plan(task_instance, sample_plan):
@@ -100,13 +97,11 @@ def test_update_plan(task_instance, sample_plan):
     )
 
     # Act
-    with patch.object(task_instance, '_persist_plan') as mock_persist:
-        task_instance.update_plan(updated_plan)
+    task_instance.update_plan(updated_plan)
 
     # Assert
     assert task_instance.current_plan == updated_plan
     assert task_instance.get_plan() == updated_plan
-    mock_persist.assert_called_once()
 
 
 def test_get_plan_returns_none_when_no_plan(task_instance):
@@ -115,76 +110,71 @@ def test_get_plan_returns_none_when_no_plan(task_instance):
     assert task_instance.get_plan() is None
 
 
-def test_plan_persistence(task_instance, sample_plan, mock_workspace):
+@pytest.mark.asyncio
+async def test_plan_persistence(task_instance, sample_plan, mock_workspace):
     """Test that plans are persisted to the workspace."""
     # Arrange
-    plan_file_path = Path("/tmp/test_workspace/plan.json")
+    mock_workspace.store_plan.return_value = None
 
-    # Mock file operations
-    with patch('json.dumps') as mock_json_dumps, \
-         patch.object(plan_file_path, 'write_text') as mock_write_text, \
-         patch.object(plan_file_path, 'parent') as mock_parent:
+    # Act
+    await task_instance._persist_plan()
 
-        mock_json_dumps.return_value = '{"test": "json"}'
+    # Assert - since no plan is set, store_plan should not be called
+    mock_workspace.store_plan.assert_not_called()
 
-        # Act
-        task_instance.create_plan(sample_plan)
+    # Set a plan and test persistence
+    task_instance.current_plan = sample_plan
+    await task_instance._persist_plan()
 
-        # Assert
-        mock_json_dumps.assert_called_once()
-        # Verify plan data was serialized
-        call_args = mock_json_dumps.call_args[0][0]
-        assert call_args == sample_plan.model_dump()
+    # Assert - store_plan should be called with plan data
+    mock_workspace.store_plan.assert_called_once_with(sample_plan.model_dump())
 
 
-def test_plan_loading_success(task_instance, sample_plan, mock_workspace):
+@pytest.mark.asyncio
+async def test_plan_loading_success(task_instance, sample_plan, mock_workspace):
     """Test successful plan loading from workspace."""
     # Arrange
-    plan_file_path = Path("/tmp/test_workspace/plan.json")
     plan_data = sample_plan.model_dump()
+    mock_workspace.get_plan.return_value = plan_data
 
-    with patch.object(plan_file_path, 'exists', return_value=True), \
-         patch.object(plan_file_path, 'read_text', return_value=json.dumps(plan_data)):
+    # Act
+    loaded_plan = await task_instance.load_plan()
 
-        # Act
-        loaded_plan = task_instance.load_plan()
-
-        # Assert
-        assert loaded_plan is not None
-        assert loaded_plan.goal == sample_plan.goal
-        assert len(loaded_plan.tasks) == len(sample_plan.tasks)
-        assert task_instance.current_plan == loaded_plan
+    # Assert
+    assert loaded_plan is not None
+    assert loaded_plan.goal == sample_plan.goal
+    assert len(loaded_plan.tasks) == len(sample_plan.tasks)
+    assert task_instance.current_plan == loaded_plan
+    mock_workspace.get_plan.assert_called_once_with()
 
 
-def test_plan_loading_file_not_exists(task_instance, mock_workspace):
-    """Test plan loading when file doesn't exist."""
+@pytest.mark.asyncio
+async def test_plan_loading_file_not_exists(task_instance, mock_workspace):
+    """Test plan loading when plan doesn't exist in workspace."""
     # Arrange
-    plan_file_path = Path("/tmp/test_workspace/plan.json")
+    mock_workspace.get_plan.return_value = None
 
-    with patch.object(plan_file_path, 'exists', return_value=False):
+    # Act
+    loaded_plan = await task_instance.load_plan()
 
-        # Act
-        loaded_plan = task_instance.load_plan()
-
-        # Assert
-        assert loaded_plan is None
-        assert task_instance.current_plan is None
+    # Assert
+    assert loaded_plan is None
+    assert task_instance.current_plan is None
+    mock_workspace.get_plan.assert_called_once_with()
 
 
-def test_plan_loading_invalid_json(task_instance, mock_workspace):
-    """Test plan loading with invalid JSON."""
+@pytest.mark.asyncio
+async def test_plan_loading_with_error(task_instance, mock_workspace):
+    """Test plan loading with workspace error."""
     # Arrange
-    plan_file_path = Path("/tmp/test_workspace/plan.json")
+    mock_workspace.get_plan.side_effect = Exception("Workspace error")
 
-    with patch.object(plan_file_path, 'exists', return_value=True), \
-         patch.object(plan_file_path, 'read_text', return_value="invalid json"):
+    # Act
+    loaded_plan = await task_instance.load_plan()
 
-        # Act
-        loaded_plan = task_instance.load_plan()
-
-        # Assert
-        assert loaded_plan is None
-        assert task_instance.current_plan is None
+    # Assert
+    assert loaded_plan is None
+    assert task_instance.current_plan is None
 
 
 def test_get_context_without_plan(task_instance):
@@ -234,24 +224,20 @@ def test_get_context_with_completed_plan(task_instance, sample_plan):
     assert plan_context["progress"]["completed"] == 2
 
 
-def test_plan_persistence_error_handling(task_instance, sample_plan, mock_workspace):
+@pytest.mark.asyncio
+async def test_plan_persistence_error_handling(task_instance, sample_plan, mock_workspace):
     """Test that plan persistence errors are handled gracefully."""
     # Arrange
-    plan_file_path = Path("/tmp/test_workspace/plan.json")
+    task_instance.current_plan = sample_plan
+    mock_workspace.store_plan.side_effect = Exception("Storage error")
 
-    with patch.object(plan_file_path, 'write_text', side_effect=Exception("Write error")), \
-         patch('agentx.core.task.logger') as mock_logger:
+    # Act - should not raise exception
+    await task_instance._persist_plan()
 
-        # Act
-        task_instance.create_plan(sample_plan)
-
-        # Assert
-        # Plan should still be set even if persistence fails
-        assert task_instance.current_plan == sample_plan
-
-        # Error should be logged
-        mock_logger.error.assert_called_once()
-        assert "Failed to persist plan" in str(mock_logger.error.call_args)
+    # Assert
+    # Plan should still be set even if persistence fails
+    assert task_instance.current_plan == sample_plan
+    mock_workspace.store_plan.assert_called_once_with(sample_plan.model_dump())
 
 
 def test_task_completion_with_plan(task_instance, sample_plan):

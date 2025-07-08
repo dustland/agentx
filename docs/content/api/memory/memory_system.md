@@ -51,7 +51,7 @@ Get memory-derived context for agent prompt injection.
 
 This implements the context retrieval pipeline from the architecture.
 
-### add_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L118" class="source-link" title="View source code">source</a>
+### add_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L90" class="source-link" title="View source code">source</a>
 
 ```python
 async def add_memory(self, content: str, memory_type: MemoryType, agent_name: str, metadata: Dict[str, Any] = None, importance: float = 1.0) -> str
@@ -59,7 +59,7 @@ async def add_memory(self, content: str, memory_type: MemoryType, agent_name: st
 
 Add a memory to the system.
 
-### search_memories <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L138" class="source-link" title="View source code">source</a>
+### search_memories <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L110" class="source-link" title="View source code">source</a>
 
 ```python
 async def search_memories(self, query: MemoryQuery) -> MemorySearchResult
@@ -67,7 +67,7 @@ async def search_memories(self, query: MemoryQuery) -> MemorySearchResult
 
 Search memories in the system.
 
-### get_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L145" class="source-link" title="View source code">source</a>
+### get_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L117" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_memory(self, memory_id: str) -> Optional[MemoryItem]
@@ -75,7 +75,7 @@ async def get_memory(self, memory_id: str) -> Optional[MemoryItem]
 
 Get a specific memory by ID.
 
-### update_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L152" class="source-link" title="View source code">source</a>
+### update_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L124" class="source-link" title="View source code">source</a>
 
 ```python
 async def update_memory(self, memory_id: str) -> bool
@@ -83,7 +83,7 @@ async def update_memory(self, memory_id: str) -> bool
 
 Update memory fields.
 
-### delete_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L159" class="source-link" title="View source code">source</a>
+### delete_memory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L131" class="source-link" title="View source code">source</a>
 
 ```python
 async def delete_memory(self, memory_id: str) -> bool
@@ -91,7 +91,7 @@ async def delete_memory(self, memory_id: str) -> bool
 
 Delete a memory.
 
-### get_active_constraints <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L167" class="source-link" title="View source code">source</a>
+### get_active_constraints <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L139" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_active_constraints(self) -> List[MemoryItem]
@@ -99,7 +99,7 @@ async def get_active_constraints(self) -> List[MemoryItem]
 
 Get all active constraint memories.
 
-### get_active_hot_issues <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L174" class="source-link" title="View source code">source</a>
+### get_active_hot_issues <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L146" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_active_hot_issues(self) -> List[MemoryItem]
@@ -107,7 +107,7 @@ async def get_active_hot_issues(self) -> List[MemoryItem]
 
 Get all active hot issue memories.
 
-### search_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L181" class="source-link" title="View source code">source</a>
+### search_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L153" class="source-link" title="View source code">source</a>
 
 ```python
 async def search_documents(self, query: str, top_k: int = 5) -> List[MemoryItem]
@@ -115,7 +115,7 @@ async def search_documents(self, query: str, top_k: int = 5) -> List[MemoryItem]
 
 Search document chunks for semantic similarity.
 
-### get_system_status <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L188" class="source-link" title="View source code">source</a>
+### get_system_status <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L160" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_system_status(self) -> Dict[str, Any]
@@ -125,7 +125,7 @@ Get comprehensive system status.
 
 ## Functions
 
-## create_memory_system <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L220" class="source-link" title="View source code">source</a>
+## create_memory_system <a href="https://github.com/dustland/agentx/blob/main/src/agentx/memory/memory_system.py#L192" class="source-link" title="View source code">source</a>
 
 ```python
 def create_memory_system(backend: MemoryBackend, brain: Optional['Brain'] = None) -> MemorySystem

@@ -146,9 +146,11 @@ class OrchestratorConfig(BaseModel):
     def get_default_brain_config(self) -> BrainConfig:
         """Get default Brain config for orchestrator if none specified."""
         return BrainConfig(
-            temperature=0.0,  # Low temperature for consistent routing decisions
-            max_tokens=100,   # Short responses for handoff analysis
-            timeout=10        # Quick analysis
+            provider="deepseek",
+            model="deepseek-chat",
+            temperature=0.3,  # Moderate temperature for creative planning
+            max_tokens=2000,  # Sufficient tokens for plan generation
+            timeout=120       # Reasonable timeout for complex planning
         )
 
 class TaskConfig(BaseModel):

@@ -9,6 +9,14 @@ llm:
   max_tokens: 4000
   api_key: "${DEEPSEEK_API_KEY}"
 
+orchestrator:
+  brain_config:
+    provider: "deepseek"
+    model: "deepseek-chat"
+    temperature: 0.3
+    max_tokens: 2000
+    api_key: "${DEEPSEEK_API_KEY}"
+
 agents:
   - name: "coordinator"
     description: "Main coordinator agent that manages task flow"

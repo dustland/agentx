@@ -118,7 +118,7 @@ class Brain:
             if not supports_fc:
                 logger.warning(
                     f"Model '{model_name}' does not support native function calling according to LiteLLM. "
-                    f"Function calls will be handled via text-based fallback method."
+                    f"Tool execution will not be available."
                 )
                 # Update config to reflect actual capabilities
                 self.config.supports_function_calls = False
@@ -199,10 +199,9 @@ class Brain:
             call_params["tools"] = tools
             call_params["tool_choice"] = "auto"
         elif tools and not self.config.supports_function_calls:
-            logger.warning(
+            logger.error(
                 f"Tools were provided but model '{model_name}' does not support native function calling. "
-                f"Tools will be ignored for this call. Consider using a model that supports function calling "
-                f"or implement text-based tool calling."
+                f"Tools will be ignored for this call. Use a model that supports function calling."
             )
 
         return call_params

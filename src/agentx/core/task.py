@@ -16,7 +16,6 @@ Clean API:
 from __future__ import annotations
 import asyncio
 from datetime import datetime
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union
 
@@ -108,45 +107,38 @@ class Task:
     def create_plan(self, plan: Plan) -> None:
         """Creates a new plan for the task."""
         self.current_plan = plan
-        self._persist_plan()
         logger.info(f"Created plan for task {self.task_id} with {len(plan.tasks)} tasks")
 
     def update_plan(self, plan: Plan) -> None:
         """Updates the current plan."""
         self.current_plan = plan
-        self._persist_plan()
         logger.info(f"Updated plan for task {self.task_id}")
 
     def get_plan(self) -> Optional[Plan]:
         """Returns the current plan."""
         return self.current_plan
 
-    def _persist_plan(self) -> None:
-        """Persists the current plan to the task history and workspace."""
+    async def _persist_plan(self) -> None:
+        """Persists the current plan to plan.json."""
         if not self.current_plan:
             return
 
-        # Save plan to workspace
-        plan_file = self.workspace.get_workspace_path() / "plan.json"
         try:
             plan_data = self.current_plan.model_dump()
-            plan_file.write_text(json.dumps(plan_data, indent=2))
-            logger.debug(f"Plan persisted to {plan_file}")
+            await self.workspace.store_plan(plan_data)
+            logger.debug(f"Plan persisted to plan.json")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
 
-    def load_plan(self) -> Optional[Plan]:
-        """Loads a plan from the workspace if it exists."""
-        plan_file = self.workspace.get_workspace_path() / "plan.json"
-
-        if not plan_file.exists():
-            return None
-
+    async def load_plan(self) -> Optional[Plan]:
+        """Loads the plan from plan.json if it exists."""
         try:
-            plan_data = json.loads(plan_file.read_text())
-            self.current_plan = Plan(**plan_data)
-            logger.info(f"Loaded existing plan from {plan_file}")
-            return self.current_plan
+            plan_data = await self.workspace.get_plan()
+            if plan_data:
+                self.current_plan = Plan(**plan_data)
+                logger.info(f"Loaded existing plan from plan.json")
+                return self.current_plan
+            return None
         except Exception as e:
             logger.error(f"Failed to load plan: {e}")
             return None
@@ -175,7 +167,8 @@ class TaskExecutor:
             self.team_config = load_team_config(team_config)
         else:
             self.team_config = team_config
-        self.workspace = WorkspaceStorage(
+        from agentx.storage.factory import StorageFactory
+        self.workspace = StorageFactory.create_workspace_storage(
             workspace_path=workspace_dir or (Path("./workspace") / self.task_id)
         )
         self._setup_task_logging()
@@ -250,7 +243,7 @@ class TaskExecutor:
         )
 
         # Load existing plan if available
-        self.task.load_plan()
+        await self.task.load_plan()
 
         logger.info(f"Task {self.task_id} executing autonomously with prompt: {prompt[:50]}...")
 
@@ -290,7 +283,7 @@ class TaskExecutor:
         )
 
         # Load existing plan if available
-        self.task.load_plan()
+        await self.task.load_plan()
 
         # Add the initial user message to conversation history
         self._conversation_history = [{"role": "user", "content": prompt}]
@@ -362,14 +355,14 @@ async def execute_task(
         yield message
 
 
-def start_task(
+async def start_task(
     prompt: str,
     config_path: str,
     task_id: Optional[str] = None,
     workspace_dir: Optional[Path] = None,
 ) -> TaskExecutor:
     """
-    High-level function to start a task and return the TaskExecutor for step-by-step execution.
+    High-level function to start a task and return an initialized TaskExecutor.
 
     This function is ideal for interactive scenarios where you want to:
     - Execute conversations step by step
@@ -387,14 +380,11 @@ def start_task(
 
     Example:
         ```python
-        # Start a conversational task
-        executor = start_task(
+        # Start a conversational task (one call does everything)
+        executor = await start_task(
             prompt="Hello, how are you?",
             config_path="config/team.yaml"
         )
-
-        # Initialize the conversation
-        await executor.start(prompt)
 
         # Get agent response
         response = await executor.step()
@@ -414,5 +404,8 @@ def start_task(
         task_id=task_id,
         workspace_dir=workspace_dir
     )
+
+    # Initialize the conversation with the prompt
+    await executor.start(prompt)
 
     return executor

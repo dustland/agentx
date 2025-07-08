@@ -8,6 +8,7 @@ from agentx.core.plan import Plan, PlanItem
 from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, OrchestratorConfig
 from agentx.storage.workspace import WorkspaceStorage
 from pathlib import Path
+from agentx.core.brain import Brain
 
 
 @pytest.fixture
@@ -71,7 +72,10 @@ async def test_step_generates_plan_if_none_exists(orchestrator, mock_task, mock_
         tasks=[PlanItem(id="task1", name="Test Task", goal="do work", status="pending")]
     )
 
-    # Mock the _generate_plan method
+    # Mock the _generate_plan method and task.load_plan to return None (no existing plan)
+    mock_task.load_plan = AsyncMock(return_value=None)
+    mock_task.update_plan = Mock()
+
     with patch.object(orchestrator, '_generate_plan', new=AsyncMock(return_value=generated_plan)) as mock_gen_plan, \
          patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
 
@@ -83,7 +87,7 @@ async def test_step_generates_plan_if_none_exists(orchestrator, mock_task, mock_
 
         # Assert
         mock_gen_plan.assert_called_once()
-        assert orchestrator.current_plan == generated_plan
+        assert orchestrator.plan == generated_plan
         assert "Test response" in response or "Test Task" in response
 
 
@@ -96,7 +100,7 @@ async def test_step_uses_existing_plan(orchestrator, mock_task, mock_agents):
         goal="Existing goal",
         tasks=[PlanItem(id="task1", name="Existing Task", goal="do existing work", status="pending")]
     )
-    orchestrator.current_plan = existing_plan
+    orchestrator.plan = existing_plan
 
     with patch.object(orchestrator, '_generate_plan', new=AsyncMock()) as mock_gen_plan, \
          patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
@@ -109,7 +113,7 @@ async def test_step_uses_existing_plan(orchestrator, mock_task, mock_agents):
 
         # Assert
         mock_gen_plan.assert_not_called()  # Should not generate new plan
-        assert orchestrator.current_plan == existing_plan
+        assert orchestrator.plan == existing_plan
 
 
 @pytest.mark.asyncio
@@ -124,7 +128,7 @@ async def test_step_completes_plan_tasks(orchestrator, mock_task, mock_agents):
             PlanItem(id="task2", name="Second Task", goal="do second work", status="pending", dependencies=["task1"])
         ]
     )
-    orchestrator.current_plan = plan
+    orchestrator.plan = plan
 
     with patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
         # Mock agent response
@@ -148,7 +152,7 @@ async def test_step_handles_plan_completion(orchestrator, mock_task, mock_agents
         goal="Single task goal",
         tasks=[PlanItem(id="task1", name="Only Task", goal="do only work", status="completed")]
     )
-    orchestrator.current_plan = plan
+    orchestrator.plan = plan
 
     # Act
     response = await orchestrator.step(messages, mock_task)
@@ -167,7 +171,7 @@ async def test_step_handles_failed_tasks(orchestrator, mock_task, mock_agents):
         goal="Failing task goal",
         tasks=[PlanItem(id="task1", name="Failing Task", goal="will fail", status="pending")]
     )
-    orchestrator.current_plan = plan
+    orchestrator.plan = plan
 
     with patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
         # Mock agent to raise an exception
@@ -240,3 +244,38 @@ def test_plan_progress_tracking():
     assert progress["completion_percentage"] == 25.0
     assert plan.has_failed_tasks()
     assert not plan.is_complete()
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_works_without_brain_config():
+    """Test that orchestrator works with default brain config when none is provided."""
+    # Arrange - team config without brain_config
+    team_config = TeamConfig(
+        name="test_team_no_brain",
+        agents=[
+            AgentConfig(name="test_agent", brain_config=BrainConfig(model="test_model"))
+        ]
+        # Note: No orchestrator.brain_config specified
+    )
+
+    message_queue = Mock(spec=MessageQueue)
+    tool_manager = Mock()
+    mock_agents = {
+        "test_agent": Mock(spec=Agent)
+    }
+
+    # Act - Should not raise an error
+    orchestrator = Orchestrator(
+        team_config=team_config,
+        message_queue=message_queue,
+        tool_manager=tool_manager,
+        agents=mock_agents,
+    )
+
+    # Assert
+    assert orchestrator.brain is not None
+    assert isinstance(orchestrator.brain, Brain)
+    # Should use default configuration values
+    assert orchestrator.brain.config.temperature == 0.3
+    assert orchestrator.brain.config.max_tokens == 2000
+    assert orchestrator.brain.config.timeout == 120

@@ -33,7 +33,7 @@ Initialize agent with configuration and optional tool manager.
     config: Agent configuration
     tool_manager: Optional tool manager (injected by TaskExecutor)
 
-### get_tools_json <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L82" class="source-link" title="View source code">source</a>
+### get_tools_json <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L96" class="source-link" title="View source code">source</a>
 
 ```python
 def get_tools_json(self) -> List[Dict[str, Any]]
@@ -41,7 +41,7 @@ def get_tools_json(self) -> List[Dict[str, Any]]
 
 Get the JSON schemas for the tools available to this agent.
 
-### generate_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L107" class="source-link" title="View source code">source</a>
+### generate_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L121" class="source-link" title="View source code">source</a>
 
 ```python
 async def generate_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None, orchestrator = None, max_tool_rounds: int = 10) -> str
@@ -60,7 +60,7 @@ This is a simpler, non-streaming version that returns the final response.
 **Returns:**
     Final response string
 
-### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L147" class="source-link" title="View source code">source</a>
+### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L161" class="source-link" title="View source code">source</a>
 
 ```python
 async def stream_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None, orchestrator = None, max_tool_rounds: int = 10) -> AsyncGenerator[str, None]
@@ -79,7 +79,7 @@ This matches Brain's interface but includes tool execution loop.
 Yields:
     Response chunks and tool execution status updates
 
-### build_system_prompt <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L454" class="source-link" title="View source code">source</a>
+### build_system_prompt <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L468" class="source-link" title="View source code">source</a>
 
 ```python
 def build_system_prompt(self, context: Dict[str, Any] = None) -> str
@@ -87,7 +87,7 @@ def build_system_prompt(self, context: Dict[str, Any] = None) -> str
 
 Build the system prompt for the agent, including dynamic context and tool definitions.
 
-### get_capabilities <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L533" class="source-link" title="View source code">source</a>
+### get_capabilities <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L547" class="source-link" title="View source code">source</a>
 
 ```python
 def get_capabilities(self) -> Dict[str, Any]
@@ -95,7 +95,7 @@ def get_capabilities(self) -> Dict[str, Any]
 
 Get agent capabilities summary.
 
-### reset_state <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L544" class="source-link" title="View source code">source</a>
+### reset_state <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L558" class="source-link" title="View source code">source</a>
 
 ```python
 def reset_state(self)
@@ -103,7 +103,7 @@ def reset_state(self)
 
 Reset agent state.
 
-### add_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L548" class="source-link" title="View source code">source</a>
+### add_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L562" class="source-link" title="View source code">source</a>
 
 ```python
 def add_tool(self, tool)
@@ -111,7 +111,7 @@ def add_tool(self, tool)
 
 Add a tool to the agent's capabilities.
 
-### remove_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L564" class="source-link" title="View source code">source</a>
+### remove_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L578" class="source-link" title="View source code">source</a>
 
 ```python
 def remove_tool(self, tool_name: str)
@@ -119,7 +119,7 @@ def remove_tool(self, tool_name: str)
 
 Remove a tool from the agent's capabilities.
 
-### update_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L569" class="source-link" title="View source code">source</a>
+### update_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L583" class="source-link" title="View source code">source</a>
 
 ```python
 def update_config(self)
@@ -127,19 +127,19 @@ def update_config(self)
 
 Update agent configuration.
 
-### __str__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L575" class="source-link" title="View source code">source</a>
+### __str__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L589" class="source-link" title="View source code">source</a>
 
 ```python
 def __str__(self) -> str
 ```
-### __repr__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L578" class="source-link" title="View source code">source</a>
+### __repr__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L592" class="source-link" title="View source code">source</a>
 
 ```python
 def __repr__(self) -> str
 ```
 ## Functions
 
-## create_assistant_agent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L582" class="source-link" title="View source code">source</a>
+## create_assistant_agent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/agent.py#L596" class="source-link" title="View source code">source</a>
 
 ```python
 def create_assistant_agent(name: str, system_message: str = '') -> Agent

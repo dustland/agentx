@@ -5,15 +5,7 @@ description: "A professional multi-agent system that produces superior, consulti
 orchestrator:
   max_rounds: 50
   timeout: 1800
-  workflow:
-    - from: "planner"
-      to: "researcher"
-    - from: "researcher"
-      to: "writer"
-    - from: "writer"
-      to: "web_designer"
-    - from: "web_designer"
-      to: "reviewer"
+  # Note: No brain_config specified - uses intelligent defaults
 
 # All agents are presets, using the detailed, high-quality prompts we developed.
 agents:
@@ -22,3 +14,18 @@ agents:
   - "writer" # Transforms research into a clear, persuasive, C-suite ready narrative.
   - "web_designer" # Architects the final, world-class interactive HTML experience.
   - "reviewer" # Provides final, uncompromising quality assurance on the HTML output.
+
+# Define the workflow through handoffs
+handoffs:
+  - from_agent: "planner"
+    to_agent: "researcher"
+    condition: "When the plan is complete and research is needed"
+  - from_agent: "researcher"
+    to_agent: "writer"
+    condition: "When research is complete and writing is needed"
+  - from_agent: "writer"
+    to_agent: "web_designer"
+    condition: "When the written content is complete and web design is needed"
+  - from_agent: "web_designer"
+    to_agent: "reviewer"
+    condition: "When the web page is complete and review is needed"
