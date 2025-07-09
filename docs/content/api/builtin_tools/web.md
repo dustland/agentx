@@ -46,7 +46,7 @@ anti-bot protection, JavaScript rendering, and modern web challenges.
 **Returns:**
     ToolResult with extracted content
 
-### extract_content_with_visuals <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L219" class="source-link" title="View source code">source</a>
+### extract_content_with_visuals <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L241" class="source-link" title="View source code">source</a>
 
 ```python
 async def extract_content_with_visuals(self, url: str, prompt: str, capture_screenshot: bool = True, enable_web_search: bool = False) -> ToolResult
@@ -65,7 +65,7 @@ and other visual elements that traditional text extraction might miss.
 **Returns:**
     ToolResult with comprehensive extracted content including visual data
 
-### crawl_website <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L331" class="source-link" title="View source code">source</a>
+### crawl_website <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L353" class="source-link" title="View source code">source</a>
 
 ```python
 async def crawl_website(self, url: str, limit: int = 10, exclude_paths: Optional[List[str]] = None) -> ToolResult
@@ -81,7 +81,7 @@ Crawl multiple pages from a website.
 **Returns:**
     ToolResult with list of WebContent objects
 
-### automate_browser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L397" class="source-link" title="View source code">source</a>
+### automate_browser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L419" class="source-link" title="View source code">source</a>
 
 ```python
 async def automate_browser(self, instruction: str, url: Optional[str] = None) -> ToolResult

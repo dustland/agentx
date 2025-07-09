@@ -100,14 +100,14 @@ class WebTool(Tool):
             ToolResult with extracted content
         """
         try:
-            import requests
+            import asyncio
+            import aiohttp
 
             # Convert single URL to list
             url_list = [urls] if isinstance(urls, str) else urls
 
-            extracted_contents = []
-
-            for url in url_list:
+            async def extract_single_url(session: aiohttp.ClientSession, url: str) -> WebContent:
+                """Extract content from a single URL."""
                 try:
                     # Use Jina Reader API
                     if self.jina_api_key:
@@ -132,20 +132,22 @@ class WebTool(Tool):
                             'Accept': 'text/plain'
                         }
 
-                    response = requests.get(jina_url, headers=headers, timeout=30)
-
-                    # If authenticated request fails with 422, try unauthenticated
-                    if response.status_code == 422 and self.jina_api_key:
-                        logger.warning(f"Authenticated Jina request failed with 422 for {url}, trying unauthenticated...")
-                        jina_url = f"https://r.jina.ai/{url}"
-                        headers = {
-                            'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
-                            'Accept': 'text/plain'
-                        }
-                        response = requests.get(jina_url, headers=headers, timeout=30)
-
-                    response.raise_for_status()
-                    content = response.text
+                    timeout = aiohttp.ClientTimeout(total=30)
+                    async with session.get(jina_url, headers=headers, timeout=timeout) as response:
+                        # If authenticated request fails with 422, try unauthenticated
+                        if response.status == 422 and self.jina_api_key:
+                            logger.warning(f"Authenticated Jina request failed with 422 for {url}, trying unauthenticated...")
+                            jina_url = f"https://r.jina.ai/{url}"
+                            headers = {
+                                'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
+                                'Accept': 'text/plain'
+                            }
+                            async with session.get(jina_url, headers=headers, timeout=timeout) as retry_response:
+                                retry_response.raise_for_status()
+                                content = await retry_response.text()
+                        else:
+                            response.raise_for_status()
+                            content = await response.text()
 
                     # Extract title from first line if available
                     lines = content.split('\n')
@@ -155,7 +157,7 @@ class WebTool(Tool):
                     if len(lines) > 1 and lines[0].strip():
                         content = '\n'.join(lines[1:]).strip()
 
-                    web_content = WebContent(
+                    return WebContent(
                         url=url,
                         title=title,
                         content=content,
@@ -168,13 +170,9 @@ class WebTool(Tool):
                         success=True
                     )
 
-                    extracted_contents.append(web_content)
-
                 except Exception as e:
                     logger.error(f"Jina Reader extraction failed for {url}: {e}")
-
-                    # Add failed extraction to results
-                    failed_content = WebContent(
+                    return WebContent(
                         url=url,
                         title="",
                         content="",
@@ -183,7 +181,28 @@ class WebTool(Tool):
                         success=False,
                         error=str(e)
                     )
-                    extracted_contents.append(failed_content)
+
+            # Create aiohttp session with connection limits for parallel processing
+            connector = aiohttp.TCPConnector(
+                limit=20,  # Total connection limit
+                limit_per_host=5,  # Per-host connection limit to avoid overwhelming servers
+                ttl_dns_cache=300,  # DNS cache TTL
+                use_dns_cache=True,
+            )
+
+            async with aiohttp.ClientSession(connector=connector) as session:
+                # Process all URLs in parallel using asyncio.gather
+                logger.info(f"Starting parallel extraction of {len(url_list)} URLs...")
+                start_time = asyncio.get_event_loop().time()
+
+                extracted_contents = await asyncio.gather(
+                    *[extract_single_url(session, url) for url in url_list],
+                    return_exceptions=False  # Let individual URL failures be handled in extract_single_url
+                )
+
+                end_time = asyncio.get_event_loop().time()
+                extraction_time = end_time - start_time
+                logger.info(f"Parallel extraction completed in {extraction_time:.2f}s for {len(url_list)} URLs")
 
             # Return single content or list based on input
             if isinstance(urls, str):
@@ -193,14 +212,17 @@ class WebTool(Tool):
 
             # Check if any extractions succeeded
             success = any(content.success for content in extracted_contents)
+            successful_count = sum(1 for c in extracted_contents if c.success)
 
             return ToolResult(
                 success=success,
                 result=result_data,
                 metadata={
                     "total_urls": len(url_list),
-                    "successful_extractions": sum(1 for c in extracted_contents if c.success),
-                    "extraction_method": "jina_reader"
+                    "successful_extractions": successful_count,
+                    "extraction_method": "jina_reader",
+                    "extraction_time_seconds": extraction_time,
+                    "parallel_processing": True
                 }
             )
 
@@ -209,7 +231,7 @@ class WebTool(Tool):
             return ToolResult(
                 success=False,
                 error=f"Content extraction failed: {str(e)}",
-                metadata={"urls": url_list if 'url_list' in locals() else []}
+                metadata={"urls": url_list if 'url_list' in locals() else [], "parallel_processing": True}
             )
 
     @tool(
