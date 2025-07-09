@@ -71,27 +71,110 @@ class Agent:
         logger.info(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
 
     def _initialize_brain(self, config: AgentConfig) -> Brain:
-        """Initialize brain with provided config or default configuration."""
-        # Use provided brain_config if available
-        if config.brain_config:
-            logger.info(f"Initializing brain for agent '{self.name}' with provided configuration...")
-            brain_config = config.brain_config
-        else:
-            # Use default brain configuration
-            logger.info(f"Initializing brain for agent '{self.name}' with default configuration...")
-            brain_config = BrainConfig()
+        """Initialize the brain with the agent's configuration."""
+        # Use agent's brain_config if available, otherwise use default
+        brain_config = config.brain_config or BrainConfig()
+        return Brain.from_config(brain_config)
 
-        brain = Brain(brain_config)
+    def _estimate_token_count(self, text: str) -> int:
+        """
+        Estimate token count for text using a simple approximation.
+        More accurate than character count but not perfect.
+        """
+        # Simple approximation: ~4 characters per token for most text
+        # This is conservative and works reasonably well for most content
+        return len(text) // 4
 
-        # Validate tool configuration against brain capabilities
-        if self.tools and brain_config.supports_function_calls is False:
-            logger.warning(
-                f"Agent '{self.name}' is configured with {len(self.tools)} tools but the brain model "
-                f"'{brain_config.model}' is set to not support function calling. Tools may not work as expected. "
-                f"Consider using a model that supports function calling or removing tools from agent configuration."
-            )
+    def _count_message_tokens(self, message: Dict[str, Any]) -> int:
+        """Count tokens in a single message."""
+        total_tokens = 0
 
-        return brain
+        # Count content tokens
+        if message.get("content"):
+            total_tokens += self._estimate_token_count(message["content"])
+
+        # Count tool call tokens (if any)
+        if message.get("tool_calls"):
+            for tool_call in message["tool_calls"]:
+                if tool_call.get("function", {}).get("name"):
+                    total_tokens += self._estimate_token_count(tool_call["function"]["name"])
+                if tool_call.get("function", {}).get("arguments"):
+                    total_tokens += self._estimate_token_count(tool_call["function"]["arguments"])
+
+        # Add overhead for message formatting
+        total_tokens += 10  # Rough estimate for role, timestamps, etc.
+
+        return total_tokens
+
+    def _truncate_conversation_history(self, messages: List[Dict[str, Any]], max_tokens: int) -> List[Dict[str, Any]]:
+        """
+        Truncate conversation history to stay within token limit.
+
+        Strategy:
+        1. Always keep the most recent user message
+        2. Keep recent assistant responses and tool interactions
+        3. Remove older messages when approaching limit
+        """
+        if not messages:
+            return messages
+
+        # Count tokens in messages from newest to oldest
+        truncated_messages = []
+        current_tokens = 0
+
+        # Reserve tokens for system prompt and response (more reasonable)
+        reserved_tokens = min(max_tokens // 4, 1000)  # Reserve 25% or 1000 tokens, whichever is smaller
+        effective_max = max_tokens - reserved_tokens
+
+        # Always keep the most recent user message first
+        most_recent_user = None
+        for message in reversed(messages):
+            if message.get("role") == "user":
+                most_recent_user = message
+                break
+
+        if most_recent_user:
+            truncated_messages.append(most_recent_user)
+            current_tokens += self._count_message_tokens(most_recent_user)
+
+        # Process remaining messages in reverse order (newest first), skipping the most recent user message
+        for message in reversed(messages):
+            # Skip the most recent user message as we already added it
+            if most_recent_user and message is most_recent_user:
+                continue
+
+            message_tokens = self._count_message_tokens(message)
+
+            # Check if adding this message would exceed limit
+            if current_tokens + message_tokens > effective_max:
+                # Stop adding messages if we exceed the limit
+                break
+            else:
+                # Add this message at the beginning (since we're processing in reverse)
+                truncated_messages.insert(0, message)
+                current_tokens += message_tokens
+
+        original_count = len(messages)
+        truncated_count = len(truncated_messages)
+
+        if truncated_count < original_count:
+            logger.warning(f"Truncated conversation history from {original_count} to {truncated_count} messages "
+                          f"(~{current_tokens} tokens) to stay within {max_tokens} token limit")
+
+        return truncated_messages
+
+    def get_max_context_tokens(self) -> int:
+        """Get the maximum context tokens for this agent."""
+        # Check if agent has memory config with max_context_tokens
+        if hasattr(self.config, 'memory_config') and self.config.memory_config:
+            return getattr(self.config.memory_config, 'max_context_tokens', 32000)
+
+        # Check if there's a team memory config available (passed during initialization)
+        if hasattr(self, 'team_memory_config') and self.team_memory_config:
+            return getattr(self.team_memory_config, 'max_context_tokens', 32000)
+
+        # Default to 32000 tokens (safe for most models)
+        return 32000
 
     def get_tools_json(self) -> List[Dict[str, Any]]:
         """Get the JSON schemas for the tools available to this agent."""
@@ -208,9 +291,13 @@ class Agent:
             # Always show conversation state
             print(f"🧠 AGENT ROUND {round_num + 1} | Agent: {self.name} | Messages: {len(conversation)}")
 
+            # Truncate conversation history if needed
+            max_tokens = self.get_max_context_tokens()
+            truncated_conversation = self._truncate_conversation_history(conversation, max_tokens)
+
             # Get response from brain
             llm_response = await self.brain.generate_response(
-                messages=conversation,
+                messages=truncated_conversation,
                 system_prompt=system_prompt,
                 tools=self.get_tools_json()
             )
@@ -270,9 +357,13 @@ class Agent:
         available_tools = self.get_tools_json()
 
         for round_num in range(max_tool_rounds):
+            # Truncate conversation history if needed
+            max_tokens = self.get_max_context_tokens()
+            truncated_conversation = self._truncate_conversation_history(conversation, max_tokens)
+
             # Single streaming call - Brain handles tool call detection
             stream = self.brain.stream_response(
-                messages=conversation,
+                messages=truncated_conversation,
                 system_prompt=system_prompt,
                 tools=available_tools
             )
@@ -408,9 +499,13 @@ class Agent:
         available_tools = self.get_tools_json()
 
         for round_num in range(max_tool_rounds):
+            # Truncate conversation history if needed
+            max_tokens = self.get_max_context_tokens()
+            truncated_conversation = self._truncate_conversation_history(conversation, max_tokens)
+
             # Single non-streaming call
             response = await self.brain.generate_response(
-                messages=conversation,
+                messages=truncated_conversation,
                 system_prompt=system_prompt,
                 tools=available_tools
             )

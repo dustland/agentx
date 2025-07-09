@@ -14,7 +14,7 @@ The executor is responsible for:
 
 Security policies for tool execution.
 
-## ToolExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L100" class="source-link" title="View source code">source</a>
+## ToolExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L75" class="source-link" title="View source code">source</a>
 
 Secure tool executor with performance monitoring and security policies.
 
@@ -24,7 +24,7 @@ This class handles the actual execution of tools with:
 - Error handling and logging
 - Audit trails
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L111" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L86" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, registry: Optional[ToolRegistry] = None)
@@ -35,7 +35,7 @@ Initialize tool executor.
 **Args:**
     registry: Tool registry to use (defaults to global registry)
 
-### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L125" class="source-link" title="View source code">source</a>
+### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L100" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tool(self, tool_name: str, agent_name: str = 'default') -> ToolResult
@@ -51,7 +51,7 @@ Execute a single tool with security validation.
 **Returns:**
     ToolResult with execution outcome
 
-### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L216" class="source-link" title="View source code">source</a>
+### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L191" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tools(self, tool_calls: List[Any], agent_name: str = 'default') -> List[Dict[str, Any]]
@@ -66,7 +66,7 @@ Execute multiple tool calls and return formatted results for LLM.
 **Returns:**
     List of tool result messages formatted for LLM conversation
 
-### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L436" class="source-link" title="View source code">source</a>
+### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L396" class="source-link" title="View source code">source</a>
 
 ```python
 def get_execution_stats(self) -> Dict[str, Any]
@@ -74,7 +74,7 @@ def get_execution_stats(self) -> Dict[str, Any]
 
 Get execution statistics.
 
-### clear_history <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L449" class="source-link" title="View source code">source</a>
+### clear_history <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L409" class="source-link" title="View source code">source</a>
 
 ```python
 def clear_history(self)

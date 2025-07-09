@@ -8,18 +8,14 @@ orchestrator:
   # Note: No brain_config specified - uses intelligent defaults
 
 # All agents are presets, using the detailed, high-quality prompts we developed.
+# Note: Planning is handled by the orchestrator's Brain, not a separate agent.
 agents:
-  - "planner" # Deconstructs the goal into a strategic, step-by-step plan.
   - "researcher" # Gathers and synthesizes rigorous, evidence-based research.
   - "writer" # Transforms research into a clear, persuasive, C-suite ready narrative.
   - "web_designer" # Architects the final, world-class interactive HTML experience.
   - "reviewer" # Provides final, uncompromising quality assurance on the HTML output.
 
-# Define the workflow through handoffs
 handoffs:
-  - from_agent: "planner"
-    to_agent: "researcher"
-    condition: "When the plan is complete and research is needed"
   - from_agent: "researcher"
     to_agent: "writer"
     condition: "When research is complete and writing is needed"

@@ -62,34 +62,9 @@ class SecurityPolicy:
     MAX_TOOLS_PER_BATCH = 10
     MAX_CONCURRENT_EXECUTIONS = 3
 
-    # Tool permissions per agent type
-    TOOL_PERMISSIONS = {
-        "default": [
-            # Basic file operations
-            "read_file", "write_file", "append_file", "file_exists",
-            "create_directory", "delete_file", "list_directory",
-            # Artifact operations
-            "store_artifact", "get_artifact", "list_artifacts",
-            "get_artifact_versions", "delete_artifact",
-            # Framework operations
-            "get_context", "set_context",
-            # Search and weather tools
-            "web_search", "serpapi_search", "image_search", "get_weather",
-            # Web content tools
-            "extract_content", "crawl_website", "automate_browser",
-            # News and search tools
-            "news_search"
-        ],
-        "research_agent": [
-            "web_search", "serpapi_search", "extract_content", "news_search", "read_file", "store_artifact"
-        ],
-        "writer_agent": [
-            "read_file", "write_file", "store_artifact", "get_artifact"
-        ],
-        "reviewer_agent": [
-            "read_file", "store_artifact", "get_artifact"
-        ]
-    }
+    # Note: Tool permissions are now controlled by agent configurations
+    # Builtin tools are allowed by default since they're designed to be safe
+    # Agent configs in presets/config.yaml control what tools are available to each agent
 
     # Blocked tools (never allowed)
     BLOCKED_TOOLS = [
@@ -341,23 +316,8 @@ class ToolExecutor:
                 error=f"Tool '{tool_name}' is blocked by security policy"
             )
 
-        # Check agent permissions
-        allowed_tools = self.security_policy.TOOL_PERMISSIONS.get(
-            agent_name,
-            self.security_policy.TOOL_PERMISSIONS["default"]
-        )
-
-        if tool_name not in allowed_tools:
-            return ToolResult(
-                success=False,
-                error=f"Tool '{tool_name}' not allowed for agent '{agent_name}'"
-            )
-
-        # Additional validation can be added here
-        # - Argument validation
-        # - Rate limiting
-        # - Resource checks
-
+        # Allow all builtin tools by default - agent configs control what's available
+        # This removes the confusing dual-permission system
         return ToolResult(success=True)
 
     async def _execute_with_timeout(

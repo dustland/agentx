@@ -2,26 +2,29 @@ name: "Simple Research Demo"
 description: "Demonstrates effective use of web research methodology"
 
 agents:
-  - name: researcher
-    description: "Research specialist who demonstrates proper web research methodology"
-    prompt_template: "prompts/researcher.md"
-    llm_config:
-      model: deepseek/deepseek-chat
-      temperature: 0.1
-      max_tokens: 2000
-    # No tools specified - builtin tools are automatically registered
+  - "researcher" # Uses default researcher preset from framework
 
 # Single agent - no handoffs needed
 handoffs: []
+
+# Memory configuration to prevent context overflow
+memory:
+  enabled: true
+  max_context_tokens: 32000 # Keep well under 65k limit
+  semantic_search_enabled: true
+  short_term_limit: 16000
+  long_term_enabled: true
 
 # Orchestrator configuration
 orchestrator:
   max_rounds: 10
   timeout: 1800
   brain_config:
-    model: deepseek/deepseek-chat
+    provider: deepseek
+    model: deepseek-chat # Use model name directly without provider prefix
     temperature: 0.0
-    max_tokens: 100
+    max_tokens: 8000
+    timeout: 120 # Increase API timeout from default 30s to 120s
 
 # Execution configuration
 execution:

@@ -15,15 +15,8 @@ memory:
   enabled: true
   max_context_tokens: 8000
 
+# Note: Planning is now handled by the orchestrator's Brain, not a separate agent
 agents:
-  - name: "planner"
-    description: "Task Planner"
-    prompt_template: "planner.md"
-    brain_config:
-      provider: "anthropic"
-      model: "claude-3-5-haiku-20241022"
-      temperature: 0.1
-
   - name: "executor"
     description: "Task Executor"
     prompt_template: "executor.md"

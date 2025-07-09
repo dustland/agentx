@@ -42,7 +42,7 @@ class BrainConfig(BaseModel):
     provider: str = "deepseek"  # Default provider (Req #17)
     model: str = "deepseek-chat"  # Default model (Req #17)
     temperature: float = 0.7
-    max_tokens: int = 4000  # Default value
+    max_tokens: int = 8000  # Maximum supported by deepseek-chat model
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     timeout: int = 30
@@ -149,7 +149,7 @@ class OrchestratorConfig(BaseModel):
             provider="deepseek",
             model="deepseek-chat",
             temperature=0.3,  # Moderate temperature for creative planning
-            max_tokens=2000,  # Sufficient tokens for plan generation
+            max_tokens=8000,  # Maximum supported by deepseek-chat model
             timeout=120       # Reasonable timeout for complex planning
         )
 

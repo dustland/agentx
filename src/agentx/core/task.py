@@ -23,7 +23,7 @@ from agentx.core.agent import Agent
 from agentx.core.config import TeamConfig, TaskConfig
 from agentx.core.message import MessageQueue, TaskHistory, Message, UserMessage, TaskStep, TextPart
 from agentx.core.orchestrator import Orchestrator
-from agentx.core.plan import Plan, PlanItem
+from agentx.core.plan import Plan, PlanItem, TaskStatus
 from agentx.storage.workspace import WorkspaceStorage
 from agentx.tool.manager import ToolManager
 from agentx.utils.id import generate_short_id
@@ -109,10 +109,21 @@ class Task:
         self.current_plan = plan
         logger.info(f"Created plan for task {self.task_id} with {len(plan.tasks)} tasks")
 
-    def update_plan(self, plan: Plan) -> None:
-        """Updates the current plan."""
+    async def update_plan(self, plan: Plan) -> None:
+        """Updates the current plan and persists it."""
         self.current_plan = plan
         logger.info(f"Updated plan for task {self.task_id}")
+        await self._persist_plan()
+
+    async def update_task_status(self, task_id: str, status: TaskStatus) -> bool:
+        """Update task status and automatically persist the plan."""
+        if not self.current_plan:
+            return False
+
+        success = self.current_plan.update_task_status(task_id, status)
+        if success:
+            await self._persist_plan()
+        return success
 
     def get_plan(self) -> Optional[Plan]:
         """Returns the current plan."""
@@ -212,10 +223,14 @@ class TaskExecutor:
         """Initializes all agents defined in the team configuration."""
         agents: Dict[str, Agent] = {}
         for agent_config in self.team_config.agents:
-            agents[agent_config.name] = Agent(
+            agent = Agent(
                 config=agent_config,
                 tool_manager=self.tool_manager,
             )
+            # Pass team memory config to agent if available
+            if hasattr(self.team_config, 'memory') and self.team_config.memory:
+                agent.team_memory_config = self.team_config.memory
+            agents[agent_config.name] = agent
         logger.info(f"Initialized {len(agents)} agents: {list(agents.keys())}")
         return agents
 

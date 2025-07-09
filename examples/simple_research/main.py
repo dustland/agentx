@@ -26,13 +26,10 @@ async def main():
     print("-" * 60)
 
     # Start the research task and get task executor
-    task_executor = start_task(
+    task_executor = await start_task(
         prompt=research_prompt,
         config_path="config/simple_research.yaml"
     )
-
-    # Initialize the conversation
-    await task_executor.start(research_prompt)
 
     print(f"📋 Task ID: {task_executor.task.task_id}")
     print(f"📁 Workspace: {task_executor.workspace.get_workspace_path()}")

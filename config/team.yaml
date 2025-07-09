@@ -1,11 +1,5 @@
+# Note: Planning is now handled by the orchestrator's Brain, not a separate agent
 agents:
-  - name: planner
-    role: "Project planner responsible for creating the initial plan."
-    model: "deepseek/deepseek-coder"
-    prompt_file: "agents/planner.md"
-    tools:
-      - write_file
-
   - name: researcher
     role: "A stateless research specialist that executes a single research task."
     model: "deepseek/deepseek-coder"

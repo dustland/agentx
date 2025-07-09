@@ -15,27 +15,8 @@ defaults:
     - "search"
 
 # Preset agent definitions
+# Note: Planning is handled by the orchestrator's Brain, not a separate agent
 preset_agents:
-  planner:
-    description: "Strategic planning and task decomposition specialist"
-    role: "specialist"
-    prompt_file: "agents/planner.md"
-    brain_config:
-      provider: "deepseek"
-      model: "deepseek/deepseek-chat"
-      temperature: 0.1
-      max_tokens: 1000
-      supports_function_calls: true
-      streaming: true
-      timeout: 120
-    tools:
-      - "create_plan"
-      - "update_task_status"
-      - "read_file"
-      - "list_files"
-      - "list_directory"
-      - "web_search"
-
   researcher:
     description: "Professional market researcher with industry expertise"
     role: "specialist"

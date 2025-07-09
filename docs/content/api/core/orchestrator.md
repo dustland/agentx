@@ -2,18 +2,18 @@
 
 *Module: [`agentx.core.orchestrator`](https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py)*
 
-## Orchestrator <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L19" class="source-link" title="View source code">source</a>
+## Orchestrator <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L20" class="source-link" title="View source code">source</a>
 
 The central coordinator of the system. It manages task state, creates execution plans,
 and routes work to specialist agents. It makes strategic decisions about workflow
 while delegating tactical execution to agents.
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L26" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L27" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, team_config: TeamConfig, message_queue: MessageQueue, tool_manager: ToolManager, agents: Dict[str, Agent])
 ```
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L65" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/orchestrator.py#L76" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self, messages: list[dict], task: 'Task') -> str

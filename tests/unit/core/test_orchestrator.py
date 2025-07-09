@@ -74,10 +74,10 @@ async def test_step_generates_plan_if_none_exists(orchestrator, mock_task, mock_
 
     # Mock the _generate_plan method and task.load_plan to return None (no existing plan)
     mock_task.load_plan = AsyncMock(return_value=None)
-    mock_task.update_plan = Mock()
+    mock_task.update_plan = AsyncMock()
+    mock_task.update_task_status = AsyncMock(return_value=True)
 
-    with patch.object(orchestrator, '_generate_plan', new=AsyncMock(return_value=generated_plan)) as mock_gen_plan, \
-         patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
+    with patch.object(orchestrator, '_generate_plan', new=AsyncMock(return_value=generated_plan)) as mock_gen_plan:
 
         # Mock agent response
         mock_agents["test_agent"].generate_response = AsyncMock(return_value="Test response")
@@ -102,8 +102,7 @@ async def test_step_uses_existing_plan(orchestrator, mock_task, mock_agents):
     )
     orchestrator.plan = existing_plan
 
-    with patch.object(orchestrator, '_generate_plan', new=AsyncMock()) as mock_gen_plan, \
-         patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
+    with patch.object(orchestrator, '_generate_plan', new=AsyncMock()) as mock_gen_plan:
 
         # Mock agent response
         mock_agents["test_agent"].generate_response = AsyncMock(return_value="Existing task response")
@@ -129,18 +128,18 @@ async def test_step_completes_plan_tasks(orchestrator, mock_task, mock_agents):
         ]
     )
     orchestrator.plan = plan
+    mock_task.update_task_status = AsyncMock(return_value=True)
 
-    with patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
-        # Mock agent response
-        mock_agents["test_agent"].generate_response = AsyncMock(return_value="Task completed")
+    # Mock agent response
+    mock_agents["test_agent"].generate_response = AsyncMock(return_value="Task completed")
 
-        # Act - First step should execute task1
-        response = await orchestrator.step(messages, mock_task)
+    # Act - First step should execute task1
+    response = await orchestrator.step(messages, mock_task)
 
-        # Assert
-        assert plan.get_task_by_id("task1").status == "completed"
-        assert plan.get_task_by_id("task2").status == "pending"  # Still pending due to dependency
-        assert "Task completed" in response
+    # Assert
+    assert plan.get_task_by_id("task1").status == "completed"
+    assert plan.get_task_by_id("task2").status == "pending"  # Still pending due to dependency
+    assert "Task completed" in response
 
 
 @pytest.mark.asyncio
@@ -172,17 +171,17 @@ async def test_step_handles_failed_tasks(orchestrator, mock_task, mock_agents):
         tasks=[PlanItem(id="task1", name="Failing Task", goal="will fail", status="pending")]
     )
     orchestrator.plan = plan
+    mock_task.update_task_status = AsyncMock(return_value=True)
 
-    with patch.object(orchestrator, '_persist_plan', new=AsyncMock()) as mock_persist:
-        # Mock agent to raise an exception
-        mock_agents["test_agent"].generate_response = AsyncMock(side_effect=Exception("Task failed"))
+    # Mock agent to raise an exception
+    mock_agents["test_agent"].generate_response = AsyncMock(side_effect=Exception("Task failed"))
 
-        # Act
-        response = await orchestrator.step(messages, mock_task)
+    # Act
+    response = await orchestrator.step(messages, mock_task)
 
-        # Assert
-        assert plan.get_task_by_id("task1").status == "failed"
-        assert "failed" in response.lower()
+    # Assert
+    assert plan.get_task_by_id("task1").status == "failed"
+    assert "failed" in response.lower()
 
 
 def test_plan_dependency_management():

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, Optional
 
 from agentx.core.agent import Agent
@@ -55,10 +56,20 @@ class Orchestrator:
                 provider="deepseek",
                 model="deepseek-chat",
                 temperature=0.3,
-                max_tokens=2000,
+                max_tokens=8000,  # Maximum supported by deepseek-chat model
                 timeout=120
             )
         return Brain.from_config(default_config)
+
+    def _load_planning_prompt(self) -> str:
+        """Load the orchestrator planning prompt from file."""
+        prompt_path = Path(__file__).parent / "planner.md"
+
+        if not prompt_path.exists():
+            raise FileNotFoundError(f"Planning prompt file not found at {prompt_path}")
+
+        with open(prompt_path, 'r', encoding='utf-8') as f:
+            return f.read()
 
 
 
@@ -102,7 +113,7 @@ class Orchestrator:
 
         # Step 5: Dispatch and Monitor
         logger.info(f"Dispatching task '{next_task.name}' to agent '{agent_name}'")
-        self.plan.update_task_status(next_task.id, "in_progress")
+        await task.update_task_status(next_task.id, "in_progress")
 
         try:
             # Execute the specific micro-task
@@ -111,31 +122,18 @@ class Orchestrator:
                 orchestrator=self
             )
 
-            # Step 6: Process Completion Signal - CHECK ACTUAL SUCCESS/FAILURE
-            task_success = await self._evaluate_task_success(response, next_task)
-
-            if task_success:
-                self.plan.update_task_status(next_task.id, "completed")
-                logger.info(f"Task '{next_task.name}' completed successfully")
-                await self._persist_plan(task)
-                return f"Completed task: {next_task.name}\n\n{response}"
-            else:
-                # Task failed - apply failure policy
-                logger.error(f"Task '{next_task.name}' failed - agent response indicates failure")
-                self.plan.update_task_status(next_task.id, "failed")
-
-                # Apply failure policy
-                if next_task.on_failure == "halt":
-                    return f"Task execution halted due to failure in '{next_task.name}': Agent could not complete the task successfully"
-                elif next_task.on_failure == "escalate_to_user":
-                    return f"Task '{next_task.name}' failed and requires user intervention: Agent could not complete the task successfully"
-                else:  # proceed
-                    return f"Task '{next_task.name}' failed but continuing with next tasks: Agent could not complete the task successfully"
+            # Step 6: Process Completion Signal
+            # According to design docs: "When the agent completes its work, it returns a status signal (success or failure)"
+            # If agent.generate_response() returns without exception, task succeeded
+            await task.update_task_status(next_task.id, "completed")
+            logger.info(f"Task '{next_task.name}' completed successfully")
+            return f"Completed task: {next_task.name}\n\n{response}"
 
         except Exception as e:
             # Step 6: Process Failure Signal
+            # Only actual exceptions indicate failure, not response content analysis
             logger.error(f"Task '{next_task.name}' failed: {e}")
-            self.plan.update_task_status(next_task.id, "failed")
+            await task.update_task_status(next_task.id, "failed")
 
             # Apply failure policy
             if next_task.on_failure == "halt":
@@ -157,43 +155,52 @@ class Orchestrator:
         logger.info("Generating new plan...")
         self.plan = await self._generate_plan(messages, task)
         # Use Task's plan management and persist the plan
-        task.update_plan(self.plan)
-        await task._persist_plan()
+        await task.update_plan(self.plan)
 
     async def _generate_plan(self, messages: list[dict], task: "Task") -> Plan:
         """Generate a plan using the Brain."""
-        plan_prompt = f"""
-Create a detailed execution plan to achieve this goal: {task.initial_prompt}
+        # Load the sophisticated planning prompt from file
+        planning_system_prompt = self._load_planning_prompt()
+
+        # Create the specific planning request
+        planning_request = f"""
+Goal: {task.initial_prompt}
 
 Available agents: {', '.join(self.agents.keys())}
 
-Break down the goal into specific, actionable tasks. Each task should:
-- Have a clear, measurable goal
-- Be assignable to one of the available agents
-- Have clear dependencies if needed
-
-Respond with a JSON structure like this:
-{{
-    "goal": "The main objective",
-    "tasks": [
-        {{
-            "id": "task_1",
-            "name": "Short task name",
-            "goal": "Specific, measurable goal for this task",
-            "agent": "agent_name or null for auto-routing",
-            "dependencies": [],
-            "status": "pending"
-        }}
-    ]
-}}
+Please analyze this goal and create a strategic execution plan following the guidelines above.
 """
 
+        # Configure the system prompt to explicitly request JSON response
+        json_system_prompt = f"""{planning_system_prompt}
+
+IMPORTANT: You must respond with a valid JSON object that matches this exact schema:
+
+{{
+  "goal": "string - the main objective",
+  "tasks": [
+    {{
+      "id": "string - unique task identifier",
+      "name": "string - task name",
+      "goal": "string - specific task objective",
+      "agent": "string - agent name from available agents",
+      "dependencies": ["array of task IDs this depends on"],
+      "status": "pending",
+      "on_failure": "proceed"
+    }}
+  ]
+}}
+
+Respond only with valid JSON, no markdown formatting or additional text."""
+
         response = await self.brain.generate_response(
-            messages=[{"role": "user", "content": plan_prompt}],
-            json_mode=True
+            messages=[
+                {"role": "system", "content": json_system_prompt},
+                {"role": "user", "content": planning_request}
+            ],
+            json_mode=True  # Testing with correct model format
         )
 
-        # Parse the JSON response
         if not response.content:
             raise ValueError("Empty response from Brain during plan generation")
 
@@ -201,7 +208,8 @@ Respond with a JSON structure like this:
             plan_data = json.loads(response.content)
             return Plan(**plan_data)
         except (json.JSONDecodeError, ValueError) as e:
-            raise ValueError(f"Failed to parse plan from Brain response: {e}")
+            logger.error(f"Brain returned invalid JSON. Response content: {response.content}")
+            raise ValueError(f"Failed to parse plan from Brain response: {e}\nResponse was: {response.content}")
 
     async def _select_agent_for_task(self, task_item: PlanItem) -> str:
         """Select agent for a specific task (Step 3)."""
@@ -256,6 +264,8 @@ GOAL: {task_item.goal}
 Your job is to complete this specific task. You have access to tools and the workspace.
 Focus only on this task - do not try to complete the entire project.
 
+IMPORTANT: If your task produces outputs that other agents will need, you MUST save them as files in the workspace using available tools. Follow your agent-specific instructions for artifact management.
+
 Original user request: {task.initial_prompt}
 """
             }
@@ -270,57 +280,18 @@ Original user request: {task.initial_prompt}
 
         return briefing
 
-    async def _persist_plan(self, task: "Task") -> None:
-        """Persist the plan via Task's plan management (Step 7)."""
+
+
+    async def _check_completion(self) -> str:
+        """Check if plan is complete and return status (Step 8)."""
         if not self.plan:
-            return
+            return "no_plan"
 
-        # Delegate to Task's plan management instead of direct file operations
-        task.update_plan(self.plan)
-
-    async def _evaluate_task_success(self, response: str, task_item: PlanItem) -> bool:
-        """Evaluate if a task was actually completed successfully by analyzing the response."""
-        # Look for failure indicators in the response
-        failure_indicators = [
-            "connection refused",
-            "max retries exceeded",
-            "failed to establish",
-            "tool failed",
-            "error occurred",
-            "could not",
-            "unable to",
-            "no results found",
-            "search failed",
-            "api error"
-        ]
-
-        response_lower = response.lower()
-
-        # Check for explicit failure indicators
-        for indicator in failure_indicators:
-            if indicator in response_lower:
-                logger.warning(f"Task failure detected: '{indicator}' found in response")
-                return False
-
-        # For research tasks, check if actual content was generated
-        if "research" in task_item.name.lower():
-            if len(response.strip()) < 100:  # Very short response likely indicates failure
-                logger.warning(f"Research task appears to have failed: response too short ({len(response)} chars)")
-                return False
-
-            # Check if response contains only generic/placeholder content
-            generic_phrases = [
-                "explore the latest",
-                "discover the",
-                "learn how",
-                "understand the modern",
-                "it seems there was an issue"
-            ]
-
-            for phrase in generic_phrases:
-                if phrase in response_lower:
-                    logger.warning(f"Research task appears to have failed: generic content detected")
-                    return False
-
-        # If no failure indicators found, assume success
-        return True
+        if self.plan.is_complete():
+            return "complete"
+        elif self.plan.has_failed_tasks():
+            return "failed"
+        elif not self.plan.get_next_actionable_task():
+            return "blocked"
+        else:
+            return "continue"

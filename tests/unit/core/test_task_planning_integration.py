@@ -83,10 +83,12 @@ def test_create_plan(task_instance, sample_plan):
     assert task_instance.get_plan() == sample_plan
 
 
-def test_update_plan(task_instance, sample_plan):
+@pytest.mark.asyncio
+async def test_update_plan(task_instance, sample_plan, mock_workspace):
     """Test updating an existing plan."""
     # Arrange
     task_instance.current_plan = sample_plan
+    mock_workspace.store_plan.return_value = None
 
     # Create updated plan
     updated_plan = Plan(
@@ -97,11 +99,13 @@ def test_update_plan(task_instance, sample_plan):
     )
 
     # Act
-    task_instance.update_plan(updated_plan)
+    await task_instance.update_plan(updated_plan)
 
     # Assert
     assert task_instance.current_plan == updated_plan
     assert task_instance.get_plan() == updated_plan
+    # Verify persistence was called
+    mock_workspace.store_plan.assert_called_once_with(updated_plan.model_dump())
 
 
 def test_get_plan_returns_none_when_no_plan(task_instance):

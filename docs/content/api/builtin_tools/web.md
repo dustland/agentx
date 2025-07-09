@@ -26,9 +26,9 @@ Combines Firecrawl for content extraction and browser-use for automation.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, jina_api_key: Optional[str] = None)
+def __init__(self, jina_api_key: Optional[str] = None, workspace_storage = None)
 ```
-### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L87" class="source-link" title="View source code">source</a>
+### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L88" class="source-link" title="View source code">source</a>
 
 ```python
 async def extract_content(self, urls: Union[str, List[str]], prompt: str = 'Extract the main content from this webpage') -> ToolResult
@@ -46,7 +46,7 @@ anti-bot protection, JavaScript rendering, and modern web challenges.
 **Returns:**
     ToolResult with extracted content
 
-### extract_content_with_visuals <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L208" class="source-link" title="View source code">source</a>
+### extract_content_with_visuals <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L219" class="source-link" title="View source code">source</a>
 
 ```python
 async def extract_content_with_visuals(self, url: str, prompt: str, capture_screenshot: bool = True, enable_web_search: bool = False) -> ToolResult
@@ -65,7 +65,7 @@ and other visual elements that traditional text extraction might miss.
 **Returns:**
     ToolResult with comprehensive extracted content including visual data
 
-### crawl_website <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L320" class="source-link" title="View source code">source</a>
+### crawl_website <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L331" class="source-link" title="View source code">source</a>
 
 ```python
 async def crawl_website(self, url: str, limit: int = 10, exclude_paths: Optional[List[str]] = None) -> ToolResult
@@ -81,7 +81,7 @@ Crawl multiple pages from a website.
 **Returns:**
     ToolResult with list of WebContent objects
 
-### automate_browser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L386" class="source-link" title="View source code">source</a>
+### automate_browser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L397" class="source-link" title="View source code">source</a>
 
 ```python
 async def automate_browser(self, instruction: str, url: Optional[str] = None) -> ToolResult

@@ -46,9 +46,10 @@ class WebTool(Tool):
     Combines Firecrawl for content extraction and browser-use for automation.
     """
 
-    def __init__(self, jina_api_key: Optional[str] = None):
+    def __init__(self, jina_api_key: Optional[str] = None, workspace_storage=None):
         super().__init__("web")
         self.jina_api_key = jina_api_key
+        self.workspace = workspace_storage  # For saving extracted content to files
         self._browser = None
         self._init_clients()
 
@@ -132,8 +133,18 @@ class WebTool(Tool):
                         }
 
                     response = requests.get(jina_url, headers=headers, timeout=30)
-                    response.raise_for_status()
 
+                    # If authenticated request fails with 422, try unauthenticated
+                    if response.status_code == 422 and self.jina_api_key:
+                        logger.warning(f"Authenticated Jina request failed with 422 for {url}, trying unauthenticated...")
+                        jina_url = f"https://r.jina.ai/{url}"
+                        headers = {
+                            'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
+                            'Accept': 'text/plain'
+                        }
+                        response = requests.get(jina_url, headers=headers, timeout=30)
+
+                    response.raise_for_status()
                     content = response.text
 
                     # Extract title from first line if available

@@ -60,12 +60,20 @@ Creates a new plan for the task.
 ### update_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L112" class="source-link" title="View source code">source</a>
 
 ```python
-def update_plan(self, plan: Plan) -> None
+async def update_plan(self, plan: Plan) -> None
 ```
 
-Updates the current plan.
+Updates the current plan and persists it.
 
-### get_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L117" class="source-link" title="View source code">source</a>
+### update_task_status <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L118" class="source-link" title="View source code">source</a>
+
+```python
+async def update_task_status(self, task_id: str, status: TaskStatus) -> bool
+```
+
+Update task status and automatically persist the plan.
+
+### get_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L128" class="source-link" title="View source code">source</a>
 
 ```python
 def get_plan(self) -> Optional[Plan]
@@ -73,7 +81,7 @@ def get_plan(self) -> Optional[Plan]
 
 Returns the current plan.
 
-### load_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L133" class="source-link" title="View source code">source</a>
+### load_plan <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L144" class="source-link" title="View source code">source</a>
 
 ```python
 async def load_plan(self) -> Optional[Plan]
@@ -81,7 +89,7 @@ async def load_plan(self) -> Optional[Plan]
 
 Loads the plan from plan.json if it exists.
 
-## TaskExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L147" class="source-link" title="View source code">source</a>
+## TaskExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L158" class="source-link" title="View source code">source</a>
 
 The main engine for executing a task. It coordinates the agents, tools,
 and orchestrator to fulfill the user's request.
@@ -90,12 +98,12 @@ Two execution modes:
 1. Fire-and-forget: execute() runs task to completion autonomously
 2. Step-by-step: start() + step() for conversational interaction
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L157" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L168" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, team_config: Union[TeamConfig, str], task_id: Optional[str] = None, workspace_dir: Optional[Path] = None)
 ```
-### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L222" class="source-link" title="View source code">source</a>
+### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L237" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Message, None]
@@ -104,7 +112,7 @@ async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Mes
 Fire-and-forget execution - runs task to completion autonomously.
 This is the method called by execute_task() for autonomous execution.
 
-### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L267" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L282" class="source-link" title="View source code">source</a>
 
 ```python
 async def start(self, prompt: str) -> None
@@ -113,7 +121,7 @@ async def start(self, prompt: str) -> None
 Initialize the conversation with the given prompt.
 This sets up the task but doesn't execute any agent responses yet.
 
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L293" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L308" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self) -> str
@@ -122,7 +130,7 @@ async def step(self) -> str
 Execute one conversation step - get a response from the current agent.
 Returns the agent's response as a string.
 
-### is_complete <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L328" class="source-link" title="View source code">source</a>
+### is_complete <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L343" class="source-link" title="View source code">source</a>
 
 ```python
 def is_complete(self) -> bool
@@ -130,7 +138,7 @@ def is_complete(self) -> bool
 
 Check if the task is complete.
 
-### add_user_message <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L332" class="source-link" title="View source code">source</a>
+### add_user_message <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L347" class="source-link" title="View source code">source</a>
 
 ```python
 def add_user_message(self, content: str) -> None
@@ -140,7 +148,7 @@ Add a user message to the conversation history.
 
 ## Functions
 
-## execute_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L340" class="source-link" title="View source code">source</a>
+## execute_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L355" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_task(prompt: str, config_path: str, stream: bool = False) -> AsyncGenerator[Message, None]
@@ -149,7 +157,7 @@ async def execute_task(prompt: str, config_path: str, stream: bool = False) -> A
 High-level function to execute a task from a prompt and config file.
 This function runs the task to completion autonomously.
 
-## start_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L358" class="source-link" title="View source code">source</a>
+## start_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L373" class="source-link" title="View source code">source</a>
 
 ```python
 async def start_task(prompt: str, config_path: str, task_id: Optional[str] = None, workspace_dir: Optional[Path] = None) -> TaskExecutor
