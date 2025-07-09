@@ -24,7 +24,7 @@ from agentx.core.agent import Agent
 from agentx.core.task import Task, TaskExecutor
 from agentx.core.orchestrator import Orchestrator
 
-__version__ = "0.16.0"
+__version__ = "0.16.1"
 
 __all__ = [
     # Main API - primary entry points
