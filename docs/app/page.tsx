@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "nextra-theme-docs";
 import { useState, useEffect } from "react";
 import {
@@ -162,99 +162,119 @@ if __name__ == "__main__":
   return (
     <div className="max-w-6xl mx-auto">
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-200 dark:border-slate-700 mb-8">
+      <div className="relative flex border-b border-slate-200 dark:border-slate-700 mb-8">
         {workflows.map((workflow, index) => (
           <button
             key={workflow.id}
             onClick={() => setActiveTab(index)}
-            className={`flex items-center px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+            className={`relative flex items-center px-6 py-3 text-sm font-medium transition-colors z-10 ${
               activeTab === index
-                ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
             }`}
           >
             <workflow.icon className="w-4 h-4 mr-2" />
             {workflow.title}
           </button>
         ))}
+        {/* Sliding indicator */}
+        <motion.div
+          className="absolute bottom-[-1px] h-0.5 bg-blue-600 dark:bg-blue-400 z-20"
+          layoutId="active-tab-indicator"
+          initial={false}
+          animate={{
+            left: `${(activeTab / workflows.length) * 100}%`,
+            width: `${100 / workflows.length}%`,
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
       </div>
 
       {/* Tab Content */}
-      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Description and Setup */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                {workflows[activeTab].title} Workflow
-              </h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">
-                {workflows[activeTab].description}
-              </p>
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Your AI Team:
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6"
+        >
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Left Column - Description and Setup */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                  {workflows[activeTab].title} Workflow
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-4">
+                  {workflows[activeTab].description}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  {workflows[activeTab].agents.map((agent) => (
-                    <span
-                      key={agent}
-                      className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full"
-                    >
-                      {agent}
-                    </span>
-                  ))}
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Your AI Team:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {workflows[activeTab].agents.map((agent) => (
+                      <span
+                        key={agent}
+                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full"
+                      >
+                        {agent}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              {/* CLI Command */}
+              <div>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Get started with one command:
+                </p>
+                <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 font-mono text-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Terminal className="w-4 h-4 text-slate-400" />
+                    <span className="text-slate-400">Terminal</span>
+                  </div>
+                  <code className="text-green-400">
+                    {workflows[activeTab].command}
+                  </code>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  What you get:
+                </p>
+                <ul className="space-y-1">
+                  <li>• Complete project structure</li>
+                  <li>• Pre-configured AI agents</li>
+                  <li>• Ready-to-run main.py</li>
+                  <li>• Cost-optimized model selection</li>
+                </ul>
               </div>
             </div>
 
-            {/* CLI Command */}
+            {/* Right Column - Generated Code */}
             <div>
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Get started with one command:
+                Generated main.py (with XAgent):
               </p>
-              <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 font-mono text-sm">
-                <div className="flex items-center gap-2 mb-2">
-                  <Terminal className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-400">Terminal</span>
+              <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
+                <div className="flex items-center gap-2 mb-3">
+                  <Code className="w-4 h-4 text-slate-400" />
+                  <span className="text-slate-400 text-sm">main.py</span>
                 </div>
-                <code className="text-green-400">
-                  {workflows[activeTab].command}
-                </code>
+                <pre className="text-xs text-slate-300 leading-relaxed">
+                  <code>{workflows[activeTab].exampleCode}</code>
+                </pre>
               </div>
             </div>
-
-            {/* Features */}
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">
-                What you get:
-              </p>
-              <ul className="space-y-1">
-                <li>• Complete project structure</li>
-                <li>• Pre-configured AI agents</li>
-                <li>• Ready-to-run main.py</li>
-                <li>• Cost-optimized model selection</li>
-              </ul>
-            </div>
           </div>
-
-          {/* Right Column - Generated Code */}
-          <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Generated main.py (with XAgent):
-            </p>
-            <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
-              <div className="flex items-center gap-2 mb-3">
-                <Code className="w-4 h-4 text-slate-400" />
-                <span className="text-slate-400 text-sm">main.py</span>
-              </div>
-              <pre className="text-xs text-slate-300 leading-relaxed">
-                <code>{workflows[activeTab].exampleCode}</code>
-              </pre>
-            </div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
@@ -331,6 +351,27 @@ export default function HomePage() {
     },
   ];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900">
       {/* Hero Section */}
@@ -341,48 +382,89 @@ export default function HomePage() {
         {/* Simple grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:60px_60px] opacity-40"></div>
 
-        {/* Subtle decorative elements */}
-        <div className="absolute top-20 left-10 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"></div>
-        <div className="absolute top-40 right-20 w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-3xl opacity-40"></div>
-        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-slate-100 dark:bg-slate-800/30 rounded-full blur-3xl opacity-30"></div>
+        {/* Floating decorative elements */}
+        <motion.div
+          animate={{ y: [-10, 10, -10], x: [-5, 5, -5] }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+          className="absolute top-20 left-10 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"
+        ></motion.div>
+        <motion.div
+          animate={{ y: [15, -15, 15], x: [8, -8, 8] }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+          className="absolute top-40 right-20 w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-3xl opacity-40"
+        ></motion.div>
+        <motion.div
+          animate={{ y: [-5, 5, -5], x: [10, -10, 10] }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+          className="absolute bottom-20 left-1/4 w-40 h-40 bg-slate-100 dark:bg-slate-800/30 rounded-full blur-3xl opacity-30"
+        ></motion.div>
 
-        <div className="relative max-w-7xl mx-auto px-4 text-center">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+          className="relative max-w-7xl mx-auto px-4 text-center"
+        >
           <div className="max-w-4xl mx-auto">
             {/* Main heading */}
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
+            <motion.h1
+              variants={itemVariants}
+              className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6"
+            >
               Build Vibe-
               <TypewriterText /> Apps
               <br />
               <span className="text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
                 With AgentX
               </span>
-            </h1>
+            </motion.h1>
 
-            <p className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto">
+            <motion.p
+              variants={itemVariants}
+              className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto"
+            >
               The framework for human-AI collaboration that balances AI autonomy
               with human oversight. Transparent processes, cost-optimized
               intelligence, and professional workflows.
-            </p>
+            </motion.p>
 
             {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
               <Link
                 href="/docs/tutorials/0-bootstrap"
-                className="inline-flex items-center bg-blue-600 hover:bg-blue-700 !text-white font-bold px-8 py-4 rounded-lg transition-colors shadow-lg no-underline"
+                className="inline-flex items-center bg-blue-600 hover:bg-blue-700 !text-white font-bold px-8 py-4 rounded-lg transition-transform duration-200 hover:scale-105 shadow-lg no-underline"
               >
                 Quick Start
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
               <Link
                 href="/docs/design/vibe-x-philosophy"
-                className="inline-flex items-center border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-6 py-3 rounded-lg transition-colors"
+                className="inline-flex items-center border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
               >
                 Learn Vibe-X
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Curve decoration - part of hero section so grid extends through it */}
         <div className="absolute bottom-0 left-0 w-full overflow-hidden z-10">
@@ -418,8 +500,14 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={containerVariants}
+            className="grid md:grid-cols-3 gap-8"
+          >
+            <motion.div variants={itemVariants} className="text-center">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
@@ -430,9 +518,9 @@ export default function HomePage() {
                 Real-time visibility into AI decision-making with interruptible
                 workflows. See what agents think and maintain full control.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="text-center">
+            <motion.div variants={itemVariants} className="text-center">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
@@ -443,9 +531,9 @@ export default function HomePage() {
                 Strategic human oversight with AI execution. Define boundaries,
                 approve critical decisions, maintain ethical standards.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="text-center">
+            <motion.div variants={itemVariants} className="text-center">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
@@ -456,8 +544,8 @@ export default function HomePage() {
                 Intelligent model routing that balances capability with cost.
                 Use DeepSeek for routine tasks, Claude for complex reasoning.
               </p>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
@@ -491,13 +579,26 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={containerVariants}
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {features.map((feature) => (
               <motion.div
                 key={feature.title}
-                className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow"
-                whileHover={{ y: -2 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.5 }}
+                whileHover={{
+                  y: -5,
+                  boxShadow:
+                    "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+                }}
+                className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700"
               >
                 <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-4">
                   <feature.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -517,7 +618,7 @@ export default function HomePage() {
                 </Link>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -582,14 +683,24 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={containerVariants}
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {useCases.map((useCase) => (
-              <div
+              <motion.div
                 key={useCase.title}
-                className="text-center p-6 rounded-lg border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
               >
-                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <useCase.icon className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <useCase.icon className="w-8 h-8 text-slate-500 dark:text-slate-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                   {useCase.title}
@@ -597,9 +708,9 @@ export default function HomePage() {
                 <p className="text-slate-600 dark:text-slate-400 text-sm">
                   {useCase.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -617,10 +728,13 @@ export default function HomePage() {
             Join the next generation of human-AI collaboration with transparent,
             cost-efficient, and truly collaborative intelligent systems.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
             <Link
               href="/docs/tutorials/0-bootstrap"
-              className="inline-flex items-center bg-white text-slate-900 font-medium px-6 py-3 rounded-lg hover:bg-slate-100 transition-colors no-underline"
+              className="inline-flex items-center bg-white text-slate-900 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
             >
               Start Building
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -628,129 +742,58 @@ export default function HomePage() {
             <Link
               href="https://github.com/dustland/agentx/tree/main/examples"
               target="_blank"
-              className="inline-flex items-center border border-slate-600 text-white font-medium px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors no-underline"
+              className="inline-flex items-center border border-slate-600 text-white font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
             >
               View Examples
               <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
-              <div className="flex items-center mb-4">
-                <Image
-                  src={`${basePath}/logo.png`}
-                  alt="AgentX"
-                  className="w-8 h-8 mr-3"
-                  width={32}
-                  height={32}
-                />
-                <span className="text-xl font-bold text-slate-900 dark:text-white">
-                  AgentX
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400 mb-4 max-w-md">
-                Vibe-X philosophy in action. Build transparent, cost-efficient,
-                and truly collaborative AI systems.
-              </p>
-              <Link
+      <footer className="bg-slate-50 dark:bg-slate-800/50 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex items-center gap-3">
+              <Image
+                src={`${basePath}/logo.png`}
+                alt="AgentX"
+                className="w-8 h-8 mr-3"
+                width={32}
+                height={32}
+              />
+              <span className="text-xl font-bold text-slate-900 dark:text-white">
+                AgentX
+              </span>
+            </div>
+            <div className="flex items-center gap-6">
+              <a
                 href="https://github.com/dustland/agentx"
                 target="_blank"
-                className="inline-flex items-center text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 no-underline"
+                rel="noopener noreferrer"
+                className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors"
               >
-                <Github className="w-5 h-5 mr-2" />
-                GitHub
+                <Github className="w-6 h-6" />
+              </a>
+              <Link
+                href="/docs/getting-started"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors"
+              >
+                Documentation
+              </Link>
+              <Link
+                href="/docs/tutorials/0-bootstrap"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors"
+              >
+                Examples
               </Link>
             </div>
-
-            <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Documentation
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/docs"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Getting Started
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/docs/tutorials/0-bootstrap"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Quick Start
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/docs/api"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    API Reference
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/docs/design"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Design Philosophy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-4">
-                Resources
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="https://github.com/dustland/agentx/tree/main/examples"
-                    target="_blank"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Examples
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="https://pypi.org/project/agentx-py/"
-                    target="_blank"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    PyPI Package
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="https://github.com/dustland/agentx/issues"
-                    target="_blank"
-                    className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-                  >
-                    Report Issues
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </div>
-
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center">
-            <div className="text-slate-500 dark:text-slate-400 text-sm">
-              © {new Date().getFullYear()} Dustland.
-            </div>
-            <div className="text-slate-500 dark:text-slate-400 text-sm mt-2 md:mt-0">
-              Made with ♥ for AI builders
-            </div>
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400">
+            <p>
+              &copy; {new Date().getFullYear()} AgentX. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
