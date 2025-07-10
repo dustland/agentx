@@ -140,7 +140,7 @@ def _get_template_interactive() -> str:
     print("🎯 Choose your workflow template:")
     print("   1. Writing   - Research papers, documentation, content creation")
     print("   2. Coding    - Software development, debugging, testing")
-    print("   3. Operating - Automation, API integration, real-world actions")
+    print("   3. Ops       - Automation, API integration, real-world actions")
     print("   4. Custom    - General-purpose, flexible workflow")
     print()
 
@@ -151,7 +151,7 @@ def _get_template_interactive() -> str:
         elif choice == "2":
             return "coding"
         elif choice == "3":
-            return "operating"
+            return "ops"
         elif choice == "4":
             return "custom"
         else:

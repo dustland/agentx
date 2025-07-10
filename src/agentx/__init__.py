@@ -12,7 +12,7 @@ A flexible framework for building AI agent teams with:
 from .core.task import execute_task, start_task
 
 # Tool creation - for custom tools
-from .tool.models import Tool, tool
+from .core.tool import Tool, tool
 
 # No configuration loading needed - users pass config paths to start_task/execute_task
 
@@ -21,8 +21,7 @@ from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 
 # Core classes for advanced usage
 from agentx.core.agent import Agent
-from agentx.core.task import Task, TaskExecutor
-from agentx.core.orchestrator import Orchestrator
+from agentx.core.task import Task
 from agentx.core.xagent import XAgent
 
 __version__ = "0.17.0"
@@ -44,8 +43,6 @@ __all__ = [
     # Core classes
     "Agent",
     "Task",
-    "TaskExecutor",
-    "Orchestrator",
     "XAgent",
 ]
 

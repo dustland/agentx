@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from dataclasses import asdict, is_dataclass
 from ..utils.logger import get_logger
 from .registry import ToolRegistry, get_tool_registry
-from .models import ToolResult
+from ..core.tool import ToolResult
 
 logger = get_logger(__name__)
 
@@ -43,15 +43,100 @@ def safe_json_serialize(obj):
 
 def safe_json_dumps(obj, **kwargs):
     """
-    Safely convert object to JSON string, handling complex nested objects.
+    Safely serialize objects to JSON with fallback handling.
     """
     try:
-        # First try regular JSON serialization
-        return json.dumps(obj, **kwargs)
-    except TypeError:
-        # If that fails, use safe serialization
-        safe_obj = safe_json_serialize(obj)
-        return json.dumps(safe_obj, **kwargs)
+        return json.dumps(safe_json_serialize(obj), **kwargs)
+    except (TypeError, ValueError) as e:
+        # Fallback: convert to string representation
+        return json.dumps(str(obj), **kwargs)
+
+
+def truncate_for_logging(content: str, max_length: int = 500) -> str:
+    """
+    Truncate content for logging purposes while preserving readability.
+
+    Args:
+        content: Content to truncate
+        max_length: Maximum length before truncation
+
+    Returns:
+        Truncated content with ellipsis if needed
+    """
+    if len(content) <= max_length:
+        return content
+
+    truncated = content[:max_length].strip()
+    return f"{truncated}... [truncated {len(content) - max_length} chars]"
+
+
+def safe_json_dumps_for_logging(obj, max_content_length: int = 500, **kwargs):
+    """
+    Safely serialize objects to JSON with content truncation for logging.
+
+    Args:
+        obj: Object to serialize
+        max_content_length: Maximum length for content fields before truncation
+        **kwargs: Additional JSON serialization arguments
+
+    Returns:
+        JSON string with truncated content for logging
+    """
+    try:
+        # Create a copy for logging that truncates large content
+        logging_obj = _truncate_content_for_logging(obj, max_content_length)
+        return json.dumps(safe_json_serialize(logging_obj), **kwargs)
+    except (TypeError, ValueError) as e:
+        # Fallback: convert to string representation
+        return json.dumps(str(obj), **kwargs)
+
+
+def _truncate_content_for_logging(obj, max_length: int):
+    """
+    Recursively truncate content in objects for logging purposes.
+
+    Args:
+        obj: Object to process
+        max_length: Maximum length for content fields
+
+    Returns:
+        Object with truncated content
+    """
+    if isinstance(obj, dict):
+        result = {}
+        for key, value in obj.items():
+            if isinstance(value, str):
+                # Truncate ANY string field that's too long, not just specific field names
+                # This handles cases like 'title' fields containing large JSON strings
+                if len(value) > max_length:
+                    result[key] = truncate_for_logging(value, max_length)
+                else:
+                    result[key] = value
+            elif isinstance(value, (dict, list)):
+                result[key] = _truncate_content_for_logging(value, max_length)
+            else:
+                result[key] = value
+        return result
+    elif isinstance(obj, list):
+        return [_truncate_content_for_logging(item, max_length) for item in obj]
+    elif hasattr(obj, '__dict__'):
+        # Handle objects with attributes (like WebContent)
+        result = {}
+        for key, value in obj.__dict__.items():
+            if isinstance(value, str):
+                # Truncate ANY string field that's too long, not just specific field names
+                if len(value) > max_length:
+                    result[key] = truncate_for_logging(value, max_length)
+                else:
+                    result[key] = value
+            elif isinstance(value, (dict, list)):
+                result[key] = _truncate_content_for_logging(value, max_length)
+            else:
+                result[key] = value
+        return result
+    else:
+        # For primitive types and other objects, return as-is
+        return obj
 
 
 class SecurityPolicy:
@@ -242,12 +327,13 @@ class ToolExecutor:
                 # Log tool call result (framework logging - respects streaming mode)
                 if result.success:
                     logger.info(f"✅ TOOL CALL SUCCESS | ID: {tool_call_id} | Tool: {tool_name} | Time: {execution_time:.2f}s")
-                    logger.info(f"📤 TOOL RESULT | {safe_json_dumps(result.result)}")
+                    # Use truncated logging for large content like web extractions
+                    logger.info(f"📤 TOOL RESULT | {safe_json_dumps_for_logging(result.result, max_content_length=500)}")
                 else:
                     logger.info(f"❌ TOOL CALL FAILED | ID: {tool_call_id} | Tool: {tool_name} | Error: {result.error}")
                     logger.info(f"⏱️  TOOL TIME | {execution_time:.2f}s")
 
-                # Format result for LLM using safe serialization
+                # Format result for LLM using safe serialization (FULL CONTENT - no truncation)
                 if result.success:
                     content = safe_json_dumps({
                         "success": True,

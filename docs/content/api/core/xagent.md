@@ -13,16 +13,21 @@ Key Features:
 - Single point of contact for all user interactions
 - Automatic workspace and tool management
 
-## XAgentResponse <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L45" class="source-link" title="View source code">source</a>
+API Design:
+- chat(message) - For user conversation, plan adjustments, and Q&A
+- step() - For autonomous task execution, moving the plan forward
+- start_task() creates a plan but doesn't execute it automatically
+
+## XAgentResponse <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L48" class="source-link" title="View source code">source</a>
 
 Response from XAgent chat interactions.
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L48" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L51" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, text: str, artifacts: List[Any] = None, preserved_steps: List[str] = None, regenerated_steps: List[str] = None, plan_changes: Dict[str, Any] = None, metadata: Dict[str, Any] = None)
 ```
-## XAgent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L65" class="source-link" title="View source code">source</a>
+## XAgent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L68" class="source-link" title="View source code">source</a>
 
 XAgent - The unified conversational interface for AgentX.
 
@@ -36,24 +41,42 @@ Key capabilities:
 - Automatic workspace and tool management
 - Conversational task management
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L80" class="source-link" title="View source code">source</a>
+Usage Pattern:
+    ```python
+    # Start a task (creates plan but doesn't execute)
+    x = await start_task("Build a web app", "config/team.yaml")
+
+    # Execute the task autonomously
+    while not x.is_complete:
+        response = await x.step()  # Autonomous execution
+        print(response)
+
+    # Chat for refinements and adjustments
+    response = await x.chat("Make it more colorful")  # User conversation
+    print(response.text)
+    ```
+
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L98" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, team_config: Union[TeamConfig, str], task_id: Optional[str] = None, workspace_dir: Optional[Path] = None, initial_prompt: Optional[str] = None)
 ```
-### chat <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L213" class="source-link" title="View source code">source</a>
+### chat <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L240" class="source-link" title="View source code">source</a>
 
 ```python
 async def chat(self, message: Union[str, Message]) -> XAgentResponse
 ```
 
-Send a message to X and get a response.
+Send a conversational message to X and get a response.
 
-This is the main conversational interface that handles:
-- Simple text messages
+This is the conversational interface that handles:
+- User questions and clarifications
+- Plan adjustments and modifications
 - Rich messages with attachments
-- Plan adjustments based on user requests
 - Preserving completed work while regenerating only necessary steps
+
+This method is for USER INPUT and conversation, not for autonomous task execution.
+For autonomous task execution, use step() method instead.
 
 **Args:**
     message: Either a simple text string or a rich Message with parts
@@ -61,7 +84,7 @@ This is the main conversational interface that handles:
 **Returns:**
     XAgentResponse with text, artifacts, and execution details
 
-### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L595" class="source-link" title="View source code">source</a>
+### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L685" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]
@@ -69,7 +92,7 @@ async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Tas
 
 Compatibility method for TaskExecutor.execute().
 
-### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L607" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L697" class="source-link" title="View source code">source</a>
 
 ```python
 async def start(self, prompt: str) -> None
@@ -77,10 +100,18 @@ async def start(self, prompt: str) -> None
 
 Compatibility method for TaskExecutor.start().
 
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L611" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L701" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self) -> str
 ```
 
-Compatibility method for TaskExecutor.step().
+Execute one step of autonomous task execution.
+
+This method is for AUTONOMOUS TASK EXECUTION, not for user conversation.
+It moves the plan forward by executing the next available task.
+
+For user conversation and plan adjustments, use chat() method instead.
+
+**Returns:**
+    str: Status message about the step execution

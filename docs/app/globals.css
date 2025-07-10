@@ -58,6 +58,27 @@ pre {
   border-color: theme('colors.gray.700') !important;
 }
 
+/* Syntax highlighting for bootstrap section */
+.keyword {
+  @apply text-purple-400 font-medium;
+}
+
+.function {
+  @apply text-blue-400 font-medium;
+}
+
+.string {
+  @apply text-emerald-400;
+}
+
+.comment {
+  @apply text-slate-500 italic;
+}
+
+.plain {
+  @apply text-slate-300;
+}
+
 /* Custom callout styling */
 .nextra-callout {
   border-radius: 12px;

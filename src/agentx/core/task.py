@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union
 from agentx.core.agent import Agent
 from agentx.core.config import TeamConfig, TaskConfig
 from agentx.core.message import MessageQueue, TaskHistory, Message, UserMessage, TaskStep, TextPart
-from agentx.core.orchestrator import Orchestrator
+# Orchestrator functionality moved to XAgent
 from agentx.core.plan import Plan, PlanItem, TaskStatus
 from agentx.storage.workspace import WorkspaceStorage
 from agentx.tool.manager import ToolManager
@@ -56,7 +56,6 @@ class Task:
         message_queue: MessageQueue,
         agents: Dict[str, Agent],
         workspace: WorkspaceStorage,
-        orchestrator: Orchestrator,
         initial_prompt: str,
     ):
         self.task_id = task_id
@@ -65,7 +64,6 @@ class Task:
         self.message_queue = message_queue
         self.agents = agents
         self.workspace = workspace
-        self.orchestrator = orchestrator
         self.initial_prompt = initial_prompt
 
         self.is_complete: bool = False
@@ -156,203 +154,6 @@ class Task:
             return None
 
 
-class TaskExecutor:
-    """
-    The main engine for executing a task. It coordinates the agents, tools,
-    and orchestrator to fulfill the user's request.
-
-    Two execution modes:
-    1. Fire-and-forget: execute() runs task to completion autonomously
-    2. Step-by-step: start() + step() for conversational interaction
-    """
-
-    def __init__(
-        self,
-        team_config: Union[TeamConfig, str],
-        task_id: Optional[str] = None,
-        workspace_dir: Optional[Path] = None,
-    ):
-        self.task_id = task_id or generate_short_id()
-
-        # Handle both TeamConfig objects and config file paths
-        if isinstance(team_config, str):
-            self.team_config = load_team_config(team_config)
-        else:
-            self.team_config = team_config
-        from agentx.storage.factory import StorageFactory
-        self.workspace = StorageFactory.create_workspace_storage(
-            workspace_path=workspace_dir or (Path("./workspace") / self.task_id)
-        )
-        self._setup_task_logging()
-
-        logger.info(f"Initializing TaskExecutor for task: {self.task_id}")
-
-        self.tool_manager = self._initialize_tools()
-        self.message_queue = MessageQueue()
-        self.agents = self._initialize_agents()
-        self.history = TaskHistory(task_id=self.task_id)
-        self.orchestrator = Orchestrator(
-            team_config=self.team_config,
-            message_queue=self.message_queue,
-            tool_manager=self.tool_manager,
-            agents=self.agents,
-        )
-
-        self.task: Optional[Task] = None
-        self._conversation_history: list[dict] = []
-        self._current_agent: Optional[str] = None
-        self._consecutive_no_tool_responses = 0  # Track responses without tool calls
-        logger.info("✅ TaskExecutor initialized")
-
-    def _setup_task_logging(self):
-        """Sets up file-based logging for the task."""
-        log_dir = self.workspace.get_workspace_path() / "logs"
-        log_dir.mkdir(parents=True, exist_ok=True)
-        log_file_path = log_dir / f"{self.task_id}.log"
-        setup_task_file_logging(str(log_file_path))
-
-    def _initialize_tools(self) -> ToolManager:
-        """Initializes the ToolManager and registers builtin tools."""
-        tool_manager = ToolManager(
-            task_id=self.task_id,
-            workspace_path=str(self.workspace.get_workspace_path())
-        )
-        logger.info("ToolManager initialized.")
-        return tool_manager
-
-    def _initialize_agents(self) -> Dict[str, Agent]:
-        """Initializes all agents defined in the team configuration."""
-        agents: Dict[str, Agent] = {}
-        for agent_config in self.team_config.agents:
-            agent = Agent(
-                config=agent_config,
-                tool_manager=self.tool_manager,
-            )
-            # Pass team memory config to agent if available
-            if hasattr(self.team_config, 'memory') and self.team_config.memory:
-                agent.team_memory_config = self.team_config.memory
-            agents[agent_config.name] = agent
-        logger.info(f"Initialized {len(agents)} agents: {list(agents.keys())}")
-        return agents
-
-    async def execute(
-        self,
-        prompt: str,
-        stream: bool = False,
-    ) -> AsyncGenerator[Message, None]:
-        """
-        Fire-and-forget execution - runs task to completion autonomously.
-        This is the method called by execute_task() for autonomous execution.
-        """
-        setup_clean_chat_logging()
-        set_streaming_mode(stream)
-
-        self.task = Task(
-            task_id=self.task_id,
-            config=self.team_config.execution,
-            history=self.history,
-            message_queue=self.message_queue,
-            agents=self.agents,
-            workspace=self.workspace,
-            orchestrator=self.orchestrator,
-            initial_prompt=prompt,
-        )
-
-        # Load existing plan if available
-        await self.task.load_plan()
-
-        logger.info(f"Task {self.task_id} executing autonomously with prompt: {prompt[:50]}...")
-
-        # Use simple step-based execution
-        self._conversation_history = [{"role": "user", "content": prompt}]
-
-        # Generate response using orchestrator's step method
-        response = await self.orchestrator.step(self._conversation_history, self.task)
-
-        # Create a TaskStep message
-        message = TaskStep(
-            agent_name=next(iter(self.agents.keys())),
-            parts=[TextPart(text=response)]
-        )
-        self.history.add_message(message)
-        yield message
-
-        self.task.complete()
-        logger.info(f"Task {self.task_id} finished")
-
-    async def start(self, prompt: str) -> None:
-        """
-        Initialize the conversation with the given prompt.
-        This sets up the task but doesn't execute any agent responses yet.
-        """
-        setup_clean_chat_logging()
-
-        self.task = Task(
-            task_id=self.task_id,
-            config=self.team_config.execution,
-            history=self.history,
-            message_queue=self.message_queue,
-            agents=self.agents,
-            workspace=self.workspace,
-            orchestrator=self.orchestrator,
-            initial_prompt=prompt,
-        )
-
-        # Load existing plan if available
-        await self.task.load_plan()
-
-        # Add the initial user message to conversation history
-        self._conversation_history = [{"role": "user", "content": prompt}]
-
-        logger.info(f"Task {self.task_id} conversation started with prompt: {prompt[:50]}...")
-
-    async def step(self) -> str:
-        """
-        Execute one conversation step - get a response from the current agent.
-        Returns the agent's response as a string.
-        """
-        if not self.task:
-            raise RuntimeError("Task not started. Call start() first.")
-
-        if self.task.is_complete:
-            return ""
-
-        # Use orchestrator's step method to get response
-        response = await self.orchestrator.step(self._conversation_history, self.task)
-
-        # Add agent response to conversation history
-        self._conversation_history.append({"role": "assistant", "content": response})
-
-        # Check if orchestrator indicates task is complete
-        if self._is_completion_response(response):
-            self.task.complete()
-
-        return response
-
-    def _is_completion_response(self, response: str) -> bool:
-        """Check if the response indicates task completion (language-independent)."""
-        # Check for specific completion indicators from the orchestrator
-        completion_phrases = [
-            "Task completed successfully",
-            "All plan items have been finished",
-            "Task execution halted"
-        ]
-
-        return any(phrase in response for phrase in completion_phrases)
-
-    @property
-    def is_complete(self) -> bool:
-        """Check if the task is complete."""
-        return self.task.is_complete if self.task else False
-
-    def add_user_message(self, content: str) -> None:
-        """Add a user message to the conversation history."""
-        self._conversation_history.append({"role": "user", "content": content})
-        # Reset completion status for continued conversation
-        if self.task:
-            self.task.is_complete = False
-
-
 async def execute_task(
     prompt: str,
     config_path: str,
@@ -362,12 +163,22 @@ async def execute_task(
     High-level function to execute a task from a prompt and config file.
     This function runs the task to completion autonomously.
     """
-    from agentx.config.team_loader import load_team_config
+    # Use XAgent for task execution - it handles plan generation internally
+    x = XAgent(
+        team_config=config_path,
+        initial_prompt=prompt
+    )
 
-    team_config = load_team_config(config_path)
-    executor = TaskExecutor(team_config=team_config)
+    # Execute the task autonomously
+    while not x.is_complete:
+        response = await x.step()
 
-    async for message in executor.execute(prompt=prompt, stream=stream):
+        # Create a TaskStep message for compatibility
+        message = TaskStep(
+            agent_name="X",
+            parts=[TextPart(text=response)]
+        )
+        x.history.add_message(message)
         yield message
 
 
@@ -414,14 +225,12 @@ async def start_task(
     from agentx.config.team_loader import load_team_config
 
     # Create XAgent with the provided configuration
+    # XAgent handles plan generation internally when initial_prompt is provided
     x = XAgent(
         team_config=config_path,
         task_id=task_id,
         workspace_dir=workspace_dir,
         initial_prompt=prompt
     )
-
-    # Initialize with the prompt
-    await x._initialize_with_prompt(prompt)
 
     return x

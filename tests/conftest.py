@@ -10,6 +10,19 @@ from pathlib import Path
 from typing import Dict, Any
 from unittest.mock import AsyncMock, MagicMock
 
+
+@pytest.fixture(autouse=True)
+def clear_tool_registry():
+    """Clear the tool registry before each test to prevent duplicate registrations."""
+    from agentx.tool.registry import ToolRegistry
+    # Clear the singleton registry before each test
+    registry = ToolRegistry()
+    registry.clear()
+    yield
+    # Optionally clear again after test
+    registry.clear()
+
+
 # from agentx.core.brain import BrainConfig, Message, ChatHistory
 
 

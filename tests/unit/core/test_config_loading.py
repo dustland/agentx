@@ -3,7 +3,7 @@ import tempfile
 import yaml
 from pathlib import Path
 from pydantic import ValidationError
-from agentx.core.task import TaskExecutor
+from agentx.core.xagent import XAgent
 from agentx.core.agent import Agent
 from agentx.tool.registry import get_tool_registry
 from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError
@@ -48,27 +48,27 @@ def clear_tool_registry_fixture():
 
 def test_load_team_from_config(sample_team_config_path: str):
     """
-    Tests that a TaskExecutor can be successfully loaded from a YAML config file.
+    Tests that an XAgent can be successfully loaded from a YAML config file.
     """
     # Act
-    task_executor = TaskExecutor(sample_team_config_path)
+    xagent = XAgent(sample_team_config_path)
 
     # Assert
-    assert task_executor.team_config.name == "sample_team"
-    assert len(task_executor.agents) == 3  # coordinator, analyst, writer
-    assert "coordinator" in task_executor.agents
-    assert "analyst" in task_executor.agents
-    assert "writer" in task_executor.agents
+    assert xagent.team_config.name == "sample_team"
+    assert len(xagent.specialist_agents) == 3  # coordinator, analyst, writer
+    assert "coordinator" in xagent.specialist_agents
+    assert "analyst" in xagent.specialist_agents
+    assert "writer" in xagent.specialist_agents
 
     # Check max rounds - this comes from team_config.max_rounds (default 10)
-    assert task_executor.team_config.max_rounds == 10
+    assert xagent.team_config.max_rounds == 10
 
 def test_load_team_with_nonexistent_config():
     """
     Tests that loading a non-existent config file raises ConfigurationError.
     """
     with pytest.raises(ConfigurationError):
-        TaskExecutor("non_existent_path/team.yaml")
+        XAgent("non_existent_path/team.yaml")
 
 def test_load_team_with_invalid_yaml(tmp_path: Path):
     """
@@ -79,7 +79,7 @@ def test_load_team_with_invalid_yaml(tmp_path: Path):
     config_path.write_text(invalid_yaml)
 
     with pytest.raises(ConfigurationError):
-        TaskExecutor(str(config_path))
+        XAgent(str(config_path))
 
 def test_load_team_with_validation_error(tmp_path: Path):
     """
@@ -99,7 +99,7 @@ agents:
     config_path.write_text(invalid_config)
 
     with pytest.raises(ConfigurationError):
-        TaskExecutor(str(config_path))
+        XAgent(str(config_path))
 
 def test_load_team_with_invalid_tool_source(tmp_path: Path):
     """
@@ -124,8 +124,8 @@ tools:
     config_path.write_text(invalid_config)
 
     # This should load successfully since we don't validate tool sources at load time
-    task_executor = TaskExecutor(str(config_path))
-    assert task_executor.team_config.name == "Test Team"
+    xagent = XAgent(str(config_path))
+    assert xagent.team_config.name == "Test Team"
 
 def test_load_team_with_undefined_agent_tool(tmp_path: Path):
     """
@@ -147,8 +147,8 @@ tools: []
     config_path.write_text(config)
 
     # This should load successfully
-    task_executor = TaskExecutor(str(config_path))
-    assert task_executor.team_config.name == "Test Team"
+    xagent = XAgent(str(config_path))
+    assert xagent.team_config.name == "Test Team"
 
 def test_basic_team_config_loading():
     """Test loading a basic team configuration."""
@@ -217,7 +217,7 @@ def test_brain_config_defaults():
     assert brain_config.provider == 'deepseek'
     assert brain_config.model == 'deepseek-chat'
     assert brain_config.temperature == 0.7  # Default value
-    assert brain_config.max_tokens == 4000  # Default value
+    assert brain_config.max_tokens == 8000  # Default value
     assert brain_config.base_url == 'https://api.deepseek.com'  # Default for deepseek
     assert brain_config.timeout == 30  # Default value
 

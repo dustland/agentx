@@ -75,8 +75,8 @@ def _add_init_parser(subparsers) -> None:
     )
     init_parser.add_argument(
         "--template",
-        choices=["writing", "coding", "operating", "custom"],
-        help="Project template to use (writing/coding/operating/custom)"
+        choices=["writing", "coding", "ops", "custom"],
+        help="Project template to use (writing/coding/ops/custom)"
     )
     init_parser.add_argument(
         "--model",

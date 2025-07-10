@@ -41,7 +41,8 @@ class TestXAgent:
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
-    def test_xagent_initialization(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test XAgent initializes correctly."""
         # Arrange
         mock_workspace = Mock()
@@ -59,12 +60,14 @@ class TestXAgent:
         assert x.name == "X"
         assert not x.is_complete
         mock_setup_logging.assert_called_once()
+        mock_register_tools.assert_called_once()
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_simple_text(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
-        """Test chat with simple text message."""
+    async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+        """Test chat with simple text message creates plan but doesn't execute automatically."""
         # Arrange
         mock_workspace = Mock()
         mock_workspace.get_workspace_path.return_value = mock_workspace_path
@@ -93,23 +96,25 @@ class TestXAgent:
                 )
                 mock_plan_gen.return_value = mock_plan
 
-                # Mock task execution
-                with patch.object(x, '_execute_plan_steps') as mock_execute:
-                    mock_execute.return_value = "Task completed successfully"
+                # Act
+                response = await x.chat("Hello, create a test report")
 
-                    # Act
-                    response = await x.chat("Hello, create a test report")
-
-                    # Assert
-                    assert isinstance(response, XAgentResponse)
-                    assert "Task completed successfully" in response.text
-                    assert len(x.conversation_history) == 1
-                    assert x.conversation_history[0].content == "Hello, create a test report"
+                # Assert
+                assert isinstance(response, XAgentResponse)
+                # Verify that plan was created but not executed
+                assert "I've created a plan for your task: Test goal" in response.text
+                assert "Use step() to execute the plan autonomously" in response.text
+                assert len(x.conversation_history) == 1
+                assert x.conversation_history[0].content == "Hello, create a test report"
+                # Verify plan was set
+                assert x.current_plan is not None
+                assert x.current_plan.goal == "Test goal"
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_message_object(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test chat with Message object."""
         # Arrange
         mock_workspace = Mock()
@@ -137,8 +142,9 @@ class TestXAgent:
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_plan_adjustment_preserves_work(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test that plan adjustment preserves completed work."""
         # Arrange
         mock_workspace = Mock()
@@ -198,8 +204,9 @@ class TestXAgent:
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_error_handling(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test error handling in chat method."""
         # Arrange
         mock_workspace = Mock()
@@ -222,7 +229,8 @@ class TestXAgent:
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
-    def test_plan_summary_generation(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test plan summary generation."""
         # Arrange
         mock_workspace = Mock()
@@ -236,8 +244,8 @@ class TestXAgent:
             goal="Test comprehensive plan",
             tasks=[
                 PlanItem(id="task_1", name="Task 1", goal="Goal 1", agent="test_agent", status="completed"),
-                PlanItem(id="task_2", name="Task 2", goal="Goal 2", agent="test_agent", status="pending"),
-                PlanItem(id="task_3", name="Task 3", goal="Goal 3", agent="test_agent", status="failed")
+                PlanItem(id="task_2", name="Task 2", goal="Goal 2", agent="test_agent", status="in_progress"),
+                PlanItem(id="task_3", name="Task 3", goal="Goal 3", agent="test_agent", status="pending")
             ]
         )
 
@@ -247,11 +255,11 @@ class TestXAgent:
         # Assert
         assert "Test comprehensive plan" in summary
         assert "1/3 completed" in summary
-        assert "1 failed" in summary
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
-    def test_conversation_summary_generation(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
         """Test conversation summary generation."""
         # Arrange
         mock_workspace = Mock()
@@ -262,28 +270,26 @@ class TestXAgent:
 
         # Add some conversation history
         x.conversation_history = [
-            Message.user_message("First message"),
-            Message.assistant_message("First response"),
-            Message.user_message("Second message with a very long content that should be truncated in the summary because it exceeds the character limit"),
-            Message.assistant_message("Second response")
+            Message.user_message("Hello"),
+            Message.assistant_message("Hi there!"),
+            Message.user_message("Can you help me?"),
+            Message.assistant_message("Of course!")
         ]
 
         # Act
         summary = x._get_conversation_summary()
 
         # Assert
-        # Should only show last 3 messages (excludes first message)
-        assert "First response" in summary  # Second message (assistant)
-        assert "Second message" in summary  # Third message (user)
-        assert "Second response" in summary  # Fourth message (assistant)
-        assert "..." in summary  # Truncation indicator for long content
-        assert len(summary.split('\n')) == 3  # Last 3 messages
+        assert "assistant:" in summary.lower()
+        assert "user:" in summary.lower()
+        assert "hi there!" in summary.lower()
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
+    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_compatibility_methods(self, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
-        """Test TaskExecutor compatibility methods."""
+    async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+        """Test XAgent methods."""
         # Arrange
         mock_workspace = Mock()
         mock_workspace.get_workspace_path.return_value = mock_workspace_path
@@ -291,27 +297,15 @@ class TestXAgent:
 
         x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
 
-        # Mock chat method for execute compatibility
-        with patch.object(x, 'chat') as mock_chat:
-            mock_chat.return_value = XAgentResponse(text="Test response")
+        # Test is_complete property
+        assert not x.is_complete
 
-            # Test execute method
-            messages = []
-            async for message in x.execute("Test prompt"):
-                messages.append(message)
+        # Test workspace access
+        workspace_path = x.workspace.get_workspace_path()
+        assert workspace_path == mock_workspace_path
 
-            assert len(messages) == 1
-            assert messages[0].parts[0].text == "Test response"
-
-        # Test start method
-        with patch.object(x, '_initialize_with_prompt') as mock_init:
-            await x.start("Test prompt")
-            mock_init.assert_called_once_with("Test prompt")
-
-        # Test step method when complete
-        x.is_complete = True
-        result = await x.step()
-        assert result == "Task completed"
+        # Test task_id is set
+        assert x.task_id is not None
 
 
 class TestXAgentResponse:

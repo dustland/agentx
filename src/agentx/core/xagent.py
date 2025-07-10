@@ -9,6 +9,11 @@ Key Features:
 - LLM-driven plan adjustment that preserves completed work
 - Single point of contact for all user interactions
 - Automatic workspace and tool management
+
+API Design:
+- chat(message) - For user conversation, plan adjustments, and Q&A
+- step() - For autonomous task execution, moving the plan forward
+- start_task() creates a plan but doesn't execute it automatically
 """
 
 from __future__ import annotations
@@ -19,13 +24,11 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union, Li
 
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
-from agentx.core.config import TeamConfig, TaskConfig, BrainConfig
+from agentx.core.config import TeamConfig, BrainConfig
 from agentx.core.message import (
-    MessageQueue, TaskHistory, Message, UserMessage, TaskStep, TextPart,
-    ConversationPart, ArtifactPart, ImagePart, AudioPart
+    MessageQueue, TaskHistory, Message, TaskStep, TextPart,
 )
 from agentx.core.plan import Plan, PlanItem, TaskStatus
-from agentx.storage.workspace import WorkspaceStorage
 from agentx.tool.manager import ToolManager
 from agentx.utils.id import generate_short_id
 from agentx.utils.logger import (
@@ -75,6 +78,21 @@ class XAgent(Agent):
     - LLM-driven plan adjustment preserving completed work
     - Automatic workspace and tool management
     - Conversational task management
+
+    Usage Pattern:
+        ```python
+        # Start a task (creates plan but doesn't execute)
+        x = await start_task("Build a web app", "config/team.yaml")
+
+        # Execute the task autonomously
+        while not x.is_complete:
+            response = await x.step()  # Autonomous execution
+            print(response)
+
+        # Chat for refinements and adjustments
+        response = await x.chat("Make it more colorful")  # User conversation
+        print(response.text)
+        ```
     """
 
     def __init__(
@@ -88,8 +106,8 @@ class XAgent(Agent):
         self.task_id = task_id or generate_short_id()
 
         # Handle both TeamConfig objects and config file paths
-        if isinstance(team_config, str):
-            self.team_config = load_team_config(team_config)
+        if isinstance(team_config, (str, Path)):
+            self.team_config = load_team_config(str(team_config))
         else:
             self.team_config = team_config
 
@@ -125,10 +143,7 @@ class XAgent(Agent):
         self.is_complete: bool = False
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
-
-        # Load existing plan if available
-        if initial_prompt:
-            asyncio.create_task(self._initialize_with_prompt(initial_prompt))
+        self._plan_initialized = False
 
         logger.info("✅ XAgent initialized and ready for conversation")
 
@@ -181,9 +196,15 @@ class XAgent(Agent):
     def _create_xagent_config(self):
         """Create AgentConfig for XAgent itself."""
         from agentx.core.config import AgentConfig
+        from pathlib import Path
+
+        # Use the comprehensive XAgent system prompt
+        xagent_prompt_path = Path(__file__).parent.parent / "presets" / "agents" / "xagent.md"
+
         return AgentConfig(
             name="X",
-            description="XAgent - The lead orchestrator managing your agent team",
+            description="XAgent - The lead orchestrator and strategic planner for AgentX",
+            prompt_file=str(xagent_prompt_path),
             tools=[],  # XAgent coordinates but doesn't use tools directly
             memory_enabled=True,
             max_iterations=50
@@ -210,15 +231,24 @@ class XAgent(Agent):
             self.current_plan = await self._generate_plan(prompt)
             await self._persist_plan()
 
+    async def _ensure_plan_initialized(self):
+        """Ensure plan is initialized if we have an initial prompt."""
+        if not self._plan_initialized and self.initial_prompt:
+            await self._initialize_with_prompt(self.initial_prompt)
+            self._plan_initialized = True
+
     async def chat(self, message: Union[str, Message]) -> XAgentResponse:
         """
-        Send a message to X and get a response.
+        Send a conversational message to X and get a response.
 
-        This is the main conversational interface that handles:
-        - Simple text messages
+        This is the conversational interface that handles:
+        - User questions and clarifications
+        - Plan adjustments and modifications
         - Rich messages with attachments
-        - Plan adjustments based on user requests
         - Preserving completed work while regenerating only necessary steps
+
+        This method is for USER INPUT and conversation, not for autonomous task execution.
+        For autonomous task execution, use step() method instead.
 
         Args:
             message: Either a simple text string or a rich Message with parts
@@ -236,9 +266,12 @@ class XAgent(Agent):
         self.conversation_history.append(message)
         self.history.add_message(message)
 
-        logger.info(f"XAgent received message: {message.content[:100]}...")
+        logger.info(f"XAgent received chat message: {message.content[:100]}...")
 
         try:
+            # Ensure plan is initialized if we have an initial prompt
+            await self._ensure_plan_initialized()
+
             # Analyze message impact on current plan
             impact_analysis = await self._analyze_message_impact(message)
 
@@ -250,16 +283,22 @@ class XAgent(Agent):
             elif impact_analysis.get("is_informational", False):
                 return await self._handle_informational_query(message)
 
-            # If message is a new task or continuation
+            # If no plan exists and this is a new task request
+            elif not self.current_plan and impact_analysis.get("is_new_task", False):
+                return await self._handle_new_task_request(message)
+
+            # Default: treat as conversational input
             else:
-                return await self._handle_task_execution(message)
+                return await self._handle_conversational_input(message)
 
         except Exception as e:
-            logger.error(f"Error processing message: {e}")
+            logger.error(f"Error processing chat message: {e}")
             return XAgentResponse(
                 text=f"I encountered an error processing your message: {str(e)}",
                 metadata={"error": str(e)}
             )
+
+
 
     async def _analyze_message_impact(self, message: Message) -> Dict[str, Any]:
         """
@@ -302,6 +341,7 @@ Respond with a JSON object:
 
         response = await self.brain.generate_response(
             messages=[{"role": "user", "content": analysis_prompt}],
+            system_prompt=self.build_system_prompt({"task_id": self.task_id}),
             json_mode=True
         )
 
@@ -325,7 +365,7 @@ Respond with a JSON object:
     async def _handle_plan_adjustment(self, message: Message, impact_analysis: Dict[str, Any]) -> XAgentResponse:
         """Handle messages that require adjusting the current plan."""
         if not self.current_plan:
-            return await self._handle_task_execution(message)
+            return await self._handle_new_task_request(message)
 
         preserved_tasks = impact_analysis.get("preserved_tasks", [])
         affected_tasks = impact_analysis.get("affected_tasks", [])
@@ -339,11 +379,14 @@ Respond with a JSON object:
                     task.status = "pending"
                     logger.info(f"Reset task '{task.name}' to pending for regeneration")
 
-        # Execute the adjusted plan
-        result_text = await self._execute_plan_steps()
+        # Don't auto-execute - let user call step() to execute
+        await self._persist_plan()
 
         return XAgentResponse(
-            text=result_text,
+            text=f"I've adjusted the plan based on your request. "
+                 f"Preserved {len(preserved_tasks)} completed tasks, "
+                 f"reset {len(affected_tasks)} tasks for regeneration. "
+                 f"Use step() to continue execution.",
             preserved_steps=[t for t in preserved_tasks],
             regenerated_steps=[t for t in affected_tasks],
             plan_changes=impact_analysis,
@@ -373,7 +416,8 @@ Please provide a helpful, informative response based on the current state of the
 """
 
         response = await self.brain.generate_response(
-            messages=[{"role": "user", "content": context_prompt}]
+            messages=[{"role": "user", "content": context_prompt}],
+            system_prompt=self.build_system_prompt({"task_id": self.task_id})
         )
 
         return XAgentResponse(
@@ -381,19 +425,44 @@ Please provide a helpful, informative response based on the current state of the
             metadata={"query_type": "informational"}
         )
 
-    async def _handle_task_execution(self, message: Message) -> XAgentResponse:
-        """Handle new task execution or continuation of existing task."""
-        # If no plan exists, create one
-        if not self.current_plan:
-            self.current_plan = await self._generate_plan(message.content)
-            await self._persist_plan()
-
-        # Execute the plan
-        result_text = await self._execute_plan_steps()
+    async def _handle_new_task_request(self, message: Message) -> XAgentResponse:
+        """Handle new task requests when no plan exists."""
+        # Create a new plan
+        self.current_plan = await self._generate_plan(message.content)
+        await self._persist_plan()
 
         return XAgentResponse(
-            text=result_text,
-            metadata={"execution_type": "task_completion"}
+            text=f"I've created a plan for your task: {self.current_plan.goal}\n\n"
+                 f"The plan includes {len(self.current_plan.tasks)} tasks. "
+                 f"Use step() to execute the plan autonomously, or continue chatting to refine it.",
+            metadata={"execution_type": "plan_created"}
+        )
+
+    async def _handle_conversational_input(self, message: Message) -> XAgentResponse:
+        """Handle general conversational input that doesn't require plan changes."""
+        context_prompt = f"""
+The user is having a conversation about the current task:
+
+USER MESSAGE: {message.content}
+
+CURRENT PLAN STATUS:
+{self._get_plan_summary() if self.current_plan else "No plan exists yet"}
+
+CONVERSATION HISTORY:
+{self._get_conversation_summary()}
+
+Please provide a helpful, conversational response. If the user seems to want to modify the plan,
+suggest they be more specific about what changes they want.
+"""
+
+        response = await self.brain.generate_response(
+            messages=[{"role": "user", "content": context_prompt}],
+            system_prompt=self.build_system_prompt({"task_id": self.task_id})
+        )
+
+        return XAgentResponse(
+            text=response.content,
+            metadata={"query_type": "conversational"}
         )
 
     async def _generate_plan(self, goal: str) -> Plan:
@@ -427,6 +496,7 @@ Respond with a JSON object following this schema:
 
         response = await self.brain.generate_response(
             messages=[{"role": "user", "content": planning_prompt}],
+            system_prompt=self.build_system_prompt({"task_id": self.task_id}),
             json_mode=True
         )
 
@@ -453,47 +523,67 @@ Respond with a JSON object following this schema:
                 ]
             )
 
+    async def _execute_single_step(self) -> str:
+        """Execute a single step of the plan."""
+        if not self.current_plan:
+            return "No plan available for execution."
+
+        # Check if plan is already complete
+        if self.current_plan.is_complete():
+            self.is_complete = True
+            return "🎉 All tasks completed successfully!"
+
+        # Find next actionable task
+        next_task = self.current_plan.get_next_actionable_task()
+        if not next_task:
+            if self.current_plan.has_failed_tasks():
+                return "❌ Cannot continue: some tasks have failed"
+            else:
+                return "⏳ No actionable tasks available (waiting for dependencies)"
+
+        # Execute the task
+        try:
+            logger.info(f"Executing task: {next_task.name}")
+            result = await self._execute_single_task(next_task)
+
+            # Update task status
+            next_task.status = "completed"
+            await self._persist_plan()
+
+            # Check if this was the last task
+            if self.current_plan.is_complete():
+                self.is_complete = True
+                return f"✅ {next_task.name}: {result}\n\n🎉 All tasks completed successfully!"
+            else:
+                return f"✅ {next_task.name}: {result}"
+
+        except Exception as e:
+            logger.error(f"Task failed: {next_task.name} - {e}")
+            next_task.status = "failed"
+            await self._persist_plan()
+
+            if next_task.on_failure == "halt":
+                return f"❌ {next_task.name}: Failed - {e}\n\nTask execution halted."
+            else:
+                return f"⚠️ {next_task.name}: Failed but continuing - {e}"
+
     async def _execute_plan_steps(self) -> str:
-        """Execute the current plan step by step."""
+        """Execute the current plan step by step (for compatibility)."""
         if not self.current_plan:
             return "No plan available for execution."
 
         results = []
 
         while not self.current_plan.is_complete():
-            # Find next actionable task
-            next_task = self.current_plan.get_next_actionable_task()
-            if not next_task:
-                if self.current_plan.has_failed_tasks():
-                    break
-                else:
-                    logger.warning("No actionable tasks available")
-                    break
+            step_result = await self._execute_single_step()
+            results.append(step_result)
 
-            # Execute the task
-            try:
-                logger.info(f"Executing task: {next_task.name}")
-                result = await self._execute_single_task(next_task)
-                results.append(f"✅ {next_task.name}: {result}")
-
-                # Update task status
-                next_task.status = "completed"
-                await self._persist_plan()
-
-            except Exception as e:
-                logger.error(f"Task failed: {next_task.name} - {e}")
-                next_task.status = "failed"
-                await self._persist_plan()
-
-                if next_task.on_failure == "halt":
-                    results.append(f"❌ {next_task.name}: Failed - {e}")
-                    break
-                else:
-                    results.append(f"⚠️ {next_task.name}: Failed but continuing - {e}")
-
-        if self.current_plan.is_complete():
-            self.is_complete = True
-            results.append("\n🎉 All tasks completed successfully!")
+            # Break if we hit a halt condition
+            if "Task execution halted" in step_result:
+                break
+            # Break if task is complete
+            if self.is_complete:
+                break
 
         return "\n".join(results)
 
@@ -609,9 +699,26 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}
         await self._initialize_with_prompt(prompt)
 
     async def step(self) -> str:
-        """Compatibility method for TaskExecutor.step()."""
+        """
+        Execute one step of autonomous task execution.
+
+        This method is for AUTONOMOUS TASK EXECUTION, not for user conversation.
+        It moves the plan forward by executing the next available task.
+
+        For user conversation and plan adjustments, use chat() method instead.
+
+        Returns:
+            str: Status message about the step execution
+        """
         if self.is_complete:
             return "Task completed"
 
-        # Continue plan execution
-        return await self._execute_plan_steps()
+        # Ensure plan is initialized if we have an initial prompt
+        await self._ensure_plan_initialized()
+
+        # If no plan exists, cannot step
+        if not self.current_plan:
+            return "No plan available. Use chat() to create a task plan first."
+
+        # Execute one step of the plan
+        return await self._execute_single_step()

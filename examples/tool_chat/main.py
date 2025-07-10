@@ -46,17 +46,18 @@ async def main():
         print(f"🔧 Registered tools: {x.tool_manager.list_tools()}")
 
         # Get the agent to check tool schemas
-        agent = list(x.agents.values())[0]
+        agent = list(x.specialist_agents.values())[0]
         tool_schemas = agent.get_tools_json()
         print(f"🔧 Agent has access to {len(tool_schemas)} tools")
 
         print(f"🎬 Processing: {user_prompt}")
         print()
 
-        # Chat with X to get weather information
-        response = await x.chat(user_prompt)
-        print(f"🤖 X: {response.text}")
-        print("-" * 60)
+        # Execute the task autonomously first
+        while not x.is_complete:
+            response = await x.step()
+            print(f"🤖 X: {response}")
+            print("-" * 60)
 
         # Demonstrate follow-up questions
         follow_ups = [

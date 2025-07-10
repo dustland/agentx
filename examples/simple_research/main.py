@@ -28,20 +28,21 @@ async def main():
     # Start the research task with XAgent - creates a conversational interface
     x = await start_task(
         prompt=research_prompt,
-        config_path="config/simple_research.yaml"
+        config_path="config/team.yaml"
     )
 
     print(f"📋 Task ID: {x.task_id}")
     print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
     print("-" * 60)
 
-    # Chat with X to execute the research
+    # Execute the initial research task
     print("🤖 X: Starting quantum computing research...")
-    response = await x.chat(research_prompt)
-    print(f"🔍 Research Step 1:\n{response.text}\n")
-    print("-" * 60)
+    while not x.is_complete:
+        response = await x.step()
+        print(f"🔍 Research Step:\n{response}\n")
+        print("-" * 60)
 
-    # Continue the research with follow-up questions
+    # Continue the research with follow-up questions using chat
     follow_up_questions = [
         "What are the specific applications in molecular simulation?",
         "Which pharmaceutical companies are investing in this technology?",
@@ -49,15 +50,11 @@ async def main():
         "Generate a comprehensive summary with key findings"
     ]
 
-    step_count = 2
     for question in follow_up_questions:
-        if x.is_complete:
-            break
-
         print(f"💬 User: {question}")
         response = await x.chat(question)
 
-        print(f"🔍 Research Step {step_count}:\n{response.text}\n")
+        print(f"🔍 Research Update:\n{response.text}\n")
 
         if response.preserved_steps:
             print(f"   ✅ Preserved {len(response.preserved_steps)} completed research steps")
@@ -65,7 +62,6 @@ async def main():
             print(f"   🔄 Updated {len(response.regenerated_steps)} research steps")
 
         print("-" * 60)
-        step_count += 1
 
     print("✅ Research completed!")
     print(f"📁 Check workspace for research artifacts: {x.workspace.get_workspace_path()}")

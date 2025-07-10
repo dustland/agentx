@@ -41,10 +41,11 @@ Use the write_file tool to save this file directly in the workspace.
         print(f"📋 Task ID: {x.task_id}")
         print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
 
-        # Chat with X to create the file
+        # Execute the task autonomously
         print("\n🤖 X: Starting file creation...")
-        response = await x.chat(prompt)
-        print(f"🤖 X: {response.text}")
+        while not x.is_complete:
+            response = await x.step()
+            print(f"🤖 X: {response}")
 
         # Check if file was created
         workspace_path = x.workspace.get_workspace_path()

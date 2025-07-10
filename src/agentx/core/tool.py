@@ -1,12 +1,17 @@
 """
 Tool component for function calling and code execution.
+
+This is the single canonical source for all tool-related models and functionality.
 """
 
 import asyncio
 import inspect
 import time
+import json
 from typing import Dict, List, Optional, Any, Callable, get_type_hints
 from dataclasses import dataclass
+from datetime import datetime
+from abc import ABC, abstractmethod
 
 from pydantic import BaseModel, Field, create_model
 
@@ -14,6 +19,22 @@ from ..utils.logger import get_logger
 from ..utils.id import generate_short_id
 
 logger = get_logger(__name__)
+
+
+# ============================================================================
+# TOOL DEFINITION MODELS
+# ============================================================================
+
+class ToolFunction(BaseModel):
+    """A single callable function within a tool."""
+    name: str
+    description: str
+    parameters: Dict[str, Any]  # JSON schema
+    return_description: str = ""
+    function: Optional[Callable] = Field(default=None, exclude=True)
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ToolCall(BaseModel):
@@ -26,19 +47,142 @@ class ToolCall(BaseModel):
     retry_policy: Optional[Dict[str, Any]] = None
 
 
-@dataclass
-class ToolResult:
-    """Result of tool execution."""
+class ToolResult(BaseModel):
+    """
+    Canonical tool execution result model.
+
+    This is the single source of truth for tool execution results across the framework.
+    """
+    # Core execution results
     success: bool
-    result: Any
+    result: Any = None
     error: Optional[str] = None
     execution_time: float = 0.0
-    metadata: Dict[str, Any] = None
 
-    def __post_init__(self):
-        if self.metadata is None:
-            self.metadata = {}
+    # Execution metadata
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+    timestamp: Optional[str] = None  # ISO format string for JSON serialization
 
+    # Tool call context (for messaging)
+    tool_call_id: Optional[str] = None
+    tool_name: Optional[str] = None
+
+    # Artifacts and resources (for file operations)
+    artifacts: List[str] = Field(default_factory=list)
+    resource_usage: Optional[Dict[str, Any]] = None
+    exit_code: Optional[int] = None
+
+    def __init__(self, **data):
+        # Auto-generate timestamp if not provided
+        if 'timestamp' not in data or data['timestamp'] is None:
+            data['timestamp'] = datetime.now().isoformat()
+        super().__init__(**data)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return self.model_dump()
+
+    def to_json(self) -> str:
+        """Convert to JSON string."""
+        return self.model_dump_json()
+
+    @classmethod
+    def success_result(cls, result: Any, **kwargs) -> "ToolResult":
+        """Create a successful result."""
+        return cls(success=True, result=result, **kwargs)
+
+    @classmethod
+    def error_result(cls, error: str, **kwargs) -> "ToolResult":
+        """Create an error result."""
+        return cls(success=False, error=error, **kwargs)
+
+
+# ============================================================================
+# TOOL REGISTRY MODELS
+# ============================================================================
+
+class ToolRegistryEntry(BaseModel):
+    """Entry in the tool registry."""
+    tool: "Tool" = Field(exclude=True)  # Don't serialize the tool instance
+    callable_func: Callable = Field(exclude=True)  # Don't serialize the callable
+    pydantic_model: Optional[BaseModel] = Field(default=None, exclude=True)
+    name: str
+    description: str
+    tool_schema: Dict[str, Any]  # Renamed from 'schema' to avoid shadowing BaseModel.schema()
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+# ============================================================================
+# TOOL EXECUTION CONTEXT MODELS
+# ============================================================================
+
+class ToolExecutionContext(BaseModel):
+    """Context information for tool execution."""
+    task_id: str
+    agent_name: Optional[str] = None
+    workspace_path: Optional[str] = None
+    execution_id: str = Field(default_factory=lambda: f"exec_{generate_short_id()}")
+    started_at: datetime = Field(default_factory=datetime.now)
+    timeout: Optional[int] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolExecutionStats(BaseModel):
+    """Statistics for tool execution."""
+    total_calls: int = 0
+    successful_calls: int = 0
+    failed_calls: int = 0
+    average_execution_time: float = 0.0
+    total_execution_time: float = 0.0
+    last_execution: Optional[datetime] = None
+    error_rate: float = 0.0
+
+
+# ============================================================================
+# JSON SERIALIZATION UTILITIES
+# ============================================================================
+
+def safe_json_serialize(obj: Any) -> Any:
+    """
+    Safely serialize complex objects to JSON-compatible format.
+    Handles dataclasses, Pydantic models, and other complex types.
+    """
+    if hasattr(obj, 'model_dump'):
+        # Pydantic model
+        return obj.model_dump()
+    elif hasattr(obj, '__dataclass_fields__'):
+        # Dataclass
+        from dataclasses import asdict
+        return asdict(obj)
+    elif hasattr(obj, '__dict__'):
+        # Regular object with __dict__
+        return {k: safe_json_serialize(v) for k, v in obj.__dict__.items()
+                if not k.startswith('_')}
+    elif isinstance(obj, (list, tuple)):
+        return [safe_json_serialize(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: safe_json_serialize(v) for k, v in obj.items()}
+    elif isinstance(obj, (str, int, float, bool)) or obj is None:
+        return obj
+    else:
+        # Unknown type - this should be handled explicitly
+        raise ValueError(f"Cannot serialize object of type {type(obj).__name__}: {obj!r}")
+
+
+def safe_json_dumps(obj: Any, **kwargs) -> str:
+    """
+    Safely dump complex objects to JSON string.
+    Uses safe_json_serialize to handle complex types.
+    """
+    serializable_obj = safe_json_serialize(obj)
+    return json.dumps(serializable_obj, **kwargs)
+
+
+# ============================================================================
+# DECORATOR
+# ============================================================================
 
 def tool(description: str = "", return_description: str = ""):
     """
@@ -84,7 +228,9 @@ def _create_pydantic_model_from_signature(func: Callable) -> Optional[BaseModel]
         return None
 
     # Create dynamic Pydantic model
-    model_name = f"{func.__name__.title()}Params"
+    # Handle Mock objects in tests that don't have __name__
+    func_name = getattr(func, '__name__', 'unknown_function')
+    model_name = f"{func_name.title()}Params"
     return create_model(model_name, **fields)
 
 
@@ -122,7 +268,7 @@ def _extract_all_param_descriptions(docstring: str) -> Dict[str, str]:
     return descriptions
 
 
-class Tool:
+class Tool(ABC):
     """Base class for tools that provide multiple callable methods for LLMs."""
 
     def __init__(self, name: str = ""):
@@ -184,177 +330,5 @@ class Tool:
 
         return schemas
 
-class ToolRegistry:
-    """
-    Global tool registry that manages all available tools and creates schemas.
-
-    This is a singleton that holds all registered tools and provides
-    schema generation for any subset of tool names.
-    """
-
-    _instance = None
-    _tools: Dict[str, tuple[Tool, Callable, Optional[BaseModel]]]
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ToolRegistry, cls).__new__(cls)
-            # Initialize state here to ensure it's done only once.
-            cls._instance._tools = {}
-        return cls._instance
-
-    def clear(self):
-        """Clears all registered tools. Primarily for testing."""
-        self._tools = {}
-
-    def register_tool(self, tool: Tool):
-        """Register a tool and all its callable methods."""
-        methods = tool.get_callable_methods()
-        schemas = tool.get_tool_schemas()
-
-        for tool_name, method in methods.items():
-            if tool_name in self._tools:
-                logger.warning(f"Tool '{tool_name}' is already registered. Overwriting.")
-
-            # Create a Pydantic model for the method's arguments for validation
-            pydantic_model = _create_pydantic_model_from_signature(method)
-            self._tools[tool_name] = (tool, method, pydantic_model)
-            logger.debug(f"Registered tool method: {tool_name}")
-
-    def get_tool_schemas(self, tool_names: List[str]) -> List[Dict[str, Any]]:
-        """Get detailed OpenAI function schemas for specified tools."""
-        schemas = []
-        for name in tool_names:
-            if name in self._tools:
-                tool_instance, method, _ = self._tools[name]
-                # We need to get the schema for the specific method.
-                # The Tool class get_tool_schemas returns a dict for all its methods.
-                all_schemas = tool_instance.get_tool_schemas()
-                if name in all_schemas:
-                    schemas.append(all_schemas[name])
-        return schemas
-
-    def get_tool(self, name: str) -> Optional[tuple[Tool, Callable, Optional[BaseModel]]]:
-        """Get a tool, method, and pydantic model by name (for executor use)."""
-        return self._tools.get(name)
-
-    def list_tools(self) -> List[str]:
-        """List all registered tool names."""
-        return list(self._tools.keys())
-
-    def execute_tool_sync(self, name: str, **kwargs) -> ToolResult:
-        """Synchronous wrapper for executing a tool. For use in non-async contexts."""
-        try:
-            # For environments where the top-level is sync, run async func
-            return asyncio.run(self.execute_tool(name, **kwargs))
-        except RuntimeError as e:
-            # If an event loop is already running, try to use it
-            if "cannot run loop while another loop is running" in str(e):
-                loop = asyncio.get_running_loop()
-                future = self.execute_tool(name, **kwargs)
-                return loop.run_until_complete(future)
-            raise e
-
-    async def execute_tool(self, name: str, **kwargs) -> ToolResult:
-        """Execute a tool by name with automatic parameter validation."""
-        start_time = time.time()
-        tool_info = self._tools.get(name)
-        if not tool_info:
-            return ToolResult(
-                success=False,
-                result=None,
-                error=f"Tool '{name}' not found"
-            )
-
-        tool_instance, method, pydantic_model = tool_info
-
-        # Validate parameters using Pydantic
-        if pydantic_model:
-            try:
-                validated_params = pydantic_model(**kwargs)
-                # Convert Pydantic model to dict for method call
-                kwargs = validated_params.model_dump()
-            except Exception as e:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    error=f"Parameter validation failed: {str(e)}"
-                )
-
-        return await method(**kwargs)
-
-
-# Global tool registry using the singleton pattern
-_tool_registry = ToolRegistry()
-
-
-def get_tool_registry() -> ToolRegistry:
-    """Get the global tool registry instance."""
-    return _tool_registry
-
-
-def register_tool(tool: Tool):
-    """Register a tool with the global registry."""
-    get_tool_registry().register_tool(tool)
-
-
-def get_tool_schemas(tool_names: List[str]) -> List[Dict[str, Any]]:
-    """Get tool schemas from the global registry."""
-    return get_tool_registry().get_tool_schemas(tool_names)
-
-
-def get_tool(name: str) -> Optional[tuple[Tool, Callable, Optional[BaseModel]]]:
-    """Get a tool from the global registry."""
-    return get_tool_registry().get_tool(name)
-
-
-def list_tools() -> List[str]:
-    """List all registered tool names."""
-    return get_tool_registry().list_tools()
-
-
-async def execute_tool(name: str, **kwargs) -> ToolResult:
-    """Execute a tool from the global registry."""
-    return await get_tool_registry().execute_tool(name, **kwargs)
-
-
-def print_available_tools():
-    """Prints a formatted table of all available tools."""
-    registry = get_tool_registry()
-    tool_list = registry.list_tools()
-
-    if not tool_list:
-        print("No tools are registered.")
-        return
-
-    print(f"{'Tool Name':<30} {'Description':<70}")
-    print("-" * 100)
-
-    for tool_name in sorted(tool_list):
-        _, method, _ = registry.get_tool(tool_name)
-        description = getattr(method, '_tool_description', 'No description available.').splitlines()[0]
-        print(f"{tool_name:<30} {description:<70}")
-
-
-def validate_agent_tools(tool_names: List[str]) -> tuple[List[str], List[str]]:
-    """
-    Validate a list of tool names against the registry.
-
-    Returns:
-        A tuple of (valid_tools, invalid_tools)
-    """
-    registry = get_tool_registry()
-    available_tools = registry.list_tools()
-
-    valid = [name for name in tool_names if name in available_tools]
-    invalid = [name for name in tool_names if name not in available_tools]
-
-    return valid, invalid
-
-
-def suggest_tools_for_agent(agent_name: str, agent_description: str = "") -> List[str]:
-    """
-    Suggest a list of relevant tools for a new agent.
-    (This is a placeholder for a more intelligent suggestion mechanism)
-    """
-    # For now, just return a few basic tools
-    return ['read_file', 'write_file', 'list_directory']
+# Note: ToolRegistry implementation is in agentx.tool.registry
+# This module only contains the core tool models and functions
