@@ -25,31 +25,56 @@ async def main():
     print(f"🎯 Research Task: {research_prompt[:100]}...")
     print("-" * 60)
 
-    # Start the research task and get task executor
-    task_executor = await start_task(
+    # Start the research task with XAgent - creates a conversational interface
+    x = await start_task(
         prompt=research_prompt,
         config_path="config/simple_research.yaml"
     )
 
-    print(f"📋 Task ID: {task_executor.task.task_id}")
-    print(f"📁 Workspace: {task_executor.workspace.get_workspace_path()}")
+    print(f"📋 Task ID: {x.task_id}")
+    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
     print("-" * 60)
 
-    # Execute the task step by step with a maximum number of steps
-    max_steps = 5  # Allow up to 5 conversation steps
-    step_count = 0
+    # Chat with X to execute the research
+    print("🤖 X: Starting quantum computing research...")
+    response = await x.chat(research_prompt)
+    print(f"🔍 Research Step 1:\n{response.text}\n")
+    print("-" * 60)
 
-    while step_count < max_steps:
-        response = await task_executor.step()
-        if not response.strip():  # Empty response means task is done
+    # Continue the research with follow-up questions
+    follow_up_questions = [
+        "What are the specific applications in molecular simulation?",
+        "Which pharmaceutical companies are investing in this technology?",
+        "What are the current limitations and challenges?",
+        "Generate a comprehensive summary with key findings"
+    ]
+
+    step_count = 2
+    for question in follow_up_questions:
+        if x.is_complete:
             break
 
-        print(f"🔍 Research Step {step_count + 1}:\n{response}\n")
+        print(f"💬 User: {question}")
+        response = await x.chat(question)
+
+        print(f"🔍 Research Step {step_count}:\n{response.text}\n")
+
+        if response.preserved_steps:
+            print(f"   ✅ Preserved {len(response.preserved_steps)} completed research steps")
+        if response.regenerated_steps:
+            print(f"   🔄 Updated {len(response.regenerated_steps)} research steps")
+
         print("-" * 60)
         step_count += 1
 
-    # Mark task as complete
-    task_executor.task.complete()
+    print("✅ Research completed!")
+    print(f"📁 Check workspace for research artifacts: {x.workspace.get_workspace_path()}")
+
+    # Demonstrate conversational capabilities
+    print("\n💬 You can continue chatting with X:")
+    print("   Example: x.chat('Focus more on the timeline for commercial applications')")
+    print("   Example: x.chat('Compare this with classical computing approaches')")
+    print("   Example: x.chat('Create a visual diagram of the quantum advantage')")
 
 if __name__ == "__main__":
     asyncio.run(main())

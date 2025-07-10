@@ -189,12 +189,12 @@ def _generate_main_py(project_name: str, template: str) -> str:
 {project_name} - AgentX {template.title()} Project
 
 This project was generated using AgentX bootstrap with the {template} template.
-It demonstrates the Vibe-X philosophy of human-AI collaboration.
+It demonstrates the Vibe-X philosophy of human-AI collaboration using XAgent.
 """
 
 import asyncio
 from pathlib import Path
-from agentx.core.task import TaskExecutor
+from agentx import start_task
 
 
 async def main():
@@ -210,16 +210,12 @@ async def main():
         print("Make sure you're running from the project root directory.")
         return
 
-    # Start task
-    task_executor = TaskExecutor(config_path)
-    task_id = await task_executor.start_task()
-
-    print(f"📋 Task ID: {{task_id}}")
-    print(f"📁 Workspace: {{task_executor.task.workspace_path}}")
-    print("\\n🤖 AI agents are ready! What would you like to work on?")
+    print("🤖 AI agents are ready! What would you like to work on?")
 
     try:
-        # Interactive session
+        # Interactive session with XAgent
+        x = None
+
         while True:
             user_input = input("\\n👤 You: ").strip()
 
@@ -229,16 +225,30 @@ async def main():
             if not user_input:
                 continue
 
-            print("\\n🤖 AI:")
-            async for chunk in task_executor.step(user_input, stream=True):
-                if chunk.get('type') == 'agent_response':
-                    print(chunk.get('content', ''), end='', flush=True)
-            print()  # New line after streaming
+            # Start XAgent on first input
+            if x is None:
+                print("\\n🚀 Starting your AI team...")
+                x = await start_task(user_input, str(config_path))
+                print(f"📋 Task ID: {{x.task_id}}")
+                print(f"📁 Workspace: {{x.workspace.get_workspace_path()}}")
+                print()
+
+            # Chat with X
+            print("\\n🤖 X:")
+            response = await x.chat(user_input)
+            print(response.text)
+
+            # Show work preservation info
+            if response.preserved_steps:
+                print(f"\\n   ✅ Preserved {{len(response.preserved_steps)}} completed steps")
+            if response.regenerated_steps:
+                print(f"   🔄 Updated {{len(response.regenerated_steps)}} steps")
 
     except KeyboardInterrupt:
         print("\\n\\n👋 Session ended. Your work is saved in the workspace!")
 
-    print(f"\\n📁 Check your results in: {{task_executor.task.workspace_path}}")
+    if x:
+        print(f"\\n📁 Check your results in: {{x.workspace.get_workspace_path()}}")
 
 
 if __name__ == "__main__":

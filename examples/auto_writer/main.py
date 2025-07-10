@@ -13,7 +13,7 @@ from agentx import start_task
 async def main():
     """
     This is the main entry point for the auto_writer example.
-    It uses start_task to get access to the workspace and artifacts.
+    It uses the new XAgent interface for conversational task management.
     """
     # Get the absolute path to the configuration file
     script_dir = Path(__file__).parent
@@ -26,28 +26,40 @@ async def main():
     print(f"📋 Task: {prompt[:100]}...")
     print("-" * 80)
 
-    # Start the task (creates executor and initializes conversation in one call)
-    executor = await start_task(prompt, str(config_path))
+    # Start the task with XAgent - creates a conversational interface
+    x = await start_task(prompt, str(config_path))
 
-    print(f"📋 Task ID: {executor.task.task_id}")
-    print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
+    print(f"📋 Task ID: {x.task_id}")
+    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
     print("-" * 80)
 
-    # Execute the task step by step
-    while not executor.is_complete:
-        response = await executor.step()
+    # Chat with X to execute the task
+    print("🤖 X: Starting the comprehensive report generation...")
+    response = await x.chat(prompt)
+    print(f"🤖 X: {response.text[:200]}...")
 
-        # Print agent responses with better formatting
-        if response.strip():
-            print(f"🤖 Agent Response: {response[:200]}...")
+    if response.preserved_steps:
+        print(f"   ✅ Preserved {len(response.preserved_steps)} completed steps")
+    if response.regenerated_steps:
+        print(f"   🔄 Regenerated {len(response.regenerated_steps)} steps")
+
+    print("-" * 40)
+
+    # Continue chatting until the task is complete
+    while not x.is_complete:
+        # Let X continue with the next steps
+        response = await x.chat("Continue with the next step")
+
+        if response.text.strip():
+            print(f"🤖 X: {response.text[:200]}...")
             print("-" * 40)
 
     print("\n✅ TASK COMPLETE")
-    print(f"📁 Workspace: {executor.workspace.get_workspace_path()}")
-    print(f"📋 Task ID: {executor.task.task_id}")
+    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📋 Task ID: {x.task_id}")
 
     # Check for artifacts in the workspace
-    workspace_path = executor.workspace.get_workspace_path()
+    workspace_path = x.workspace.get_workspace_path()
     artifacts_path = workspace_path / "artifacts"
 
     if artifacts_path.exists():
@@ -63,6 +75,12 @@ async def main():
 
     print(f"\n🔗 Full workspace path: {workspace_path}")
     print("📁 Check the workspace directory for the generated report and artifacts.")
+
+    # Demonstrate conversational interaction
+    print("\n💬 You can also chat with X to modify the report:")
+    print("   Example: x.chat('Make the report more visual with charts')")
+    print("   Example: x.chat('Add a section about security trends')")
+    print("   Example: x.chat('Generate an executive summary')")
 
 if __name__ == "__main__":
     asyncio.run(main())

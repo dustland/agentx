@@ -32,7 +32,7 @@ const basePath =
 
 // Simple typewriter for header - only essential animation
 const TypewriterText = () => {
-  const words = ["Writing", "Coding", "Operating"];
+  const words = ["Writing", "Coding", "Ops"];
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -68,7 +68,7 @@ const TypewriterText = () => {
   );
 };
 
-// Clean bootstrap tabs
+// Enhanced bootstrap tabs with example code
 const BootstrapTabs = () => {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -78,29 +78,89 @@ const BootstrapTabs = () => {
       title: "Writing",
       icon: PenTool,
       description: "Research → Draft → Edit workflow",
-      command: "agentx init --template writing",
-      agents: ["Researcher", "Writer", "Editor"],
+      command: "agentx init my-research --template writing",
+      agents: ["Researcher", "Writer", "Reviewer", "Web Designer"],
+      exampleCode: `import asyncio
+from agentx import start_task
+
+async def main():
+    # Start XAgent with your research team
+    x = await start_task(
+        "Write a comprehensive report on AI trends in 2025",
+        "config/team.yaml"
+    )
+
+    # Chat with your AI team
+    response = await x.chat("Focus on business applications")
+    print(f"X: {response.text}")
+
+    # Iterate and refine
+    await x.chat("Add more visual charts and graphs")
+    await x.chat("Create an executive summary")
+
+if __name__ == "__main__":
+    asyncio.run(main())`,
     },
     {
       id: "coding",
       title: "Coding",
       icon: Code,
       description: "Plan → Build → Test workflow",
-      command: "agentx init --template coding",
-      agents: ["Architect", "Developer", "Tester"],
+      command: "agentx init my-app --template coding",
+      agents: ["Planner", "Developer", "Reviewer"],
+      exampleCode: `import asyncio
+from agentx import start_task
+
+async def main():
+    # Start XAgent with your development team
+    x = await start_task(
+        "Build a REST API for a todo application",
+        "config/team.yaml"
+    )
+
+    # Chat with your development team
+    response = await x.chat("Use FastAPI and SQLite")
+    print(f"X: {response.text}")
+
+    # Continue development
+    await x.chat("Add user authentication")
+    await x.chat("Write comprehensive tests")
+
+if __name__ == "__main__":
+    asyncio.run(main())`,
     },
     {
       id: "operating",
       title: "Ops",
       icon: Cog,
       description: "Analyze → Execute → Monitor workflow",
-      command: "agentx init --template operating",
+      command: "agentx init my-automation --template operating",
       agents: ["Analyst", "Operator", "Monitor"],
+      exampleCode: `import asyncio
+from agentx import start_task
+
+async def main():
+    # Start XAgent with your operations team
+    x = await start_task(
+        "Automate daily server health monitoring",
+        "config/team.yaml"
+    )
+
+    # Chat with your ops team
+    response = await x.chat("Check disk usage and memory")
+    print(f"X: {response.text}")
+
+    # Add monitoring
+    await x.chat("Set up alerts for high CPU usage")
+    await x.chat("Generate a daily status report")
+
+if __name__ == "__main__":
+    asyncio.run(main())`,
     },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-700 mb-8">
         {workflows.map((workflow, index) => (
@@ -121,38 +181,94 @@ const BootstrapTabs = () => {
 
       {/* Tab Content */}
       <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              {workflows[activeTab].title} Workflow
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
-              {workflows[activeTab].description}
-            </p>
-            <div className="space-y-2">
-              <p className="text-sm text-slate-500 dark:text-slate-500">
-                Agents:
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Left Column - Description and Setup */}
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                {workflows[activeTab].title} Workflow
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
+                {workflows[activeTab].description}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {workflows[activeTab].agents.map((agent) => (
-                  <span
-                    key={agent}
-                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded"
-                  >
-                    {agent}
-                  </span>
-                ))}
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Your AI Team:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {workflows[activeTab].agents.map((agent) => (
+                    <span
+                      key={agent}
+                      className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full"
+                    >
+                      {agent}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* CLI Command */}
+            <div>
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Get started with one command:
+              </p>
+              <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 font-mono text-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-slate-400" />
+                  <span className="text-slate-400">Terminal</span>
+                </div>
+                <code className="text-green-400">
+                  {workflows[activeTab].command}
+                </code>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">
+                What you get:
+              </p>
+              <ul className="space-y-1">
+                <li>• Complete project structure</li>
+                <li>• Pre-configured AI agents</li>
+                <li>• Ready-to-run main.py</li>
+                <li>• Cost-optimized model selection</li>
+              </ul>
+            </div>
           </div>
+
+          {/* Right Column - Generated Code */}
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-500 mb-2">
-              Get started:
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Generated main.py (with XAgent):
             </p>
-            <div className="bg-slate-900 dark:bg-slate-900 rounded p-3 font-mono text-sm">
-              <code className="text-green-400">
-                {workflows[activeTab].command}
-              </code>
+            <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <Code className="w-4 h-4 text-slate-400" />
+                <span className="text-slate-400 text-sm">main.py</span>
+              </div>
+              <pre className="text-xs text-slate-300 leading-relaxed">
+                <code>{workflows[activeTab].exampleCode}</code>
+              </pre>
+            </div>
+
+            {/* Key Features */}
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
+                XAgent Features:
+              </p>
+              <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                <li>
+                  • Natural conversation with{" "}
+                  <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">
+                    x.chat()
+                  </code>
+                </li>
+                <li>• Intelligent work preservation</li>
+                <li>• Real-time plan adjustment</li>
+                <li>• Multi-agent orchestration</li>
+              </ul>
             </div>
           </div>
         </div>

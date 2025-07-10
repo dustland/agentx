@@ -13,7 +13,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from agentx import execute_task
+from agentx import start_task
 
 
 async def main():
@@ -27,28 +27,55 @@ async def main():
     print("🎬 Starting collaboration...\n")
 
     try:
-        # Execute with streaming - need to await the generator first
-        stream_generator = await execute_task(prompt, config_path, stream=True)
-        async for update in stream_generator:
-            update_type = update.get("type")
+        # Start task with XAgent - creates a conversational interface
+        x = await start_task(prompt, config_path)
 
-            if update_type == "content":
-                print(update["content"], end="", flush=True)
+        print(f"📋 Task ID: {x.task_id}")
+        print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+        print("-" * 60)
 
-            elif update_type == "handoff":
-                from_agent = update["from_agent"]
-                to_agent = update["to_agent"]
-                print(f"\n\n🔄 HANDOFF: {from_agent} → {to_agent}\n")
+        # Chat with X to execute the team collaboration
+        print("🤖 X: Starting writer + reviewer collaboration...")
+        response = await x.chat(prompt)
+        print(f"🤖 X: {response.text}")
 
-            elif update_type == "routing_decision":
-                if update["action"] == "complete":
-                    print(f"\n\n🎉 Task completed!")
-                    break
+        if response.preserved_steps:
+            print(f"   ✅ Preserved {len(response.preserved_steps)} completed collaboration steps")
+        if response.regenerated_steps:
+            print(f"   🔄 Regenerated {len(response.regenerated_steps)} collaboration steps")
 
-        print(f"\n\n✅ Collaboration finished!")
+        print("-" * 60)
+
+        # Demonstrate follow-up collaboration
+        follow_ups = [
+            "Make the article more engaging with personal anecdotes",
+            "Add statistics about remote work productivity",
+            "Create a summary section with key takeaways"
+        ]
+
+        for question in follow_ups:
+            print(f"💬 User: {question}")
+            response = await x.chat(question)
+            print(f"🤖 X: {response.text}")
+
+            if response.preserved_steps:
+                print(f"   ✅ Preserved {len(response.preserved_steps)} completed steps")
+
+            print("-" * 60)
+
+        print("✅ Team collaboration completed!")
+        print(f"📁 Check workspace for collaboration artifacts: {x.workspace.get_workspace_path()}")
+
+        # Demonstrate conversational team capabilities
+        print("\n💬 You can continue chatting with the team:")
+        print("   Example: x.chat('Rewrite this for a technical audience')")
+        print("   Example: x.chat('Create a presentation version')")
+        print("   Example: x.chat('Add a section about challenges of remote work')")
 
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

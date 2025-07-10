@@ -35,31 +35,53 @@ async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
 
     try:
-        # Start task (creates executor and initializes conversation in one call)
-        executor = await start_task(user_prompt, config_path)
+        # Start task with XAgent - creates a conversational interface
+        x = await start_task(user_prompt, config_path)
 
         # Register custom weather tool
         weather_tool = WeatherTool()
-        executor.tool_manager.register_tool(weather_tool)
+        x.tool_manager.register_tool(weather_tool)
 
         # Debug: Check what tools are registered
-        print(f"🔧 Registered tools: {executor.tool_manager.list_tools()}")
+        print(f"🔧 Registered tools: {x.tool_manager.list_tools()}")
 
         # Get the agent to check tool schemas
-        agent = list(executor.agents.values())[0]
+        agent = list(x.agents.values())[0]
         tool_schemas = agent.get_tools_json()
         print(f"🔧 Agent has access to {len(tool_schemas)} tools")
 
         print(f"🎬 Processing: {user_prompt}")
         print()
 
-        # Execute the task step by step
-        while not executor.is_complete():
-            response = await executor.step()
-            print(f"🤖 Assistant: {response}")
+        # Chat with X to get weather information
+        response = await x.chat(user_prompt)
+        print(f"🤖 X: {response.text}")
+        print("-" * 60)
+
+        # Demonstrate follow-up questions
+        follow_ups = [
+            "Which city has the best weather right now?",
+            "What's the temperature difference between the warmest and coldest city?",
+            "Can you create a summary table of all the weather data?"
+        ]
+
+        for question in follow_ups:
+            print(f"💬 User: {question}")
+            response = await x.chat(question)
+            print(f"🤖 X: {response.text}")
+
+            if response.preserved_steps:
+                print(f"   ✅ Preserved {len(response.preserved_steps)} completed tool calls")
+
             print("-" * 60)
 
-        print("✅ Task completed successfully!")
+        print("✅ Tool chat example completed successfully!")
+
+        # Demonstrate conversational capabilities
+        print("\n💬 You can continue chatting with X:")
+        print("   Example: x.chat('Get weather for Paris and Berlin too')")
+        print("   Example: x.chat('What should I wear in each city?')")
+        print("   Example: x.chat('Which cities are good for outdoor activities?')")
 
     except Exception as e:
         print(f"❌ Error: {e}")
