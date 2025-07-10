@@ -9,140 +9,259 @@ description: "The core design and principles for coordinating autonomous agents 
 
 The AgentX orchestration model is designed to coordinate multiple autonomous agents to achieve complex goals reliably and predictably. The architecture is built on three core principles:
 
-1.  **Separation of Concerns**: The architecture strictly separates the high-level coordination logic from the specific task execution. The `Orchestrator` handles coordination, while individual `Agents` handle execution. This prevents creative agents from derailing the high-level plan.
-2.  **Plan-Driven Execution**: Every task is driven by a structured, machine-readable `Plan`. The `Plan` is the single source of truth for the Orchestrator, defining the sequence of tasks, their dependencies, and their goals. This ensures the process is predictable, repeatable, and resumable.
-3.  **Autonomous Agents**: Agents are independent, expert problem-solvers. They are given a specific task from the Plan and the autonomy to use their configured tools to achieve it. The framework provides them with resources (`Workspace`, `Memory`) but does not dictate the specifics of their internal process.
+1.  **Unified Conversational Interface**: Users interact with a single entity (`XAgent`) that manages the entire multi-agent team behind the scenes. This provides a natural, chat-like experience while maintaining sophisticated orchestration capabilities.
+2.  **Plan-Driven Execution**: Every task is driven by a structured, machine-readable `Plan`. The `Plan` is the single source of truth for XAgent, defining the sequence of tasks, their dependencies, and their goals. This ensures the process is predictable, repeatable, and resumable.
+3.  **Autonomous Specialist Agents**: Specialist agents are independent, expert problem-solvers. They are given specific tasks from the Plan and the autonomy to use their configured tools to achieve them. The framework provides them with resources (`Workspace`, `Memory`) but does not dictate the specifics of their internal process.
 
 ## 2. Core Architecture Components
 
-The architecture consists of several key components that work together to manage and execute tasks.
+The architecture centers around XAgent as the unified interface that coordinates specialist agents to execute complex tasks.
 
 ```mermaid
 graph TD
-    subgraph "Core Architecture"
-        Orchestrator -- Manages --> Plan
-        Orchestrator -- Provides --> Workspace
-        Orchestrator -- Provides --> Memory
-        Orchestrator -- "Uses for planning & routing" --> Brain
+    subgraph "User Interface"
+        User -- "chat(message)" --> XAgent
+        XAgent -- "XAgentResponse" --> User
     end
 
-    subgraph "Execution Units"
-        Agent1
-        Agent2
-        Tool1
+    subgraph "XAgent Orchestration"
+        XAgent -- "Manages" --> Plan
+        XAgent -- "Provides" --> Workspace
+        XAgent -- "Provides" --> Memory
+        XAgent -- "Uses for planning & routing" --> Brain
     end
 
-    Orchestrator -- "Dispatches Task" --> Agent1
-    Agent1 -- "Uses" --> Tool1
+    subgraph "Specialist Agents"
+        SpecialistAgent1["Writer Agent"]
+        SpecialistAgent2["Researcher Agent"]
+        SpecialistAgent3["Reviewer Agent"]
+    end
+
+    subgraph "Tools & Resources"
+        Tool1["File Tools"]
+        Tool2["Web Tools"]
+        Tool3["Memory Tools"]
+    end
+
+    XAgent -- "Dispatches Tasks" --> SpecialistAgent1
+    XAgent -- "Dispatches Tasks" --> SpecialistAgent2
+    XAgent -- "Dispatches Tasks" --> SpecialistAgent3
+    SpecialistAgent1 -- "Uses" --> Tool1
+    SpecialistAgent2 -- "Uses" --> Tool2
+    SpecialistAgent3 -- "Uses" --> Tool3
     Tool1 -- "Writes to" --> Workspace
-    Agent1 -- "Accesses" --> Memory
-    Agent1 -- "Signals Completion" --> Orchestrator
-
+    Tool2 -- "Writes to" --> Workspace
+    Tool3 -- "Updates" --> Memory
 ```
 
-### 2.1. The Orchestrator: The System's Process Manager
+### 2.1. XAgent: The Unified Conversational Interface
 
-The Orchestrator is the central process manager of the system. It is a deterministic, non-creative component whose sole responsibility is to execute the `Plan` with unwavering precision. It operates as a state machine, moving the system from one task to the next according to the instructions in the `Plan`. For any task requiring language understanding, such as initial plan generation or agent routing, it delegates the "thinking" to a dedicated `Brain` component.
+XAgent is the single point of contact that users interact with to manage complex multi-agent tasks. It combines the execution context management of the former TaskExecutor with the strategic coordination capabilities of the former Orchestrator into one conversational interface.
 
-Its core logic is a persistent loop that methodically executes the plan. This loop is the engine that drives the entire system forward.
+**Key Capabilities:**
 
-1.  **Initialize and Generate Plan (If Needed)**: The loop begins. The Orchestrator's first action is to ensure a plan exists. It looks for the `plan.json` file in the workspace.
+- **Rich Message Handling**: Supports text, attachments, images, and other multimedia content
+- **LLM-Driven Plan Adjustment**: Intelligently determines which tasks need regeneration while preserving completed work
+- **Conversational Task Management**: Users can chat naturally to request changes, ask questions, or provide guidance
+- **Automatic Workspace Management**: Handles file storage, artifact management, and workspace organization
 
-    - If `plan.json` is found, it is loaded into memory.
-    - If `plan.json` is **not** found, the Orchestrator executes a **one-time, internal subroutine to generate the plan**. This routine uses its `Brain` instance to translate the initial high-level user goal into the structured `plan.json` format. The resulting file is saved, and the loop proceeds.
+**Core Conversation Loop:**
 
-2.  **Identify Next Actionable Task**: It scans the list of tasks in the plan to find the next task to execute. A task is considered actionable if its status is `pending` and all of its dependencies (as listed in its `dependencies` array) have a status of `completed`.
+1. **Message Analysis**: When a user sends a message, XAgent uses its Brain to analyze the intent:
 
-3.  **Select Agent (and Route If Needed)**: The Orchestrator identifies which agent must execute the task.
+   - Is this a plan adjustment request? ("regenerate the report with more visual appeal")
+   - Is this an informational query? ("what sources did you use?")
+   - Is this a new task or continuation?
 
-    - If the task object in the plan has a specific `agent` assigned, the Orchestrator selects that agent.
-    - If the `agent` field is null, the Orchestrator executes an **internal routing subroutine**. This routine uses its `Brain` instance to match the task description against the capabilities of all available agents and selects the most suitable one.
+2. **Impact Assessment**: For plan adjustments, XAgent determines:
 
-4.  **Prepare Task Briefing**: The Orchestrator assembles a complete and isolated set of instructions for the selected agent. This briefing contains:
+   - Which completed tasks can be preserved
+   - Which tasks need regeneration
+   - What new tasks might be needed
 
-    - The specific `task` description and `goal` from the plan.
-    - Access handles to the `Workspace` and `Memory`.
-    - The specific list of `tools` the agent is permitted to use for this task.
+3. **Intelligent Execution**: XAgent coordinates specialist agents to fulfill the request while minimizing rework
 
-5.  **Dispatch and Monitor**: The Orchestrator sends the briefing to the agent and immediately updates the task's status to `in_progress` in its in-memory representation of the plan. It then waits for the agent to signal that it has finished.
+4. **Response Generation**: Returns an `XAgentResponse` with the results, preserved work details, and execution metadata
 
-6.  **Process Completion Signal**: When the agent completes its work, it returns a status signal (`success` or `failure`).
+### 2.2. The Plan-Driven Orchestration Loop
 
-    - **On Success**: The Orchestrator updates the task's status to `completed`.
-    - **On Failure**: It updates the status to `failed` and immediately consults the task's `on_failure` policy (`halt`, `escalate_to_user`, `proceed`) to determine the next step.
+XAgent maintains the same robust 8-step orchestration loop, now integrated into its conversational interface:
 
-7.  **Persist State**: After processing the completion signal, the Orchestrator writes the entire updated plan, including the new task status, back to the `plan.json` file on disk. **This is the critical step that ensures resumability.** If the system is stopped, it can be restarted, and the Orchestrator will simply load the `plan.json` and know exactly where it left off.
+1.  **Initialize and Generate Plan (If Needed)**: When starting a new task or when no plan exists, XAgent generates a structured plan using its Brain.
 
-8.  **Continue or Terminate**: The Orchestrator checks if there are any more actionable tasks. If so, the loop repeats from Step 2. If all tasks are `completed` (or the process has been halted), the Orchestrator terminates the execution.
+2.  **Identify Next Actionable Task**: Scans the plan to find tasks that are ready to execute (status is `pending` and all dependencies are `completed`).
 
-### 2.2. The Plan
+3.  **Select Specialist Agent**: Assigns the task to the most appropriate specialist agent based on the task requirements and agent capabilities.
 
-The **Plan** is a declarative data structure, typically defined in a `plan.json` file, that outlines all the steps required to achieve a high-level goal.
+4.  **Prepare Task Briefing**: Creates focused instructions for the specialist agent, including the specific task goal and available tools.
+
+5.  **Dispatch and Monitor**: Sends the task to the specialist agent and updates the plan status to `in_progress`.
+
+6.  **Process Completion Signal**: Updates the plan based on the agent's success or failure response.
+
+7.  **Persist State**: Saves the updated plan to ensure resumability.
+
+8.  **Continue or Respond**: Either continues with the next task or returns the results to the user.
+
+### 2.3. User Interaction Patterns
+
+XAgent supports several natural interaction patterns:
+
+#### **Initial Task Creation**
+
+```python
+x = await start_task("Create a market research report on AI trends", "config/team.yaml")
+```
+
+#### **Simple Conversation**
+
+```python
+response = await x.chat("Update the report with more visual charts")
+print(response.text)
+```
+
+#### **Rich Messages with Attachments**
+
+```python
+from agentx.core.message import Message, TextPart, ArtifactPart
+
+response = await x.chat(Message(parts=[
+    TextPart("Use this style guide for the report"),
+    ArtifactPart(artifact=style_guide_pdf)
+]))
+```
+
+#### **Informational Queries**
+
+```python
+response = await x.chat("What sources did you use for the market analysis?")
+response = await x.chat("Show me the current progress")
+```
+
+#### **Plan Adjustments**
+
+```python
+# XAgent preserves completed research but regenerates the writing
+response = await x.chat("Regenerate the report to focus on enterprise applications")
+print(f"Preserved: {response.preserved_steps}")
+print(f"Regenerated: {response.regenerated_steps}")
+```
+
+### 2.4. Intelligent Work Preservation
+
+One of XAgent's key innovations is its ability to preserve expensive work when users request changes:
+
+**LLM-Driven Impact Analysis**: When a user requests changes, XAgent's Brain analyzes:
+
+- Which completed tasks are still relevant
+- Which tasks need regeneration
+- What new tasks might be required
+
+**Selective Regeneration**: Only the affected tasks are reset to `pending` status, while unaffected completed work is preserved.
+
+**Examples**:
+
+- "Make the report more visual" → Preserves research, regenerates writing/formatting
+- "Add a section on regulations" → Preserves existing content, adds new research task
+- "Use different data sources" → Regenerates research but may preserve report structure
+
+### 2.5. The Plan
+
+The **Plan** remains a declarative data structure that outlines all steps required to achieve a goal:
+
+```json
+{
+  "goal": "Create a comprehensive market research report on AI trends",
+  "tasks": [
+    {
+      "id": "research_trends",
+      "name": "Research AI Market Trends",
+      "goal": "Gather current data on AI market trends and developments",
+      "agent": "researcher",
+      "dependencies": [],
+      "status": "completed"
+    },
+    {
+      "id": "write_report",
+      "name": "Write Market Report",
+      "goal": "Create a comprehensive report based on research findings",
+      "agent": "writer",
+      "dependencies": ["research_trends"],
+      "status": "pending"
+    }
+  ]
+}
+```
 
 **Key Characteristics:**
 
-- **Declarative**: It describes _what_ needs to be done, not _how_ to do it.
-- **Structured**: It uses a formal Pydantic schema (`agentx.core.plan.Plan`) for validation and reliability.
-- **Centrally Managed**: The plan is the single source of truth. The Orchestrator reads from it and writes status updates to it. It is never modified by agents.
-
-### 2.3. The Workspace: Storing Facts
-
-The Workspace is a standard file system that holds the tangible, objective artifacts of the project. It is the repository for the "nouns" of the project—the immutable facts that agents operate on.
-
-- **Purpose**: To store and retrieve raw data, source code, downloaded documents, and final reports.
-- **Access**: By a standard file path (e.g., `read_file('data/source.csv')`).
-
-### 2.4. The Memory: Storing Actionable Knowledge
-
-The Memory is a strategic store that guides the ongoing task toward a better result. It holds the "verb" of the project, answering the question, "Given the facts, what should we do next?"
-
-- **Purpose**: To store insights, derived conclusions, and, most importantly, knowledge about _how to proceed_.
-- **Access**: By concept or natural language query (e.g., `recall("What is the current strategy for analyzing the data?")`).
-
-An agent saves a raw data file (a fact) to the `Workspace`. After analyzing it, it saves its conclusion about how that fact should influence the next step (actionable knowledge) to the `Memory`.
-
-#### 2.4.1. Memory Update Protocol
-
-The `Memory` is updated from two primary sources: **Agents** (who contribute their findings) and the **Orchestrator** (which commits user directives).
-
-1.  **Agent-Driven Updates**: The primary responsibility for adding task-related knowledge to the `Memory` lies with the **Agents**.
-
-    - **During Task Execution**: When an agent discovers a critical piece of information, it should commit that fact to memory immediately.
-    - **Upon Task Completion**: As part of its final output, an agent should synthesize a summary of its work and its conclusions, and add this summary to the Memory.
-
-2.  **User-Driven Updates**: When a user interrupts a task with a new preference or strategic directive (e.g., "Don't use pie charts; use bar charts instead"), it is the **Orchestrator's** responsibility to commit this preference to `Memory` as a high-priority piece of actionable knowledge. This ensures the user's guidance is immediately available to all subsequent agents.
-
-### 2.5. User Interruption and Control
-
-To be effective, the system must support user intervention and control over long-running tasks. Rather than requiring tasks to run from start to finish without interruption, the architecture supports a **stop-and-resume** pattern.
-
-The key principle is **stateful resumability**: when a task is stopped, all progress is persisted to disk. When execution restarts, the system automatically detects the existing state and continues from where it left off.
-
-This enables several important user control patterns:
-
-- **Task Interruption**: Users can stop execution at any time, and the system preserves all progress.
-- **State Inspection**: Between runs, users can examine the workspace, plan status, and accumulated memory.
-- **Directive Injection**: Users can add new strategic guidance to Memory before resuming.
-- **Plan Modification**: Advanced users can manually edit the plan file to adjust the remaining work.
-
-This stateful approach makes the system truly interactive and directable without requiring complex real-time control interfaces.
+- **Declarative**: Describes what needs to be done, not how
+- **Structured**: Uses formal Pydantic schema for validation
+- **Dynamically Adjustable**: XAgent can modify plans based on user requests
+- **Persistent**: Saved to workspace for resumability
 
 ## 3. Error Handling and Recovery
 
-A robust system must anticipate and handle failure gracefully. Recovery strategies are encoded directly into the plan itself via an `on_failure` policy on each `Task`.
+XAgent maintains robust error handling with user-friendly responses:
 
-- **`halt` (Default)**: The Orchestrator stops all further execution immediately.
-- **`escalate_to_user`**: The Orchestrator pauses the execution and waits for direct user input.
-- **`proceed`**: The Orchestrator marks the task as failed, records the error, and moves on to the next independent task.
+- **Graceful Degradation**: When specialist agents fail, XAgent provides clear error messages and suggests next steps
+- **Automatic Retry**: For transient failures, XAgent can automatically retry tasks
+- **User Escalation**: For complex failures, XAgent asks the user for guidance
+- **State Preservation**: All progress is preserved even when errors occur
 
-## 4. Human-in-the-Loop: Requiring Approvals
+## 4. User Interruption and Control
 
-For critical steps, a task in the `Plan` can be flagged with `approval_required: true`. When a task with this flag is completed, the Orchestrator will pause and escalate to the user for a "go" or "no-go" decision before proceeding.
+XAgent provides natural interruption and control capabilities:
 
-## 5. Core Design Qualities
+**Real-Time Adjustment**: Users can send messages at any time to adjust the ongoing task:
 
-This architecture is designed to produce three key qualities:
+```python
+# While XAgent is working on a report
+response = await x.chat("Actually, focus on the healthcare sector instead")
+```
 
-- **Resumability**: Because the `Plan` is the persistent source of truth, a task can be stopped and restarted. The Orchestrator simply re-reads the plan and picks up where it left off.
-- **Interruptibility**: Through the stop-and-resume pattern, users can interrupt execution, inspect state, inject directives into `Memory`, and resume with full context preservation.
-- **Reliability**: Reliability stems from the Orchestrator's discipline. By treating the plan as a fixed set of instructions, it prevents creative agents from derailing the mission. This clear separation of concerns—creative execution by agents, disciplined coordination by the Orchestrator—is the cornerstone of the system.
+**Progress Monitoring**: Users can check status and ask questions:
+
+```python
+response = await x.chat("What's the current progress?")
+response = await x.chat("Show me what you've completed so far")
+```
+
+**Work Preservation**: When users request changes, XAgent intelligently preserves completed work while regenerating only what's necessary.
+
+## 5. Migration from TaskExecutor/Orchestrator
+
+The new XAgent architecture provides backward compatibility while offering a superior user experience:
+
+**Old Pattern**:
+
+```python
+executor = TaskExecutor(config_path)
+await executor.start(prompt)
+response = await executor.step()
+```
+
+**New Pattern**:
+
+```python
+x = await start_task(prompt, config_path)
+response = await x.chat("Continue with the task")
+```
+
+**Benefits of XAgent**:
+
+- Single conversational interface instead of separate executor/orchestrator
+- Rich message support with attachments
+- Intelligent work preservation during plan adjustments
+- Natural language interaction for all task management
+- Simplified API with more powerful capabilities
+
+## 6. Core Design Qualities
+
+The XAgent architecture maintains and enhances the key qualities:
+
+- **Resumability**: Plans are persisted and can be resumed across sessions
+- **Interruptibility**: Users can send messages at any time to adjust tasks
+- **Reliability**: Structured plans and specialist agent coordination ensure consistent results
+- **Conversational**: Natural chat interface makes complex multi-agent coordination accessible
+- **Intelligent**: LLM-driven plan adjustment minimizes wasted work while adapting to user needs

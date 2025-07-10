@@ -34,6 +34,7 @@ from agentx.utils.logger import (
     set_streaming_mode,
 )
 from agentx.config.team_loader import load_team_config
+from agentx.core.xagent import XAgent
 
 if TYPE_CHECKING:
     pass
@@ -375,14 +376,12 @@ async def start_task(
     config_path: str,
     task_id: Optional[str] = None,
     workspace_dir: Optional[Path] = None,
-) -> TaskExecutor:
+) -> XAgent:
     """
-    High-level function to start a task and return an initialized TaskExecutor.
+    High-level function to start a task and return an initialized XAgent.
 
-    This function is ideal for interactive scenarios where you want to:
-    - Execute conversations step by step
-    - Build interactive chat interfaces
-    - Have manual control over the conversation flow
+    This function creates an XAgent instance that users can chat with
+    to manage complex multi-agent tasks conversationally.
 
     Args:
         prompt: The initial task prompt
@@ -391,36 +390,38 @@ async def start_task(
         workspace_dir: Optional custom workspace directory
 
     Returns:
-        TaskExecutor: The initialized executor ready for step-by-step execution
+        XAgent: The initialized XAgent ready for conversational interaction
 
     Example:
         ```python
-        # Start a conversational task (one call does everything)
-        executor = await start_task(
-            prompt="Hello, how are you?",
+        # Start a conversational task
+        x = await start_task(
+            prompt="Create a market research report",
             config_path="config/team.yaml"
         )
 
-        # Get agent response
-        response = await executor.step()
-        print(f"Agent: {response}")
+        # Chat with X to manage the task
+        response = await x.chat("Update the report with more visual appeal")
+        print(response.text)
 
-        # Continue conversation
-        executor.add_user_message("Tell me a joke")
-        response = await executor.step()
-        print(f"Agent: {response}")
+        # Send rich messages with attachments
+        response = await x.chat(Message(parts=[
+            TextPart("Use this style guide"),
+            ArtifactPart(artifact=style_guide)
+        ]))
         ```
     """
     from agentx.config.team_loader import load_team_config
 
-    team_config = load_team_config(config_path)
-    executor = TaskExecutor(
-        team_config=team_config,
+    # Create XAgent with the provided configuration
+    x = XAgent(
+        team_config=config_path,
         task_id=task_id,
-        workspace_dir=workspace_dir
+        workspace_dir=workspace_dir,
+        initial_prompt=prompt
     )
 
-    # Initialize the conversation with the prompt
-    await executor.start(prompt)
+    # Initialize with the prompt
+    await x._initialize_with_prompt(prompt)
 
-    return executor
+    return x

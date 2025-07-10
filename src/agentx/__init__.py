@@ -23,6 +23,7 @@ from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 from agentx.core.agent import Agent
 from agentx.core.task import Task, TaskExecutor
 from agentx.core.orchestrator import Orchestrator
+from agentx.core.xagent import XAgent
 
 __version__ = "0.17.0"
 
@@ -45,6 +46,7 @@ __all__ = [
     "Task",
     "TaskExecutor",
     "Orchestrator",
+    "XAgent",
 ]
 
 # Load environment variables automatically on import

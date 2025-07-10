@@ -91,7 +91,7 @@ const BootstrapTabs = () => {
     },
     {
       id: "operating",
-      title: "Operating",
+      title: "Ops",
       icon: Cog,
       description: "Analyze → Execute → Monitor workflow",
       command: "agentx init --template operating",
