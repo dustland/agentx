@@ -252,24 +252,6 @@ if __name__ == "__main__":
                 <code>{workflows[activeTab].exampleCode}</code>
               </pre>
             </div>
-
-            {/* Key Features */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">
-                XAgent Features:
-              </p>
-              <ul className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
-                <li>
-                  • Natural conversation with{" "}
-                  <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded">
-                    x.chat()
-                  </code>
-                </li>
-                <li>• Intelligent work preservation</li>
-                <li>• Real-time plan adjustment</li>
-                <li>• Multi-agent orchestration</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>
