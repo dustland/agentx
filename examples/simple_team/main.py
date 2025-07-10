@@ -34,17 +34,12 @@ async def main():
         print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
         print("-" * 60)
 
-        # Chat with X to execute the team collaboration
+        # Execute the team collaboration autonomously
         print("🤖 X: Starting writer + reviewer collaboration...")
-        response = await x.chat(prompt)
-        print(f"🤖 X: {response.text}")
-
-        if response.preserved_steps:
-            print(f"   ✅ Preserved {len(response.preserved_steps)} completed collaboration steps")
-        if response.regenerated_steps:
-            print(f"   🔄 Regenerated {len(response.regenerated_steps)} collaboration steps")
-
-        print("-" * 60)
+        while not x.is_complete:
+            response = await x.step()
+            print(f"🤖 X: {response}")
+            print("-" * 60)
 
         # Demonstrate follow-up collaboration
         follow_ups = [

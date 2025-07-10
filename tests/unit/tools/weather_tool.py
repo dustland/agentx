@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 from agentx import get_logger
-from agentx.tool.models import Tool
-from agentx.tool.models import tool
+from agentx.core.tool import Tool, tool
 
 logger = get_logger(__name__)
 

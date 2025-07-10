@@ -33,26 +33,12 @@ async def main():
     print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
     print("-" * 80)
 
-    # Chat with X to execute the task
+    # Execute the task autonomously
     print("🤖 X: Starting the comprehensive report generation...")
-    response = await x.chat(prompt)
-    print(f"🤖 X: {response.text[:200]}...")
-
-    if response.preserved_steps:
-        print(f"   ✅ Preserved {len(response.preserved_steps)} completed steps")
-    if response.regenerated_steps:
-        print(f"   🔄 Regenerated {len(response.regenerated_steps)} steps")
-
-    print("-" * 40)
-
-    # Continue chatting until the task is complete
     while not x.is_complete:
-        # Let X continue with the next steps
-        response = await x.chat("Continue with the next step")
-
-        if response.text.strip():
-            print(f"🤖 X: {response.text[:200]}...")
-            print("-" * 40)
+        response = await x.step()
+        print(f"🤖 X: {response[:200]}...")
+        print("-" * 40)
 
     print("\n✅ TASK COMPLETE")
     print(f"📁 Workspace: {x.workspace.get_workspace_path()}")

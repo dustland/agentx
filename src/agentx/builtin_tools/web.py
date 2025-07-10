@@ -8,7 +8,7 @@ Built-in integrations:
 """
 
 from ..utils.logger import get_logger
-from ..tool.models import Tool, tool, ToolResult
+from ..core.tool import Tool, tool, ToolResult
 from ..core.exceptions import ConfigurationError
 from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass
@@ -82,29 +82,53 @@ class WebTool(Tool):
             logger.error(f"Failed to initialize browser-use: {e}")
 
     @tool(
-        description="Extract clean content from URLs using Jina Reader",
-        return_description="ToolResult containing extracted web content with title and markdown"
+        description="Extract clean content from URLs using Jina Reader and automatically save to files",
+        return_description="ToolResult containing file paths where content was saved, plus content summaries"
     )
     async def extract_content(self, urls: Union[str, List[str]], prompt: str = "Extract the main content from this webpage") -> ToolResult:
         """
-        Extract clean content from one or more URLs using Jina Reader.
+        Extract clean content from one or more URLs using Jina Reader and automatically save to files.
 
-        Jina Reader is specifically designed for AI content extraction and handles
-        anti-bot protection, JavaScript rendering, and modern web challenges.
+        This tool extracts content and automatically saves it to workspace files to prevent
+        overwhelming the conversation context. Returns file paths and summaries instead of full content.
 
         Args:
             urls: A single URL or list of URLs to extract content from
             prompt: Description of what content to focus on (optional)
 
         Returns:
-            ToolResult with extracted content
+            ToolResult with file paths and content summaries (not full content)
         """
         try:
             import asyncio
             import aiohttp
+            import re
+            from urllib.parse import urlparse
 
             # Convert single URL to list
             url_list = [urls] if isinstance(urls, str) else urls
+
+            def _generate_filename(url: str, title: str) -> str:
+                """Generate a safe filename from URL and title."""
+                # Parse URL to get domain
+                parsed = urlparse(url)
+                domain = parsed.netloc.replace('www.', '').replace('.', '_')
+
+                # Clean title for filename
+                if title and title != url:
+                    # Remove common prefixes and clean up
+                    clean_title = re.sub(r'^(#\s*)', '', title)  # Remove markdown headers
+                    clean_title = re.sub(r'[^\w\s\-]', '', clean_title)  # Remove special chars
+                    clean_title = re.sub(r'\s+', '_', clean_title.strip())[:50]  # Replace spaces, limit length
+                    filename = f"extracted_{domain}_{clean_title}.md"
+                else:
+                    # Fallback to domain and path
+                    path_part = parsed.path.replace('/', '_').strip('_')[:30] if parsed.path != '/' else 'homepage'
+                    filename = f"extracted_{domain}_{path_part}.md"
+
+                # Ensure valid filename
+                filename = re.sub(r'[^\w\-_.]', '', filename)
+                return filename
 
             async def extract_single_url(session: aiohttp.ClientSession, url: str) -> WebContent:
                 """Extract content from a single URL."""
@@ -204,25 +228,105 @@ class WebTool(Tool):
                 extraction_time = end_time - start_time
                 logger.info(f"Parallel extraction completed in {extraction_time:.2f}s for {len(url_list)} URLs")
 
-            # Return single content or list based on input
+            # Save extracted content to files and prepare summaries
+            saved_files = []
+            content_summaries = []
+
+            for content_obj in extracted_contents:
+                if content_obj.success and content_obj.content:
+                    # Generate filename
+                    filename = _generate_filename(content_obj.url, content_obj.title)
+
+                    # Prepare content for file with metadata
+                    from datetime import datetime
+                    file_content = f"""# Extracted Content from {content_obj.url}
+
+**Title:** {content_obj.title}
+**Source URL:** {content_obj.url}
+**Extraction Date:** {datetime.now().isoformat()}
+**Content Length:** {len(content_obj.content)} characters
+**Extraction Method:** {content_obj.metadata.get('extraction_method', 'unknown')}
+
+---
+
+{content_obj.content}
+"""
+
+                    # Save to workspace if available
+                    if self.workspace:
+                        try:
+                            # Save as artifact
+                            result = await self.workspace.store_artifact(
+                                name=filename,
+                                content=file_content,
+                                content_type="text/markdown",
+                                metadata={
+                                    "source_url": content_obj.url,
+                                    "title": content_obj.title,
+                                    "extraction_method": content_obj.metadata.get('extraction_method'),
+                                    "tool": "extract_content"
+                                },
+                                commit_message=f"Extracted content from {content_obj.url}"
+                            )
+
+                            if result.success:
+                                saved_files.append(filename)
+                                logger.info(f"Saved extracted content to {filename}")
+                            else:
+                                logger.error(f"Failed to save {filename}: {result.error}")
+
+                        except Exception as e:
+                            logger.error(f"Error saving content to {filename}: {e}")
+
+                    # Create summary for LLM (first 500 chars + metadata)
+                    content_preview = content_obj.content[:500] + "..." if len(content_obj.content) > 500 else content_obj.content
+
+                    summary = {
+                        "url": content_obj.url,
+                        "title": content_obj.title,
+                        "saved_file": filename if filename in saved_files else None,
+                        "content_length": len(content_obj.content),
+                        "content_preview": content_preview,
+                        "extraction_successful": True
+                    }
+                    content_summaries.append(summary)
+
+                else:
+                    # Handle failed extractions
+                    summary = {
+                        "url": content_obj.url,
+                        "title": content_obj.title or "Unknown",
+                        "saved_file": None,
+                        "content_length": 0,
+                        "content_preview": f"Extraction failed: {content_obj.error}",
+                        "extraction_successful": False,
+                        "error": content_obj.error
+                    }
+                    content_summaries.append(summary)
+
+            # Return summary result instead of full content
             if isinstance(urls, str):
-                result_data = extracted_contents[0] if extracted_contents else None
+                # Single URL case
+                result_summary = content_summaries[0] if content_summaries else None
             else:
-                result_data = extracted_contents
+                # Multiple URLs case
+                result_summary = content_summaries
 
             # Check if any extractions succeeded
-            success = any(content.success for content in extracted_contents)
-            successful_count = sum(1 for c in extracted_contents if c.success)
+            success = any(summary.get('extraction_successful', False) for summary in content_summaries)
+            successful_count = sum(1 for summary in content_summaries if summary.get('extraction_successful', False))
 
             return ToolResult(
                 success=success,
-                result=result_data,
+                result=result_summary,
                 metadata={
                     "total_urls": len(url_list),
                     "successful_extractions": successful_count,
-                    "extraction_method": "jina_reader",
+                    "saved_files": saved_files,
+                    "extraction_method": "jina_reader_with_auto_save",
                     "extraction_time_seconds": extraction_time,
-                    "parallel_processing": True
+                    "parallel_processing": True,
+                    "message": f"Content extracted and saved to {len(saved_files)} file(s). Use read_file tool to access full content."
                 }
             )
 

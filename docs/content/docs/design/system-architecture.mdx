@@ -152,14 +152,12 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 
 ### 4.1 Key Roles
 
-**Orchestrator (The Project Manager)**
+**Orchestration Logic (Built into XAgent)**
 
-- **Stateful:** Maintains task progress in `plan.md` and workspace files
-- **Orchestrates:** Decides which agent handles each step
+- **Stateful:** Maintains task progress in `plan.json` and workspace files
+- **Intelligent Routing:** Decides which specialist agent handles each step
 - **Persistent:** Survives across multiple turns and can resume interrupted tasks
-- **Two implementations:**
-  - `BaseOrchestrator`: Abstract class for custom orchestration logic
-  - `Orchestrator`: Default implementation with LLM-based intelligent routing
+- **LLM-Powered:** Uses Brain for intelligent decision making
 
 **Specialist Agents (The Workers)**
 
@@ -168,11 +166,12 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 - **Reusable:** Same agent can be used by different Orchestrators for different tasks
 - **Standard Library:** Framework provides common agents (planner, researcher, writer, reviewer)
 
-**TaskExecutor (The Runtime)**
+**XAgent (The Unified Interface)**
 
+- **Conversational Interface:** Single point of contact for all user interactions
 - **Lifecycle Manager:** Handles workspace setup, tool management, streaming
-- **Orchestrator Invoker:** Calls the Orchestrator and provides it with agents and tools
-- **Stateless:** Creates new instances per task execution
+- **Orchestration Logic:** Built-in intelligent routing and task coordination
+- **Stateful:** Maintains conversation history and task state
 
 ### 4.2 Execution Modes
 

@@ -10,11 +10,11 @@ The executor is responsible for:
 - Error handling and result formatting
 - Security policies and audit logging
 
-## SecurityPolicy <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L57" class="source-link" title="View source code">source</a>
+## SecurityPolicy <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L142" class="source-link" title="View source code">source</a>
 
 Security policies for tool execution.
 
-## ToolExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L75" class="source-link" title="View source code">source</a>
+## ToolExecutor <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L160" class="source-link" title="View source code">source</a>
 
 Secure tool executor with performance monitoring and security policies.
 
@@ -24,7 +24,7 @@ This class handles the actual execution of tools with:
 - Error handling and logging
 - Audit trails
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L86" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L171" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, registry: Optional[ToolRegistry] = None)
@@ -35,7 +35,7 @@ Initialize tool executor.
 **Args:**
     registry: Tool registry to use (defaults to global registry)
 
-### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L100" class="source-link" title="View source code">source</a>
+### execute_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L185" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tool(self, tool_name: str, agent_name: str = 'default') -> ToolResult
@@ -51,7 +51,7 @@ Execute a single tool with security validation.
 **Returns:**
     ToolResult with execution outcome
 
-### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L191" class="source-link" title="View source code">source</a>
+### execute_tools <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L276" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_tools(self, tool_calls: List[Any], agent_name: str = 'default') -> List[Dict[str, Any]]
@@ -66,7 +66,7 @@ Execute multiple tool calls and return formatted results for LLM.
 **Returns:**
     List of tool result messages formatted for LLM conversation
 
-### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L396" class="source-link" title="View source code">source</a>
+### get_execution_stats <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L482" class="source-link" title="View source code">source</a>
 
 ```python
 def get_execution_stats(self) -> Dict[str, Any]
@@ -74,7 +74,7 @@ def get_execution_stats(self) -> Dict[str, Any]
 
 Get execution statistics.
 
-### clear_history <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L409" class="source-link" title="View source code">source</a>
+### clear_history <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L495" class="source-link" title="View source code">source</a>
 
 ```python
 def clear_history(self)
@@ -98,4 +98,35 @@ Safely serialize objects to JSON, handling dataclasses, Pydantic models, and oth
 def safe_json_dumps(obj)
 ```
 
-Safely convert object to JSON string, handling complex nested objects.
+Safely serialize objects to JSON with fallback handling.
+
+## truncate_for_logging <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L55" class="source-link" title="View source code">source</a>
+
+```python
+def truncate_for_logging(content: str, max_length: int = 500) -> str
+```
+
+Truncate content for logging purposes while preserving readability.
+
+**Args:**
+    content: Content to truncate
+    max_length: Maximum length before truncation
+
+**Returns:**
+    Truncated content with ellipsis if needed
+
+## safe_json_dumps_for_logging <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/executor.py#L73" class="source-link" title="View source code">source</a>
+
+```python
+def safe_json_dumps_for_logging(obj, max_content_length: int = 500)
+```
+
+Safely serialize objects to JSON with content truncation for logging.
+
+**Args:**
+    obj: Object to serialize
+    max_content_length: Maximum length for content fields before truncation
+    **kwargs: Additional JSON serialization arguments
+
+**Returns:**
+    JSON string with truncated content for logging

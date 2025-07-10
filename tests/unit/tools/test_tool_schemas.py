@@ -7,7 +7,7 @@ parameter descriptions, which are critical for LLM function calling.
 
 import pytest
 from agentx.tool.registry import ToolRegistry
-from agentx.tool.models import Tool, tool
+from agentx.core.tool import Tool, tool
 
 
 class WeatherTool(Tool):

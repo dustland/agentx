@@ -1,28 +1,18 @@
 #!/usr/bin/env python3
 import asyncio
 from pathlib import Path
-from agentx import start_task
+from agentx.core.xagent import XAgent
 
 async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
 
     print("Chat started! Type 'quit' or 'q' to exit.")
 
-    # Get the first user input
-    user_input = input("You: ").strip()
-    if user_input.lower() in ['quit', 'q']:
-        return
-
-    # Start the conversation with XAgent
+    # Initialize XAgent for chat (no initial prompt for pure chat mode)
     print("Initializing X...")
-    x = await start_task(user_input, str(config_path))
+    x = XAgent(team_config=str(config_path))
 
-    # Get the first response
-    print("X: ", end="", flush=True)
-    response = await x.chat(user_input)
-    print(response.text)
-
-    # Continue the conversation
+    # Start the conversation loop
     while True:
         user_input = input("You: ").strip()
         if user_input.lower() in ['quit', 'q']:

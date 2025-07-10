@@ -3,7 +3,7 @@ Memory Tools - Clean implementation using Memory.
 """
 
 from typing import Annotated, Optional
-from ..tool.models import Tool
+from ..core.tool import Tool
 from ..memory.models import MemoryBackend
 
 class MemoryTool(Tool):

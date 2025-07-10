@@ -44,10 +44,10 @@ def generate_template_config(template: str, model: str) -> str:
             ]
         }
 
-    elif template == "operating":
+    elif template == "ops":
         config = {
             "name": f"{template}_project",
-            "description": "AgentX operating workflow with analysis, execution, and monitoring",
+            "description": "AgentX ops workflow with analysis, execution, and monitoring",
             "orchestrator": {
                 "max_rounds": 25,
                 "timeout": 3600
@@ -215,7 +215,7 @@ def generate_readme(project_name: str, template: str, model: str) -> str:
     template_descriptions = {
         "writing": "document creation, research papers, and content workflows",
         "coding": "software development, debugging, and testing workflows",
-        "operating": "automation, API integration, and real-world action workflows",
+        "ops": "automation, API integration, and real-world action workflows",
         "custom": "general-purpose AI assistance workflows"
     }
 
@@ -338,7 +338,7 @@ Perfect for creating research papers, technical documentation, marketing content
 
 Perfect for building applications, creating libraries, debugging systems, and implementing technical solutions.""",
 
-        "operating": """This template optimizes for **Vibe-Operating** workflows using preset agents:
+        "ops": """This template optimizes for **Vibe-Ops** workflows using preset agents:
 
 - **Researcher**: Data analyst for understanding requirements and context
 - **Planner**: Plans operations and execution strategies
@@ -377,7 +377,7 @@ def get_agents_description(template: str) -> str:
 - **Developer**: Implements clean, maintainable code (custom recommended)
 - **Reviewer**: Ensures quality through comprehensive review""",
 
-        "operating": """- **Researcher**: Understands requirements and gathers context
+        "ops": """- **Researcher**: Understands requirements and gathers context
 - **Planner**: Plans operations and execution strategies
 - **Reviewer**: Validates results and provides feedback""",
 
@@ -418,9 +418,9 @@ agents:
   - "planner"
   - "developer"
   - "reviewer"'''
-    elif template == "operating":
-        return '''name: "operating_project"
-description: "AgentX operating workflow with analysis, execution, and monitoring"
+    elif template == "ops":
+        return '''name: "ops_project"
+description: "AgentX ops workflow with analysis, execution, and monitoring"
 orchestrator:
   max_rounds: 25
   timeout: 3600

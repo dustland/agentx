@@ -4,6 +4,44 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "nextra-theme-docs";
 import { useState, useEffect } from "react";
+
+// Custom styled Link component that handles Nextra's CSS specificity
+const StyledLink = ({
+  href,
+  children,
+  lightColor,
+  darkColor,
+  className,
+  ...props
+}) => {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Check for dark mode
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+
+    checkDarkMode();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const color = isDark ? darkColor : lightColor;
+
+  return (
+    <Link href={href} style={{ color }} className={className} {...props}>
+      {children}
+    </Link>
+  );
+};
 import {
   Users,
   Wrench,
@@ -22,8 +60,14 @@ import {
   Terminal,
   Github,
   DollarSign,
+  Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import Image from "next/image";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { Button } from "nextra/components";
 
 const basePath =
   process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
@@ -71,6 +115,13 @@ const TypewriterText = () => {
 // Enhanced bootstrap tabs with example code
 const BootstrapTabs = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const workflows = [
     {
@@ -90,11 +141,19 @@ async def main():
         "config/team.yaml"
     )
 
-    # Chat with your AI team
-    response = await x.chat("Focus on business applications")
+    print(f"Task ID: {x.task_id}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
+
+    # Execute the initial task
+    while not x.is_complete:
+        response = await x.step()
+        print(f"X: {response}")
+
+    # Chat with your AI team for refinements
+    response = await x.chat("Focus more on business applications")
     print(f"X: {response.text}")
 
-    # Iterate and refine
+    # Continue chatting for iterations
     await x.chat("Add more visual charts and graphs")
     await x.chat("Create an executive summary")
 
@@ -118,11 +177,19 @@ async def main():
         "config/team.yaml"
     )
 
-    # Chat with your development team
-    response = await x.chat("Use FastAPI and SQLite")
+    print(f"Task ID: {x.task_id}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
+
+    # Execute the initial task
+    while not x.is_complete:
+        response = await x.step()
+        print(f"X: {response}")
+
+    # Chat with your development team for changes
+    response = await x.chat("Use FastAPI and SQLite instead")
     print(f"X: {response.text}")
 
-    # Continue development
+    # Continue development with chat
     await x.chat("Add user authentication")
     await x.chat("Write comprehensive tests")
 
@@ -130,11 +197,11 @@ if __name__ == "__main__":
     asyncio.run(main())`,
     },
     {
-      id: "operating",
+      id: "ops",
       title: "Ops",
       icon: Cog,
       description: "Analyze → Execute → Monitor workflow",
-      command: "agentx init my-automation --template operating",
+      command: "agentx init my-automation --template ops",
       agents: ["Analyst", "Operator", "Monitor"],
       exampleCode: `import asyncio
 from agentx import start_task
@@ -146,11 +213,19 @@ async def main():
         "config/team.yaml"
     )
 
-    # Chat with your ops team
-    response = await x.chat("Check disk usage and memory")
+    print(f"Task ID: {x.task_id}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
+
+    # Execute the initial task
+    while not x.is_complete:
+        response = await x.step()
+        print(f"X: {response}")
+
+    # Chat with your ops team for adjustments
+    response = await x.chat("Check disk usage and memory too")
     print(f"X: {response.text}")
 
-    # Add monitoring
+    # Add monitoring with chat
     await x.chat("Set up alerts for high CPU usage")
     await x.chat("Generate a daily status report")
 
@@ -160,117 +235,115 @@ if __name__ == "__main__":
   ];
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Tab Navigation */}
-      <div className="relative flex border-b border-slate-200 dark:border-slate-700 mb-8">
+    <div className="max-w-4xl mx-auto">
+      {/* Workflow Tabs */}
+      <div className="flex items-center justify-center gap-2 mb-6">
         {workflows.map((workflow, index) => (
           <button
             key={workflow.id}
             onClick={() => setActiveTab(index)}
-            className={`relative flex items-center px-6 py-3 text-sm font-medium transition-colors z-10 ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === index
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                ? "bg-blue-600 text-white shadow-lg"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
             }`}
           >
-            <workflow.icon className="w-4 h-4 mr-2" />
+            <workflow.icon className="w-4 h-4" />
             {workflow.title}
           </button>
         ))}
-        {/* Sliding indicator */}
-        <motion.div
-          className="absolute bottom-[-1px] h-0.5 bg-blue-600 dark:bg-blue-400 z-20"
-          layoutId="active-tab-indicator"
-          initial={false}
-          animate={{
-            left: `${(activeTab / workflows.length) * 100}%`,
-            width: `${100 / workflows.length}%`,
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
       </div>
 
-      {/* Tab Content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6"
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
         >
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column - Description and Setup */}
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                  {workflows[activeTab].title} Workflow
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-4">
-                  {workflows[activeTab].description}
-                </p>
-                <div className="space-y-3">
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Your AI Team:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {workflows[activeTab].agents.map((agent) => (
-                      <span
-                        key={agent}
-                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm rounded-full"
-                      >
-                        {agent}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+          {/* CLI Command Block */}
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 mb-4 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Terminal className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                <code className="font-mono text-sm text-slate-700 dark:text-slate-300">
+                  {workflows[activeTab].command}
+                </code>
               </div>
+              <Button
+                onClick={() => handleCopy(workflows[activeTab].command)}
+                className="w-5 h-5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-600" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
 
-              {/* CLI Command */}
-              <div>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Get started with one command:
-                </p>
-                <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 font-mono text-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Terminal className="w-4 h-4 text-slate-400" />
-                    <span className="text-slate-400">Terminal</span>
+          {/* Simple Code Window */}
+          <div className="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden shadow-xl">
+            {/* Simple Window Header */}
+            <div className="bg-slate-800 px-4 py-3 border-b border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
                   </div>
-                  <code className="text-green-400">
-                    {workflows[activeTab].command}
-                  </code>
+                  <span className="text-sm font-medium text-slate-300">
+                    main.py
+                  </span>
                 </div>
-              </div>
-
-              {/* Features */}
-              <div className="text-sm text-slate-600 dark:text-slate-400">
-                <p className="font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  What you get:
-                </p>
-                <ul className="space-y-1">
-                  <li>• Complete project structure</li>
-                  <li>• Pre-configured AI agents</li>
-                  <li>• Ready-to-run main.py</li>
-                  <li>• Cost-optimized model selection</li>
-                </ul>
+                <Button
+                  onClick={() => handleCopy(workflows[activeTab].exampleCode)}
+                  className="w-5 h-5 text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 p-1 rounded hover:bg-slate-700 transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-400" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
 
-            {/* Right Column - Generated Code */}
-            <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Generated main.py (with XAgent):
-              </p>
-              <div className="bg-slate-900 dark:bg-slate-900 rounded-lg p-4 overflow-x-auto">
-                <div className="flex items-center gap-2 mb-3">
-                  <Code className="w-4 h-4 text-slate-400" />
-                  <span className="text-slate-400 text-sm">main.py</span>
-                </div>
-                <pre className="text-xs text-slate-300 leading-relaxed">
-                  <code>{workflows[activeTab].exampleCode}</code>
-                </pre>
-              </div>
+            {/* Code Content */}
+            <div className="p-4">
+              <SyntaxHighlighter
+                language="python"
+                style={oneDark}
+                customStyle={{
+                  margin: 0,
+                  padding: 0,
+                  fontSize: "0.75rem",
+                  lineHeight: "1.5",
+                  background: "transparent",
+                }}
+                showLineNumbers={true}
+                className="!border-none"
+                codeTagProps={{
+                  style: {
+                    background: "transparent",
+                  },
+                }}
+              >
+                {workflows[activeTab].exampleCode}
+              </SyntaxHighlighter>
             </div>
           </div>
         </motion.div>
@@ -455,13 +528,15 @@ export default function HomePage() {
                 Quick Start
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
-              <Link
+              <StyledLink
                 href="/docs/design/vibe-x-philosophy"
-                className="inline-flex items-center border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
+                lightColor="#374151"
+                darkColor="#d1d5db"
+                className="inline-flex items-center border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
               >
                 Learn Vibe-X
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
+              </StyledLink>
             </motion.div>
           </div>
         </motion.div>
@@ -475,31 +550,16 @@ export default function HomePage() {
           >
             <path
               d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V120H0V0Z"
-              fill="rgb(248, 250, 252)"
-              className="dark:hidden"
-            />
-            <path
-              d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V120H0V0Z"
-              fill="rgba(30, 41, 59, 0.5)"
-              className="hidden dark:block"
+              fill="currentColor"
+              className="text-white dark:text-slate-900"
             />
           </svg>
         </div>
       </section>
 
       {/* Vibe-X Philosophy */}
-      <section className="relative py-20 bg-slate-50 dark:bg-slate-800/50">
+      <section className="py-20 bg-white dark:bg-slate-900">
         <div className="relative max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              The Vibe-X Philosophy
-            </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-              Beyond automation towards augmentation — where AI capabilities
-              seamlessly integrate with human expertise.
-            </p>
-          </div>
-
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -507,8 +567,11 @@ export default function HomePage() {
             variants={containerVariants}
             className="grid md:grid-cols-3 gap-8"
           >
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <motion.div
+              variants={itemVariants}
+              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+            >
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
@@ -520,8 +583,11 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <motion.div
+              variants={itemVariants}
+              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+            >
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
@@ -533,8 +599,11 @@ export default function HomePage() {
               </p>
             </motion.div>
 
-            <motion.div variants={itemVariants} className="text-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <motion.div
+              variants={itemVariants}
+              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+            >
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
@@ -550,24 +619,59 @@ export default function HomePage() {
       </section>
 
       {/* Bootstrap Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
-              Get Started in Seconds
-            </h2>
-            <p className="text-lg text-slate-600 dark:text-slate-400">
-              Choose your workflow template and launch a complete AI team
-              instantly.
-            </p>
-          </div>
+      <section className="relative py-24 bg-slate-50 dark:bg-slate-800/30 overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f8fafc_1px,transparent_1px),linear-gradient(to_bottom,#f8fafc_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:80px_80px] opacity-30"></div>
 
-          <BootstrapTabs />
+        {/* Floating decoration */}
+        <motion.div
+          animate={{ y: [-20, 20, -20], rotate: [0, 180, 360] }}
+          transition={{
+            duration: 40,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+          className="absolute top-20 right-10 w-24 h-24 bg-blue-200 dark:bg-blue-900/30 rounded-full blur-2xl opacity-40"
+        ></motion.div>
+
+        <div className="relative max-w-7xl mx-auto px-4">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={containerVariants}
+            className="text-center mb-12"
+          >
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4"
+            >
+              Get Started in{" "}
+              <span className="text-blue-600 dark:text-blue-400">Seconds</span>
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.5, ease: "easeOut" },
+              },
+            }}
+          >
+            <BootstrapTabs />
+          </motion.div>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-800/50">
+      <section className="py-20 bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
@@ -584,96 +688,51 @@ export default function HomePage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={containerVariants}
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {features.map((feature) => (
               <motion.div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5 }}
                 whileHover={{
                   y: -5,
                   boxShadow:
                     "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
                 }}
-                className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-slate-200 dark:border-slate-700"
+                className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200 dark:border-slate-700 h-full flex flex-col"
               >
-                <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
-                  {feature.description}
-                </p>
-                <Link
+                <StyledLink
                   href={feature.href}
-                  className="inline-flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300 no-underline"
+                  lightColor="#2563eb"
+                  darkColor="#60a5fa"
+                  className="text-sm font-medium no-underline"
                 >
-                  Learn More
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </Link>
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-4">
+                    <feature.icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm flex-grow">
+                    {feature.description}
+                  </p>
+                  <div className="mt-4">
+                    <span
+                      style={{ color: "#2563eb" }}
+                      className="text-sm font-medium inline-flex items-center"
+                    >
+                      Learn More <ArrowRight className="w-4 h-4 ml-1" />
+                    </span>
+                  </div>
+                </StyledLink>
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Use Cases */}
-      <section className="relative py-20">
-        {/* Subtle diagonal lines decoration */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <svg
-              className="absolute top-10 left-10 w-32 h-32 text-slate-100 dark:text-slate-800 opacity-50"
-              viewBox="0 0 100 100"
-            >
-              <defs>
-                <pattern
-                  id="diagonalLines"
-                  patternUnits="userSpaceOnUse"
-                  width="10"
-                  height="10"
-                >
-                  <path
-                    d="M 0,10 l 10,-10 M -2.5,2.5 l 5,-5 M 7.5,12.5 l 5,-5"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
-                  />
-                </pattern>
-              </defs>
-              <rect width="100" height="100" fill="url(#diagonalLines)" />
-            </svg>
-            <svg
-              className="absolute bottom-20 right-20 w-24 h-24 text-slate-100 dark:text-slate-800 opacity-30"
-              viewBox="0 0 100 100"
-            >
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="0.5"
-                strokeDasharray="5,5"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="30"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="0.5"
-                strokeDasharray="3,3"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4">
+      {/* Real-World Applications */}
+      <section className="py-20 bg-slate-50 dark:bg-slate-800/50">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               Real-World Applications
@@ -688,18 +747,15 @@ export default function HomePage() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
             variants={containerVariants}
-            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
             {useCases.map((useCase) => (
               <motion.div
                 key={useCase.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.5 }}
-                className="text-center"
+                variants={itemVariants}
+                className="text-center bg-white dark:bg-slate-800 p-8 rounded-lg border border-slate-200 dark:border-slate-700"
               >
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
                   <useCase.icon className="w-8 h-8 text-slate-500 dark:text-slate-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
@@ -714,47 +770,66 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative py-20 bg-slate-900 dark:bg-slate-800 overflow-hidden">
-        {/* Subtle accent decoration */}
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-px h-full bg-gradient-to-b from-transparent via-slate-700 to-transparent opacity-50"></div>
-        <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent opacity-30"></div>
-
-        <div className="relative max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Experience Vibe-X?
-          </h2>
-          <p className="text-lg text-slate-300 mb-8">
-            Join the next generation of human-AI collaboration with transparent,
-            cost-efficient, and truly collaborative intelligent systems.
-          </p>
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <Link
-              href="/docs/tutorials/0-bootstrap"
-              className="inline-flex items-center bg-white text-slate-900 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
+      {/* Final CTA */}
+      <section className="relative py-20 bg-white dark:bg-slate-900">
+        <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-slate-50 dark:from-slate-800/50 to-transparent"></div>
+        <div className="relative max-w-4xl mx-auto px-4">
+          <div className="relative bg-blue-600 dark:bg-blue-700 rounded-2xl shadow-xl overflow-hidden p-12 text-center">
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full"></div>
+            <div className="absolute -bottom-16 -right-5 w-56 h-56 bg-white/10 rounded-full"></div>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.5 }}
+              variants={containerVariants}
+              className="relative"
             >
-              Start Building
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-            <Link
-              href="https://github.com/dustland/agentx/tree/main/examples"
-              target="_blank"
-              className="inline-flex items-center border border-slate-600 text-white font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"
-            >
-              View Examples
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </motion.div>
+              <motion.h2
+                variants={itemVariants}
+                className="text-3xl md:text-4xl font-bold text-white mb-4"
+              >
+                Ready to Experience Vibe-X?
+              </motion.h2>
+              <motion.p
+                variants={itemVariants}
+                className="text-lg text-blue-100 max-w-2xl mx-auto mb-8"
+              >
+                Join the next generation of human-AI collaboration with
+                transparent, cost-efficient, and truly collaborative intelligent
+                systems.
+              </motion.p>
+              <motion.div
+                variants={itemVariants}
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+              >
+                <StyledLink
+                  href="/docs/tutorials/0-bootstrap"
+                  lightColor="#2563eb"
+                  darkColor="#2563eb"
+                  className="inline-flex items-center bg-white font-bold px-8 py-4 rounded-lg transition-transform duration-200 hover:scale-105 shadow-lg no-underline"
+                >
+                  Start Building
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </StyledLink>
+                <Link
+                  href="https://github.com/dustland/agentx/tree/main/examples"
+                  target="_blank"
+                  style={{ color: "#ffffff" }}
+                  className="inline-flex items-center border border-blue-400 font-medium px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-white/10 no-underline"
+                >
+                  View Examples
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-50 dark:bg-slate-800/50 py-12">
+      <footer className="bg-white dark:bg-slate-900 pt-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 pb-8">
             <div className="flex items-center gap-3">
               <Image
                 src={`${basePath}/logo.png`}
@@ -778,19 +853,21 @@ export default function HomePage() {
               </a>
               <Link
                 href="/docs/getting-started"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors"
+                style={{ color: "#475569" }}
+                className="text-sm font-medium transition-colors hover:text-blue-600"
               >
                 Documentation
               </Link>
               <Link
                 href="/docs/tutorials/0-bootstrap"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-colors"
+                style={{ color: "#475569" }}
+                className="text-sm font-medium transition-colors hover:text-blue-600"
               >
                 Examples
               </Link>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400">
+          <div className="py-8 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400">
             <p>
               &copy; {new Date().getFullYear()} AgentX. All rights reserved.
             </p>

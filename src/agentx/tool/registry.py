@@ -2,11 +2,8 @@
 Tool Registry - The single source of truth for tool definitions.
 """
 from typing import Dict, List, Any, Optional, Callable
-from .models import Tool, ToolFunction
+from ..core.tool import Tool, ToolFunction
 from ..utils.logger import get_logger
-import inspect
-from ..builtin_tools.file import create_file_tool
-from ..builtin_tools.search import SearchTool
 
 logger = get_logger(__name__)
 
@@ -26,30 +23,9 @@ class ToolRegistry:
             return
         self._tools: Dict[str, ToolFunction] = {}
         self._toolsets: Dict[str, List[str]] = {}
-        self._register_builtin_tools()
+        # Note: Builtin tools are now registered by ToolManager with proper workspace context
+        # This prevents duplicate registrations and ensures correct workspace paths
         self.__initialized = True
-
-    def _register_builtin_tools(self):
-        """
-        Automatically discover and register all functions decorated with @tool
-        from the agentx.builtin_tools module.
-        """
-        logger.debug("Registering builtin tools...")
-        # A workspace_path is required for some tools like file_tools
-        # This is a bit of a hack. A better solution would be to
-        # allow tools to be initialized with context when a task starts.
-        # For now, we'll use a default path.
-        default_workspace = "workspace"
-
-        builtin_tool_instances = [
-            create_file_tool(workspace_path=default_workspace),
-            SearchTool()
-        ]
-
-        for tool_instance in builtin_tool_instances:
-            self.register_tool(tool_instance)
-
-        logger.info(f"Registered {len(self._tools)} builtin tools.")
 
     def register_tool(self, tool: Tool):
         """
@@ -70,13 +46,19 @@ class ToolRegistry:
         if tool_name in self._tools:
             logger.warning(f"Tool '{tool_name}' is already registered and will be overwritten.")
 
-        # The schema generation utilities are now in models.py
-        from .models import _create_pydantic_model_from_signature
+        # The schema generation utilities are now in core.tool
+        from ..core.tool import _create_pydantic_model_from_signature
         pydantic_model = _create_pydantic_model_from_signature(func)
 
-        parameters = {}
         if pydantic_model:
             parameters = pydantic_model.model_json_schema()
+        else:
+            # Functions with no parameters need proper OpenAI schema format
+            parameters = {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
 
         self._tools[tool_name] = ToolFunction(
             name=tool_name,
@@ -176,8 +158,7 @@ class ToolRegistry:
         """Clear all registered tools and toolsets. Useful for testing."""
         self._tools.clear()
         self._toolsets.clear()
-        # Re-register builtin tools after clearing
-        self._register_builtin_tools()
+        # Note: Builtin tools will be re-registered by ToolManager when needed
 
 
 def get_tool_registry() -> ToolRegistry:

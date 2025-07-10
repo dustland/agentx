@@ -1,5 +1,4 @@
-from .orchestrator import Orchestrator
-from .task import TaskExecutor
+# Core AgentX components
 from .brain import Brain, BrainMessage, BrainResponse
 from .message import (
     TaskStep,
@@ -19,8 +18,6 @@ from .message import (
 from .tool import ToolCall, ToolResult
 
 __all__ = [
-    "Orchestrator",
-    "TaskExecutor",
     "Brain",
     "BrainMessage",
     "BrainResponse",

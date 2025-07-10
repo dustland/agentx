@@ -8,7 +8,7 @@ This module provides:
 - Unified tool management for task isolation
 """
 
-from .models import Tool, ToolResult
+from ..core.tool import Tool, ToolResult
 from .registry import ToolRegistry
 from .manager import ToolManager
 

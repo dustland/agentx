@@ -9,7 +9,7 @@ This simplifies the Agent interface and ensures task-level tool isolation.
 from typing import Dict, List, Any, Optional
 from .registry import ToolRegistry
 from .executor import ToolExecutor, ToolResult
-from .models import Tool
+from ..core.tool import Tool
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)

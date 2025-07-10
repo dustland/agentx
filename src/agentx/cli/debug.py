@@ -11,8 +11,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
-from ..core.orchestrator import Orchestrator, TaskState
-from ..core.team import Team
+# Note: Debug functionality needs to be updated for XAgent architecture
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
