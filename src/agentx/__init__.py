@@ -24,7 +24,7 @@ from agentx.core.agent import Agent
 from agentx.core.task import Task
 from agentx.core.xagent import XAgent
 
-__version__ = "0.18.1"
+__version__ = "0.18.2"
 
 __all__ = [
     # Main API - primary entry points
