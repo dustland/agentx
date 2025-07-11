@@ -14,7 +14,7 @@ Interactive debugging session for AgentX tasks.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/debug.py#L23" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, orchestrator: Orchestrator, task_id: str)
+def __init__(self, xagent: XAgent)
 ```
 ### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/debug.py#L28" class="source-link" title="View source code">source</a>
 
@@ -26,10 +26,10 @@ Start the interactive debugging session.
 
 ## Functions
 
-## debug_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/debug.py#L308" class="source-link" title="View source code">source</a>
+## debug_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/debug.py#L263" class="source-link" title="View source code">source</a>
 
 ```python
-async def debug_task(team_config_path: str, task_id: str)
+async def debug_task(team_config_path: str, task_id: Optional[str] = None, workspace_dir: Optional[str] = None)
 ```
 
 Start a debugging session for a task.

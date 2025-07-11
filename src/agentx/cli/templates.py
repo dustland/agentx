@@ -7,7 +7,6 @@ Handles generation of project templates, configurations, and files for the boots
 
 import yaml
 from typing import Dict
-from pathlib import Path
 
 
 def generate_template_config(template: str, model: str) -> str:
@@ -17,16 +16,17 @@ def generate_template_config(template: str, model: str) -> str:
         config = {
             "name": f"{template}_project",
             "description": "AgentX writing workflow with professional research and content creation",
-            "orchestrator": {
-                "max_rounds": 15,
-                "timeout": 1800
-            },
             "agents": [
                 "researcher",    # Professional market researcher
                 "writer",        # Strategic business writer
                 "reviewer",      # Quality assurance specialist
                 "web_designer"   # Professional web designer for HTML/CSS
-            ]
+            ],
+            "execution": {
+                "mode": "autonomous",
+                "max_rounds": 15,
+                "timeout_seconds": 1800
+            }
         }
 
     elif template == "coding":

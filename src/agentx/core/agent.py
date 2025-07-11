@@ -1,13 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
-from enum import Enum
-import json
-import asyncio
 
-from .brain import Brain, BrainMessage, BrainResponse
+from .brain import Brain
 from .config import AgentConfig, BrainConfig
-from .message import TaskStep, TextPart, ToolCallPart, ToolResultPart
 from .tool import Tool
 from ..utils.logger import get_logger
 
@@ -35,12 +31,12 @@ class Agent:
     - Each agent is autonomous and manages its own conversation flow
     - Agents communicate with other agents through public interfaces only
     - The brain is private to the agent - no external access
-    - Tool execution is handled by orchestrator for security and control
+    - Tool execution is handled through the injected tool manager
 
     This combines:
     - AgentConfig (configuration data)
     - Brain (private LLM interaction)
-    - Conversation management (delegates tool execution to orchestrator)
+    - Conversation management with integrated tool execution
     """
 
     def __init__(self, config: AgentConfig, tool_manager=None):
@@ -205,18 +201,16 @@ class Agent:
         self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str] = None,
-        orchestrator = None,
         max_tool_rounds: int = 10
     ) -> str:
         """
-        Generate response with tool execution handled by orchestrator.
+        Generate response with tool execution.
 
         This is a simpler, non-streaming version that returns the final response.
 
         Args:
             messages: Conversation messages in LLM format
             system_prompt: Optional system prompt override
-            orchestrator: Orchestrator instance for tool execution
             max_tool_rounds: Maximum tool execution rounds
 
         Returns:
@@ -227,12 +221,12 @@ class Agent:
             # Check if brain config has streaming setting
             if hasattr(self.brain.config, 'streaming') and not self.brain.config.streaming:
                 return await self._generate_response_non_streaming(
-                    messages, system_prompt, orchestrator, max_tool_rounds
+                    messages, system_prompt, max_tool_rounds
                 )
 
             # Use streaming mode (existing behavior)
             response_parts = []
-            async for chunk in self._streaming_loop(messages, system_prompt, orchestrator, max_tool_rounds):
+            async for chunk in self._streaming_loop(messages, system_prompt, max_tool_rounds):
                 if isinstance(chunk, dict) and chunk.get("type") == "content":
                     response_parts.append(chunk.get("content", ""))
                 elif isinstance(chunk, str):
@@ -245,18 +239,16 @@ class Agent:
         self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str] = None,
-        orchestrator = None,
         max_tool_rounds: int = 10
     ) -> AsyncGenerator[str, None]:
         """
-        Stream response with tool execution handled by orchestrator.
+        Stream response with tool execution.
 
         This matches Brain's interface but includes tool execution loop.
 
         Args:
             messages: Conversation messages in LLM format
             system_prompt: Optional system prompt override
-            orchestrator: Orchestrator instance for tool execution
             max_tool_rounds: Maximum tool execution rounds
 
         Yields:
@@ -264,26 +256,25 @@ class Agent:
         """
         self.state.is_active = True
         try:
-            async for chunk in self._streaming_loop(messages, system_prompt, orchestrator, max_tool_rounds):
+            async for chunk in self._streaming_loop(messages, system_prompt, max_tool_rounds):
                 yield chunk
         finally:
             self.state.is_active = False
 
     # ============================================================================
-    # CONVERSATION MANAGEMENT - Works with orchestrator for tool execution
+    # CONVERSATION MANAGEMENT - Handles tool execution
     # ============================================================================
 
     async def _conversation_loop(
         self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str],
-        orchestrator,
         max_tool_rounds: int = 10
     ) -> str:
         """
-        Conversation loop that works with orchestrator for tool execution.
+        Conversation loop with tool execution.
 
-        Agent generates responses, orchestrator executes tools for security.
+        Agent generates responses and executes tools as needed.
         """
         conversation = messages.copy()
 
@@ -344,7 +335,6 @@ class Agent:
         self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str],
-        orchestrator,
         max_tool_rounds: int = 10
     ) -> AsyncGenerator[str, None]:
         """
@@ -489,7 +479,6 @@ class Agent:
         self,
         messages: List[Dict[str, Any]],
         system_prompt: Optional[str],
-        orchestrator,
         max_tool_rounds: int = 10
     ) -> str:
         """

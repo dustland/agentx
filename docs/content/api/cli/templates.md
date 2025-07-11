@@ -6,7 +6,7 @@ Bootstrap Template Generation
 
 Handles generation of project templates, configurations, and files for the bootstrap system.
 
-## generate_template_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/templates.py#L13" class="source-link" title="View source code">source</a>
+## generate_template_config <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/templates.py#L12" class="source-link" title="View source code">source</a>
 
 ```python
 def generate_template_config(template: str, model: str) -> str
