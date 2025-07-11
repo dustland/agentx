@@ -129,7 +129,8 @@ const BootstrapTabs = () => {
       title: "Writing",
       icon: PenTool,
       description: "Research → Draft → Edit workflow",
-      command: "agentx init my-research --template writing",
+      command:
+        "pip install agentx-py\nagentx init my-research --template writing",
       agents: ["Researcher", "Writer", "Reviewer", "Web Designer"],
       exampleCode: `import asyncio
 from agentx import start_task
@@ -165,7 +166,7 @@ if __name__ == "__main__":
       title: "Coding",
       icon: Code,
       description: "Plan → Build → Test workflow",
-      command: "agentx init my-app --template coding",
+      command: "pip install agentx-py\nagentx init my-app --template coding",
       agents: ["Planner", "Developer", "Reviewer"],
       exampleCode: `import asyncio
 from agentx import start_task
@@ -201,7 +202,8 @@ if __name__ == "__main__":
       title: "Ops",
       icon: Cog,
       description: "Analyze → Execute → Monitor workflow",
-      command: "agentx init my-automation --template ops",
+      command:
+        "pip install agentx-py\nagentx init my-automation --template ops",
       agents: ["Analyst", "Operator", "Monitor"],
       exampleCode: `import asyncio
 from agentx import start_task
@@ -236,16 +238,16 @@ if __name__ == "__main__":
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Workflow Tabs */}
-      <div className="flex items-center justify-center gap-2 mb-6">
+      {/* Workflow Tabs - Polished with rounded corners and auto width */}
+      <div className="flex items-center justify-center gap-1 mb-8 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
         {workflows.map((workflow, index) => (
           <button
             key={workflow.id}
             onClick={() => setActiveTab(index)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
               activeTab === index
-                ? "bg-blue-600 text-white shadow-lg"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
             }`}
           >
             <workflow.icon className="w-4 h-4" />
@@ -262,79 +264,56 @@ if __name__ == "__main__":
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {/* CLI Command Block */}
-          <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 mb-4 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Terminal className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                <code className="font-mono text-sm text-slate-700 dark:text-slate-300">
-                  {workflows[activeTab].command}
-                </code>
-              </div>
-              <Button
-                onClick={() => handleCopy(workflows[activeTab].command)}
-                className="w-5 h-5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3 h-3 text-emerald-600" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                  </>
-                )}
-              </Button>
+          {/* CLI Command Block - With command indicators for each line */}
+          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-6 border border-slate-200/50 dark:border-slate-700/50">
+            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+              {workflows[activeTab].command.split("\n").map((line, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <span className="text-slate-500 dark:text-slate-400">
+                    &gt;_
+                  </span>
+                  <span>{line}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Simple Code Window */}
-          <div className="bg-slate-900 rounded-lg border border-slate-700 overflow-hidden shadow-xl">
-            {/* Simple Window Header */}
-            <div className="bg-slate-800 px-4 py-3 border-b border-slate-700">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <span className="text-sm font-medium text-slate-300">
-                    main.py
-                  </span>
+          {/* Enhanced Code Window - Claude-inspired */}
+          <div className="bg-slate-900 rounded-lg border border-slate-700/50 overflow-hidden shadow-2xl">
+            {/* Enhanced Window Header */}
+            <div className="bg-slate-800/80 px-4 py-3 border-b border-slate-700/50 backdrop-blur-sm">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
                 </div>
-                <Button
-                  onClick={() => handleCopy(workflows[activeTab].exampleCode)}
-                  className="w-5 h-5 text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 p-1 rounded hover:bg-slate-700 transition-colors"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3 h-3 text-emerald-400" />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3 h-3" />
-                    </>
-                  )}
-                </Button>
+                <span className="text-sm font-medium text-slate-300">
+                  main.py
+                </span>
               </div>
             </div>
 
-            {/* Code Content */}
-            <div className="p-4">
+            {/* Enhanced Code Content */}
+            <div className="p-4 bg-slate-900">
               <SyntaxHighlighter
                 language="python"
                 style={oneDark}
                 customStyle={{
                   margin: 0,
                   padding: 0,
-                  fontSize: "0.75rem",
-                  lineHeight: "1.5",
+                  fontSize: "0.8rem",
+                  lineHeight: "1.6",
                   background: "transparent",
+                  fontFamily:
+                    "'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace",
                 }}
                 showLineNumbers={true}
+                lineNumberStyle={{
+                  color: "#64748b",
+                  paddingRight: "1rem",
+                  fontSize: "0.75rem",
+                }}
                 className="!border-none"
                 codeTagProps={{
                   style: {
@@ -522,14 +501,14 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Link
-                href="/docs/tutorials/0-bootstrap"
+                href="/docs/getting-started"
                 className="inline-flex items-center bg-blue-600 hover:bg-blue-700 !text-white font-bold px-8 py-4 rounded-lg transition-transform duration-200 hover:scale-105 shadow-lg no-underline"
               >
                 Quick Start
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
               <StyledLink
-                href="/docs/design/vibe-x-philosophy"
+                href="/docs/design/vibe-x"
                 lightColor="#374151"
                 darkColor="#d1d5db"
                 className="inline-flex items-center border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 font-medium px-6 py-3 rounded-lg transition-transform duration-200 hover:scale-105"

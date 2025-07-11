@@ -1,0 +1,161 @@
+# Glossary
+
+A comprehensive reference for AgentX terminology and concepts.
+
+## A
+
+### Agent
+
+An AI assistant with specific roles and capabilities. Agents can be preset (built-in specialists) or custom (defined with your own prompts and tools).
+
+### Agent Types
+
+- **Preset Agents**: Built-in specialists like researcher, writer, web_designer, reviewer
+- **Custom Agents**: Define your own with custom prompts and tools
+- **Tool-Heavy Agents**: Agents with extensive external integrations
+
+### Autonomous Mode
+
+Execution mode where agents work independently without human intervention until completion or explicit stopping condition.
+
+## B
+
+### Bootstrap
+
+AgentX's project wizard (`agentx init`) that creates complete, working projects with intelligent defaults.
+
+### Brain
+
+The LLM-powered reasoning engine that drives agent decision-making and responses.
+
+## C
+
+### Configuration
+
+YAML files that define agent teams, their roles, tools, and coordination patterns.
+
+### Coordination Patterns
+
+Different ways agents can work together:
+
+- **Single Agent**: Direct conversation
+- **Sequential Handoffs**: Agents pass work to next specialist
+- **Parallel Processing**: Multiple agents work simultaneously
+- **Human-in-the-Loop**: Agents pause for human input/approval
+
+## E
+
+### Execution Mode
+
+How agents operate:
+
+- **Autonomous**: Agents work independently
+- **Interactive**: Human guidance at each step
+- **Hybrid**: Mix of autonomous and interactive phases
+
+## H
+
+### Handoffs
+
+Defined transitions between agents in multi-agent workflows, specifying when one agent passes work to another.
+
+### Human-in-the-Loop
+
+A coordination pattern where agents pause for human input, approval, or guidance at critical decision points.
+
+## M
+
+### Memory
+
+Persistent context that spans conversations, allowing agents to remember previous interactions and maintain continuity.
+
+### Multi-Agent Team
+
+A coordinated group of agents working together, each with specialized roles and capabilities.
+
+## O
+
+### Orchestrator
+
+The coordination layer that manages multi-agent workflows, handles handoffs, and ensures proper task execution.
+
+## P
+
+### Preset Agents
+
+Built-in specialist agents provided by AgentX:
+
+- **Researcher**: Gathers and synthesizes evidence-based research
+- **Writer**: Transforms research into clear, persuasive content
+- **Web Designer**: Creates interactive HTML experiences
+- **Reviewer**: Provides quality assurance and final polish
+
+### Prompt Template
+
+Markdown files that define agent behavior, personality, and capabilities.
+
+## S
+
+### start_task
+
+Task-based interface for complex multi-step workflows, returns an XAgent instance for interaction.
+
+### Streaming
+
+Real-time response delivery where content is sent as it's generated rather than waiting for completion.
+
+## T
+
+### Task
+
+A complete workflow instance with its own workspace, memory, and execution context.
+
+### Team
+
+A configured group of agents with defined roles, tools, and coordination patterns.
+
+### Tools
+
+Functions agents can use to interact with the world:
+
+- **Built-in Tools**: web_search, memory, file operations
+- **Custom Tools**: User-defined functions for specific needs
+- **External Tools**: Third-party integrations and APIs
+
+## V
+
+### Vibe-X Philosophy
+
+AgentX's core principles:
+
+- **Transparent Processes**: Real-time visibility into AI decision-making
+- **Human-in-the-Loop**: Strategic human oversight with AI execution
+- **Cost-Aware Intelligence**: Intelligent model routing balancing capability with cost
+
+## W
+
+### Workspace
+
+Isolated directory for each task containing files, artifacts, logs, and execution context.
+
+## X
+
+### XAgent
+
+The conversational interface for interacting with your agent team. Perfect for chat applications and iterative refinement.
+
+---
+
+## Quick Reference
+
+### Interface Comparison
+
+- **XAgent**: Direct conversational interface, perfect for chat applications
+- **start_task**: Task-based interface, ideal for complex multi-step workflows
+
+### Common Patterns
+
+- **Single Agent**: One agent handles the entire conversation
+- **Sequential Workflow**: Agents work in a defined order (research → write → review)
+- **Parallel Processing**: Multiple agents work simultaneously on different aspects
+- **Iterative Refinement**: Using XAgent.chat() to refine and improve outputs

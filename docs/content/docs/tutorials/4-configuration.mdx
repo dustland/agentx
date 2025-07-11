@@ -1,124 +1,204 @@
-# Configuration
+# Configuration Guide
 
-AgentX uses YAML configuration files to define agent teams and their behavior.
+AgentX uses YAML configuration files to define agent teams and their behavior. This guide covers everything you need to know about organizing and configuring your AgentX projects effectively.
 
-## Team Configuration
+## Quick Start
 
-The main configuration file is `team.yaml`:
+Every AgentX project starts with a `team.yaml` file that defines your agent team:
 
 ```yaml
 name: "my_team"
-
-# Team-level settings
-speaker_selection_method: "auto" # auto, round_robin, manual
 max_rounds: 10
 termination_condition: "TERMINATE"
 
-# Global LLM settings (can be overridden per agent)
+llm:
+  model: "deepseek/deepseek-chat"
+  temperature: 0.7
+
+agents:
+  - name: "assistant"
+    role: "assistant"
+    prompt_file: "prompts/assistant.md"
+    tools: ["web_search", "memory"]
+```
+
+## Project Organization Patterns
+
+### 1. Single Agent Projects
+
+For simple projects with one agent:
+
+```
+my_project/
+├── config/
+│   ├── team.yaml              # Main configuration
+│   └── prompts/
+│       └── assistant.md       # Agent prompt
+├── workspace/                 # Agent working directory
+└── main.py                   # Application entry point
+```
+
+**Configuration:**
+
+```yaml
+name: "simple_assistant"
+max_rounds: 10
+
+agents:
+  - name: "assistant"
+    role: "assistant"
+    prompt_file: "prompts/assistant.md"
+    tools: ["web_search", "memory", "storage"]
+```
+
+### 2. Multi-Agent Teams
+
+For collaborative agent teams:
+
+```
+writing_team/
+├── config/
+│   ├── team.yaml              # Team configuration
+│   └── prompts/               # Agent-specific prompts
+│       ├── researcher.md      # Research specialist
+│       ├── writer.md          # Content writer
+│       └── editor.md          # Editor and reviewer
+├── workspace/                 # Shared workspace
+└── main.py
+```
+
+**Configuration:**
+
+```yaml
+name: "writing_team"
+speaker_selection_method: "auto"
+max_rounds: 20
+termination_condition: "TERMINATE"
+
+# Global settings for all agents
+llm:
+  model: "deepseek/deepseek-chat"
+  temperature: 0.7
+
+agents:
+  - name: "researcher"
+    role: "researcher"
+    prompt_file: "prompts/researcher.md"
+    tools: ["web_search", "memory"]
+    llm:
+      temperature: 0.3 # Lower for factual research
+
+  - name: "writer"
+    role: "writer"
+    prompt_file: "prompts/writer.md"
+    tools: ["storage", "memory"]
+    llm:
+      temperature: 0.8 # Higher for creativity
+
+  - name: "editor"
+    role: "editor"
+    prompt_file: "prompts/editor.md"
+    tools: ["storage"]
+    llm:
+      temperature: 0.4 # Moderate for editing
+```
+
+### 3. Complex Multi-Domain Projects
+
+For large projects with multiple specialized teams:
+
+```
+enterprise_project/
+├── config/
+│   ├── teams/                 # Multiple team configurations
+│   │   ├── research_team.yaml
+│   │   ├── dev_team.yaml
+│   │   └── qa_team.yaml
+│   ├── prompts/               # Organized by domain
+│   │   ├── research/
+│   │   │   ├── market_researcher.md
+│   │   │   └── technical_analyst.md
+│   │   ├── development/
+│   │   │   ├── architect.md
+│   │   │   ├── developer.md
+│   │   │   └── devops.md
+│   │   └── qa/
+│   │       ├── tester.md
+│   │       └── reviewer.md
+│   └── tools/                 # Custom tools
+│       ├── database_tools.py
+│       └── api_tools.py
+├── workspace/
+│   ├── research/              # Domain-specific workspaces
+│   ├── development/
+│   └── qa/
+└── main.py
+```
+
+## Configuration Reference
+
+### Team-Level Settings
+
+```yaml
+# Basic team identity
+name: "my_team" # Team name for identification
+description: "A helpful AI team" # Optional description
+
+# Conversation flow control
+speaker_selection_method: "auto" # auto, round_robin, manual
+max_rounds: 20 # Maximum conversation rounds
+termination_condition: "TERMINATE" # When to stop the conversation
+
+# Global defaults (inherited by all agents)
 llm:
   model: "deepseek/deepseek-chat"
   temperature: 0.7
   max_tokens: 2000
 
-# Agent definitions
-agents:
-  - name: "user"
-    role: "user"
-    human_input_mode: "ALWAYS"
-
-  - name: "assistant"
-    role: "assistant"
-    prompt_file: "prompts/assistant.md"
-    tools: ["web_search", "memory"]
-    enable_memory: true
-    llm:
-      temperature: 0.3 # Override global setting
-```
-
-## Agent Configuration
-
-### Basic Agent Settings
-
-```yaml
-agents:
-  - name: "researcher" # Unique agent name
-    role: "researcher" # Agent role/specialization
-    prompt_file: "prompts/researcher.md" # Path to prompt file
-    human_input_mode: "NEVER" # ALWAYS, NEVER, TERMINATE
-    enable_memory: true # Enable persistent memory
-```
-
-### LLM Configuration
-
-```yaml
-agents:
-  - name: "writer"
-    llm:
-      model: "deepseek/deepseek-chat" # Model name
-      temperature: 0.7 # Creativity (0.0-1.0)
-      max_tokens: 2000 # Max response length
-      top_p: 0.9 # Nucleus sampling
-      frequency_penalty: 0.0 # Repetition penalty
-      presence_penalty: 0.0 # Topic diversity
-```
-
-### Tool Configuration
-
-```yaml
-agents:
-  - name: "analyst"
-    tools:
-      - "web_search"
-      - "memory"
-      - "storage"
-      - name: "custom_tool"
-        config:
-          api_key: "${CUSTOM_API_KEY}"
-          timeout: 30
-```
-
-## Directory Structure
-
-```
-my_project/
-├── config/
-│   ├── team.yaml              # Main team configuration
-│   ├── prompts/               # Agent prompt files
-│   │   ├── researcher.md
-│   │   ├── writer.md
-│   │   └── reviewer.md
-│   └── tools/                 # Custom tool definitions
-│       └── custom_tools.py
-├── workspace/                 # Agent working directory
-└── main.py                   # Application entry point
-```
-
-## Environment Variables
-
-AgentX supports environment variable substitution:
-
-```yaml
-llm:
-  model: "deepseek/deepseek-chat"
-  api_key: "${DEEPSEEK_API_KEY}"
-
+# Optional: Team-wide tool configuration
 tools:
   - name: "web_search"
     config:
       api_key: "${SERPAPI_API_KEY}"
+      timeout: 30
 ```
 
-Set environment variables:
+### Agent Configuration
 
-```bash
-export DEEPSEEK_API_KEY="your-key"
-export SERPAPI_API_KEY="your-key"
-export MEM0_API_KEY="your-key"
+#### Basic Agent Settings
+
+```yaml
+agents:
+  - name: "assistant" # Unique agent identifier
+    role: "assistant" # Role description
+    prompt_file: "prompts/assistant.md" # Path to prompt file
+
+    # Human interaction settings
+    human_input_mode: "NEVER" # ALWAYS, NEVER, TERMINATE
+
+    # Memory and persistence
+    enable_memory: true # Enable long-term memory
+
+    # Tools available to this agent
+    tools: ["web_search", "memory", "storage"]
 ```
 
-## Advanced Configuration
+#### LLM Configuration
 
-### Memory Configuration
+```yaml
+agents:
+  - name: "creative_writer"
+    llm:
+      model: "openai/gpt-4" # Specific model
+      temperature: 0.9 # Creativity (0.0-1.0)
+      max_tokens: 2000 # Response length limit
+      top_p: 0.9 # Nucleus sampling
+      frequency_penalty: 0.0 # Reduce repetition
+      presence_penalty: 0.0 # Encourage topic diversity
+      stop: ["###", "---"] # Stop sequences
+```
+
+#### Memory Configuration
 
 ```yaml
 agents:
@@ -128,31 +208,164 @@ agents:
       backend: "mem0" # mem0, simple, custom
       config:
         api_key: "${MEM0_API_KEY}"
-        collection: "my_agent_memory"
+        collection: "assistant_memory"
         embedding_model: "text-embedding-3-small"
+        metadata:
+          user_id: "default"
+          session_id: "main"
 ```
 
-### Multi-Model Configuration
+#### Tool Configuration
 
 ```yaml
 agents:
-  - name: "creative_writer"
-    llm:
-      model: "openai/gpt-4"
-      temperature: 0.9
+  - name: "analyst"
+    tools:
+      # Built-in tools (simple reference)
+      - "web_search"
+      - "memory"
+      - "storage"
 
-  - name: "fact_checker"
-    llm:
-      model: "deepseek/deepseek-chat"
-      temperature: 0.1
+      # Custom tools with configuration
+      - name: "database_query"
+        config:
+          host: "${DB_HOST}"
+          port: 5432
+          database: "analytics"
 
-  - name: "code_reviewer"
-    llm:
-      model: "anthropic/claude-3-sonnet"
-      temperature: 0.3
+      # External tools (MCP)
+      - name: "github"
+        type: "mcp"
+        config:
+          server: "github-mcp-server"
+          args: ["--token", "${GITHUB_TOKEN}"]
 ```
 
-### Workflow Configuration
+## Environment Variables
+
+AgentX supports environment variable substitution for secure configuration:
+
+### Setting Up Environment Variables
+
+Create a `.env` file in your project root:
+
+```env
+# LLM API Keys
+OPENAI_API_KEY=sk-your-openai-key
+DEEPSEEK_API_KEY=your-deepseek-key
+ANTHROPIC_API_KEY=your-anthropic-key
+
+# Tool API Keys
+SERPAPI_API_KEY=your-serpapi-key
+MEM0_API_KEY=your-mem0-key
+GITHUB_TOKEN=your-github-token
+
+# Custom Configuration
+DATABASE_URL=postgresql://user:pass@localhost/db
+API_TIMEOUT=30
+```
+
+### Using Environment Variables in Configuration
+
+```yaml
+# LLM configuration
+llm:
+  model: "deepseek/deepseek-chat"
+  api_key: "${DEEPSEEK_API_KEY}"
+
+# Tool configuration
+tools:
+  - name: "web_search"
+    config:
+      api_key: "${SERPAPI_API_KEY}"
+      timeout: "${API_TIMEOUT:30}" # Default value after colon
+
+# Memory configuration
+agents:
+  - name: "assistant"
+    memory:
+      config:
+        api_key: "${MEM0_API_KEY}"
+        connection_string: "${DATABASE_URL}"
+```
+
+## Advanced Configuration Patterns
+
+### 1. Configuration Inheritance
+
+Use global settings that agents inherit and override:
+
+```yaml
+# Global defaults
+llm:
+  model: "deepseek/deepseek-chat"
+  temperature: 0.7
+  max_tokens: 2000
+
+agents:
+  # Inherits global settings
+  - name: "researcher"
+    role: "researcher"
+    prompt_file: "prompts/researcher.md"
+    llm:
+      temperature: 0.3 # Override for factual work
+
+  # Inherits global settings
+  - name: "writer"
+    role: "writer"
+    prompt_file: "prompts/writer.md"
+    llm:
+      temperature: 0.8 # Override for creativity
+      max_tokens: 3000 # Override for longer content
+```
+
+### 2. Multi-Model Teams
+
+Use different models for different tasks:
+
+```yaml
+agents:
+  # Fast, cost-effective for simple tasks
+  - name: "coordinator"
+    llm:
+      model: "deepseek/deepseek-chat"
+      temperature: 0.5
+
+  # Powerful model for complex reasoning
+  - name: "analyst"
+    llm:
+      model: "openai/gpt-4"
+      temperature: 0.3
+
+  # Specialized model for code
+  - name: "developer"
+    llm:
+      model: "anthropic/claude-3-sonnet"
+      temperature: 0.2
+```
+
+### 3. Environment-Specific Configuration
+
+Use different configurations for different environments:
+
+```yaml
+# config/team.yaml (development)
+name: "dev_team"
+llm:
+  model: "deepseek/deepseek-chat"  # Cost-effective for development
+  temperature: 0.7
+
+# config/production.yaml (production)
+name: "prod_team"
+llm:
+  model: "openai/gpt-4"           # Higher quality for production
+  temperature: 0.5
+max_rounds: 10                    # Stricter limits
+```
+
+### 4. Workflow Configuration
+
+Define structured workflows:
 
 ```yaml
 # Sequential workflow
@@ -160,140 +373,326 @@ workflow:
   type: "sequential"
   steps:
     - agent: "researcher"
-      task: "Research the topic"
+      task: "Research the topic thoroughly"
+      timeout: 300
     - agent: "writer"
-      task: "Write based on research"
+      task: "Write based on research findings"
+      timeout: 600
     - agent: "reviewer"
-      task: "Review and improve"
+      task: "Review and improve the content"
+      timeout: 300
 
 # Parallel workflow
 workflow:
   type: "parallel"
   agents: ["researcher1", "researcher2", "researcher3"]
   merge_agent: "synthesizer"
+  timeout: 600
+```
+
+## Real-World Examples
+
+### Example 1: Content Creation Team
+
+A team that researches, writes, and edits content:
+
+```yaml
+name: "content_creation_team"
+speaker_selection_method: "auto"
+max_rounds: 15
+termination_condition: "TERMINATE"
+
+llm:
+  model: "deepseek/deepseek-chat"
+  temperature: 0.7
+
+agents:
+  - name: "researcher"
+    role: "research_specialist"
+    prompt_file: "prompts/researcher.md"
+    tools: ["web_search", "memory"]
+    llm:
+      temperature: 0.3
+
+  - name: "writer"
+    role: "content_writer"
+    prompt_file: "prompts/writer.md"
+    tools: ["storage", "memory"]
+    llm:
+      temperature: 0.8
+      max_tokens: 3000
+
+  - name: "editor"
+    role: "content_editor"
+    prompt_file: "prompts/editor.md"
+    tools: ["storage"]
+    llm:
+      temperature: 0.4
+```
+
+### Example 2: Software Development Team
+
+A team that plans, develops, and tests software:
+
+```yaml
+name: "dev_team"
+speaker_selection_method: "auto"
+max_rounds: 25
+
+llm:
+  model: "anthropic/claude-3-sonnet"
+  temperature: 0.3
+
+agents:
+  - name: "architect"
+    role: "software_architect"
+    prompt_file: "prompts/architect.md"
+    tools: ["storage", "memory"]
+
+  - name: "developer"
+    role: "software_developer"
+    prompt_file: "prompts/developer.md"
+    tools: ["storage", "memory", "web_search"]
+
+  - name: "tester"
+    role: "qa_tester"
+    prompt_file: "prompts/tester.md"
+    tools: ["storage"]
+    llm:
+      temperature: 0.2 # More systematic for testing
+```
+
+### Example 3: Customer Support Team
+
+A team that handles customer inquiries:
+
+```yaml
+name: "support_team"
+speaker_selection_method: "auto"
+max_rounds: 20
+
+agents:
+  - name: "classifier"
+    role: "issue_classifier"
+    prompt_file: "prompts/classifier.md"
+    tools: ["memory"]
+    llm:
+      model: "deepseek/deepseek-chat"
+      temperature: 0.2
+
+  - name: "technical_support"
+    role: "technical_specialist"
+    prompt_file: "prompts/technical_support.md"
+    tools: ["web_search", "memory", "storage"]
+    llm:
+      model: "openai/gpt-4"
+      temperature: 0.4
+
+  - name: "escalation_handler"
+    role: "escalation_specialist"
+    prompt_file: "prompts/escalation.md"
+    tools: ["memory", "storage"]
+    human_input_mode: "TERMINATE"
+```
+
+## Security Best Practices
+
+### 1. Never Hardcode Secrets
+
+```yaml
+# ❌ Never do this
+llm:
+  api_key: "sk-1234567890abcdef"
+
+# ✅ Always use environment variables
+llm:
+  api_key: "${OPENAI_API_KEY}"
+```
+
+### 2. Use Secure Environment Variable Management
+
+```bash
+# Use a .env file (never commit to version control)
+echo "OPENAI_API_KEY=your-key" >> .env
+echo ".env" >> .gitignore
+
+# Or use your system's secret management
+export OPENAI_API_KEY="your-key"
+```
+
+### 3. Limit Agent Permissions
+
+```yaml
+agents:
+  # Public-facing agent with limited tools
+  - name: "public_assistant"
+    tools: ["web_search"] # No storage or memory access
+
+  # Internal agent with full access
+  - name: "internal_assistant"
+    tools: ["web_search", "memory", "storage"]
+```
+
+## Performance Optimization
+
+### 1. Choose Appropriate Models
+
+```yaml
+agents:
+  # Fast model for simple tasks
+  - name: "classifier"
+    llm:
+      model: "deepseek/deepseek-chat"
+      max_tokens: 100 # Keep responses short
+
+  # Powerful model for complex tasks
+  - name: "analyst"
+    llm:
+      model: "openai/gpt-4"
+      max_tokens: 2000
+```
+
+### 2. Optimize Token Usage
+
+```yaml
+agents:
+  - name: "assistant"
+    llm:
+      max_tokens: 1000 # Limit response length
+      temperature: 0.3 # Reduce randomness for efficiency
+      stop: ["###", "---"] # Use stop sequences
+```
+
+### 3. Configure Appropriate Timeouts
+
+```yaml
+tools:
+  - name: "web_search"
+    config:
+      timeout: 30 # Seconds
+
+  - name: "database_query"
+    config:
+      timeout: 60 # Longer for complex queries
+```
+
+## Troubleshooting Common Issues
+
+### 1. Agent Not Responding
+
+**Problem:** Agent doesn't generate responses
+
+**Solutions:**
+
+```yaml
+# Check model configuration
+agents:
+  - name: "assistant"
+    llm:
+      model: "deepseek/deepseek-chat" # Ensure model exists
+      api_key: "${DEEPSEEK_API_KEY}" # Check API key
+      max_tokens: 2000 # Ensure sufficient tokens
+```
+
+### 2. Conversation Loops
+
+**Problem:** Agents keep talking without terminating
+
+**Solutions:**
+
+```yaml
+# Add termination conditions
+max_rounds: 10 # Hard limit
+termination_condition: "TERMINATE"
+
+# Or use structured workflows
+workflow:
+  type: "sequential"
+  steps:
+    - agent: "researcher"
+      task: "Research topic"
+    - agent: "writer"
+      task: "Write summary"
+```
+
+### 3. Memory Issues
+
+**Problem:** Agents don't remember previous conversations
+
+**Solutions:**
+
+```yaml
+agents:
+  - name: "assistant"
+    enable_memory: true
+    memory:
+      backend: "mem0"
+      config:
+        api_key: "${MEM0_API_KEY}"
+        collection: "unique_collection_name" # Ensure unique collection
+```
+
+### 4. Tool Failures
+
+**Problem:** Tools aren't working properly
+
+**Solutions:**
+
+```yaml
+# Check tool configuration
+tools:
+  - name: "web_search"
+    config:
+      api_key: "${SERPAPI_API_KEY}" # Verify API key
+      timeout: 30 # Increase timeout if needed
+
+# Enable debug logging
+agents:
+  - name: "assistant"
+    tools: ["web_search"]
+    debug: true # Enable debug output
 ```
 
 ## Configuration Validation
+
+### 1. Built-in Validation
 
 AgentX validates configurations at startup:
 
 ```python
 from agentx.config import validate_config
 
-# Validate before use
+# Validate configuration
 config = validate_config("config/team.yaml")
-if config.is_valid:
-    executor = TaskExecutor(config_path="config")
-else:
+if not config.is_valid:
     print(f"Configuration errors: {config.errors}")
+    exit(1)
 ```
 
-## Configuration Templates
+### 2. Schema Validation
 
-### Simple Chat Template
+Use YAML schema validation:
 
 ```yaml
-name: "simple_chat"
-max_rounds: 10
-termination_condition: "TERMINATE"
+# Add schema validation to your team.yaml
+$schema: "https://raw.githubusercontent.com/your-org/agentx/main/schemas/team.yaml"
 
-agents:
-  - name: "user"
-    role: "user"
-    human_input_mode: "ALWAYS"
-
-  - name: "assistant"
-    role: "assistant"
-    prompt_file: "prompts/assistant.md"
-    tools: ["web_search"]
-    enable_memory: true
+name: "my_team"
+# ... rest of configuration
 ```
 
-### Multi-Agent Team Template
+## Next Steps
 
-```yaml
-name: "writing_team"
-speaker_selection_method: "auto"
-max_rounds: 20
+Now that you understand how to configure AgentX:
 
-agents:
-  - name: "researcher"
-    role: "researcher"
-    prompt_file: "prompts/researcher.md"
-    tools: ["web_search", "memory"]
+1. **Start Simple**: Begin with a single agent configuration
+2. **Iterate**: Add more agents and tools as needed
+3. **Organize**: Structure your project following the patterns above
+4. **Secure**: Use environment variables for all secrets
+5. **Test**: Validate your configuration before deployment
 
-  - name: "writer"
-    role: "writer"
-    prompt_file: "prompts/writer.md"
-    tools: ["storage", "memory"]
+For more advanced topics, see:
 
-  - name: "editor"
-    role: "editor"
-    prompt_file: "prompts/editor.md"
-    tools: ["storage"]
-```
-
-## Best Practices
-
-### 1. Use Environment Variables
-
-Never hardcode API keys in configuration files:
-
-```yaml
-# ❌ Don't do this
-llm:
-  api_key: "sk-1234567890abcdef"
-
-# ✅ Do this
-llm:
-  api_key: "${OPENAI_API_KEY}"
-```
-
-### 2. Organize Prompts
-
-Keep prompts in separate files for better maintainability:
-
-```yaml
-# ✅ Good
-agents:
-  - name: "assistant"
-    prompt_file: "prompts/assistant.md"
-
-# ❌ Avoid inline prompts for complex cases
-agents:
-  - name: "assistant"
-    prompt: "You are a helpful assistant..."
-```
-
-### 3. Use Appropriate Models
-
-Match models to tasks:
-
-```yaml
-agents:
-  # Creative tasks - higher temperature
-  - name: "creative_writer"
-    llm:
-      model: "openai/gpt-4"
-      temperature: 0.8
-
-  # Analytical tasks - lower temperature
-  - name: "data_analyst"
-    llm:
-      model: "deepseek/deepseek-chat"
-      temperature: 0.2
-```
-
-### 4. Configure Termination
-
-Set appropriate termination conditions:
-
-```yaml
-# For open-ended conversations
-max_rounds: 50
-termination_condition: "TERMINATE"
-
-# For structured tasks
-max_rounds: 10
-termination_condition: "TASK_COMPLETE"
-```
+- [Custom Tools Tutorial](./3-custom-tools) - Creating custom tools
+- [API Reference](/api/core/config) - Complete configuration options
+- [Examples](https://github.com/your-org/agentx/tree/main/examples) - Real-world examples
