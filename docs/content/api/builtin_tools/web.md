@@ -20,15 +20,15 @@ Simple, reliable, and consistent - no complex fallback chains.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L40" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage = None)
+def __init__(self, workspace_storage = None, use_crawl4ai = True)
 ```
-### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L48" class="source-link" title="View source code">source</a>
+### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
 
 ```python
 async def extract_content(self, urls: Union[str, List[str]], prompt: str = 'Extract main content') -> ToolResult
 ```
 
-Extract content from URLs using Crawl4AI (open source, handles JS, reliable).
+Extract content from URLs using Crawl4AI for advanced extraction.
 
 **Args:**
     urls: Single URL or list of URLs to extract from
@@ -36,3 +36,6 @@ Extract content from URLs using Crawl4AI (open source, handles JS, reliable).
 
 **Returns:**
     ToolResult with extracted content summaries and file paths
+
+**Note:** Uses improved Crawl4AI configuration based on stable Playwright patterns.
+Falls back to simple HTTP extraction if Crawl4AI fails.

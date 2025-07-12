@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "agentx-py"
-version = "0.18.4"
+version = "0.18.5"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
@@ -33,6 +33,7 @@ dependencies = [
     { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.2.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "openai" },
+    { name = "playwright" },
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "pygithub" },
@@ -99,6 +100,7 @@ requires-dist = [
     { name = "mem0ai", specifier = ">=0.1.106" },
     { name = "numpy", specifier = ">=1.24.3" },
     { name = "openai", specifier = ">=1.0.0" },
+    { name = "playwright", specifier = ">=1.52.0" },
     { name = "playwright", marker = "extra == 'all'", specifier = ">=1.40.0" },
     { name = "playwright", marker = "extra == 'web-automation'", specifier = ">=1.40.0" },
     { name = "pyarrow", specifier = ">=19.0.1" },

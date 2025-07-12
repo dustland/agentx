@@ -37,17 +37,18 @@ class WebTool(Tool):
     Simple, reliable, and consistent - no complex fallback chains.
     """
 
-    def __init__(self, workspace_storage=None):
+    def __init__(self, workspace_storage=None, use_crawl4ai=True):
         super().__init__("web")
         self.workspace = workspace_storage
+        self.use_crawl4ai = use_crawl4ai  # Re-enabled - need to fix crashes properly
 
     @tool(
-        description="Extract clean content from URLs using Crawl4AI and save to files. Handles JavaScript, bypasses bot detection, generates clean markdown.",
+        description="Extract clean content from URLs and save to files. Uses direct Playwright implementation to avoid browser crashes.",
         return_description="ToolResult with file paths and content summaries"
     )
     async def extract_content(self, urls: Union[str, List[str]], prompt: str = "Extract main content") -> ToolResult:
         """
-        Extract content from URLs using Crawl4AI (open source, handles JS, reliable).
+        Extract content from URLs using Crawl4AI for advanced extraction.
 
         Args:
             urls: Single URL or list of URLs to extract from
@@ -55,143 +56,56 @@ class WebTool(Tool):
 
         Returns:
             ToolResult with extracted content summaries and file paths
+
+        Note: Uses improved Crawl4AI configuration based on stable Playwright patterns.
+        Falls back to simple HTTP extraction if Crawl4AI fails.
         """
-        try:
-            from crawl4ai import AsyncWebCrawler
-        except ImportError:
-            return ToolResult(
-                success=False,
-                error="Crawl4AI not installed. Run: pip install crawl4ai",
-                metadata={"installation_required": True}
-            )
-
-        # Convert single URL to list
+        # Convert single URL to list and initialize timing
         url_list = [urls] if isinstance(urls, str) else urls
-
-        logger.info(f"Extracting content from {len(url_list)} URLs using Crawl4AI...")
         start_time = time.time()
 
-        # Configure Crawl4AI for maximum stability
-        config = {
-            "headless": True,
-            "verbose": False,
-            "delay_before_return": 0.5,
-            "always_by_pass_cache": True,  # Force fresh context each time
-            "browser_type": "chromium",
-            "keep_alive": False,
-            "max_concurrent_sessions": 1,
-            "semaphore_count": 1,  # Strict single-threaded operation
-        }
-
-        async def extract_single_url(crawler, url: str) -> WebContent:
-            """Extract content from a single URL with improved error handling."""
+        # Choose extraction method based on configuration
+        if self.use_crawl4ai:
             try:
-                # Add retry logic for browser context issues
-                max_retries = 2
-                for attempt in range(max_retries):
-                    try:
-                        result = await crawler.arun(
-                            url=url,
-                            word_count_threshold=10,
-                            only_text=False,
-                            process_iframes=True,
-                            remove_overlay_elements=True,
-                            simulate_user=True,
-                            override_navigator=True,
-                            markdown_generator=True,
-                            page_timeout=15000,  # Reduce timeout
-                            wait_for_images=False,  # Skip image loading for speed
-                            delay_before_return=0.5,  # Shorter delay
-                        )
-                        break  # Success, exit retry loop
-                    except Exception as e:
-                        if "browser has been closed" in str(e).lower() and attempt < max_retries - 1:
-                            logger.warning(f"Browser context closed, retrying {url} (attempt {attempt + 2}/{max_retries})")
-                            await asyncio.sleep(1)  # Brief delay before retry
-                            continue
-                        else:
-                            raise  # Re-raise if not a browser context issue or final attempt
+                from crawl4ai import AsyncWebCrawler
+                logger.info("Using Crawl4AI for advanced extraction")
+                return await self._extract_with_crawl4ai_fixed(url_list, start_time)
+            except ImportError:
+                logger.warning("Crawl4AI not installed, falling back to simple extraction")
+                self.use_crawl4ai = False
 
-                if not result.success:
-                    raise Exception(f"Crawl failed: {result.error_message}")
+        logger.info(f"Extracting content from {len(url_list)} URLs using simple HTTP extraction...")
 
-                # Extract title from multiple sources
-                title = url  # fallback
-                if result.metadata:
-                    title = (
-                        result.metadata.get('title') or
-                        result.metadata.get('og:title') or
-                        result.metadata.get('twitter:title') or
-                        url
-                    )
-
-                # Get best content
-                content = result.markdown or result.cleaned_html or ""
-                if not content.strip():
-                    raise Exception("No content extracted")
-
-                # Clean content
-                content = re.sub(r'\n\s*\n\s*\n', '\n\n', content).strip()
-
-                return WebContent(
-                    url=url,
-                    title=title.strip(),
-                    content=content,
-                    markdown=content,
-                    metadata={
-                        "extraction_method": "crawl4ai",
-                        "content_length": len(content),
-                        "word_count": len(content.split()),
-                        "extraction_time": time.time() - start_time
-                    },
-                    success=True
-                )
-
-            except Exception as e:
-                logger.error(f"Failed to extract {url}: {e}")
-                return WebContent(
-                    url=url,
-                    title="Extraction Failed",
-                    content="",
-                    markdown="",
-                    metadata={"extraction_method": "crawl4ai", "content_length": 0},
-                    success=False,
-                    error=str(e)
-                )
-
-        # Extract URLs sequentially to avoid browser context conflicts
+        # Extract URLs sequentially
         extracted_contents = []
 
         for url in url_list:
             try:
                 logger.info(f"Processing URL: {url}")
-                # Create fresh crawler instance for each URL to avoid context issues
-                async with AsyncWebCrawler(**config) as crawler:
-                    await asyncio.sleep(0.1)  # Small delay for initialization
-                    result = await extract_single_url(crawler, url)
-                    extracted_contents.append(result)
+                # Use simple extraction directly to avoid browser crashes
+                result = await self._simple_fallback_extraction(url)
+                extracted_contents.append(result)
 
             except Exception as e:
-                logger.error(f"Crawl4AI failed for {url}: {e}")
-                # Fallback to simple requests for basic content
-                try:
-                    fallback_result = await self._simple_fallback_extraction(url)
-                    extracted_contents.append(fallback_result)
-                except Exception as fallback_error:
-                    logger.error(f"Fallback also failed for {url}: {fallback_error}")
-                    extracted_contents.append(WebContent(
-                        url=url,
-                        title="Extraction Failed",
-                        content="",
-                        markdown="",
-                        metadata={"extraction_method": "crawl4ai_failed", "content_length": 0},
-                        success=False,
-                        error=str(e)
-                    ))
+                logger.error(f"Simple extraction failed for {url}: {e}")
+                extracted_contents.append(WebContent(
+                    url=url,
+                    title="Extraction Failed",
+                    content="",
+                    markdown="",
+                    metadata={"extraction_method": "simple_failed", "content_length": 0},
+                    success=False,
+                    error=str(e)
+                ))
 
         extraction_time = time.time() - start_time
         logger.info(f"Content extraction completed in {extraction_time:.2f}s")
 
+        return await self._process_extracted_contents(extracted_contents, url_list, extraction_time, "simple_http")
+
+    async def _process_extracted_contents(self, extracted_contents: List[WebContent], url_list: List[str],
+                                        extraction_time: float, method: str) -> ToolResult:
+        """Process extracted contents into final result format."""
         # Save to workspace and create summaries
         saved_files = []
         content_summaries = []
@@ -259,7 +173,7 @@ class WebTool(Tool):
         # Return results
         successful_extractions = sum(1 for s in content_summaries if s["extraction_successful"])
 
-        if isinstance(urls, str):
+        if len(url_list) == 1:
             result_data = content_summaries[0] if content_summaries else None
         else:
             result_data = content_summaries
@@ -272,10 +186,272 @@ class WebTool(Tool):
                 "total_urls": len(url_list),
                 "successful_extractions": successful_extractions,
                 "saved_files": saved_files,
-                "extraction_method": "crawl4ai",
+                "extraction_method": method,
                 "message": f"Extracted content from {successful_extractions}/{len(url_list)} URLs"
             }
         )
+
+    async def _extract_with_crawl4ai_fixed(self, url_list: List[str], start_time: float) -> ToolResult:
+        """Fixed Crawl4AI implementation - create new crawler for each URL to avoid lifecycle bug."""
+        try:
+            from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
+
+            # Try Crawl4AI with workaround for the browser lifecycle bug
+            # Based on https://github.com/unclecode/crawl4ai/pull/1211
+            logger.info("Attempting Crawl4AI with per-URL crawler instances")
+
+            extracted_contents = []
+
+            # Process each URL with its own crawler instance to avoid context issues
+            for url in url_list:
+                try:
+                    logger.info(f"Processing URL with Crawl4AI: {url}")
+
+                    # Create a fresh browser config for each URL
+                    browser_config = BrowserConfig(
+                        browser_type="chromium",
+                        headless=True,
+                        # Use system Chrome instead of bundled Chromium
+                        chrome_channel="chrome",  # This uses system Chrome
+                        # Use context mode to avoid lifecycle issues
+                        browser_mode="context",
+                        # Don't use persistent context
+                        use_persistent_context=False,
+                        # Minimal args for stability
+                        extra_args=['--no-sandbox', '--disable-dev-shm-usage']
+                    )
+
+                    # Create a new crawler for this URL only
+                    async with AsyncWebCrawler(config=browser_config) as crawler:
+                        # Run configuration with minimal options
+                        run_config = CrawlerRunConfig(
+                            word_count_threshold=10,
+                            page_timeout=30000,
+                            exclude_external_links=True,
+                            exclude_social_media_links=True,
+                            wait_until="domcontentloaded"
+                        )
+
+                        result = await crawler.arun(url=url, config=run_config)
+
+                        if result.success and result.markdown:
+                            title = result.metadata.get('title', url) if result.metadata else url
+                            content = result.markdown.strip()
+
+                            if content:
+                                content = re.sub(r'\n\s*\n\s*\n', '\n\n', content)
+                                extracted_contents.append(WebContent(
+                                    url=url,
+                                    title=title.strip() if isinstance(title, str) else url,
+                                    content=content,
+                                    markdown=content,
+                                    metadata={
+                                        "extraction_method": "crawl4ai_workaround",
+                                        "content_length": len(content),
+                                        "word_count": len(content.split()),
+                                    },
+                                    success=True
+                                ))
+                            else:
+                                raise Exception("No content extracted")
+                        else:
+                            raise Exception(f"Crawl failed: {result.error_message if result else 'Unknown error'}")
+
+                except Exception as e:
+                    logger.warning(f"Crawl4AI failed for {url}: {e}")
+                    # Try simple fallback
+                    try:
+                        fallback_result = await self._simple_fallback_extraction(url)
+                        extracted_contents.append(fallback_result)
+                    except Exception as fallback_error:
+                        logger.error(f"Both Crawl4AI and fallback failed for {url}: {fallback_error}")
+                        extracted_contents.append(WebContent(
+                            url=url,
+                            title="Extraction Failed",
+                            content="",
+                            markdown="",
+                            metadata={"extraction_method": "failed", "content_length": 0},
+                            success=False,
+                            error=str(e)
+                        ))
+
+            extraction_time = time.time() - start_time
+            return await self._process_extracted_contents(extracted_contents, url_list, extraction_time, "crawl4ai_workaround")
+
+        except ImportError:
+            logger.warning("Crawl4AI not installed, using direct Playwright")
+        except Exception as e:
+            logger.error(f"Crawl4AI with workaround failed: {e}, falling back to Playwright")
+
+        # Fallback to direct Playwright implementation
+        try:
+            from playwright.async_api import async_playwright
+        except ImportError:
+            logger.error("Playwright not installed, falling back to simple extraction")
+            # Fall back to simple extraction for all URLs
+            extracted_contents = []
+            for url in url_list:
+                try:
+                    result = await self._simple_fallback_extraction(url)
+                    extracted_contents.append(result)
+                except Exception as e:
+                    logger.error(f"Simple extraction failed for {url}: {e}")
+                    extracted_contents.append(WebContent(
+                        url=url,
+                        title="Extraction Failed",
+                        content="",
+                        markdown="",
+                        metadata={"extraction_method": "failed", "content_length": 0},
+                        success=False,
+                        error=str(e)
+                    ))
+            extraction_time = time.time() - start_time
+            return await self._process_extracted_contents(extracted_contents, url_list, extraction_time, "simple_http")
+
+        extracted_contents = []
+
+        # Use Playwright directly with proper context management
+        async with async_playwright() as p:
+            # Try system Chrome first, then webkit, then firefox
+            browser = None
+            browser_type = "chrome"
+
+            try:
+                # First try system Chrome (most stable on macOS)
+                browser = await p.chromium.launch(
+                    channel="chrome",  # Use system Chrome instead of Chromium
+                    headless=True
+                )
+                browser_type = "chrome"
+                logger.info("Using system Chrome browser")
+            except Exception as e:
+                logger.warning(f"System Chrome not found: {e}, trying webkit")
+                try:
+                    # WebKit is usually stable on macOS
+                    browser = await p.webkit.launch(headless=True)
+                    browser_type = "webkit"
+                    logger.info("Using WebKit browser")
+                except Exception as e2:
+                    logger.warning(f"WebKit failed: {e2}, trying Firefox")
+                    try:
+                        browser = await p.firefox.launch(headless=True)
+                        browser_type = "firefox"
+                        logger.info("Using Firefox browser")
+                    except Exception as e3:
+                        logger.error(f"All browsers failed: Chrome: {e}, WebKit: {e2}, Firefox: {e3}")
+                        # Fall back to simple extraction
+                        for url in url_list:
+                            try:
+                                result = await self._simple_fallback_extraction(url)
+                                extracted_contents.append(result)
+                            except Exception as e4:
+                                extracted_contents.append(WebContent(
+                                    url=url,
+                                    title="Extraction Failed",
+                                    content="",
+                                    markdown="",
+                                    metadata={"extraction_method": "failed", "content_length": 0},
+                                    success=False,
+                                    error=str(e4)
+                                ))
+                        extraction_time = time.time() - start_time
+                        return await self._process_extracted_contents(extracted_contents, url_list, extraction_time, "simple_http")
+
+            # Process URLs with direct Playwright control
+            for url in url_list:
+                context = None
+                page = None
+
+                try:
+                    logger.info(f"Processing URL with Playwright {browser_type}: {url}")
+
+                    # Create a new context for each URL (isolation)
+                    context = await browser.new_context(
+                        viewport={'width': 1280, 'height': 720},
+                        user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+                    )
+
+                    page = await context.new_page()
+
+                    # Navigate with timeout
+                    await page.goto(url, wait_until='domcontentloaded', timeout=30000)
+
+                    # Wait a bit for dynamic content
+                    await page.wait_for_timeout(2000)
+
+                    # Extract content
+                    content = await page.content()
+                    title = await page.title()
+
+                    # Convert to markdown-like format
+                    text_content = await page.evaluate("""() => {
+                        // Remove script and style elements
+                        const scripts = document.querySelectorAll('script, style');
+                        scripts.forEach(el => el.remove());
+
+                        // Get text content
+                        return document.body.innerText || document.body.textContent || '';
+                    }""")
+
+                    if text_content:
+                        # Clean up text
+                        text_content = re.sub(r'\n\s*\n\s*\n', '\n\n', text_content.strip())
+
+                        extracted_contents.append(WebContent(
+                            url=url,
+                            title=title or url,
+                            content=text_content,
+                            markdown=text_content,
+                            metadata={
+                                "extraction_method": f"playwright_{browser_type}",
+                                "content_length": len(text_content),
+                                "word_count": len(text_content.split()),
+                            },
+                            success=True
+                        ))
+                    else:
+                        raise Exception("No content extracted")
+
+                except Exception as e:
+                    logger.warning(f"Playwright extraction failed for {url}: {e}")
+                    # Try simple fallback
+                    try:
+                        fallback_result = await self._simple_fallback_extraction(url)
+                        extracted_contents.append(fallback_result)
+                    except Exception as fallback_error:
+                        logger.error(f"Both Playwright and fallback failed for {url}: {fallback_error}")
+                        extracted_contents.append(WebContent(
+                            url=url,
+                            title="Extraction Failed",
+                            content="",
+                            markdown="",
+                            metadata={"extraction_method": "failed", "content_length": 0},
+                            success=False,
+                            error=str(e)
+                        ))
+                finally:
+                    # Clean up page and context
+                    if page:
+                        try:
+                            await page.close()
+                        except:
+                            pass
+                    if context:
+                        try:
+                            await context.close()
+                        except:
+                            pass
+
+            # Close browser
+            if browser:
+                try:
+                    await browser.close()
+                except:
+                    pass
+
+        # Process results
+        extraction_time = time.time() - start_time
+        return await self._process_extracted_contents(extracted_contents, url_list, extraction_time, f"playwright_{browser_type}")
 
     async def _simple_fallback_extraction(self, url: str) -> WebContent:
         """Simple fallback extraction when Crawl4AI fails."""
