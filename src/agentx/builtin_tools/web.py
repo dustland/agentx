@@ -71,15 +71,16 @@ class WebTool(Tool):
         logger.info(f"Extracting content from {len(url_list)} URLs using Crawl4AI...")
         start_time = time.time()
 
-        # Configure Crawl4AI for optimal extraction with better browser management
+        # Configure Crawl4AI for maximum stability
         config = {
             "headless": True,
             "verbose": False,
-            "delay_before_return": 1.0,  # Reduce delay
-            "always_by_pass_cache": False,
+            "delay_before_return": 0.5,
+            "always_by_pass_cache": True,  # Force fresh context each time
             "browser_type": "chromium",
-            "keep_alive": False,  # Don't keep alive to prevent context issues
-            "max_concurrent_sessions": 1,  # Limit concurrent sessions
+            "keep_alive": False,
+            "max_concurrent_sessions": 1,
+            "semaphore_count": 1,  # Strict single-threaded operation
         }
 
         async def extract_single_url(crawler, url: str) -> WebContent:
@@ -158,43 +159,35 @@ class WebTool(Tool):
                     error=str(e)
                 )
 
-        # Extract all URLs in parallel with better error handling
+        # Extract URLs sequentially to avoid browser context conflicts
         extracted_contents = []
-        try:
-            async with AsyncWebCrawler(**config) as crawler:
-                # Initialize crawler properly
-                await asyncio.sleep(0.1)  # Small delay for proper initialization
 
-                tasks = [extract_single_url(crawler, url) for url in url_list]
-                extracted_contents = await asyncio.gather(*tasks, return_exceptions=True)
+        for url in url_list:
+            try:
+                logger.info(f"Processing URL: {url}")
+                # Create fresh crawler instance for each URL to avoid context issues
+                async with AsyncWebCrawler(**config) as crawler:
+                    await asyncio.sleep(0.1)  # Small delay for initialization
+                    result = await extract_single_url(crawler, url)
+                    extracted_contents.append(result)
 
-                # Handle any exceptions from gather
-                for i, result in enumerate(extracted_contents):
-                    if isinstance(result, Exception):
-                        logger.error(f"Failed to extract {url_list[i]}: {result}")
-                        extracted_contents[i] = WebContent(
-                            url=url_list[i],
-                            title="Extraction Failed",
-                            content="",
-                            markdown="",
-                            metadata={"extraction_method": "crawl4ai", "content_length": 0},
-                            success=False,
-                            error=str(result)
-                        )
-        except Exception as e:
-            logger.error(f"Critical error in web extraction: {e}")
-            # Create failed results for all URLs
-            extracted_contents = [
-                WebContent(
-                    url=url,
-                    title="Extraction Failed",
-                    content="",
-                    markdown="",
-                    metadata={"extraction_method": "crawl4ai", "content_length": 0},
-                    success=False,
-                    error=f"Crawler initialization failed: {e}"
-                ) for url in url_list
-            ]
+            except Exception as e:
+                logger.error(f"Crawl4AI failed for {url}: {e}")
+                # Fallback to simple requests for basic content
+                try:
+                    fallback_result = await self._simple_fallback_extraction(url)
+                    extracted_contents.append(fallback_result)
+                except Exception as fallback_error:
+                    logger.error(f"Fallback also failed for {url}: {fallback_error}")
+                    extracted_contents.append(WebContent(
+                        url=url,
+                        title="Extraction Failed",
+                        content="",
+                        markdown="",
+                        metadata={"extraction_method": "crawl4ai_failed", "content_length": 0},
+                        success=False,
+                        error=str(e)
+                    ))
 
         extraction_time = time.time() - start_time
         logger.info(f"Content extraction completed in {extraction_time:.2f}s")
@@ -283,6 +276,55 @@ class WebTool(Tool):
                 "message": f"Extracted content from {successful_extractions}/{len(url_list)} URLs"
             }
         )
+
+    async def _simple_fallback_extraction(self, url: str) -> WebContent:
+        """Simple fallback extraction when Crawl4AI fails."""
+        import aiohttp
+        import re
+
+        try:
+            timeout = aiohttp.ClientTimeout(total=15)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (compatible; AgentX/1.0)',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+            }
+
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, timeout=timeout) as response:
+                    response.raise_for_status()
+                    html_content = await response.text()
+
+            # Extract title
+            title_match = re.search(r'<title[^>]*>([^<]+)</title>', html_content, re.IGNORECASE)
+            title = title_match.group(1).strip() if title_match else url
+
+            # Simple text extraction - remove HTML tags
+            text = re.sub(r'<script[^>]*>.*?</script>', '', html_content, flags=re.DOTALL | re.IGNORECASE)
+            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL | re.IGNORECASE)
+            text = re.sub(r'<[^>]+>', '', text)  # Remove all HTML tags
+
+            # Clean up text
+            text = re.sub(r'\s+', ' ', text).strip()
+
+            # Limit content size
+            if len(text) > 3000:
+                text = text[:3000] + "... [Content truncated for fallback extraction]"
+
+            return WebContent(
+                url=url,
+                title=title,
+                content=text,
+                markdown=text,
+                metadata={
+                    "extraction_method": "simple_fallback",
+                    "content_length": len(text),
+                    "truncated": len(text) > 3000
+                },
+                success=True
+            )
+
+        except Exception as e:
+            raise Exception(f"Simple fallback extraction failed: {e}")
 
     def _generate_filename(self, url: str, title: str) -> str:
         """Generate a clean filename from URL and title."""
