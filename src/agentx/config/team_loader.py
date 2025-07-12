@@ -78,6 +78,10 @@ class TeamLoader:
             "orchestrator": orchestrator_config
         }
 
+        # Include handoffs if present
+        if "handoffs" in data:
+            team_config_data["handoffs"] = data["handoffs"]
+
         # Only include description if it's provided
         if "description" in data and data["description"] is not None:
             team_config_data["description"] = data["description"]

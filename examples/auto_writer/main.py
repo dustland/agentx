@@ -20,7 +20,19 @@ async def main():
     config_path = script_dir / "config" / "team.yaml"
 
     # The user's goal for the task
-    prompt = "Generate a comprehensive and visually stunning report on the key trends shaping web development in 2025. The report must be an interactive HTML page, covering topics like new frontend frameworks, backend technologies, AI integration in development, and modern UX/UI design paradigms. The final output must be professional, polished, and suitable for a C-suite audience, surpassing the quality of leading industry examples."
+    prompt = """Generate a comprehensive and visually stunning report on the key trends shaping web development in 2025.
+
+    The report must be an interactive HTML page that MATCHES OR EXCEEDS the quality demonstrated in samples/design_trends_report.html, featuring:
+    - Modern design with Tailwind CSS and sophisticated color schemes using CSS custom properties
+    - Interactive data visualizations using ECharts library
+    - Professional typography with multiple Google Fonts (sans-serif + serif)
+    - Advanced visual effects including glassmorphism, smooth animations, and micro-interactions
+    - Responsive design with mobile-first approach
+    - Card-based layouts with proper spacing and shadows
+
+    Content must cover: new frontend frameworks (React, Vue, Svelte, SolidJS), meta-frameworks (Next.js, Astro, Qwik), backend technologies, AI integration in development, and modern UX/UI design paradigms.
+
+    The final output must be professional, polished, and suitable for a C-suite audience, with quality rivaling top design agencies like those of Stripe, Vercel, or Linear."""
 
     print("🚀 AutoWriter - Starting comprehensive report generation...")
     print(f"📋 Task: {prompt[:100]}...")

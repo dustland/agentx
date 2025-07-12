@@ -1,0 +1,406 @@
+# Configuration Reference
+
+This guide provides a comprehensive reference for configuring AgentX teams using YAML files. AgentX uses a declarative configuration approach that allows you to define agent teams, their capabilities, and collaboration patterns without writing code.
+
+## Configuration Structure
+
+The top-level configuration file defines a team of agents and their collaboration settings. Here's the complete schema:
+
+```yaml
+# Team identification
+name: "Your Team Name"          # Required: A descriptive name for your team
+description: "Team description" # Optional: What this team does
+
+# Workspace configuration
+output_dir: "workspace"         # Optional: Where to store outputs (default: "workspace")
+
+# Agent definitions
+agents:                         # Required: List of agents in the team
+  - "researcher"                # Can be preset names (strings)
+  - name: "custom_agent"        # Or detailed agent configurations
+    description: "Custom agent"
+    prompt_file: "prompts/custom.md"
+    tools: ["web_search", "write_file"]
+
+# Agent collaboration
+handoffs:                       # Optional: Define agent handoff rules
+  - from_agent: "researcher"
+    to_agent: "writer"
+    condition: "When research is complete"
+    priority: 1                 # Optional: Higher = higher priority
+
+# Advanced configurations
+collaboration_patterns: []      # Optional: Custom collaboration patterns
+tools: []                      # Optional: Custom tool definitions
+guardrail_policies: []         # Optional: Safety and compliance rules
+memory: {}                     # Optional: Memory system configuration
+execution: {}                  # Optional: Task execution settings
+orchestrator: {}               # Optional: Orchestrator (X) configuration
+deployment_config: {}          # Optional: Deployment-specific settings
+```
+
+## Core Configuration Options
+
+### Team Metadata
+
+```yaml
+name: "AutoWriter Production Team"  # Required
+description: "Professional research and writing system"  # Optional
+output_dir: "reports"  # Optional (default: "workspace")
+```
+
+### Agent Configuration
+
+Agents can be defined in three ways:
+
+#### 1. Preset Agents (Recommended)
+
+Use built-in agent presets by name:
+
+```yaml
+agents:
+  - "researcher"      # Evidence-based research specialist
+  - "writer"          # Professional content creator
+  - "web_designer"    # HTML/CSS expert
+  - "reviewer"        # Quality assurance specialist
+  - "developer"       # Software engineer
+```
+
+#### 2. Custom Agent Configuration
+
+Define custom agents with specific settings:
+
+```yaml
+agents:
+  - name: "data_analyst"
+    description: "Analyzes datasets and creates visualizations"
+    prompt_file: "prompts/analyst.md"  # Path to prompt file
+    tools: ["read_file", "python_repl", "create_chart"]
+    brain_config:
+      model: "gpt-4"
+      temperature: 0.3
+    memory_config:
+      enabled: true
+      max_context_tokens: 4000
+```
+
+#### 3. Inline System Message
+
+For simple agents, define the prompt directly:
+
+```yaml
+agents:
+  - name: "translator"
+    description: "Translates content between languages"
+    system_message: |
+      You are a professional translator. Your task is to accurately
+      translate content while preserving meaning and cultural context.
+    tools: ["read_file", "write_file"]
+```
+
+### Handoff Configuration
+
+Define when and how agents pass work to each other:
+
+```yaml
+handoffs:
+  - from_agent: "researcher"
+    to_agent: "writer"
+    condition: "When comprehensive research is gathered and ready for writing"
+    priority: 1  # Higher priority handoffs are evaluated first
+
+  - from_agent: "writer"
+    to_agent: "reviewer"
+    condition: "When content is complete and needs quality review"
+    priority: 2
+```
+
+### Brain Configuration
+
+Configure the LLM settings for agents or the orchestrator:
+
+```yaml
+# Team-level default
+llm_provider:
+  provider: "openai"        # Options: openai, anthropic, deepseek, ollama
+  model: "gpt-4"           # Model name
+  temperature: 0.7         # 0.0-2.0, controls randomness
+  max_tokens: 8000         # Maximum response length
+  api_key: null            # Optional: Override env variable
+  base_url: null           # Optional: Custom endpoint
+  timeout: 30              # Request timeout in seconds
+  streaming: true          # Enable streaming responses
+
+# Agent-specific override
+agents:
+  - name: "precise_analyst"
+    brain_config:
+      model: "gpt-4"
+      temperature: 0.1     # Lower temperature for more deterministic output
+      max_tokens: 4000
+```
+
+### Memory Configuration
+
+Control how agents remember and use context:
+
+```yaml
+memory:
+  enabled: true                    # Enable memory system
+  max_context_tokens: 8000         # Maximum context window
+  semantic_search_enabled: true    # Enable semantic memory search
+  short_term_limit: 10000          # Short-term memory token limit
+  long_term_enabled: true          # Enable long-term memory
+  consolidation_interval: 3600     # Memory consolidation interval (seconds)
+  vector_db_config:               # Vector database settings
+    provider: "chroma"
+    collection_name: "agent_memory"
+```
+
+### Tool Configuration
+
+Define custom tools for agents:
+
+```yaml
+tools:
+  - name: "data_processor"
+    type: "python_function"       # Options: python_function, shell_script, mcp_tool, builtin
+    description: "Process CSV data files"
+    source: "tools/data_processor.py"
+    function: "process_data"
+    parameters:                   # JSON Schema for parameters
+      type: "object"
+      properties:
+        file_path:
+          type: "string"
+          description: "Path to CSV file"
+      required: ["file_path"]
+
+  - name: "api_client"
+    type: "mcp_tool"
+    server_url: "http://localhost:8080"
+    timeout: 30
+```
+
+### Execution Configuration
+
+Control how tasks are executed:
+
+```yaml
+execution:
+  mode: "autonomous"              # Options: autonomous, step_through
+  max_rounds: 10                  # Maximum conversation rounds
+  timeout_seconds: 300            # Task timeout
+  initial_agent: "researcher"     # Starting agent
+  step_through_enabled: false     # Enable step-by-step mode
+  breakpoints:                    # Pause execution at these points
+    - "after_research"
+    - "before_final_review"
+  success_criteria:               # Define success conditions
+    - "HTML report generated"
+    - "All tests pass"
+  failure_criteria:               # Define failure conditions
+    - "API rate limit exceeded"
+    - "Critical error encountered"
+```
+
+### Orchestrator Configuration
+
+Configure the orchestrator (X) that manages agent coordination:
+
+```yaml
+orchestrator:
+  brain_config:
+    provider: "deepseek"
+    model: "deepseek-chat"
+    temperature: 0.3              # Lower for more consistent planning
+    max_tokens: 8000
+    timeout: 120
+  max_rounds: 50                  # Maximum orchestration rounds
+  timeout: 3600                   # Total orchestration timeout
+```
+
+### Collaboration Patterns
+
+Define custom collaboration workflows:
+
+```yaml
+collaboration_patterns:
+  - name: "peer_review"
+    type: "parallel"              # Options: sequential, parallel, consensus, dynamic
+    agents: ["writer_1", "writer_2", "editor"]
+    coordination_agent: "editor"   # Agent that coordinates the pattern
+    config:
+      min_consensus: 2            # Minimum agreements needed
+      timeout: 600                # Pattern timeout
+```
+
+### Guardrail Policies
+
+Implement safety and compliance rules:
+
+```yaml
+guardrail_policies:
+  - name: "content_safety"
+    type: "content_filter"        # Options: input_validation, output_filtering, rate_limiting, content_safety
+    severity: "high"              # Options: low, medium, high
+    action: "block"               # Options: block, warn, log
+    rules:
+      - type: "regex"
+        pattern: "\\b(password|secret|key)\\b"
+        message: "Sensitive information detected"
+      - type: "length"
+        max_length: 10000
+        message: "Content too long"
+```
+
+## Advanced Features
+
+### Context Variables
+
+Share dynamic context between agents:
+
+```yaml
+context_variables:
+  project_name: "Q4 Report"
+  target_audience: "C-suite executives"
+  brand_guidelines_url: "https://example.com/brand"
+
+agents:
+  - name: "writer"
+    system_message: |
+      Write for {target_audience} about {project_name}.
+      Follow guidelines at {brand_guidelines_url}.
+```
+
+### Environment-Specific Configuration
+
+Use environment variables for sensitive data:
+
+```yaml
+llm_provider:
+  provider: "${LLM_PROVIDER:-openai}"
+  api_key: "${OPENAI_API_KEY}"
+  model: "${LLM_MODEL:-gpt-4}"
+```
+
+### Deployment Configuration
+
+Add deployment-specific settings:
+
+```yaml
+deployment_config:
+  environment: "production"
+  logging_level: "INFO"
+  metrics_enabled: true
+  api_endpoints:
+    webhook_url: "https://api.example.com/webhook"
+  resource_limits:
+    max_memory: "2GB"
+    max_cpu: "2.0"
+```
+
+## Complete Example
+
+Here's a comprehensive example showing all major features:
+
+```yaml
+name: "Research and Analysis Team"
+description: "Multi-agent system for comprehensive research and reporting"
+
+agents:
+  # Using presets
+  - "researcher"
+  - "writer"
+
+  # Custom agent
+  - name: "data_analyst"
+    description: "Analyzes data and creates visualizations"
+    prompt_file: "prompts/analyst.md"
+    tools: ["python_repl", "create_chart", "read_file"]
+    brain_config:
+      model: "gpt-4"
+      temperature: 0.2
+    memory_config:
+      enabled: true
+      max_context_tokens: 4000
+
+handoffs:
+  - from_agent: "researcher"
+    to_agent: "data_analyst"
+    condition: "When quantitative analysis is needed"
+    priority: 1
+
+  - from_agent: "data_analyst"
+    to_agent: "writer"
+    condition: "When analysis is complete and report writing is needed"
+    priority: 2
+
+tools:
+  - name: "market_data_api"
+    type: "python_function"
+    source: "tools/market_api.py"
+    function: "fetch_market_data"
+    description: "Fetch real-time market data"
+
+memory:
+  enabled: true
+  semantic_search_enabled: true
+  max_context_tokens: 8000
+
+execution:
+  mode: "autonomous"
+  max_rounds: 15
+  timeout_seconds: 600
+  initial_agent: "researcher"
+
+orchestrator:
+  brain_config:
+    temperature: 0.3
+    max_tokens: 8000
+
+guardrail_policies:
+  - name: "data_privacy"
+    type: "content_filter"
+    severity: "high"
+    action: "block"
+    rules:
+      - type: "pattern"
+        pattern: "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+        message: "SSN-like pattern detected"
+
+context_variables:
+  company: "Acme Corp"
+  fiscal_year: 2024
+  report_type: "quarterly"
+```
+
+## Best Practices
+
+1. **Start Simple**: Begin with preset agents and basic handoffs, then add complexity as needed.
+
+2. **Use Descriptive Names**: Choose clear, descriptive names for agents and tools that reflect their purpose.
+
+3. **Define Clear Handoff Conditions**: Write handoff conditions in natural language that clearly describe when transfers should occur.
+
+4. **Leverage Presets**: Use built-in agent presets when possible - they're optimized and well-tested.
+
+5. **Version Control**: Keep your configuration files in version control to track changes over time.
+
+6. **Environment Variables**: Use environment variables for sensitive data like API keys.
+
+7. **Test Incrementally**: Test your configuration with simple tasks before deploying complex workflows.
+
+8. **Monitor Resource Usage**: Set appropriate timeouts and token limits to control costs and prevent runaway processes.
+
+## Validation
+
+AgentX validates your configuration at startup. Common validation errors include:
+
+- Missing required fields (name, agents)
+- Invalid agent references in handoffs
+- Circular handoff dependencies
+- Invalid tool configurations
+- Unsupported model or provider names
+
+Run `agentx validate <config.yaml>` to check your configuration before use.

@@ -5,12 +5,6 @@ execution:
   mode: "autonomous"
   max_rounds: 20
 
-orchestrator:
-  brain_config:
-    provider: "anthropic"
-    model: "claude-3-5-haiku-20241022"
-    temperature: 0.0
-
 memory:
   enabled: true
   max_context_tokens: 8000

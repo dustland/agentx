@@ -103,7 +103,7 @@ This function runs the task to completion autonomously.
 ## start_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L185" class="source-link" title="View source code">source</a>
 
 ```python
-async def start_task(prompt: str, config_path: str, task_id: Optional[str] = None, workspace_dir: Optional[Path] = None) -> XAgent
+async def start_task(prompt: str, config_path: Union[str, Path, TeamConfig], task_id: Optional[str] = None, workspace_dir: Optional[Path] = None) -> XAgent
 ```
 
 High-level function to start a task and return an initialized XAgent.

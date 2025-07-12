@@ -1,12 +1,6 @@
 name: "AutoWriter Production Team"
 description: "A professional multi-agent system that produces superior, consulting-quality HTML reports from a single objective."
 
-# Enhanced orchestrator with language detection
-orchestrator:
-  max_rounds: 50
-  timeout: 1800
-  # Note: No brain_config specified - uses intelligent defaults
-
 # All agents are presets, using the detailed, high-quality prompts we developed.
 # Note: Planning is handled by the orchestrator's Brain, not a separate agent.
 agents:

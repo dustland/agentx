@@ -184,7 +184,7 @@ async def execute_task(
 
 async def start_task(
     prompt: str,
-    config_path: str,
+    config_path: Union[str, Path, TeamConfig],
     task_id: Optional[str] = None,
     workspace_dir: Optional[Path] = None,
 ) -> XAgent:
@@ -224,10 +224,16 @@ async def start_task(
     """
     from agentx.config.team_loader import load_team_config
 
-    # Create XAgent with the provided configuration
+    # Load team configuration if path is provided
+    if isinstance(config_path, (str, Path)):
+        team_config = load_team_config(str(config_path))
+    else:
+        team_config = config_path
+
+    # Create XAgent with the loaded configuration
     # XAgent handles plan generation internally when initial_prompt is provided
     x = XAgent(
-        team_config=config_path,
+        team_config=team_config,
         task_id=task_id,
         workspace_dir=workspace_dir,
         initial_prompt=prompt

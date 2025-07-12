@@ -1,0 +1,40 @@
+{
+  "name": "wordx-addon",
+  "version": "1.0.0",
+  "description": "WordX Office.js Add-in - AI-powered document processing",
+  "main": "taskpane.html",
+  "scripts": {
+    "start": "office-addin-debugging start manifest.xml",
+    "start:desktop": "office-addin-debugging start manifest.xml desktop --app word",
+    "start:web": "office-addin-debugging start manifest.xml web --app word",
+    "stop": "office-addin-debugging stop manifest.xml",
+    "validate": "office-addin-manifest validate manifest.xml",
+    "build": "echo 'No build step required for static add-in'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "office-addin",
+    "word",
+    "ai",
+    "document-processing",
+    "agentx"
+  ],
+  "author": "Dustland Team",
+  "license": "MIT",
+  "devDependencies": {
+    "office-addin-debugging": "^5.1.5",
+    "office-addin-dev-certs": "^1.13.5",
+    "office-addin-manifest": "^1.13.5"
+  },
+  "dependencies": {
+    "@types/office-js": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dustland/agentx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dustland/agentx/issues"
+  },
+  "homepage": "https://github.com/dustland/agentx#readme"
+}

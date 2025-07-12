@@ -1,0 +1,276 @@
+# Framework Comparison: Why AgentX?
+
+After two years of building production systems with AutoGen/AG2, we created AgentX to address fundamental architectural limitations and evolving needs in multi-agent systems. This document compares AgentX with other popular frameworks and explains our design decisions.
+
+## Quick Comparison Table
+
+| Feature | AgentX | AG2/AutoGen | CrewAI | LangGraph | LlamaIndex |
+|---------|---------|-------------|---------|-----------|------------|
+| **Configuration** | YAML-based, no code required | Python code | Python/YAML hybrid | Python code | Python code |
+| **Agent Presets** | ✅ Built-in optimized agents | ❌ Manual setup | ✅ Role templates | ❌ Manual setup | ❌ Manual setup |
+| **Event System** | ✅ Comprehensive event bus | ❌ Limited callbacks | ❌ Basic events | ✅ State-based | ❌ Limited |
+| **Tool Ecosystem** | ✅ Built-in + MCP support | ⚠️ Basic tools | ✅ Good selection | ⚠️ Basic tools | ✅ Good selection |
+| **Memory System** | ✅ Semantic + conversation | ⚠️ Basic context | ✅ Short/long term | ⚠️ State-based | ✅ Index-based |
+| **Handoff Control** | ✅ Natural language rules | ⚠️ Code-based | ⚠️ Sequential | ✅ State machine | ❌ Manual |
+| **Production Ready** | ✅ REST API, monitoring | ⚠️ Library only | ⚠️ Library only | ⚠️ Library only | ⚠️ Library only |
+| **Orchestration** | ✅ X (unified interface) | ⚠️ GroupChat | ✅ Process-based | ✅ Graph-based | ❌ Manual |
+
+## Why We Built AgentX
+
+### 1. Configuration Without Code
+
+**The Problem with AG2/AutoGen:**
+```python
+# AG2 requires extensive Python code for basic setups
+assistant = AssistantAgent(
+    name="assistant",
+    system_message="You are a helpful assistant",
+    llm_config={"config_list": config_list}
+)
+user_proxy = UserProxyAgent(
+    name="user_proxy",
+    human_input_mode="NEVER",
+    code_execution_config={"use_docker": False}
+)
+```
+
+**AgentX Solution:**
+```yaml
+# Complete team setup in YAML - no Python required
+agents:
+  - "researcher"    # Use optimized presets
+  - "writer"        # Automatically configured
+```
+
+### 2. Natural Language Handoffs
+
+**The Problem with Code-Based Routing:**
+Most frameworks require programming state machines or complex conditional logic for agent coordination.
+
+**AgentX Innovation:**
+```yaml
+handoffs:
+  - from_agent: "researcher"
+    to_agent: "analyst"
+    condition: "When quantitative analysis of the research is needed"
+```
+
+Handoffs are evaluated by an LLM that understands context, not rigid rules. This enables:
+- Dynamic routing based on content
+- Natural language conditions
+- Adaptive workflows
+
+### 3. Event-Driven Architecture
+
+**Traditional Approach:**
+Frameworks typically use callbacks or polling, making it hard to:
+- Monitor agent interactions in real-time
+- Build responsive UIs
+- Implement complex workflows
+- Add observability
+
+**AgentX Event System:**
+```python
+# Every significant action emits typed events
+@event_bus.subscribe(EventType.TASK_STARTED)
+async def on_task_start(event: TaskEvent):
+    # React to any system event
+    await update_ui(event)
+    await log_metrics(event)
+```
+
+This enables:
+- Real-time monitoring dashboards
+- Webhook integrations
+- Custom middleware
+- Comprehensive observability
+
+### 4. Production-First Design
+
+**Library vs. Framework:**
+AG2, CrewAI, and LangGraph are primarily libraries. AgentX is a complete framework with:
+
+- **REST API Server**: Deploy agents as services
+- **Task Management**: Persistent task tracking and resumption
+- **Monitoring**: Built-in observability and metrics
+- **Security**: Guardrails and sandboxed execution
+- **Deployment**: Container-ready with health checks
+
+### 5. MCP (Model Context Protocol) Support
+
+**The Future of AI Tools:**
+While other frameworks rely on custom tool implementations, AgentX embraces the emerging MCP standard:
+
+```yaml
+tools:
+  - name: "database_query"
+    type: "mcp_tool"
+    server_url: "http://mcp-postgres:8080"
+```
+
+Benefits:
+- Use any MCP-compatible tool server
+- Standard protocol for tool interaction
+- Growing ecosystem of tools
+- No custom wrapper code needed
+
+### 6. Unified Orchestration with X
+
+**AG2's GroupChat Limitations:**
+- Rigid speaker selection
+- Limited context awareness
+- Difficult to debug
+- No conversation memory
+
+**AgentX's X (Orchestrator):**
+```python
+# Single interface for all interactions
+x = await start_task("Build a web app", "team.yaml")
+
+# Autonomous execution
+while not x.is_complete:
+    await x.step()
+
+# Natural conversation for adjustments
+response = await x.chat("Make it more colorful")
+```
+
+X provides:
+- Intelligent task planning
+- Dynamic plan adjustment
+- Conversational interface
+- State preservation
+
+### 7. Agent Presets and Prompt Engineering
+
+**Manual Setup Fatigue:**
+Other frameworks require you to write and maintain every agent's prompt, leading to:
+- Inconsistent quality
+- Repeated boilerplate
+- Maintenance burden
+
+**AgentX Presets:**
+```yaml
+agents:
+  - "researcher"      # 500+ lines of optimized prompt
+  - "developer"       # Production-tested configuration
+  - "web_designer"    # Including best practices
+```
+
+Each preset includes:
+- Carefully crafted system prompts
+- Optimal LLM configurations
+- Appropriate tool selections
+- Memory settings
+
+### 8. Semantic Memory System
+
+**Beyond Simple Context:**
+While AG2 uses basic conversation history, AgentX implements:
+
+- **Semantic Search**: Find relevant past interactions
+- **Memory Synthesis**: Automatic summarization
+- **Cross-Task Memory**: Agents remember across tasks
+- **Team Memory**: Shared knowledge base
+
+### 9. Built-in Tool Suite
+
+**Complete vs. Minimal:**
+Unlike frameworks that provide minimal tools, AgentX includes:
+
+- **File Operations**: Full workspace management
+- **Web Tools**: Search, scraping, content extraction
+- **Development**: Code execution, git operations
+- **Memory**: Context management, semantic search
+- **MCP Bridge**: Connect to any MCP tool server
+
+### 10. Observability and Debugging
+
+**Black Box Problem:**
+Most frameworks offer limited visibility into agent decisions.
+
+**AgentX Transparency:**
+- Structured logging
+- Event stream access
+- Task execution traces
+- Decision explanations
+- Performance metrics
+
+## Migration Considerations
+
+### From AG2/AutoGen
+
+**What You Gain:**
+- 90% less code to maintain
+- Better agent coordination
+- Production deployment options
+- Comprehensive monitoring
+
+**Migration Path:**
+1. Convert agent definitions to YAML
+2. Replace GroupChat with handoffs
+3. Use event system for callbacks
+4. Deploy with REST API
+
+### From CrewAI
+
+**What You Gain:**
+- More flexible agent routing
+- Event-driven architecture
+- MCP tool support
+- Better memory system
+
+**Migration Path:**
+1. Convert crew definitions to teams
+2. Update tool definitions
+3. Leverage presets for common roles
+
+### From LangGraph
+
+**What You Gain:**
+- No-code configuration
+- Natural language workflows
+- Built-in tool suite
+- REST API deployment
+
+**Migration Path:**
+1. Convert graph logic to handoffs
+2. Use X for orchestration
+3. Migrate state to context variables
+
+## Design Philosophy
+
+AgentX represents a fundamental shift in how we think about multi-agent systems:
+
+1. **Configuration over Code**: Define what, not how
+2. **Natural over Programmatic**: Use language, not logic
+3. **Events over Callbacks**: Reactive, not procedural
+4. **Framework over Library**: Complete, not partial
+5. **Standards over Custom**: MCP, not proprietary
+
+## When to Choose AgentX
+
+**Choose AgentX when you need:**
+- Rapid prototyping without coding
+- Production deployment with monitoring
+- Complex agent coordination
+- Comprehensive tool ecosystem
+- Event-driven integrations
+- Natural language workflows
+
+**Consider alternatives when:**
+- You need fine-grained programmatic control
+- You're building a simple single-agent system
+- You require specific language bindings (not Python)
+- You have existing LangGraph state machines
+
+## Conclusion
+
+AgentX isn't just another multi-agent framework—it's a reimagining of how AI agent systems should be built and deployed. By learning from two years of AutoGen/AG2 production experience, we've created a framework that prioritizes:
+
+- **Developer Experience**: YAML configuration, presets, and natural language
+- **Production Readiness**: REST API, monitoring, and deployment tools
+- **Future Standards**: MCP support and event-driven architecture
+- **Practical Innovation**: X orchestrator and semantic memory
+
+The result is a framework that makes complex multi-agent systems accessible to everyone, not just AI engineers.

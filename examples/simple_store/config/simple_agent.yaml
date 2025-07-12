@@ -18,16 +18,6 @@ agents:
 # No handoffs needed - single agent
 handoffs: []
 
-# Minimal orchestrator configuration
-orchestrator:
-  max_rounds: 5
-  timeout: 300
-  brain_config:
-    model: deepseek/deepseek-chat
-    temperature: 0.0
-    max_tokens: 50
-    timeout: 10
-
 # Execution configuration
 execution:
   mode: "autonomous"

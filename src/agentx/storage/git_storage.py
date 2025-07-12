@@ -111,7 +111,8 @@ class GitArtifactStorage:
 
             # Store metadata if provided
             if metadata:
-                metadata_path = self.artifacts_path / f"{name}.meta.json"
+                # Put metadata file next to the artifact file
+                metadata_path = artifact_path.with_suffix(artifact_path.suffix + ".meta.json")
                 # Ensure parent directories exist for metadata
                 metadata_path.parent.mkdir(parents=True, exist_ok=True)
                 metadata_with_info = {
@@ -124,8 +125,17 @@ class GitArtifactStorage:
                 metadata_path.write_text(json.dumps(metadata_with_info, indent=2))
 
             # Commit to Git
+            # Use relative path from artifacts directory for git operations
+            relative_path = artifact_path.relative_to(self.artifacts_path)
+
+            files_to_commit = [str(relative_path)]
+            if metadata:
+                # Metadata path is next to the artifact file
+                metadata_relative_path = relative_path.with_suffix(relative_path.suffix + ".meta.json")
+                files_to_commit.append(str(metadata_relative_path))
+
             commit_hash = await self._commit_changes(
-                files=[artifact_path.name] + ([f"{name}.meta.json"] if metadata else []),
+                files=files_to_commit,
                 message=commit_message or f"Store artifact: {name}",
                 artifact_name=name
             )
@@ -239,9 +249,10 @@ class GitArtifactStorage:
             artifact_path = self.artifacts_path / f"{name}{extension}"
             metadata_path = self.artifacts_path / f"{name}.meta.json"
 
-            files_to_remove = [artifact_path.name]
+            # Use relative paths from artifacts directory
+            files_to_remove = [str(artifact_path.relative_to(self.artifacts_path))]
             if metadata_path.exists():
-                files_to_remove.append(metadata_path.name)
+                files_to_remove.append(str(metadata_path.relative_to(self.artifacts_path)))
 
             # Remove files
             artifact_path.unlink(missing_ok=True)

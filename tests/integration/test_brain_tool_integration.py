@@ -8,7 +8,7 @@ the framework to the Brain and then to the LLM.
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from .weather_tool import WeatherTool
+from tests.unit.tools.weather_tool import WeatherTool
 from agentx.tool.registry import ToolRegistry
 from agentx.tool.manager import ToolManager
 from agentx.core.brain import Brain, BrainConfig
@@ -132,8 +132,8 @@ class TestBrainToolIntegration:
         tool_schemas = agent.get_tools_json()
         print(f"Tool schemas from agent: {tool_schemas}")
 
-        # Verify schemas are complete (should include builtin tools + custom weather tool)
-        assert len(tool_schemas) >= 13  # At least builtin tools + weather tool
+        # Verify schemas are complete (should include specified tools)
+        assert len(tool_schemas) == 1  # Only weather tool specified
 
         # Find the weather tool in the schemas
         weather_schema = None
@@ -160,13 +160,11 @@ class TestBrainToolIntegration:
         assert 'description' in location_param
         assert location_param['type'] == 'string'
 
-        # Verify builtin tools are also included
+        # Since we only specified 'get_weather' in tools list, only that tool is included
         tool_names = {schema['function']['name'] for schema in tool_schemas}
-        assert 'write_file' in tool_names  # Should have builtin file tools
-        assert 'read_file' in tool_names
-        assert 'web_search' in tool_names
+        assert tool_names == {'get_weather'}  # Only specified tool
 
-        print(f"✅ Agent provides complete tool schemas including {len(tool_schemas)} tools: {location_param}")
+        print(f"✅ Agent provides complete tool schemas including {len(tool_schemas)} tools")
 
 
 if __name__ == "__main__":

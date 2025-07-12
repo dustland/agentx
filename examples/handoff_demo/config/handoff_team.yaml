@@ -1,0 +1,99 @@
+name: "Content Creation Team with Handoffs"
+description: "Demonstrates automatic handoffs between agents based on conditions"
+
+agents:
+  - name: "researcher"
+    role: "Research Specialist"
+    prompt: |
+      You are a research specialist who gathers information and creates outlines.
+      Your job is to research topics thoroughly and create structured outlines
+      that other team members can use.
+
+      When you complete your research and outline, clearly state that the
+      research is complete and ready for the writer.
+    tools:
+      - web_search
+      - extract_content
+      - file_write
+
+  - name: "writer"
+    role: "Content Writer"
+    prompt: |
+      You are a content writer who creates drafts based on research and outlines.
+      Read the research materials and outline, then write engaging content.
+
+      When you complete a draft, save it and clearly state that the draft
+      is complete and ready for review.
+    tools:
+      - file_read
+      - file_write
+
+  - name: "reviewer"
+    role: "Technical Reviewer"
+    prompt: |
+      You are a technical reviewer who checks content for accuracy.
+      Review drafts for technical correctness, fact-checking, and completeness.
+
+      After your review, clearly state whether the content needs editing
+      for style and clarity, or if there are technical issues to fix.
+    tools:
+      - file_read
+      - file_write
+      - web_search  # For fact-checking
+
+  - name: "editor"
+    role: "Content Editor"
+    prompt: |
+      You are a content editor who polishes content for clarity and style.
+      Focus on readability, flow, grammar, and ensuring the content is
+      engaging for the target audience.
+
+      When editing is complete, create the final version and clearly
+      state that the content is ready for publication.
+    tools:
+      - file_read
+      - file_write
+
+# Define automatic handoff conditions
+handoffs:
+  # Researcher hands off to writer when research is complete
+  - from_agent: "researcher"
+    to_agent: "writer"
+    condition: "research is complete and outline is ready"
+    priority: 1
+
+  # Writer hands off to reviewer when draft is complete
+  - from_agent: "writer"
+    to_agent: "reviewer"
+    condition: "draft is complete and ready for review"
+    priority: 1
+
+  # Reviewer can hand off to editor or back to writer
+  - from_agent: "reviewer"
+    to_agent: "editor"
+    condition: "review complete and content needs style editing"
+    priority: 1
+
+  - from_agent: "reviewer"
+    to_agent: "writer"
+    condition: "review found technical issues that need rewriting"
+    priority: 2  # Higher priority - fix issues first
+
+  # Editor creates final version
+  - from_agent: "editor"
+    to_agent: "reviewer"
+    condition: "major concerns found during editing that need technical review"
+    priority: 1
+
+# Execution settings
+execution:
+  initial_agent: "researcher"  # Start with research
+  mode: "autonomous"
+  max_rounds: 15
+  timeout_seconds: 1800
+
+# Memory configuration
+memory:
+  enabled: true
+  max_context_tokens: 16000
+  semantic_search_enabled: true

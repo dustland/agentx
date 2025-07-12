@@ -38,16 +38,6 @@ handoffs:
 # Team-level configuration
 after_work_behavior: "return_to_user"
 
-# Orchestrator configuration for natural language handoff
-orchestrator:
-  max_rounds: 8
-  timeout: 600
-  llm_config:
-    model: deepseek/deepseek-chat
-    temperature: 0.0
-    max_tokens: 50
-    timeout: 10
-
 # Execution configuration
 execution:
   mode: "autonomous"

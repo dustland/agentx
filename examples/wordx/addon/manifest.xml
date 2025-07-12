@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+
+  <!-- Begin Basic Settings: Add-in metadata, used for all versions of Office unless override provided. -->
+  <Id>12345678-1234-1234-1234-123456789012</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>Dustland</ProviderName>
+  <DefaultLocale>en-US</DefaultLocale>
+  <DisplayName DefaultValue="WordX"/>
+  <Description DefaultValue="AI-powered document processing with multi-agent teams"/>
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <SupportUrl DefaultValue="https://github.com/dustland/agentx"/>
+
+  <!-- End Basic Settings. -->
+
+  <!-- Begin TaskPane Mode integration. This section is used if there are no VersionOverrides or if the Office client version does not support add-in commands. -->
+  <Hosts>
+    <Host Name="Document"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets>
+      <Set Name="WordApi" MinVersion="1.3"/>
+    </Sets>
+  </Requirements>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+  </DefaultSettings>
+
+  <!-- End TaskPane Mode integration. -->
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <!-- Begin Add-in Commands Mode integration. -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+
+    <!-- The Hosts node is required. -->
+    <Hosts>
+      <!-- Each host can have a different set of commands. -->
+      <Host xsi:type="Document">
+
+        <!-- Form factor. Currently only DesktopFormFactor is supported. -->
+        <DesktopFormFactor>
+          <!-- "This code enables a customizable message to be displayed when the add-in is loaded successfully upon individual install." -->
+          <GetStarted>
+            <!-- Title of the Getting Started callout. resid points to a ShortString resource -->
+            <Title resid="WordX.GetStarted.Title"/>
+            <!-- Description of the Getting Started callout. resid points to a LongString resource -->
+            <Description resid="WordX.GetStarted.Description"/>
+            <!-- Point to a url resource which details how the add-in should be used. -->
+            <LearnMoreUrl resid="WordX.GetStarted.LearnMoreUrl"/>
+          </GetStarted>
+
+          <!-- Function file is a HTML page that includes the JavaScript where functions for ExecuteAction will be called.
+               Think of the FunctionFile as the code behind ExecuteFunction. -->
+          <FunctionFile resid="WordX.DesktopFunctionFile.Url"/>
+
+          <!-- PrimaryCommandSurface is the main Office ribbon. -->
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <!-- Use OfficeTab to extend an existing Tab. Use CustomTab to create a new tab. -->
+            <OfficeTab id="TabHome">
+
+              <!-- Ensure you provide a unique id for the group. Recommendation for any IDs is to namespace using your company name. -->
+              <Group id="WordX.Group1">
+
+                <!-- Label for your group. resid must point to a ShortString resource. -->
+                <Label resid="WordX.Group1Label"/>
+
+                <!-- Icons. Required sizes 16,32,80, optional 20, 24, 40, 48, 64. Strongly recommended to provide all sizes for great UX. -->
+                <Icon>
+                  <bt:Image size="16" resid="WordX.tpicon_16x16"/>
+                  <bt:Image size="32" resid="WordX.tpicon_32x32"/>
+                  <bt:Image size="80" resid="WordX.tpicon_80x80"/>
+                </Icon>
+
+                <!-- Control. It can be of type "Button" or "Menu". -->
+                <Control xsi:type="Button" id="WordX.TaskpaneButton">
+                  <Label resid="WordX.TaskpaneButton.Label"/>
+                  <Supertip>
+                    <!-- ToolTip title. resid must point to a ShortString resource. -->
+                    <Title resid="WordX.TaskpaneButton.Label"/>
+                    <!-- ToolTip description. resid must point to a LongString resource. -->
+                    <Description resid="WordX.TaskpaneButton.Tooltip"/>
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="WordX.tpicon_16x16"/>
+                    <bt:Image size="32" resid="WordX.tpicon_32x32"/>
+                    <bt:Image size="80" resid="WordX.tpicon_80x80"/>
+                  </Icon>
+
+                  <!-- This is what happens when the command is triggered (E.g. click on the Ribbon). Supported actions are ExecuteFunction or ShowTaskpane. -->
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>ButtonId1</TaskpaneId>
+                    <!-- Provide a url resource id for the location that will be displayed on the task pane. -->
+                    <SourceLocation resid="WordX.Taskpane.Url"/>
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <!-- You can use resources across hosts and form factors. -->
+    <Resources>
+      <bt:Images>
+        <bt:Image id="WordX.tpicon_16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
+        <bt:Image id="WordX.tpicon_32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
+        <bt:Image id="WordX.tpicon_80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+      </bt:Images>
+
+      <bt:Urls>
+        <bt:Url id="WordX.Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <bt:Url id="WordX.GetStarted.LearnMoreUrl" DefaultValue="https://github.com/dustland/agentx"/>
+        <bt:Url id="WordX.DesktopFunctionFile.Url" DefaultValue="https://localhost:3000/function-file/function-file.html"/>
+      </bt:Urls>
+
+      <bt:ShortStrings>
+        <bt:String id="WordX.TaskpaneButton.Label" DefaultValue="WordX"/>
+        <bt:String id="WordX.Group1Label" DefaultValue="WordX"/>
+        <bt:String id="WordX.GetStarted.Title" DefaultValue="Get started with WordX"/>
+      </bt:ShortStrings>
+
+      <bt:LongStrings>
+        <bt:String id="WordX.TaskpaneButton.Tooltip" DefaultValue="Open WordX for AI-powered document processing"/>
+        <bt:String id="WordX.GetStarted.Description" DefaultValue="WordX uses AgentX multi-agent teams to review, edit, format, and audit your documents with AI precision."/>
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+  <!-- End Add-in Commands Mode integration. -->
+
+</OfficeApp>

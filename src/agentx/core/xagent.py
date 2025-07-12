@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union, Li
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import TeamConfig, BrainConfig
+from agentx.core.handoff_evaluator import HandoffEvaluator, HandoffContext
 from agentx.core.message import (
     MessageQueue, TaskHistory, Message, TaskStep, TextPart,
 )
@@ -97,7 +98,7 @@ class XAgent(Agent):
 
     def __init__(
         self,
-        team_config: Union[TeamConfig, str],
+        team_config: TeamConfig,
         task_id: Optional[str] = None,
         workspace_dir: Optional[Path] = None,
         initial_prompt: Optional[str] = None,
@@ -105,11 +106,10 @@ class XAgent(Agent):
         # Generate unique task ID
         self.task_id = task_id or generate_short_id()
 
-        # Handle both TeamConfig objects and config file paths
-        if isinstance(team_config, (str, Path)):
-            self.team_config = load_team_config(str(team_config))
-        else:
-            self.team_config = team_config
+        # Accept only TeamConfig objects
+        if not isinstance(team_config, TeamConfig):
+            raise TypeError(f"team_config must be a TeamConfig object, got {type(team_config)}")
+        self.team_config = team_config
 
         # Initialize workspace storage
         from agentx.storage.factory import StorageFactory
@@ -144,6 +144,14 @@ class XAgent(Agent):
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
         self._plan_initialized = False
+
+        # Initialize handoff evaluator if handoffs are configured
+        self.handoff_evaluator = None
+        if self.team_config.handoffs:
+            self.handoff_evaluator = HandoffEvaluator(
+                handoffs=self.team_config.handoffs,
+                agents=self.specialist_agents
+            )
 
         logger.info("✅ XAgent initialized and ready for conversation")
 
@@ -537,6 +545,7 @@ Respond with a JSON object following this schema:
         next_task = self.current_plan.get_next_actionable_task()
         if not next_task:
             if self.current_plan.has_failed_tasks():
+                self.is_complete = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
@@ -563,6 +572,7 @@ Respond with a JSON object following this schema:
             await self._persist_plan()
 
             if next_task.on_failure == "halt":
+                self.is_complete = True
                 return f"❌ {next_task.name}: Failed - {e}\n\nTask execution halted."
             else:
                 return f"⚠️ {next_task.name}: Failed but continuing - {e}"
@@ -616,9 +626,38 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}
 
         # Execute with the specialist agent
         response = await agent.generate_response(
-            messages=briefing,
-            orchestrator=self  # Pass self as orchestrator for tool execution
+            messages=briefing
         )
+
+        # Evaluate if handoff should occur
+        if self.handoff_evaluator:
+            context = HandoffContext(
+                current_agent=task.agent,
+                task_result=response,
+                task_goal=task.goal,
+                conversation_history=self.conversation_history,
+                workspace_files=[f["name"] for f in await self.workspace.list_artifacts()]
+            )
+
+            next_agent = await self.handoff_evaluator.evaluate_handoffs(context)
+            if next_agent and next_agent != task.agent:
+                # Create a follow-up task for the handoff
+                handoff_task = PlanItem(
+                    id=f"handoff_{task.id}_{next_agent}",
+                    name=f"Continue work with {next_agent}",
+                    goal=f"Continue the work from {task.agent} based on: {task.goal}",
+                    agent=next_agent,
+                    dependencies=[task.id],
+                    status="pending"
+                )
+
+                # Add to plan dynamically
+                if self.current_plan:
+                    self.current_plan.tasks.append(handoff_task)
+                    await self._persist_plan()
+
+                    logger.info(f"Handoff task created: {task.agent} -> {next_agent}")
+                    response += f"\n\n🤝 Handing off to {next_agent} for continuation."
 
         return response
 

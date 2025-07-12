@@ -54,11 +54,6 @@ class PlanItem(BaseModel):
         "halt",
         description="The policy for how to proceed if this task fails.",
     )
-    approval_required: bool = Field(
-        False,
-        description="If true, the Orchestrator will pause after this task is completed and wait for user approval to proceed.",
-    )
-
 
 class Plan(BaseModel):
     """

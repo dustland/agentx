@@ -64,11 +64,11 @@ class TestWebToolParallelExtractContent:
 
         # Verify result structure
         assert result.success is True
-        assert isinstance(result.result, WebContent)
-        assert result.result.url == test_url
-        assert result.result.title == "# Example Title"
-        assert result.result.content == "This is example content."
-        assert result.result.success is True
+        assert isinstance(result.result, dict)
+        assert result.result["url"] == test_url
+        assert result.result["title"] == "# Example Title"
+        assert result.result["content_preview"] == "This is example content."
+        assert result.result["extraction_successful"] is True
 
         # Verify metadata
         assert result.metadata["total_urls"] == 1
@@ -124,11 +124,11 @@ class TestWebToolParallelExtractContent:
         assert len(result.result) == 3
 
         # Verify all URLs were processed
-        extracted_urls = [content.url for content in result.result]
+        extracted_urls = [content["url"] for content in result.result]
         assert set(extracted_urls) == set(test_urls)
 
         # Verify all extractions succeeded
-        assert all(content.success for content in result.result)
+        assert all(content["extraction_successful"] for content in result.result)
 
         # Verify metadata
         assert result.metadata["total_urls"] == 3
@@ -175,15 +175,15 @@ class TestWebToolParallelExtractContent:
         assert len(result.result) == 2
 
         # Check individual results
-        success_result = next(r for r in result.result if r.url == "https://success.com")
-        failure_result = next(r for r in result.result if r.url == "https://failure.com")
+        success_result = next(r for r in result.result if r["url"] == "https://success.com")
+        failure_result = next(r for r in result.result if r["url"] == "https://failure.com")
 
-        assert success_result.success is True
-        assert success_result.title == "# Success"
-        assert success_result.content == "Success content"
+        assert success_result["extraction_successful"] is True
+        assert success_result["title"] == "# Success"
+        assert success_result["content_preview"] == "Success content"
 
-        assert failure_result.success is False
-        assert failure_result.error == "Network error"
+        assert failure_result["extraction_successful"] is False
+        assert failure_result["error"] == "Network error"
 
         # Verify metadata
         assert result.metadata["total_urls"] == 2
@@ -229,8 +229,8 @@ class TestWebToolParallelExtractContent:
 
         # Should succeed after fallback
         assert result.success is True
-        assert result.result.success is True
-        assert result.result.content == "Content from fallback"
+        assert result.result["extraction_successful"] is True
+        assert result.result["content_preview"] == "Content from fallback"
         assert call_count == 2  # Should have made two calls
 
     @pytest.mark.asyncio

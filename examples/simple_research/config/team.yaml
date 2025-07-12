@@ -15,17 +15,6 @@ memory:
   short_term_limit: 16000
   long_term_enabled: true
 
-# Orchestrator configuration
-orchestrator:
-  max_rounds: 10
-  timeout: 1800
-  brain_config:
-    provider: deepseek
-    model: deepseek-chat # Use model name directly without provider prefix
-    temperature: 0.0
-    max_tokens: 8000
-    timeout: 120 # Increase API timeout from default 30s to 120s
-
 # Execution configuration
 execution:
   mode: "autonomous"
