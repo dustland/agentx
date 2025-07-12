@@ -32,7 +32,9 @@ async def main():
 
     Content must cover: new frontend frameworks (React, Vue, Svelte, SolidJS), meta-frameworks (Next.js, Astro, Qwik), backend technologies, AI integration in development, and modern UX/UI design paradigms.
 
-    The final output must be professional, polished, and suitable for a C-suite audience, with quality rivaling top design agencies like those of Stripe, Vercel, or Linear."""
+    The final output must be professional, polished, and suitable for a C-suite audience, with quality rivaling top design agencies like those of Stripe, Vercel, or Linear.
+
+    CRITICAL INSTRUCTION FOR WEB DESIGNER: The HTML file MUST be built incrementally using the append_file tool. Start with the basic structure using write_file (< 2000 chars), then add each section using append_file in chunks of < 3000 chars. Never attempt to write the entire HTML in a single operation."""
 
     print("🚀 AutoWriter - Starting comprehensive report generation...")
     print(f"📋 Task: {prompt[:100]}...")
