@@ -83,6 +83,66 @@ class FileTool(Tool):
                 error=str(e)
             )
 
+    @tool(description="Append content to an existing file")
+    async def append_file(
+        self,
+        filename: Annotated[str, "Name of the file to append to"],
+        content: Annotated[str, "Content to append to the file"],
+        separator: Annotated[str, "Separator between existing and new content (default: newline)"] = "\n"
+    ) -> ToolResult:
+        """Append content to an existing file. Creates the file if it doesn't exist."""
+        try:
+            # Check if file exists and get current content
+            existing_content = ""
+            file_exists = False
+
+            try:
+                read_result = await self.read_file(filename)
+                if read_result.success:
+                    # Extract content from the result
+                    content_str = read_result.result
+                    if content_str.startswith(f"📄 Contents of {filename}:"):
+                        existing_content = content_str.split("\n\n", 1)[1] if "\n\n" in content_str else ""
+                    else:
+                        existing_content = content_str
+                    file_exists = True
+            except:
+                # File doesn't exist, that's fine
+                pass
+
+            # Combine content
+            if file_exists and existing_content:
+                new_content = existing_content + separator + content
+            else:
+                new_content = content
+
+            # Write the combined content
+            result = await self.write_file(filename, new_content)
+
+            if result.success:
+                action = "appended to" if file_exists else "created"
+                logger.info(f"Successfully {action} file: {filename}")
+                return ToolResult(
+                    success=True,
+                    result=f"✅ Successfully {action} {filename}",
+                    metadata={
+                        "filename": filename,
+                        "action": action,
+                        "appended_size": len(content),
+                        "total_size": len(new_content)
+                    }
+                )
+            else:
+                return result
+
+        except Exception as e:
+            logger.error(f"Error appending to file {filename}: {e}")
+            return ToolResult(
+                success=False,
+                result=f"❌ Error appending to file: {str(e)}",
+                error=str(e)
+            )
+
     @tool(description="Read the contents of a file")
     async def read_file(
         self,
