@@ -1,5 +1,5 @@
-name: "Simple Research Demo"
-description: "Demonstrates effective use of web research methodology"
+name: "Content Extractor Demo"
+description: "Demonstrates powerful Crawl4AI-based content extraction capabilities"
 
 agents:
   - "researcher" # Uses default researcher preset from framework

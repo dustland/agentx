@@ -2,96 +2,37 @@
 
 *Module: [`agentx.builtin_tools.web`](https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py)*
 
-Web Tools - Opinionated web automation and content extraction.
+Web Tools - Opinionated content extraction using the best available methods.
 
-Built-in integrations:
-- Firecrawl: Web content extraction
-- requests + BeautifulSoup: Content extraction
-- browser-use: AI-first browser automation (better than Playwright for agents)
+Uses Crawl4AI as the primary and only method for reliability and consistency.
+No complex fallback chains - if Crawl4AI fails, the extraction fails clearly.
 
-## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L21" class="source-link" title="View source code">source</a>
+## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L22" class="source-link" title="View source code">source</a>
 
 Extracted web content.
 
-## BrowserAction <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L33" class="source-link" title="View source code">source</a>
+## WebTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L33" class="source-link" title="View source code">source</a>
 
-Browser automation action result.
+Opinionated web content extraction tool using Crawl4AI.
 
-## WebTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L42" class="source-link" title="View source code">source</a>
+Simple, reliable, and consistent - no complex fallback chains.
 
-Web content extraction and browser automation tool.
-
-Combines Firecrawl for content extraction and browser-use for automation.
-
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L40" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, jina_api_key: Optional[str] = None, workspace_storage = None)
+def __init__(self, workspace_storage = None)
 ```
-### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L88" class="source-link" title="View source code">source</a>
+### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L48" class="source-link" title="View source code">source</a>
 
 ```python
-async def extract_content(self, urls: Union[str, List[str]], prompt: str = 'Extract the main content from this webpage') -> ToolResult
+async def extract_content(self, urls: Union[str, List[str]], prompt: str = 'Extract main content') -> ToolResult
 ```
 
-Extract clean content from one or more URLs using Jina Reader and automatically save to files.
-
-This tool extracts content and automatically saves it to workspace files to prevent
-overwhelming the conversation context. Returns file paths and summaries instead of full content.
+Extract content from URLs using Crawl4AI (open source, handles JS, reliable).
 
 **Args:**
-    urls: A single URL or list of URLs to extract content from
-    prompt: Description of what content to focus on (optional)
+    urls: Single URL or list of URLs to extract from
+    prompt: Optional focus prompt (currently unused)
 
 **Returns:**
-    ToolResult with file paths and content summaries (not full content)
-
-### extract_content_with_visuals <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L345" class="source-link" title="View source code">source</a>
-
-```python
-async def extract_content_with_visuals(self, url: str, prompt: str, capture_screenshot: bool = True, enable_web_search: bool = False) -> ToolResult
-```
-
-Enhanced content extraction that captures both textual and visual data from web pages.
-This method is specifically designed to extract data from charts, graphs, infographics,
-and other visual elements that traditional text extraction might miss.
-
-**Args:**
-    url: Single URL to extract content from (required)
-    prompt: Detailed prompt describing what to extract, including visual elements (required)
-    capture_screenshot: Whether to capture full-page screenshot for visual analysis, defaults to True
-    enable_web_search: Whether to expand search beyond the URL, defaults to False
-
-**Returns:**
-    ToolResult with comprehensive extracted content including visual data
-
-### crawl_website <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L457" class="source-link" title="View source code">source</a>
-
-```python
-async def crawl_website(self, url: str, limit: int = 10, exclude_paths: Optional[List[str]] = None) -> ToolResult
-```
-
-Crawl multiple pages from a website.
-
-**Args:**
-    url: The base URL to start crawling from (required)
-    limit: Maximum number of pages to crawl, defaults to 10
-    exclude_paths: URL paths to exclude from crawling (optional)
-
-**Returns:**
-    ToolResult with list of WebContent objects
-
-### automate_browser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L523" class="source-link" title="View source code">source</a>
-
-```python
-async def automate_browser(self, instruction: str, url: Optional[str] = None) -> ToolResult
-```
-
-Perform browser automation using natural language instructions.
-
-**Args:**
-    instruction: Natural language instruction for browser action (required)
-    url: Optional URL to navigate to first
-
-**Returns:**
-    ToolResult with BrowserAction containing action result
+    ToolResult with extracted content summaries and file paths

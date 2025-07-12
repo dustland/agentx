@@ -31,7 +31,9 @@ To run the full AI-powered AutoWriter system:
 
    # Optional but recommended:
    SERPAPI_API_KEY=your_key_here
-   JINA_API_KEY=your_key_here
+   
+   # Note: Content extraction now uses Crawl4AI (open source)
+   # No additional API keys needed for web scraping
    ```
 
 2. Run the main script:

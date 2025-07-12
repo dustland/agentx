@@ -96,4 +96,5 @@ agentx benchmark # Run performance benchmarks
 Required API keys (set in `.env`):
 - OPENAI_API_KEY or DEEPSEEK_API_KEY or ANTHROPIC_API_KEY
 - SERPAPI_API_KEY (for web search)
-- JINA_API_KEY (for web reader)
+**Note**: Web content extraction now uses Crawl4AI (open source) instead of Jina Reader.
+No additional API keys needed for web scraping - just install with `uv add crawl4ai`.

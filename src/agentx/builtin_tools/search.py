@@ -1,40 +1,39 @@
 """
-Search Tools - Web search capabilities using SerpAPI.
+Search Tools - Opinionated web search using SerpAPI with parallel support.
 
-Built-in integration with SerpAPI for comprehensive web search across
-multiple search engines (Google, Bing, DuckDuckGo, etc.).
+Simple, focused implementation:
+- Uses SerpAPI for reliable search results
+- Supports parallel queries for efficiency
+- Integrates with Crawl4AI for content extraction
+- No complex configuration options
 """
+
+import asyncio
+import time
+from typing import Dict, List, Optional, Union
+from dataclasses import dataclass
 
 from ..utils.logger import get_logger
 from ..core.tool import Tool, tool, ToolResult
 from ..search.serpapi_backend import SerpAPIBackend
-from ..search.interfaces import SearchEngine
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
 
 logger = get_logger(__name__)
 
 
 @dataclass
 class SearchResult:
-    """Individual search result."""
+    """Clean search result."""
     title: str
     url: str
     snippet: str
     position: int
-    relevance_score: float
-    language: str = "en"
-    date: Optional[str] = None
-    displayed_link: Optional[str] = None
-    summary: Optional[str] = None
 
 
 class SearchTool(Tool):
     """
-    Web search tool using SerpAPI.
+    Opinionated search tool using SerpAPI.
 
-    Provides access to multiple search engines including Google, Bing,
-    DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.
+    Simple and reliable - uses best practices as defaults.
     """
 
     def __init__(self, api_key: Optional[str] = None):
@@ -49,222 +48,286 @@ class SearchTool(Tool):
             self._backend = SerpAPIBackend(self.api_key)
             logger.info("SerpAPI search backend initialized")
         except ValueError as e:
-            logger.error(f"Failed to initialize SerpAPI backend: {e}")
+            logger.error(f"Failed to initialize SerpAPI: {e}")
         except Exception as e:
-            logger.error(f"Unexpected error initializing search backend: {e}")
+            logger.error(f"Unexpected error initializing search: {e}")
 
     @tool(
-        description="Search the web using Google, Bing, DuckDuckGo or other search engines",
-        return_description="ToolResult containing list of search results with titles, URLs, and snippets"
+        description="Search the web using Google. Supports parallel queries for efficiency.",
+        return_description="ToolResult with search results"
     )
-    async def web_search(self, query: str, engine: str = "google",
-                        max_results: int = 10, country: str = "us",
-                        language: str = "en") -> ToolResult:
+    async def web_search(self, queries: Union[str, List[str]], max_results: int = 10) -> ToolResult:
         """
-        Search the web using various search engines.
+        Search the web using Google. Supports single or multiple queries in parallel.
 
         Args:
-            query: Search query to execute (required)
-            engine: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)
-            max_results: Maximum number of results to return, max 20 (default: 10)
-            country: Country code for localized results (default: us)
-            language: Language code for results (default: en)
+            queries: Single query string or list of queries for parallel search
+            max_results: Maximum results per query (default: 10, max: 20)
 
         Returns:
-            ToolResult containing search results and metadata
+            ToolResult with search results
         """
         if not self._backend:
             return ToolResult(
                 success=False,
-                result=None,
-                error="Search backend not available. Check SERPAPI_KEY environment variable."
+                error="Search backend not available. Set SERPAPI_KEY environment variable.",
+                metadata={"backend_missing": True}
             )
 
-        try:
-            # Execute search
-            response = await self._backend.search(
-                query=query,
-                engine=engine,
-                max_results=min(max_results, 20),  # Cap at 20
-                country=country,
-                language=language
+        # Convert single query to list for uniform processing
+        query_list = [queries] if isinstance(queries, str) else queries
+        max_results = min(max_results, 20)  # Cap at 20
+
+        logger.info(f"Searching for {len(query_list)} queries...")
+        start_time = time.time()
+
+        async def search_single_query(query: str):
+            """Execute a single search query."""
+            try:
+                response = await self._backend.search(
+                    query=query,
+                    engine="google",
+                    max_results=max_results,
+                    country="us",
+                    language="en"
+                )
+
+                if response.success:
+                    # Convert to clean SearchResult format
+                    results = [
+                        SearchResult(
+                            title=result.title,
+                            url=result.url,
+                            snippet=result.snippet,
+                            position=result.position
+                        )
+                        for result in response.results
+                    ]
+
+                    return {
+                        "query": query,
+                        "success": True,
+                        "results": results,
+                        "total_results": response.total_results
+                    }
+                else:
+                    return {
+                        "query": query,
+                        "success": False,
+                        "error": response.error or "Search failed"
+                    }
+            except Exception as e:
+                logger.error(f"Search failed for '{query}': {e}")
+                return {
+                    "query": query,
+                    "success": False,
+                    "error": str(e)
+                }
+
+        # Execute all queries in parallel
+        tasks = [search_single_query(query) for query in query_list]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        search_time = time.time() - start_time
+        logger.info(f"Search completed in {search_time:.2f}s")
+
+        # Process results
+        successful_results = []
+        failed_queries = []
+        all_results = []
+
+        for result in results:
+            if isinstance(result, Exception):
+                failed_queries.append({"error": str(result)})
+                continue
+
+            if result["success"]:
+                successful_results.append(result)
+                all_results.extend(result["results"])
+            else:
+                failed_queries.append(result)
+
+        # Return format based on input
+        if isinstance(queries, str):
+            # Single query - return results directly
+            result_data = successful_results[0]["results"] if successful_results else []
+        else:
+            # Multiple queries - return structured format
+            result_data = {
+                "queries": successful_results,
+                "all_results": all_results,
+                "failed_queries": failed_queries
+            }
+
+        return ToolResult(
+            success=len(successful_results) > 0,
+            result=result_data,
+            execution_time=search_time,
+            metadata={
+                "total_queries": len(query_list),
+                "successful_queries": len(successful_results),
+                "failed_queries": len(failed_queries),
+                "total_results": len(all_results),
+                "search_engine": "google"
+            }
+        )
+
+    @tool(
+        description="Search and extract content in one operation. Combines web search with content extraction using Crawl4AI.",
+        return_description="ToolResult with search results and extracted content"
+    )
+    async def search_and_extract(self, queries: Union[str, List[str]],
+                                max_results: int = 5, max_extract: int = 3) -> ToolResult:
+        """
+        Search the web and extract content from top results in one operation.
+
+        Args:
+            queries: Single query or list of queries
+            max_results: Maximum search results per query (default: 5)
+            max_extract: Maximum URLs to extract content from per query (default: 3)
+
+        Returns:
+            ToolResult with search results and extracted content
+        """
+        if not self._backend:
+            return ToolResult(
+                success=False,
+                error="Search backend not available. Set SERPAPI_KEY environment variable.",
+                metadata={"backend_missing": True}
             )
 
-            if response.success:
-                # Convert to our SearchResult format
-                search_results = [
-                    SearchResult(
-                        title=result.title,
-                        url=result.url,
-                        snippet=result.snippet,
-                        position=result.position,
-                        relevance_score=result.relevance_score,
-                        language=result.language,
-                        date=result.date,
-                        displayed_link=result.displayed_link,
-                        summary=result.summary
-                    )
-                    for result in response.results
+        # Import web tool here to avoid circular imports
+        from .web import WebTool
+        web_tool = WebTool(workspace_storage=getattr(self, 'workspace', None))
+
+        query_list = [queries] if isinstance(queries, str) else queries
+        max_results = min(max_results, 20)
+        max_extract = min(max_extract, max_results)
+
+        logger.info(f"Search and extract for {len(query_list)} queries...")
+        start_time = time.time()
+
+        async def search_and_extract_query(query: str):
+            """Search and extract for a single query."""
+            try:
+                # First search
+                search_response = await self._backend.search(
+                    query=query,
+                    engine="google",
+                    max_results=max_results,
+                    country="us",
+                    language="en"
+                )
+
+                if not search_response.success:
+                    return {
+                        "query": query,
+                        "success": False,
+                        "error": search_response.error or "Search failed"
+                    }
+
+                # Get top URLs for extraction
+                top_urls = [
+                    result.url for result in search_response.results[:max_extract]
+                    if result.url and result.url.startswith(('http://', 'https://'))
                 ]
 
-                return ToolResult(
-                    success=True,
-                    result=search_results,
-                    execution_time=response.response_time,
-                    metadata={
-                        "query": query,
-                        "engine": engine,
-                        "total_results": response.total_results,
-                        "country": country,
-                        "language": language,
-                        "timestamp": response.timestamp
+                # Extract content if we have URLs
+                extracted_content = []
+                if top_urls:
+                    extract_result = await web_tool.extract_content(top_urls)
+                    if extract_result.success:
+                        if isinstance(extract_result.result, list):
+                            extracted_content = extract_result.result
+                        else:
+                            extracted_content = [extract_result.result]
+
+                # Combine results
+                enhanced_results = []
+                for i, search_result in enumerate(search_response.results):
+                    result_data = {
+                        "title": search_result.title,
+                        "url": search_result.url,
+                        "snippet": search_result.snippet,
+                        "position": search_result.position,
+                        "extracted_content": None
                     }
-                )
+
+                    # Add extracted content if available
+                    if i < len(extracted_content) and extracted_content[i]:
+                        content = extracted_content[i]
+                        if isinstance(content, dict) and content.get("extraction_successful"):
+                            result_data["extracted_content"] = {
+                                "content_preview": content.get("content_preview", ""),
+                                "content_length": content.get("content_length", 0),
+                                "saved_file": content.get("saved_file"),
+                                "successful": True
+                            }
+
+                    enhanced_results.append(result_data)
+
+                return {
+                    "query": query,
+                    "success": True,
+                    "results": enhanced_results,
+                    "total_results": search_response.total_results,
+                    "extracted_count": len([r for r in enhanced_results if r["extracted_content"]])
+                }
+
+            except Exception as e:
+                logger.error(f"Search and extract failed for '{query}': {e}")
+                return {
+                    "query": query,
+                    "success": False,
+                    "error": str(e)
+                }
+
+        # Execute all queries in parallel
+        tasks = [search_and_extract_query(query) for query in query_list]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        total_time = time.time() - start_time
+        logger.info(f"Search and extract completed in {total_time:.2f}s")
+
+        # Process results
+        successful_results = []
+        failed_queries = []
+        total_extracted = 0
+
+        for result in results:
+            if isinstance(result, Exception):
+                failed_queries.append({"error": str(result)})
+                continue
+
+            if result["success"]:
+                successful_results.append(result)
+                total_extracted += result.get("extracted_count", 0)
             else:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    error=response.error or "Search failed",
-                    execution_time=response.response_time
-                )
+                failed_queries.append(result)
 
-        except Exception as e:
-            logger.error(f"Web search failed for query '{query}': {e}")
-            return ToolResult(
-                success=False,
-                result=None,
-                error=str(e)
-            )
+        # Return format
+        if isinstance(queries, str):
+            result_data = successful_results[0]["results"] if successful_results else []
+        else:
+            result_data = {
+                "queries": successful_results,
+                "failed_queries": failed_queries
+            }
 
-    @tool(
-        description="Search for news articles using Google News or Bing News",
-        return_description="ToolResult containing list of news search results with articles and publication dates"
-    )
-    async def news_search(self, query: str, engine: str = "google",
-                         max_results: int = 10, country: str = "us") -> ToolResult:
-        """
-        Search for news articles.
-
-        Args:
-            query: News search query (required)
-            engine: Search engine to use - google or bing (default: google)
-            max_results: Maximum number of news results (default: 10)
-            country: Country code for localized news (default: us)
-
-        Returns:
-            ToolResult containing news search results
-        """
-        if not self._backend:
-            return ToolResult(
-                success=False,
-                result=None,
-                error="Search backend not available"
-            )
-
-        try:
-            # Add news-specific parameters
-            response = await self._backend.search(
-                query=query,
-                engine=engine,
-                max_results=min(max_results, 20),
-                country=country,
-                tbm="nws"  # Google News search
-            )
-
-            if response.success:
-                return ToolResult(
-                    success=True,
-                    result=response.results,
-                    execution_time=response.response_time,
-                    metadata={
-                        "query": query,
-                        "engine": engine,
-                        "search_type": "news",
-                        "total_results": response.total_results,
-                        "timestamp": response.timestamp
-                    }
-                )
-            else:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    error=response.error or "News search failed"
-                )
-
-        except Exception as e:
-            logger.error(f"News search failed for query '{query}': {e}")
-            return ToolResult(
-                success=False,
-                result=None,
-                error=str(e)
-            )
-
-    @tool(
-        description="Search for images using Google Images or Bing Images",
-        return_description="ToolResult containing list of image search results with URLs and metadata"
-    )
-    async def image_search(self, query: str, engine: str = "google",
-                          max_results: int = 10, safe_search: str = "moderate") -> ToolResult:
-        """
-        Search for images.
-
-        Args:
-            query: Image search query (required)
-            engine: Search engine to use - google or bing (default: google)
-            max_results: Maximum number of image results (default: 10)
-            safe_search: Safe search setting - off, moderate, strict (default: moderate)
-
-        Returns:
-            ToolResult containing image search results
-        """
-        if not self._backend:
-            return ToolResult(
-                success=False,
-                result=None,
-                error="Search backend not available"
-            )
-
-        try:
-            response = await self._backend.search(
-                query=query,
-                engine=engine,
-                max_results=min(max_results, 20),
-                tbm="isch",  # Google Images search
-                safe=safe_search
-            )
-
-            if response.success:
-                return ToolResult(
-                    success=True,
-                    result=response.results,
-                    execution_time=response.response_time,
-                    metadata={
-                        "query": query,
-                        "engine": engine,
-                        "search_type": "images",
-                        "safe_search": safe_search,
-                        "total_results": response.total_results,
-                        "timestamp": response.timestamp
-                    }
-                )
-            else:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    error=response.error or "Image search failed"
-                )
-
-        except Exception as e:
-            logger.error(f"Image search failed for query '{query}': {e}")
-            return ToolResult(
-                success=False,
-                result=None,
-                error=str(e)
-            )
+        return ToolResult(
+            success=len(successful_results) > 0,
+            result=result_data,
+            execution_time=total_time,
+            metadata={
+                "total_queries": len(query_list),
+                "successful_queries": len(successful_results),
+                "failed_queries": len(failed_queries),
+                "total_extracted_content": total_extracted,
+                "search_engine": "google",
+                "message": f"Searched and extracted from {total_extracted} URLs across {len(successful_results)} queries"
+            }
+        )
 
 
-# Export main classes and functions
-__all__ = [
-    "SearchTool",
-    "SearchResult",
-]
+# Export
+__all__ = ["SearchTool", "SearchResult"]

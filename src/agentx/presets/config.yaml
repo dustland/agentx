@@ -30,7 +30,8 @@ preset_agents:
       streaming: true
     tools:
       - "web_search"
-      - "news_search"
+      - "search_and_extract"
+      - "extract_content"
       - "read_file"
       - "write_file"
       - "list_files"

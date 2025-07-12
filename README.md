@@ -191,7 +191,7 @@ AgentX is built on a robust foundation of modern Python technologies:
 - **[LiteLLM](https://github.com/BerriAI/litellm)** - Unified interface for 100+ LLM providers
 - **[Mem0](https://github.com/mem0ai/mem0)** - Intelligent memory layer for long-term context
 - **[SerpAPI](https://serpapi.com/)** - Web search capabilities for agents
-- **[Jina](https://www.jina.ai)** - Web content extraction
+- **[Crawl4AI](https://github.com/unclecode/crawl4ai)** - Open-source web content extraction with JavaScript support
 - **[Browser-use](https://browser-use.com/)** - Browser automation
 
 ## 🤝 Contributing

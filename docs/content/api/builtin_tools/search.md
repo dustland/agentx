@@ -2,75 +2,56 @@
 
 *Module: [`agentx.builtin_tools.search`](https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py)*
 
-Search Tools - Web search capabilities using SerpAPI.
+Search Tools - Opinionated web search using SerpAPI with parallel support.
 
-Built-in integration with SerpAPI for comprehensive web search across
-multiple search engines (Google, Bing, DuckDuckGo, etc.).
+Simple, focused implementation:
+- Uses SerpAPI for reliable search results
+- Supports parallel queries for efficiency
+- Integrates with Crawl4AI for content extraction
+- No complex configuration options
 
-## SearchResult <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L19" class="source-link" title="View source code">source</a>
+## SearchResult <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L24" class="source-link" title="View source code">source</a>
 
-Individual search result.
+Clean search result.
 
 ## SearchTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L32" class="source-link" title="View source code">source</a>
 
-Web search tool using SerpAPI.
+Opinionated search tool using SerpAPI.
 
-Provides access to multiple search engines including Google, Bing,
-DuckDuckGo, Yahoo, Baidu, and Yandex through a unified interface.
+Simple and reliable - uses best practices as defaults.
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L40" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L39" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, api_key: Optional[str] = None)
 ```
-### web_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L60" class="source-link" title="View source code">source</a>
+### web_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L59" class="source-link" title="View source code">source</a>
 
 ```python
-async def web_search(self, query: str, engine: str = 'google', max_results: int = 10, country: str = 'us', language: str = 'en') -> ToolResult
+async def web_search(self, queries: Union[str, List[str]], max_results: int = 10) -> ToolResult
 ```
 
-Search the web using various search engines.
+Search the web using Google. Supports single or multiple queries in parallel.
 
 **Args:**
-    query: Search query to execute (required)
-    engine: Search engine to use - google, bing, duckduckgo, yahoo, baidu, yandex (default: google)
-    max_results: Maximum number of results to return, max 20 (default: 10)
-    country: Country code for localized results (default: us)
-    language: Language code for results (default: en)
+    queries: Single query string or list of queries for parallel search
+    max_results: Maximum results per query (default: 10, max: 20)
 
 **Returns:**
-    ToolResult containing search results and metadata
+    ToolResult with search results
 
-### news_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L143" class="source-link" title="View source code">source</a>
+### search_and_extract <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L179" class="source-link" title="View source code">source</a>
 
 ```python
-async def news_search(self, query: str, engine: str = 'google', max_results: int = 10, country: str = 'us') -> ToolResult
+async def search_and_extract(self, queries: Union[str, List[str]], max_results: int = 5, max_extract: int = 3) -> ToolResult
 ```
 
-Search for news articles.
+Search the web and extract content from top results in one operation.
 
 **Args:**
-    query: News search query (required)
-    engine: Search engine to use - google or bing (default: google)
-    max_results: Maximum number of news results (default: 10)
-    country: Country code for localized news (default: us)
+    queries: Single query or list of queries
+    max_results: Maximum search results per query (default: 5)
+    max_extract: Maximum URLs to extract content from per query (default: 3)
 
 **Returns:**
-    ToolResult containing news search results
-
-### image_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L206" class="source-link" title="View source code">source</a>
-
-```python
-async def image_search(self, query: str, engine: str = 'google', max_results: int = 10, safe_search: str = 'moderate') -> ToolResult
-```
-
-Search for images.
-
-**Args:**
-    query: Image search query (required)
-    engine: Search engine to use - google or bing (default: google)
-    max_results: Maximum number of image results (default: 10)
-    safe_search: Safe search setting - off, moderate, strict (default: moderate)
-
-**Returns:**
-    ToolResult containing image search results
+    ToolResult with search results and extracted content
