@@ -23,9 +23,9 @@ Simple and reliable - uses best practices as defaults.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L39" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, api_key: Optional[str] = None)
+def __init__(self, api_key: Optional[str] = None, workspace_storage = None)
 ```
-### web_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L59" class="source-link" title="View source code">source</a>
+### web_search <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L60" class="source-link" title="View source code">source</a>
 
 ```python
 async def web_search(self, queries: Union[str, List[str]], max_results: int = 10) -> ToolResult
@@ -40,7 +40,7 @@ Search the web using Google. Supports single or multiple queries in parallel.
 **Returns:**
     ToolResult with search results
 
-### search_and_extract <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L179" class="source-link" title="View source code">source</a>
+### search_and_extract <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L180" class="source-link" title="View source code">source</a>
 
 ```python
 async def search_and_extract(self, queries: Union[str, List[str]], max_results: int = 5, max_extract: int = 3) -> ToolResult

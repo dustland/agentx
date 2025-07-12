@@ -50,16 +50,20 @@ class ToolManager:
         from ..builtin_tools.search import SearchTool
         from ..builtin_tools.web import WebTool
         from ..builtin_tools.context import ContextTool
+        from ..storage.factory import StorageFactory
+
+        # Create workspace storage for tools that need it
+        workspace_storage = StorageFactory.create_workspace_storage(workspace_path)
 
         # Create file tool with correct workspace
         file_tool = create_file_tool(workspace_path=workspace_path)
         self.registry.register_tool(file_tool)
 
-        # Register other builtin tools
-        search_tool = SearchTool()
+        # Register other builtin tools with workspace storage
+        search_tool = SearchTool(workspace_storage=workspace_storage)
         self.registry.register_tool(search_tool)
 
-        web_tool = WebTool()
+        web_tool = WebTool(workspace_storage=workspace_storage)
         self.registry.register_tool(web_tool)
 
         context_tool = ContextTool(workspace_path=workspace_path)
