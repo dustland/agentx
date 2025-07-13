@@ -18,16 +18,16 @@ API Design:
 - step() - For autonomous task execution, moving the plan forward
 - start_task() creates a plan but doesn't execute it automatically
 
-## XAgentResponse <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L49" class="source-link" title="View source code">source</a>
+## XAgentResponse <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L50" class="source-link" title="View source code">source</a>
 
 Response from XAgent chat interactions.
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L52" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L53" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, text: str, artifacts: List[Any] = None, preserved_steps: List[str] = None, regenerated_steps: List[str] = None, plan_changes: Dict[str, Any] = None, metadata: Dict[str, Any] = None)
+def __init__(self, text: str, artifacts: Optional[List[Any]] = None, preserved_steps: Optional[List[str]] = None, regenerated_steps: Optional[List[str]] = None, plan_changes: Optional[Dict[str, Any]] = None, metadata: Optional[Dict[str, Any]] = None)
 ```
-## XAgent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L69" class="source-link" title="View source code">source</a>
+## XAgent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L70" class="source-link" title="View source code">source</a>
 
 XAgent - The unified conversational interface for AgentX.
 
@@ -56,7 +56,7 @@ Usage Pattern:
     print(response.text)
     ```
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L99" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L100" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, team_config: TeamConfig, task_id: Optional[str] = None, workspace_dir: Optional[Path] = None, initial_prompt: Optional[str] = None)
@@ -84,7 +84,7 @@ For autonomous task execution, use step() method instead.
 **Returns:**
     XAgentResponse with text, artifacts, and execution details
 
-### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L724" class="source-link" title="View source code">source</a>
+### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L776" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]
@@ -92,7 +92,7 @@ async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Tas
 
 Compatibility method for TaskExecutor.execute().
 
-### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L736" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L788" class="source-link" title="View source code">source</a>
 
 ```python
 async def start(self, prompt: str) -> None
@@ -100,7 +100,7 @@ async def start(self, prompt: str) -> None
 
 Compatibility method for TaskExecutor.start().
 
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L740" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L792" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self) -> str

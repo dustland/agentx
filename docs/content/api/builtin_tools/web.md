@@ -2,40 +2,41 @@
 
 *Module: [`agentx.builtin_tools.web`](https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py)*
 
-Web Tools - Opinionated content extraction using the best available methods.
+Web Tools - Advanced URL content extraction using crawl4ai 0.7.0.
 
-Uses Crawl4AI as the primary and only method for reliability and consistency.
-No complex fallback chains - if Crawl4AI fails, the extraction fails clearly.
+Supports multiple extraction strategies:
+- Markdown: Clean markdown extraction (default)
+- Structured: Schema-based structured data extraction
+- CSS: Targeted extraction using CSS selectors
 
-## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L22" class="source-link" title="View source code">source</a>
+Features:
+- Virtual scroll for infinite scroll pages
+- Custom JavaScript execution
+- Flexible extraction strategies
+- Workspace integration for saving extracted content
 
-Extracted web content.
+## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
 
-## WebTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L33" class="source-link" title="View source code">source</a>
+Content extracted from a web page.
 
-Opinionated web content extraction tool using Crawl4AI.
+## WebTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L59" class="source-link" title="View source code">source</a>
 
-Simple, reliable, and consistent - no complex fallback chains.
+Advanced web content extraction tool using crawl4ai 0.7.0.
 
-### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L40" class="source-link" title="View source code">source</a>
+Provides intelligent content extraction with multiple strategies:
+- CSS selector-based targeted extraction
+- Virtual scroll for dynamic content
+- Custom JavaScript execution
+
+### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L69" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage = None, use_crawl4ai = True)
+def __init__(self, workspace_storage: Optional[Any] = None) -> None
 ```
-### extract_content <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
+### extract_urls <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L77" class="source-link" title="View source code">source</a>
 
 ```python
-async def extract_content(self, urls: Union[str, List[str]], prompt: str = 'Extract main content') -> ToolResult
+async def extract_urls(self, urls: Union[str, List[str]], extraction_type: str = 'markdown', schema: Optional[Dict[str, Any]] = None, css_selector: Optional[str] = None, regex_patterns: Optional[List[str]] = None, enable_virtual_scroll: bool = False, enable_pdf: bool = False, js_code: Optional[str] = None, wait_for: Optional[str] = None) -> ToolResult
 ```
 
-Extract content from URLs using Crawl4AI for advanced extraction.
-
-**Args:**
-    urls: Single URL or list of URLs to extract from
-    prompt: Optional focus prompt (currently unused)
-
-**Returns:**
-    ToolResult with extracted content summaries and file paths
-
-**Note:** Uses improved Crawl4AI configuration based on stable Playwright patterns.
-Falls back to simple HTTP extraction if Crawl4AI fails.
+Extract content from URLs using Crawl4AI with advanced features.

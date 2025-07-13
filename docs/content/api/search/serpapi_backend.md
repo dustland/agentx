@@ -17,7 +17,7 @@ def __init__(self, api_key: Optional[str] = None)
 Initialize SerpAPI backend.
 
 **Args:**
-    api_key: SerpAPI key. If not provided, uses SERPAPI_KEY environment variable.
+    api_key: SerpAPI key. If not provided, uses SERPAPI_API_KEY environment variable.
 
 ### name <a href="https://github.com/dustland/agentx/blob/main/src/agentx/search/serpapi_backend.py#L41" class="source-link" title="View source code">source</a>
 
