@@ -528,10 +528,8 @@ export default function HomePage() {
               variants={itemVariants}
               className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6"
             >
-              Build Vibe-X Apps
-              <br />
-              <span className="inline-flex items-center gap-3 text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
-                With Agent
+              <span className="inline-flex items-center gap-1">
+                Build Vibe-
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
@@ -543,7 +541,7 @@ export default function HomePage() {
                   }}
                   className="inline-block"
                 >
-                  <div className="relative w-8 h-8 md:w-12 md:h-12">
+                  <div className="relative w-12 h-12 md:w-16 md:h-16">
                     <svg viewBox="0 0 100 100" className="w-full h-full">
                       <path 
                         d="M20 20L80 80M80 20L20 80" 
@@ -577,6 +575,11 @@ export default function HomePage() {
                     </motion.div>
                   </div>
                 </motion.div>
+                Apps
+              </span>
+              <br />
+              <span className="text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
+                With AgentX
               </span>
             </motion.h1>
 
