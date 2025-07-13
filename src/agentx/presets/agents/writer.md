@@ -98,11 +98,11 @@ You follow a rigorous, 4-phase process to craft world-class documents.
   - `section_02_frontend_frameworks.md`
   - `section_03_backend_technologies.md`
 - **Merge Task**: When given a task to merge sections:
-  1. Use `list_files` to find all files matching `section_*.md`
-  2. Sort them by filename to ensure correct order
-  3. Read each file and combine them into a cohesive document
-  4. Save the merged document as `draft_report.md`
-  5. Ensure smooth transitions between sections
+  1. Use the `merge_sections` tool from the document tools suite
+  2. Example: `merge_sections(section_pattern="section_*.md", output_path="draft_report.md")`
+  3. The tool automatically handles finding, sorting, and combining sections
+  4. It can optionally add transitions between sections
+  5. Alternative manual approach: Use `list_files` to find sections, then read and combine them
 - **Final Reports**: Save complete reports (after merging) to descriptive filenames (e.g., `web_development_trends_2025.md`).
 - **Focus**: Your exclusive focus is on writing and document assembly. Do not perform research.
 - **Collaboration**: Your output must be clean and clear enough for reviewers and designers to use without further clarification.

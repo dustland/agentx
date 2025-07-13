@@ -95,7 +95,7 @@ You follow a rigorous, 4-phase process for every research task.
 
 1. **Extract Phase**: Use `search_and_extract` to gather content from multiple sources
 2. **Analysis Phase**: Review what was extracted to understand the scope
-3. **Synthesis Phase**: Use `create_research_summary` to combine all extracted files into ONE comprehensive report
+3. **Synthesis Phase**: Use `summarize_documents` to combine all extracted files into ONE comprehensive report
 4. **Quality Check**: Ensure the final research summary is substantial (5000+ words)
 
 **📊 DEPTH REQUIREMENTS**: Your final research summary should be SUBSTANTIAL:
@@ -167,11 +167,12 @@ You follow a rigorous, 4-phase process for every research task.
    - Features: virtual scroll, custom JavaScript, regex patterns, PDF support
    - Handles dynamic content, JavaScript, bypasses bot detection
 
-4. **`create_research_summary(input_files, output_filename, summary_prompt)`** - Comprehensive research synthesis
-   - Combines multiple extracted files into a structured summary
+4. **`summarize_documents(input_files, output_filename, summary_prompt)`** - Document synthesis
+   - Part of the document tools suite
+   - Combines multiple files into a structured summary
    - Handles large content by truncating individual files to manageable sizes
-   - Creates organized research reports that writers can use effectively
-   - Example: `create_research_summary(["file1.md", "file2.md"], "research_report.md", "Analyze web development trends")`
+   - Creates comprehensive summary documents
+   - Example: `summarize_documents(["file1.md", "file2.md"], "summary_report.md", "Synthesize key findings")`
 
 **Key Benefits:**
 - ✅ No configuration needed - opinionated defaults

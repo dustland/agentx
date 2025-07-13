@@ -50,7 +50,7 @@ class ToolManager:
         from ..builtin_tools.search import SearchTool
         from ..builtin_tools.web import WebTool
         from ..builtin_tools.context import ContextTool
-        from ..builtin_tools.summarize import SummarizeTool
+        from ..builtin_tools.document import DocumentTool
         from ..builtin_tools.research import ResearchTool
         from ..storage.factory import StorageFactory
 
@@ -71,8 +71,9 @@ class ToolManager:
         context_tool = ContextTool(workspace_path=workspace_path)
         self.registry.register_tool(context_tool)
 
-        summarize_tool = SummarizeTool(workspace_storage=workspace_storage)
-        self.registry.register_tool(summarize_tool)
+        # Document tool replaces both summarize and polish tools
+        document_tool = DocumentTool(workspace_storage=workspace_storage)
+        self.registry.register_tool(document_tool)
 
         research_tool = ResearchTool(workspace_storage=workspace_storage)
         self.registry.register_tool(research_tool)

@@ -11,11 +11,11 @@ import sys
 # Add the agentx source to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
-from agentx.builtin_tools.summarize import SummarizeTool
+from agentx.builtin_tools.document import DocumentTool
 from agentx.storage.workspace import WorkspaceStorage
 
 async def test_summarize():
-    print("🧪 Testing Improved Summarization Tool")
+    print("🧪 Testing Document Summarization Tool")
     print("=" * 50)
 
     # Create test workspace
@@ -79,14 +79,14 @@ FastAPI is one of the fastest Python frameworks, comparable to NodeJS and Go.
         )
         print(f"✅ Created test file: {filename}")
 
-    # Create summarization tool
-    summarize_tool = SummarizeTool(workspace_storage=workspace)
+    # Create document tool
+    document_tool = DocumentTool(workspace_storage=workspace)
 
     # Test AI summarization
     print("\n🤖 Testing AI-powered summarization...")
 
     try:
-        result = await summarize_tool.create_research_summary(
+        result = await document_tool.summarize_documents(
             input_files=list(test_files.keys()),
             output_filename="research_summary.md",
             summary_prompt="Create a comprehensive comparison of Flask vs FastAPI frameworks, highlighting their strengths, performance characteristics, and ideal use cases."

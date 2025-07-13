@@ -67,8 +67,10 @@ preset_agents:
       streaming: true
     tools:
       - "read_file"
+      - "write_file"  # Added for saving polished versions
       - "list_files"
       - "list_directory"
+      - "polish_document"  # New tool using DeepSeek Reasoner
 
   developer:
     description: "Code implementation specialist for software development"
