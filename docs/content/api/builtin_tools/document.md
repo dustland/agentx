@@ -56,7 +56,7 @@ Merge multiple section files into a single document.
 **Returns:**
     ToolResult with merged document information
 
-### summarize_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L324" class="source-link" title="View source code">source</a>
+### summarize_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L325" class="source-link" title="View source code">source</a>
 
 ```python
 async def summarize_documents(self, input_files: List[str], output_filename: str, summary_prompt: str, max_content_per_file: int = 10000, model_override: Optional[str] = None) -> 'ToolResult'

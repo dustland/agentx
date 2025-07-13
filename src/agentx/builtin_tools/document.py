@@ -252,7 +252,8 @@ Output the polished document directly without any meta-commentary."""
             # Find section files
             if self.workspace:
                 files = await self.workspace.list_artifacts()
-                section_files = sorted([f for f in files if Path(f).match(section_pattern)])
+                # files is a list of dicts with 'name' key
+                section_files = sorted([f['name'] for f in files if Path(f['name']).match(section_pattern)])
             else:
                 from glob import glob
                 section_files = sorted(glob(section_pattern))
