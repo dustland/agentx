@@ -26,7 +26,7 @@ def __init__(self, workspace_storage: Optional[Any] = None, polish_model: Option
 ### polish_document <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L48" class="source-link" title="View source code">source</a>
 
 ```python
-async def polish_document(self, draft_path: str, output_path: Optional[str] = None, polish_instructions: Optional[str] = None, model_override: Optional[str] = None) -> ToolResult
+async def polish_document(self, draft_path: str, output_path: Optional[str] = None, polish_instructions: Optional[str] = None, model_override: Optional[str] = None) -> 'ToolResult'
 ```
 
 Polish a draft document to create a cohesive, professional final version.
@@ -40,10 +40,10 @@ Polish a draft document to create a cohesive, professional final version.
 **Returns:**
     ToolResult with success status and output file location
 
-### merge_sections <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L241" class="source-link" title="View source code">source</a>
+### merge_sections <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L232" class="source-link" title="View source code">source</a>
 
 ```python
-async def merge_sections(self, section_pattern: str = 'section_*.md', output_path: str = 'merged_document.md', add_transitions: bool = True) -> ToolResult
+async def merge_sections(self, section_pattern: str = 'section_*.md', output_path: str = 'merged_document.md', add_transitions: bool = True) -> 'ToolResult'
 ```
 
 Merge multiple section files into a single document.
@@ -56,10 +56,10 @@ Merge multiple section files into a single document.
 **Returns:**
     ToolResult with merged document information
 
-### summarize_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L338" class="source-link" title="View source code">source</a>
+### summarize_documents <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L324" class="source-link" title="View source code">source</a>
 
 ```python
-async def summarize_documents(self, input_files: List[str], output_filename: str, summary_prompt: str, max_content_per_file: int = 10000, model_override: Optional[str] = None) -> ToolResult
+async def summarize_documents(self, input_files: List[str], output_filename: str, summary_prompt: str, max_content_per_file: int = 10000, model_override: Optional[str] = None) -> 'ToolResult'
 ```
 
 Create a comprehensive summary from multiple research files.

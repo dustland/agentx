@@ -9,7 +9,7 @@ from ..utils.logger import get_logger
 from ..core.tool import Tool, tool, ToolResult
 from ..core.brain import Brain
 from ..core.config import BrainConfig
-from typing import Optional, Any, List, Dict
+from typing import Optional, Any, List, Dict, Union
 import time
 from pathlib import Path
 import datetime
@@ -41,7 +41,7 @@ class DocumentTool(Tool):
         self.polish_model = polish_model or "deepseek/deepseek-reasoner"
         self.summary_model = summary_model or "deepseek/deepseek-chat"
         
-    @tool(
+    @tool(  # type: ignore[misc]
         description="Polish a draft document using advanced AI reasoning for professional refinement",
         return_description="ToolResult indicating success and location of polished document"
     )
@@ -51,7 +51,7 @@ class DocumentTool(Tool):
         output_path: Optional[str] = None,
         polish_instructions: Optional[str] = None,
         model_override: Optional[str] = None
-    ) -> ToolResult:
+    ) -> "ToolResult":
         """
         Polish a draft document to create a cohesive, professional final version.
         
@@ -81,22 +81,18 @@ class DocumentTool(Tool):
                     # Fall back to file system
                     draft_path_obj = Path(draft_path)
                     if not draft_path_obj.exists():
-                        return ToolResult(
-                            success=False,
-                            result=None,
-                            execution_time=time.time() - start_time,
-                            metadata={"error": f"Draft file not found: {draft_path}"}
+                        return ToolResult.error_result(
+                            error=f"Draft file not found: {draft_path}",
+                            execution_time=time.time() - start_time
                         )
                     draft_content = draft_path_obj.read_text()
             else:
                 # Direct file system access
                 draft_path_obj = Path(draft_path)
                 if not draft_path_obj.exists():
-                    return ToolResult(
-                        success=False,
-                        result=None,
-                        execution_time=time.time() - start_time,
-                        metadata={"error": f"Draft file not found: {draft_path}"}
+                    return ToolResult.error_result(
+                        error=f"Draft file not found: {draft_path}",
+                        execution_time=time.time() - start_time
                     )
                 draft_content = draft_path_obj.read_text()
             
@@ -204,8 +200,7 @@ Output the polished document directly without any meta-commentary."""
             
             logger.info(f"Polish complete in {execution_time:.2f}s")
             
-            return ToolResult(
-                success=True,
+            return ToolResult.success_result(
                 result={
                     "output_path": output_path,
                     "original_size": draft_size,
@@ -224,14 +219,10 @@ Output the polished document directly without any meta-commentary."""
             
         except Exception as e:
             logger.error(f"Document polishing failed: {e}")
-            return ToolResult(
-                success=False,
-                result=None,
+            return ToolResult.error_result(
+                error=str(e),
                 execution_time=time.time() - start_time,
-                metadata={
-                    "error": str(e),
-                    "draft_path": draft_path
-                }
+                metadata={"draft_path": draft_path}
             )
 
     @tool(
@@ -243,7 +234,7 @@ Output the polished document directly without any meta-commentary."""
         section_pattern: str = "section_*.md",
         output_path: str = "merged_document.md",
         add_transitions: bool = True
-    ) -> ToolResult:
+    ) -> "ToolResult":
         """
         Merge multiple section files into a single document.
         
@@ -267,11 +258,9 @@ Output the polished document directly without any meta-commentary."""
                 section_files = sorted(glob(section_pattern))
             
             if not section_files:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    execution_time=time.time() - start_time,
-                    metadata={"error": f"No files found matching pattern: {section_pattern}"}
+                return ToolResult.error_result(
+                    error=f"No files found matching pattern: {section_pattern}",
+                    execution_time=time.time() - start_time
                 )
             
             logger.info(f"Found {len(section_files)} section files to merge")
@@ -308,8 +297,7 @@ Output the polished document directly without any meta-commentary."""
             else:
                 Path(output_path).write_text(final_content)
             
-            return ToolResult(
-                success=True,
+            return ToolResult.success_result(
                 result={
                     "output_path": output_path,
                     "sections_merged": len(section_files),
@@ -324,11 +312,9 @@ Output the polished document directly without any meta-commentary."""
             
         except Exception as e:
             logger.error(f"Section merge failed: {e}")
-            return ToolResult(
-                success=False,
-                result=None,
-                execution_time=time.time() - start_time,
-                metadata={"error": str(e)}
+            return ToolResult.error_result(
+                error=str(e),
+                execution_time=time.time() - start_time
             )
 
     @tool(
@@ -342,7 +328,7 @@ Output the polished document directly without any meta-commentary."""
         summary_prompt: str,
         max_content_per_file: int = 10000,
         model_override: Optional[str] = None
-    ) -> ToolResult:
+    ) -> "ToolResult":
         """
         Create a comprehensive summary from multiple research files.
         
@@ -361,11 +347,9 @@ Output the polished document directly without any meta-commentary."""
         
         try:
             if not self.workspace:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    execution_time=time.time() - start_time,
-                    metadata={"error": "No workspace available for file operations"}
+                return ToolResult.error_result(
+                    error="No workspace available for file operations",
+                    execution_time=time.time() - start_time
                 )
 
             # Read all input files
@@ -394,11 +378,9 @@ Output the polished document directly without any meta-commentary."""
                     continue
 
             if not file_contents:
-                return ToolResult(
-                    success=False,
-                    result=None,
-                    execution_time=time.time() - start_time,
-                    metadata={"error": "No files could be read successfully"}
+                return ToolResult.error_result(
+                    error="No files could be read successfully",
+                    execution_time=time.time() - start_time
                 )
 
             # Create the summary using AI
@@ -453,7 +435,7 @@ SOURCE FILES ({len(file_contents)} files, {total_chars} total characters):
 
 """
             
-            final_content = header + summary_content
+            final_content = header + (summary_content or "")
 
             # Save the summary
             result = await self.workspace.store_artifact(
@@ -472,8 +454,7 @@ SOURCE FILES ({len(file_contents)} files, {total_chars} total characters):
 
             if result.success:
                 logger.info(f"Summary created successfully: {output_filename}")
-                return ToolResult(
-                    success=True,
+                return ToolResult.success_result(
                     result={
                         "output_file": output_filename,
                         "files_processed": len(file_contents),
@@ -490,11 +471,9 @@ SOURCE FILES ({len(file_contents)} files, {total_chars} total characters):
 
         except Exception as e:
             logger.error(f"Summary creation failed: {e}")
-            return ToolResult(
-                success=False,
-                result=None,
-                execution_time=time.time() - start_time,
-                metadata={"error": str(e)}
+            return ToolResult.error_result(
+                error=str(e),
+                execution_time=time.time() - start_time
             )
 
 
