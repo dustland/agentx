@@ -487,7 +487,10 @@ AVAILABLE SPECIALIST AGENTS: {', '.join(self.specialist_agents.keys())}
 Create a plan that breaks down the goal into specific, actionable tasks.
 Each task should be assigned to the most appropriate specialist agent.
 
-IMPORTANT: If this task involves creating a document or report, also create a detailed document outline that all agents will follow. The outline should be included in the response.
+IMPORTANT: If this task involves creating a document or report:
+1. Create separate tasks for writing each major section
+2. After all section writing tasks, create a merge task for the writer to combine sections
+3. Follow merge task with a review/polish task for the reviewer
 
 Respond with a JSON object following this schema:
 {{
@@ -502,8 +505,7 @@ Respond with a JSON object following this schema:
       "status": "pending",
       "on_failure": "proceed"
     }}
-  ],
-  "document_outline": "string - detailed markdown outline if this involves creating a document/report (optional)"
+  ]
 }}
 """
 
@@ -634,15 +636,8 @@ Respond with a JSON object following this schema:
         if not agent:
             raise ValueError(f"Agent '{task.agent}' not found")
 
-        # Check if document outline exists
+        # Task structure contains implicit document outline
         outline_reference = ""
-        if self.workspace:
-            try:
-                outline_content = await self.workspace.get_artifact("document_outline.md")
-                if outline_content:
-                    outline_reference = f"\n\nDOCUMENT OUTLINE:\nA document outline has been created for this project. Use 'read_file' with filename 'document_outline.md' to access it and follow the structure when creating content."
-            except:
-                pass
 
         # Prepare task briefing
         briefing = [
