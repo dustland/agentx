@@ -212,3 +212,4 @@ user_data/*
 results/
 
 .mcp.json
+research_kb_*.jsonl
