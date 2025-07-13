@@ -232,7 +232,7 @@ class WebTool(Tool):
 
         # Browser configuration optimized for stability
         browser_config = BrowserConfig(
-            browser_type="chromium",  # Switch to Chromium for better stability
+            browser_type="chromium",  # Chromium is most stable, crashpad warnings are harmless
             headless=True,
             viewport_width=1920,
             viewport_height=1080,
@@ -240,7 +240,7 @@ class WebTool(Tool):
             ignore_https_errors=True,
             verbose=False,
             # Additional stability options
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
             accept_downloads=False
         )
 

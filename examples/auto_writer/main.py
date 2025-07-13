@@ -8,6 +8,8 @@ Uses systematic decomposition and specialized agent orchestration.
 
 import asyncio
 from pathlib import Path
+from datetime import datetime
+import time
 from agentx import start_task
 
 async def main():
@@ -39,6 +41,10 @@ async def main():
     print("🚀 AutoWriter - Starting comprehensive report generation...")
     print(f"📋 Task: {prompt[:100]}...")
     print("-" * 80)
+    
+    # Record start time
+    start_time = time.time()
+    start_datetime = datetime.now()
 
     # Start the task with XAgent - creates a conversational interface
     x = await start_task(prompt, str(config_path))
@@ -68,33 +74,39 @@ async def main():
         print(f"🤖 X: {response[:200]}...")
         print("-" * 40)
 
-    print("\n✅ TASK COMPLETE")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
-    print(f"📋 Task ID: {x.task_id}")
+    # Record end time
+    end_time = time.time()
+    end_datetime = datetime.now()
+    total_duration = end_time - start_time
 
     # Check for artifacts in the workspace
     workspace_path = x.workspace.get_workspace_path()
     artifacts_path = workspace_path / "artifacts"
+    artifact_files = list(artifacts_path.glob("*")) if artifacts_path.exists() else []
+    artifact_count = len(artifact_files)
 
-    if artifacts_path.exists():
-        artifact_files = list(artifacts_path.glob("*"))
-        if artifact_files:
-            print(f"📄 Generated artifacts:")
-            for artifact in artifact_files:
-                print(f"   - {artifact.name}")
-        else:
-            print("📄 No artifacts found in artifacts directory")
-    else:
-        print("📄 No artifacts directory found")
-
-    print(f"\n🔗 Full workspace path: {workspace_path}")
-    print("📁 Check the workspace directory for the generated report and artifacts.")
-
-    # Demonstrate conversational interaction
-    print("\n💬 You can also chat with X to modify the report:")
-    print("   Example: x.chat('Make the report more visual with charts')")
-    print("   Example: x.chat('Add a section about security trends')")
-    print("   Example: x.chat('Generate an executive summary')")
+    # Print comprehensive execution summary
+    print("\n" + "=" * 80)
+    print("✅ TASK COMPLETE - EXECUTION SUMMARY")
+    print("=" * 80)
+    print(f"📋 Task ID: {x.task_id}")
+    print(f"📁 Workspace: {workspace_path}")
+    print("-" * 80)
+    print(f"📅 Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"📅 End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"⏱️  Duration: {total_duration:.1f} seconds ({total_duration/60:.1f} minutes)")
+    print("-" * 80)
+    print(f"📊 Steps Executed: {step_count}")
+    print(f"⚡ Avg Time/Step: {total_duration/step_count:.1f}s" if step_count > 0 else "")
+    print(f"🚀 Performance: {step_count / (total_duration/60):.1f} steps/minute" if total_duration > 0 else "")
+    print("-" * 80)
+    print(f"📄 Artifacts Generated: {artifact_count} files")
+    if artifact_files:
+        for artifact in artifact_files[:5]:  # Show first 5 artifacts
+            print(f"   • {artifact.name}")
+        if artifact_count > 5:
+            print(f"   • ... and {artifact_count - 5} more files")
+    print("=" * 80)
 
 if __name__ == "__main__":
     asyncio.run(main())

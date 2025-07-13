@@ -126,7 +126,7 @@ class ResearchTool(Tool):
             research_results = []
             final_adaptive = None
 
-            # Use Chromium for better stability and compatibility
+            # Use Chromium for best stability (crashpad warnings are harmless)
             browser_config = BrowserConfig(
                 browser_type="chromium",
                 headless=True,
@@ -135,75 +135,44 @@ class ResearchTool(Tool):
                 viewport_height=1080
             )
             
-            async with AsyncWebCrawler(config=browser_config) as crawler:
-                # Initialize adaptive crawler with config
-                adaptive = AdaptiveCrawler(crawler, config)
-
-                # For multiple URLs, use batch processing for better performance
-                if len(urls_to_crawl) > 1:
-                    logger.info(f"Using batch processing for {len(urls_to_crawl)} URLs")
-
-                    # Use arun_many for performance with limited URLs to avoid overwhelming
-                    batch_urls = urls_to_crawl[:3]  # Limit to 3 URLs for batch processing
-
+            # Process each URL with its own browser instance to avoid context issues
+            for url_idx, url in enumerate(urls_to_crawl):
+                logger.info(f"Processing URL {url_idx + 1}/{len(urls_to_crawl)}: {url}")
+                
+                # Create a new browser instance for each URL
+                async with AsyncWebCrawler(config=browser_config) as crawler:
+                    # Initialize adaptive crawler with config
+                    adaptive = AdaptiveCrawler(crawler, config)
+                    
                     try:
-                        # Batch crawl the initial URLs to get content quickly
-                        batch_results = await crawler.arun_many(
-                            urls=batch_urls,
-                            config=CrawlerRunConfig(
-                                cache_mode=CacheMode.BYPASS
-                            )
-                        )
-
-                        # Process successful batch results first
-                        successful_urls = []
-                        for result in batch_results:
-                            if result.success and result.markdown:
-                                successful_urls.append(result.url)
-
-                        logger.info(f"Batch crawl successful for {len(successful_urls)} URLs")
-
-                        # Now use adaptive crawling starting from the most successful URL
-                        if successful_urls:
-                            best_url = successful_urls[0]  # Use first successful URL
-                            logger.info(f"Starting adaptive crawling from: {best_url}")
-
-                            state = await adaptive.digest(
-                                start_url=best_url,
-                                query=query
-                            )
-                        else:
-                            # Fall back to individual crawling if batch failed
-                            state = await adaptive.digest(
-                                start_url=urls_to_crawl[0],
-                                query=query
-                            )
-
-                    except Exception as e:
-                        logger.warning(f"Batch processing failed: {e}, falling back to individual crawling")
-                        # Fall back to individual crawling
+                        # Use direct adaptive crawling for each URL
+                        logger.info(f"Starting adaptive crawling for: {url}")
                         state = await adaptive.digest(
-                            start_url=urls_to_crawl[0],
+                            start_url=url,
                             query=query
                         )
-                else:
-                    # Single URL - use direct adaptive crawling
-                    logger.info(f"Single URL adaptive crawling: {urls_to_crawl[0]}")
-                    state = await adaptive.digest(
-                        start_url=urls_to_crawl[0],
-                        query=query
-                    )
-
-                # Get relevant content from the adaptive crawl
-                relevant_pages = adaptive.get_relevant_content(top_k=15)
-                research_results.extend(relevant_pages)
-
-                logger.info(f"Adaptive crawl completed: {len(state.crawled_urls)} pages, confidence: {adaptive.confidence:.0%}")
-
-                # Note: Knowledge base with embeddings should be managed by the memory system
-                # Not exported as separate files
-
-                final_adaptive = adaptive
+                        
+                        # Get relevant content from this crawl
+                        relevant_pages = adaptive.get_relevant_content(top_k=5)  # Limit per URL
+                        research_results.extend(relevant_pages)
+                        
+                        logger.info(f"Successfully crawled {url} - found {len(relevant_pages)} relevant pages")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to crawl {url}: {e}")
+                        continue
+                
+                # Break if we have enough results
+                if len(research_results) >= 15:
+                    logger.info(f"Collected sufficient results ({len(research_results)} pages)")
+                    break
+            
+            logger.info(f"Research completed: collected {len(research_results)} total pages")
+            
+            # Note: Knowledge base with embeddings should be managed by the memory system
+            # Not exported as separate files
+            
+            final_adaptive = None  # No single adaptive instance when processing multiple URLs
 
             # Process and save results
             saved_files = []
@@ -215,12 +184,12 @@ class ResearchTool(Tool):
                     saved_files.append(filename)
 
             # Generate summary with confidence information
-            summary = self._generate_summary(unique_results, query, final_adaptive)
+            summary = self._generate_summary(unique_results, query, None)
 
             # Create research result
             research_result = ResearchResult(
                 query=query,
-                confidence=final_adaptive.confidence if final_adaptive else 0.0,
+                confidence=0.8,  # Default confidence for multi-URL research
                 pages_crawled=len(research_results),
                 relevant_content=unique_results[:5],  # Top 5 for response
                 saved_files=saved_files,

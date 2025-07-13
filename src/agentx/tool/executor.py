@@ -143,9 +143,9 @@ class SecurityPolicy:
     """Security policies for tool execution."""
 
     # Resource limits
-    MAX_EXECUTION_TIME = 60.0  # seconds
+    MAX_EXECUTION_TIME = 120.0  # seconds
     MAX_TOOLS_PER_BATCH = 10
-    MAX_CONCURRENT_EXECUTIONS = 3
+    MAX_CONCURRENT_EXECUTIONS = 5
 
     # Note: Tool permissions are now controlled by agent configurations
     # Builtin tools are allowed by default since they're designed to be safe
