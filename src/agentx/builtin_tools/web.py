@@ -238,7 +238,8 @@ class WebTool(Tool):
             viewport_height=1080,
             java_script_enabled=True,
             ignore_https_errors=True,
-            verbose=False
+            verbose=False,
+            page_timeout=120000  # 2 minutes default timeout
         )
 
         extracted_contents: List[WebContent] = []
@@ -252,8 +253,8 @@ class WebTool(Tool):
                     # Build run configuration with correct parameters
                     run_config = CrawlerRunConfig(
                         cache_mode=CacheMode.BYPASS,
-                        page_timeout=60000,
-                        wait_for_timeout=5000,
+                        page_timeout=120000,  # 2 minutes timeout
+                        wait_for_timeout=10000,  # 10 seconds wait timeout
                         screenshot=False,
                         pdf=False,
                         verbose=True

@@ -132,7 +132,8 @@ class ResearchTool(Tool):
                 headless=True,
                 verbose=False,
                 viewport_width=1920,
-                viewport_height=1080
+                viewport_height=1080,
+                page_timeout=120000  # 2 minutes default timeout
             )
             
             async with AsyncWebCrawler(config=browser_config) as crawler:
@@ -152,7 +153,7 @@ class ResearchTool(Tool):
                             urls=batch_urls,
                             config=CrawlerRunConfig(
                                 cache_mode=CacheMode.BYPASS,
-                                page_timeout=30000
+                                page_timeout=120000  # 2 minutes timeout for research
                             )
                         )
 
