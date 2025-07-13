@@ -264,6 +264,36 @@ class Brain:
                 timestamp=datetime.now()
             )
 
+    async def think(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: Optional[float] = None
+    ) -> str:
+        """
+        Simple thinking interface - takes a prompt and returns text response.
+
+        This is a convenience method for simple AI interactions where you just
+        want to send a prompt and get back text content without dealing with
+        message structures or tool calls.
+
+        Args:
+            prompt: The user prompt/question
+            system_prompt: Optional system prompt
+            temperature: Optional temperature override
+
+        Returns:
+            The AI's text response
+        """
+        messages = [{"role": "user", "content": prompt}]
+        response = await self.generate_response(
+            messages=messages,
+            system_prompt=system_prompt,
+            temperature=temperature,
+            tools=None  # think() is for simple text-only interactions
+        )
+        return response.content or ""
+
     async def stream_response(
         self,
         messages: List[Dict[str, Any]],

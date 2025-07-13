@@ -19,13 +19,13 @@ class SerpAPIBackend(SearchBackend):
         Initialize SerpAPI backend.
 
         Args:
-            api_key: SerpAPI key. If not provided, uses SERPAPI_KEY environment variable.
+            api_key: SerpAPI key. If not provided, uses SERPAPI_API_KEY environment variable.
         """
-        self.api_key = api_key or os.getenv("SERPAPI_KEY")
+        self.api_key = api_key or os.getenv("SERPAPI_API_KEY")
 
         if not self.api_key:
             raise ValueError(
-                "SERPAPI_KEY is required. Set it as environment variable or pass api_key to constructor."
+                "SERPAPI_API_KEY is required. Set it as environment variable or pass api_key to constructor."
             )
 
         self._search_classes = {

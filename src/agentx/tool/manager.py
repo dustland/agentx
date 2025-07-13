@@ -50,6 +50,8 @@ class ToolManager:
         from ..builtin_tools.search import SearchTool
         from ..builtin_tools.web import WebTool
         from ..builtin_tools.context import ContextTool
+        from ..builtin_tools.summarize import SummarizeTool
+        from ..builtin_tools.research import ResearchTool
         from ..storage.factory import StorageFactory
 
         # Create workspace storage for tools that need it
@@ -68,6 +70,12 @@ class ToolManager:
 
         context_tool = ContextTool(workspace_path=workspace_path)
         self.registry.register_tool(context_tool)
+
+        summarize_tool = SummarizeTool(workspace_storage=workspace_storage)
+        self.registry.register_tool(summarize_tool)
+
+        research_tool = ResearchTool(workspace_storage=workspace_storage)
+        self.registry.register_tool(research_tool)
 
         logger.info(f"Registered builtin tools for workspace: {workspace_path}")
 

@@ -52,8 +52,11 @@ class Agent:
         self.name = config.name
         self.description = config.description
         self.tools = config.tools or []
-        self.memory_enabled = getattr(config, 'memory_enabled', True)  # Default to True if not specified
-        self.max_iterations = getattr(config, 'max_iterations', 10)  # Default to 10 if not specified
+        self.memory_enabled = config.enable_memory  # Use enable_memory from AgentConfig
+        self.max_iterations = config.max_consecutive_replies  # Use max_consecutive_replies from AgentConfig
+
+        # Team memory configuration (can be set by XAgent)
+        self.team_memory_config: Optional[Any] = None
 
         # State management
         self.state = AgentState(agent_name=self.name)

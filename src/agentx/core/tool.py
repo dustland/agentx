@@ -8,7 +8,7 @@ import asyncio
 import inspect
 import time
 import json
-from typing import Dict, List, Optional, Any, Callable, get_type_hints
+from typing import Dict, List, Optional, Any, Callable, get_type_hints, Type
 from dataclasses import dataclass
 from datetime import datetime
 from abc import ABC, abstractmethod
@@ -200,7 +200,7 @@ def tool(description: str = "", return_description: str = ""):
     return decorator
 
 
-def _create_pydantic_model_from_signature(func: Callable) -> Optional[BaseModel]:
+def _create_pydantic_model_from_signature(func: Callable) -> Optional[Type[BaseModel]]:
     """Create a Pydantic model from function signature for validation and schema generation."""
     sig = inspect.signature(func)
     type_hints = get_type_hints(func)
@@ -301,15 +301,15 @@ class Tool(ABC):
                     "type": "function",
                     "function": {
                         "name": tool_name,
-                        "description": method._tool_description,
+                        "description": getattr(method, '_tool_description', ''),
                         "parameters": pydantic_schema
                     }
                 }
 
                 # Add return information if available
-                if hasattr(method, '_return_description') and method._return_description:
+                if hasattr(method, '_return_description') and getattr(method, '_return_description', None):
                     schema["function"]["returns"] = {
-                        "description": method._return_description
+                        "description": getattr(method, '_return_description', '')
                     }
 
                 schemas[tool_name] = schema
@@ -319,7 +319,7 @@ class Tool(ABC):
                     "type": "function",
                     "function": {
                         "name": tool_name,
-                        "description": method._tool_description,
+                        "description": getattr(method, '_tool_description', ''),
                         "parameters": {
                             "type": "object",
                             "properties": {},

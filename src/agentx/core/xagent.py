@@ -21,10 +21,11 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union, List
+import json
 
 from agentx.core.agent import Agent
 from agentx.core.brain import Brain
-from agentx.core.config import TeamConfig, BrainConfig
+from agentx.core.config import TeamConfig, BrainConfig, AgentConfig
 from agentx.core.handoff_evaluator import HandoffEvaluator, HandoffContext
 from agentx.core.message import (
     MessageQueue, TaskHistory, Message, TaskStep, TextPart,
@@ -52,11 +53,11 @@ class XAgentResponse:
     def __init__(
         self,
         text: str,
-        artifacts: List[Any] = None,
-        preserved_steps: List[str] = None,
-        regenerated_steps: List[str] = None,
-        plan_changes: Dict[str, Any] = None,
-        metadata: Dict[str, Any] = None
+        artifacts: Optional[List[Any]] = None,
+        preserved_steps: Optional[List[str]] = None,
+        regenerated_steps: Optional[List[str]] = None,
+        plan_changes: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Dict[str, Any]] = None
     ):
         self.text = text
         self.artifacts = artifacts or []
@@ -155,7 +156,7 @@ class XAgent(Agent):
 
         logger.info("✅ XAgent initialized and ready for conversation")
 
-    def _setup_task_logging(self):
+    def _setup_task_logging(self) -> None:
         """Sets up file-based logging for the task."""
         log_dir = self.workspace.get_workspace_path() / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
@@ -201,7 +202,7 @@ class XAgent(Agent):
             timeout=120
         )
 
-    def _create_xagent_config(self):
+    def _create_xagent_config(self) -> 'AgentConfig':
         """Create AgentConfig for XAgent itself."""
         from agentx.core.config import AgentConfig
         from pathlib import Path
@@ -214,11 +215,11 @@ class XAgent(Agent):
             description="XAgent - The lead orchestrator and strategic planner for AgentX",
             prompt_file=str(xagent_prompt_path),
             tools=[],  # XAgent coordinates but doesn't use tools directly
-            memory_enabled=True,
-            max_iterations=50
+            enable_memory=True,
+            max_consecutive_replies=50
         )
 
-    async def _initialize_with_prompt(self, prompt: str):
+    async def _initialize_with_prompt(self, prompt: str) -> None:
         """Initialize XAgent with an initial prompt and load/create plan."""
         self.initial_prompt = prompt
 
@@ -226,7 +227,6 @@ class XAgent(Agent):
         plan_path = self.workspace.get_workspace_path() / "plan.json"
         if plan_path.exists():
             try:
-                import json
                 with open(plan_path, 'r') as f:
                     plan_data = json.load(f)
                 self.current_plan = Plan(**plan_data)
@@ -239,7 +239,7 @@ class XAgent(Agent):
             self.current_plan = await self._generate_plan(prompt)
             await self._persist_plan()
 
-    async def _ensure_plan_initialized(self):
+    async def _ensure_plan_initialized(self) -> None:
         """Ensure plan is initialized if we have an initial prompt."""
         if not self._plan_initialized and self.initial_prompt:
             await self._initialize_with_prompt(self.initial_prompt)
@@ -354,9 +354,11 @@ Respond with a JSON object:
         )
 
         try:
-            import json
-            return json.loads(response.content)
-        except json.JSONDecodeError:
+            if response.content is None:
+                raise ValueError("Response content is None")
+            result: Dict[str, Any] = json.loads(response.content)
+            return result
+        except (json.JSONDecodeError, ValueError):
             # Fallback to simple heuristics
             return {
                 "requires_plan_adjustment": any(word in message.content.lower()
@@ -429,7 +431,7 @@ Please provide a helpful, informative response based on the current state of the
         )
 
         return XAgentResponse(
-            text=response.content,
+            text=response.content or "",
             metadata={"query_type": "informational"}
         )
 
@@ -469,7 +471,7 @@ suggest they be more specific about what changes they want.
         )
 
         return XAgentResponse(
-            text=response.content,
+            text=response.content or "",
             metadata={"query_type": "conversational"}
         )
 
@@ -485,6 +487,8 @@ AVAILABLE SPECIALIST AGENTS: {', '.join(self.specialist_agents.keys())}
 Create a plan that breaks down the goal into specific, actionable tasks.
 Each task should be assigned to the most appropriate specialist agent.
 
+IMPORTANT: If this task involves creating a document or report, also create a detailed document outline that all agents will follow. The outline should be included in the response.
+
 Respond with a JSON object following this schema:
 {{
   "goal": "string - the main objective",
@@ -498,7 +502,8 @@ Respond with a JSON object following this schema:
       "status": "pending",
       "on_failure": "proceed"
     }}
-  ]
+  ],
+  "document_outline": "string - detailed markdown outline if this involves creating a document/report (optional)"
 }}
 """
 
@@ -510,9 +515,31 @@ Respond with a JSON object following this schema:
 
         try:
             import json
+            if response.content is None:
+                raise ValueError("Response content is None")
             plan_data = json.loads(response.content)
+
+            # Extract document outline if present
+            document_outline = plan_data.pop("document_outline", None)
+
+            # Create the plan
             plan = Plan(**plan_data)
             logger.info(f"Generated plan with {len(plan.tasks)} tasks")
+
+            # Save document outline if provided
+            if document_outline and self.workspace:
+                try:
+                    await self.workspace.store_artifact(
+                        name="document_outline.md",
+                        content=document_outline,
+                        content_type="text/markdown",
+                        metadata={"created_by": "XAgent", "purpose": "document_structure"},
+                        commit_message="Created document outline for task execution"
+                    )
+                    logger.info("Saved document outline to workspace")
+                except Exception as e:
+                    logger.warning(f"Failed to save document outline: {e}")
+
             return plan
         except Exception as e:
             logger.error(f"Failed to generate plan: {e}")
@@ -526,7 +553,8 @@ Respond with a JSON object following this schema:
                         goal=goal,
                         agent=next(iter(self.specialist_agents.keys())),
                         dependencies=[],
-                        status="pending"
+                        status="pending",
+                        on_failure="halt"
                     )
                 ]
             )
@@ -600,9 +628,21 @@ Respond with a JSON object following this schema:
     async def _execute_single_task(self, task: PlanItem) -> str:
         """Execute a single task using the appropriate specialist agent."""
         # Get the assigned agent
+        if task.agent is None:
+            raise ValueError("Task has no assigned agent")
         agent = self.specialist_agents.get(task.agent)
         if not agent:
             raise ValueError(f"Agent '{task.agent}' not found")
+
+        # Check if document outline exists
+        outline_reference = ""
+        if self.workspace:
+            try:
+                outline_content = await self.workspace.get_artifact("document_outline.md")
+                if outline_content:
+                    outline_reference = f"\n\nDOCUMENT OUTLINE:\nA document outline has been created for this project. Use 'read_file' with filename 'document_outline.md' to access it and follow the structure when creating content."
+            except:
+                pass
 
         # Prepare task briefing
         briefing = [
@@ -615,7 +655,7 @@ GOAL: {task.goal}
 
 Complete this specific task using your available tools. Save any outputs that other agents might need as files in the workspace.
 
-Original user request: {self.initial_prompt or "No initial prompt provided"}
+Original user request: {self.initial_prompt or "No initial prompt provided"}{outline_reference}
 """
             },
             {
@@ -631,11 +671,22 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}
 
         # Evaluate if handoff should occur
         if self.handoff_evaluator:
+            # Convert conversation history to expected format
+            conversation_dicts = []
+            for msg in self.conversation_history:
+                conversation_dicts.append({
+                    "role": msg.role,
+                    "content": msg.content,
+                    "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
+                })
+
+            if task.agent is None:
+                raise ValueError("Task has no assigned agent for handoff")
             context = HandoffContext(
                 current_agent=task.agent,
                 task_result=response,
                 task_goal=task.goal,
-                conversation_history=self.conversation_history,
+                conversation_history=conversation_dicts,
                 workspace_files=[f["name"] for f in await self.workspace.list_artifacts()]
             )
 
@@ -648,7 +699,8 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}
                     goal=f"Continue the work from {task.agent} based on: {task.goal}",
                     agent=next_agent,
                     dependencies=[task.id],
-                    status="pending"
+                    status="pending",
+                    on_failure="halt"
                 )
 
                 # Add to plan dynamically
@@ -661,7 +713,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}
 
         return response
 
-    async def _persist_plan(self):
+    async def _persist_plan(self) -> None:
         """Persist the current plan to workspace."""
         if not self.current_plan:
             return

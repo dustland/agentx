@@ -29,9 +29,9 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "web_search"
-      - "search_and_extract"
-      - "extract_content"
+      - "research_topic"  # Deep adaptive research with crawl4ai 0.7.0
+      - "search_web"      # Quick web search
+      - "extract_urls"    # Extract content from specific URLs
       - "read_file"
       - "write_file"
       - "list_files"
