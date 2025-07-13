@@ -437,10 +437,63 @@ export default function HomePage() {
         {/* Subtle background decoration */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white dark:from-slate-800 dark:to-slate-900"></div>
 
-        {/* Simple grid pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:60px_60px] opacity-40"></div>
+        {/* X-Pattern Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Animated X patterns */}
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="x-pattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+                <path d="M30 30L50 50M50 30L30 50" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
+                <path d="M90 30L110 50M110 30L90 50" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
+                <path d="M30 90L50 110M50 90L30 110" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
+                <path d="M90 90L110 110M110 90L90 110" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
+                {/* Center larger X */}
+                <path d="M50 50L70 70M70 50L50 70" stroke="currentColor" strokeWidth="1.5" className="text-blue-300 dark:text-blue-800" opacity="0.3"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#x-pattern)" />
+          </svg>
+          
+          {/* Gradient overlay to fade the pattern */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/90 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/90"></div>
+        </div>
 
-        {/* Floating decorative elements */}
+        {/* Floating X elements */}
+        <motion.div
+          animate={{ 
+            rotate: [0, 90, 180, 270, 360],
+            scale: [1, 1.1, 1, 0.9, 1]
+          }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-20 left-[10%] w-24 h-24 opacity-10"
+        >
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="3" className="text-blue-500 dark:text-blue-400" />
+          </svg>
+        </motion.div>
+        
+        <motion.div
+          animate={{ 
+            rotate: [360, 270, 180, 90, 0],
+            scale: [0.8, 1, 1.2, 1, 0.8]
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className="absolute top-40 right-[15%] w-32 h-32 opacity-10"
+        >
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="4" className="text-purple-500 dark:text-purple-400" />
+          </svg>
+        </motion.div>
+        
+        {/* Glowing orbs with X shapes inside */}
         <motion.div
           animate={{ y: [-10, 10, -10], x: [-5, 5, -5] }}
           transition={{
@@ -449,28 +502,15 @@ export default function HomePage() {
             repeatType: "reverse",
             ease: "easeInOut",
           }}
-          className="absolute top-20 left-10 w-32 h-32 bg-blue-100 dark:bg-blue-900/20 rounded-full blur-3xl opacity-60"
-        ></motion.div>
-        <motion.div
-          animate={{ y: [15, -15, 15], x: [8, -8, 8] }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-          }}
-          className="absolute top-40 right-20 w-24 h-24 bg-purple-100 dark:bg-purple-900/20 rounded-full blur-3xl opacity-40"
-        ></motion.div>
-        <motion.div
-          animate={{ y: [-5, 5, -5], x: [10, -10, 10] }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            repeatType: "reverse",
-            ease: "easeInOut",
-          }}
-          className="absolute bottom-20 left-1/4 w-40 h-40 bg-slate-100 dark:bg-slate-800/30 rounded-full blur-3xl opacity-30"
-        ></motion.div>
+          className="absolute bottom-20 left-[20%] w-40 h-40"
+        >
+          <div className="relative w-full h-full">
+            <div className="absolute inset-0 bg-blue-200 dark:bg-blue-900/30 rounded-full blur-3xl opacity-40"></div>
+            <svg viewBox="0 0 100 100" className="absolute inset-4 w-32 h-32 opacity-20">
+              <path d="M25 25L75 75M75 25L25 75" stroke="currentColor" strokeWidth="2" className="text-blue-600 dark:text-blue-300" />
+            </svg>
+          </div>
+        </motion.div>
 
         <motion.div
           initial="hidden"
@@ -487,8 +527,53 @@ export default function HomePage() {
               Build Vibe-
               <TypewriterText /> Apps
               <br />
-              <span className="text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
-                With AgentX
+              <span className="inline-flex items-center gap-3 text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
+                With Agent
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20,
+                    delay: 0.5 
+                  }}
+                  className="inline-block"
+                >
+                  <div className="relative w-8 h-8 md:w-12 md:h-12">
+                    <svg viewBox="0 0 100 100" className="w-full h-full">
+                      <path 
+                        d="M20 20L80 80M80 20L20 80" 
+                        stroke="currentColor" 
+                        strokeWidth="12" 
+                        strokeLinecap="round"
+                        className="text-blue-600 dark:text-blue-400" 
+                      />
+                    </svg>
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        opacity: [0.5, 0.8, 0.5]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatType: "reverse"
+                      }}
+                      className="absolute inset-0"
+                    >
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        <path 
+                          d="M20 20L80 80M80 20L20 80" 
+                          stroke="currentColor" 
+                          strokeWidth="8" 
+                          strokeLinecap="round"
+                          className="text-blue-400 dark:text-blue-300 blur-sm" 
+                        />
+                      </svg>
+                    </motion.div>
+                  </div>
+                </motion.div>
               </span>
             </motion.h1>
 
@@ -543,7 +628,20 @@ export default function HomePage() {
       </section>
 
       {/* Vibe-X Philosophy */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      <section className="relative py-20 bg-white dark:bg-slate-900 overflow-hidden">
+        {/* Subtle X pattern for section background */}
+        <div className="absolute inset-0 opacity-5">
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="vibe-x-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M15 15L25 25M25 15L15 25" stroke="currentColor" strokeWidth="0.5" className="text-slate-400 dark:text-slate-600"/>
+                <path d="M35 35L45 45M45 35L35 45" stroke="currentColor" strokeWidth="0.5" className="text-slate-400 dark:text-slate-600"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#vibe-x-pattern)" />
+          </svg>
+        </div>
+        
         <div className="relative max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -554,9 +652,16 @@ export default function HomePage() {
           >
             <motion.div
               variants={itemVariants}
-              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+              className="relative bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center overflow-hidden group hover:shadow-lg transition-shadow duration-300"
             >
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
+              {/* X decoration in corner */}
+              <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-blue-600 dark:text-blue-400" />
+                </svg>
+              </div>
+              
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-6 relative">
                 <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
@@ -570,8 +675,15 @@ export default function HomePage() {
 
             <motion.div
               variants={itemVariants}
-              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+              className="relative bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center overflow-hidden group hover:shadow-lg transition-shadow duration-300"
             >
+              {/* X decoration in corner */}
+              <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-purple-600 dark:text-purple-400" />
+                </svg>
+              </div>
+              
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
@@ -586,8 +698,15 @@ export default function HomePage() {
 
             <motion.div
               variants={itemVariants}
-              className="bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center"
+              className="relative bg-slate-50 dark:bg-slate-800/50 p-8 rounded-lg text-center overflow-hidden group hover:shadow-lg transition-shadow duration-300"
             >
+              {/* X decoration in corner */}
+              <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-green-600 dark:text-green-400" />
+                </svg>
+              </div>
+              
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
@@ -759,9 +878,53 @@ export default function HomePage() {
       <section className="relative py-20 bg-white dark:bg-slate-900">
         <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-slate-50 dark:from-slate-800/50 to-transparent"></div>
         <div className="relative max-w-4xl mx-auto px-4">
-          <div className="relative bg-blue-600 dark:bg-blue-700 rounded-2xl shadow-xl overflow-hidden p-12 text-center">
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full"></div>
-            <div className="absolute -bottom-16 -right-5 w-56 h-56 bg-white/10 rounded-full"></div>
+          <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-2xl shadow-xl overflow-hidden p-12 text-center">
+            {/* Large X pattern background */}
+            <div className="absolute inset-0 opacity-10">
+              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="cta-x-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+                    <path d="M20 20L80 80M80 20L20 80" stroke="white" strokeWidth="2"/>
+                    <path d="M0 50L50 100M50 0L100 50" stroke="white" strokeWidth="1" opacity="0.5"/>
+                    <path d="M0 50L50 0M50 100L100 50" stroke="white" strokeWidth="1" opacity="0.5"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#cta-x-pattern)" />
+              </svg>
+            </div>
+            
+            {/* Animated X elements */}
+            <motion.div
+              animate={{ 
+                rotate: 360,
+                scale: [1, 1.2, 1]
+              }}
+              transition={{
+                rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                scale: { duration: 4, repeat: Infinity, repeatType: "reverse" }
+              }}
+              className="absolute -top-20 -left-20 w-40 h-40 opacity-20"
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <path d="M20 20L80 80M80 20L20 80" stroke="white" strokeWidth="4" />
+              </svg>
+            </motion.div>
+            
+            <motion.div
+              animate={{ 
+                rotate: -360,
+                scale: [1.2, 1, 1.2]
+              }}
+              transition={{
+                rotate: { duration: 25, repeat: Infinity, ease: "linear" },
+                scale: { duration: 5, repeat: Infinity, repeatType: "reverse" }
+              }}
+              className="absolute -bottom-16 -right-16 w-56 h-56 opacity-15"
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <path d="M10 10L90 90M90 10L10 90" stroke="white" strokeWidth="3" />
+              </svg>
+            </motion.div>
             <motion.div
               initial="hidden"
               whileInView="visible"
