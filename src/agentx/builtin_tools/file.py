@@ -83,14 +83,22 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="Append content to an existing file")
+    @tool(description="Append content to an existing file. WARNING: Do not use for structured files like HTML, XML, or JSON as it will corrupt their structure.")
     async def append_file(
         self,
         filename: Annotated[str, "Name of the file to append to"],
         content: Annotated[str, "Content to append to the file"],
         separator: Annotated[str, "Separator between existing and new content (default: newline)"] = "\n"
     ) -> ToolResult:
-        """Append content to an existing file. Creates the file if it doesn't exist."""
+        """Append content to an existing file. Creates the file if it doesn't exist.
+        
+        WARNING: This tool should NOT be used for structured files like:
+        - HTML files (will add content after closing tags)
+        - XML files (will break document structure)
+        - JSON files (will create invalid JSON)
+        
+        For structured files, read the entire content, modify it, and use write_file instead.
+        """
         try:
             # Check if file exists and get current content
             existing_content = ""

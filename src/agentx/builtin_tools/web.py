@@ -238,8 +238,7 @@ class WebTool(Tool):
             viewport_height=1080,
             java_script_enabled=True,
             ignore_https_errors=True,
-            verbose=False,
-            page_timeout=120000  # 2 minutes default timeout
+            verbose=False
         )
 
         extracted_contents: List[WebContent] = []

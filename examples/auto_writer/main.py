@@ -34,7 +34,7 @@ async def main():
 
     The final output must be professional, polished, and suitable for a C-suite audience, with quality rivaling top design agencies like those of Stripe, Vercel, or Linear.
 
-    CRITICAL INSTRUCTION FOR WEB DESIGNER: The HTML file MUST be built incrementally using the append_file tool. Start with the basic structure using write_file (< 2000 chars), then add each section using append_file in chunks of < 3000 chars. Never attempt to write the entire HTML in a single operation."""
+    CRITICAL INSTRUCTION FOR WEB DESIGNER: HTML files must maintain proper document structure. Build the complete HTML content in memory first, then use write_file to save it. For very large HTML files, consider using JavaScript to load dynamic content or splitting into multiple pages. Never use append_file for HTML as it will corrupt the document structure."""
 
     print("🚀 AutoWriter - Starting comprehensive report generation...")
     print(f"📋 Task: {prompt[:100]}...")
