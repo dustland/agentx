@@ -71,7 +71,7 @@ async def get_artifact_diff(self, name: str, version1: str, version2: str) -> Op
 
 Get diff between two versions of an artifact.
 
-### list_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L424" class="source-link" title="View source code">source</a>
+### list_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L428" class="source-link" title="View source code">source</a>
 
 ```python
 async def list_directory(self, path: str = '') -> List[Any]
@@ -79,7 +79,7 @@ async def list_directory(self, path: str = '') -> List[Any]
 
 List directory contents (returns artifacts for compatibility).
 
-### create_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L448" class="source-link" title="View source code">source</a>
+### create_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L452" class="source-link" title="View source code">source</a>
 
 ```python
 async def create_directory(self, path: str) -> Any
@@ -87,7 +87,7 @@ async def create_directory(self, path: str) -> Any
 
 Create directory (no-op for git storage).
 
-### exists <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L453" class="source-link" title="View source code">source</a>
+### exists <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L457" class="source-link" title="View source code">source</a>
 
 ```python
 async def exists(self, path: str) -> bool
@@ -95,7 +95,7 @@ async def exists(self, path: str) -> bool
 
 Check if artifact exists.
 
-### read_text <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L461" class="source-link" title="View source code">source</a>
+### read_text <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L465" class="source-link" title="View source code">source</a>
 
 ```python
 async def read_text(self, path: str) -> str
@@ -103,7 +103,7 @@ async def read_text(self, path: str) -> str
 
 Read text content (alias for get_artifact).
 
-### write_text <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L469" class="source-link" title="View source code">source</a>
+### write_text <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L473" class="source-link" title="View source code">source</a>
 
 ```python
 async def write_text(self, path: str, content: str) -> Any
@@ -111,7 +111,7 @@ async def write_text(self, path: str, content: str) -> Any
 
 Write text content (alias for store_artifact).
 
-### write_bytes <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L477" class="source-link" title="View source code">source</a>
+### write_bytes <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L481" class="source-link" title="View source code">source</a>
 
 ```python
 async def write_bytes(self, path: str, content: bytes) -> Any

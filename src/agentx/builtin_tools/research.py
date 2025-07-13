@@ -344,17 +344,11 @@ class ResearchTool(Tool):
 {result.get('content', 'No content available')}
 """
 
-            # Save to workspace
+            # Save to workspace (metadata already in content header)
             result = await self.workspace.store_artifact(
                 name=filename,
                 content=content,
                 content_type="text/markdown",
-                metadata={
-                    "source_url": url,
-                    "query": query,
-                    "tool": "research_topic",
-                    "relevance_score": result.get('score', 0)
-                },
                 commit_message=f"Research result for: {query}"
             )
 

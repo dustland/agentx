@@ -377,6 +377,10 @@ class GitArtifactStorage:
                 commit = self.repo.commit(commit_hash)
                 blob = commit.tree[file_path]
                 return blob.data_stream.read().decode('utf-8')
+            except KeyError as e:
+                # File not found in commit tree - this is normal for files that don't exist yet
+                logger.debug(f"File '{file_path}' not found in commit {commit_hash[:8]}")
+                return None
             except Exception as e:
                 logger.error(f"Failed to get file at commit: {e}")
                 return None

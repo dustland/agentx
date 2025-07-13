@@ -91,7 +91,27 @@ the orchestrator to handle.
 **Returns:**
     LLM response (may contain tool call requests)
 
-### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L267" class="source-link" title="View source code">source</a>
+### think <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L267" class="source-link" title="View source code">source</a>
+
+```python
+async def think(self, prompt: str, system_prompt: Optional[str] = None, temperature: Optional[float] = None) -> str
+```
+
+Simple thinking interface - takes a prompt and returns text response.
+
+This is a convenience method for simple AI interactions where you just
+want to send a prompt and get back text content without dealing with
+message structures or tool calls.
+
+**Args:**
+    prompt: The user prompt/question
+    system_prompt: Optional system prompt
+    temperature: Optional temperature override
+
+**Returns:**
+    The AI's text response
+
+### stream_response <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/brain.py#L297" class="source-link" title="View source code">source</a>
 
 ```python
 async def stream_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None, temperature: Optional[float] = None, tools: Optional[List[Dict[str, Any]]] = None) -> AsyncGenerator[Dict[str, Any], None]

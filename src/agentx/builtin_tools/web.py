@@ -147,11 +147,10 @@ class WebTool(Tool):
 {content_obj.content}
 """
 
-                    # Save to workspace
-                    result = await self.workspace.save_file(
-                        filename=filename,
+                    # Save to workspace (no separate metadata file needed - it's in the content)
+                    result = await self.workspace.store_artifact(
+                        name=filename,
                         content=content_with_header,
-                        metadata=file_metadata,
                         content_type="text/markdown",
                         commit_message=f"Extracted content from {content_obj.url}"
                     )
@@ -233,8 +232,8 @@ class WebTool(Tool):
 
         # Browser configuration with correct parameters
         browser_config = BrowserConfig(
-            browser_type="chromium",
-            headless=True,
+            browser_type="firefox",
+            headless=False,
             viewport_width=1080,
             viewport_height=600,
             java_script_enabled=True,
