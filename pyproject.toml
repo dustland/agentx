@@ -10,7 +10,38 @@ readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [ "Programming Language :: Python :: 3.11", "Operating System :: OS Independent",]
 license = "Apache-2.0"
-dependencies = [ "fastapi>=0.104.0", "uvicorn>=0.24.0", "pydantic>=2.7.1", "python-dotenv>=1.0.0", "pyyaml>=6.0.1", "rich>=13.6.0", "loguru", "litellm", "openai>=1.0.0", "google-search-results>=2.4.2", "mem0ai>=0.1.106", "mcp>=1.4.1", "firecrawl-py>=0.0.16", "browser-use>=0.1.0", "numpy>=1.24.3", "requests>=2.31.0", "httpx>=0.24.0", "aiohttp>=3.8.0", "beautifulsoup4>=4.12.0", "markdown>=3.4.0", "jinja2>=3.1.6", "sqlmodel>=0.0.8", "sqlalchemy>=2.0.0", "chromadb>=1.0.12", "pyarrow>=19.0.1", "aiofiles>=24.1.0", "gitpython>=3.1.44", "pygithub>=2.6.1", "crawl4ai>=0.7.0", "playwright>=1.52.0",]
+dependencies = [
+ "fastapi>=0.104.0",
+ "uvicorn>=0.24.0",
+ "pydantic>=2.7.1",
+ "python-dotenv>=1.0.0",
+ "pyyaml>=6.0.1",
+ "rich>=13.6.0",
+ "loguru",
+ "litellm",
+ "openai>=1.0.0",
+ "google-search-results>=2.4.2",
+ "mem0ai>=0.1.106",
+ "mcp>=1.4.1",
+ "firecrawl-py>=0.0.16",
+ "browser-use>=0.1.0",
+ "numpy>=1.24.3",
+ "requests>=2.31.0",
+ "httpx>=0.24.0",
+ "aiohttp>=3.8.0",
+ "beautifulsoup4>=4.12.0",
+ "markdown>=3.4.0",
+ "jinja2>=3.1.6",
+ "sqlmodel>=0.0.8",
+ "sqlalchemy>=2.0.0",
+ "chromadb>=1.0.12",
+ "pyarrow>=19.0.1",
+ "aiofiles>=24.1.0",
+ "gitpython>=3.1.44",
+ "pygithub>=2.6.1",
+ "crawl4ai>=0.7.0",
+ "playwright>=1.52.0",
+]
 [[project.authors]]
 name = "Dustland Team"
 email = "hi@dustland.ai"

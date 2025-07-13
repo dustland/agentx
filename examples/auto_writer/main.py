@@ -42,15 +42,29 @@ async def main():
 
     # Start the task with XAgent - creates a conversational interface
     x = await start_task(prompt, str(config_path))
-
+    
+    # Configure parallel execution for faster processing
+    x.set_parallel_execution(enabled=True, max_concurrent=4)
+    
     print(f"📋 Task ID: {x.task_id}")
     print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"⚡ Parallel execution: {x.get_parallel_settings()}")
     print("-" * 80)
 
-    # Execute the task autonomously
+    # Execute the task autonomously with parallel execution
     print("🤖 X: Starting the comprehensive report generation...")
-    while not x.is_complete:
+    step_count = 0
+    while not x.is_complete and step_count < 15:  # Safety limit
         response = await x.step()
+        step_count += 1
+        
+        # Show parallel execution info
+        parallel_count = response.count("✅")
+        if parallel_count > 1:
+            print(f"🔥 Step {step_count}: Executed {parallel_count} tasks in parallel")
+        else:
+            print(f"🔄 Step {step_count}: Sequential execution")
+            
         print(f"🤖 X: {response[:200]}...")
         print("-" * 40)
 

@@ -145,6 +145,10 @@ class XAgent(Agent):
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
         self._plan_initialized = False
+        
+        # Parallel execution settings
+        self.parallel_execution = True  # Enable parallel execution by default
+        self.max_concurrent_tasks = 3  # Default concurrency limit
 
         # Initialize handoff evaluator if handoffs are configured
         self.handoff_evaluator = None
@@ -879,6 +883,25 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
     async def start(self, prompt: str) -> None:
         """Compatibility method for TaskExecutor.start()."""
         await self._initialize_with_prompt(prompt)
+    
+    def set_parallel_execution(self, enabled: bool = True, max_concurrent: int = 3) -> None:
+        """
+        Configure parallel execution settings.
+        
+        Args:
+            enabled: Whether to enable parallel execution
+            max_concurrent: Maximum number of tasks to execute simultaneously
+        """
+        self.parallel_execution = enabled
+        self.max_concurrent_tasks = max_concurrent
+        logger.info(f"Parallel execution {'enabled' if enabled else 'disabled'} (max_concurrent: {max_concurrent})")
+    
+    def get_parallel_settings(self) -> Dict[str, Any]:
+        """Get current parallel execution settings."""
+        return {
+            "parallel_execution": self.parallel_execution,
+            "max_concurrent_tasks": self.max_concurrent_tasks
+        }
 
     async def step(self) -> str:
         """
@@ -902,16 +925,18 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         if not self.current_plan:
             return "No plan available. Use chat() to create a task plan first."
 
-        # Execute one step of the plan
-        return await self._execute_single_step()
+        # Execute based on parallel execution setting
+        if self.parallel_execution:
+            return await self._execute_parallel_step(self.max_concurrent_tasks)
+        else:
+            return await self._execute_single_step()
 
     async def step_parallel(self, max_concurrent: int = 3) -> str:
         """
         Execute multiple tasks in parallel when possible.
         
-        This method identifies all actionable tasks (tasks whose dependencies 
-        are satisfied) and executes them concurrently using asyncio.gather().
-        Falls back to sequential execution when only one task is available.
+        **DEPRECATED**: Use step() with set_parallel_execution(True) instead.
+        This method is kept for backward compatibility.
         
         Args:
             max_concurrent: Maximum number of tasks to execute simultaneously
@@ -919,15 +944,17 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         Returns:
             str: Status message about parallel execution results
         """
-        if self.is_complete:
-            return "Task completed"
-
-        # Ensure plan is initialized if we have an initial prompt
-        await self._ensure_plan_initialized()
-
-        # If no plan exists, cannot step
-        if not self.current_plan:
-            return "No plan available. Use chat() to create a task plan first."
-
-        # Execute multiple tasks in parallel when possible
-        return await self._execute_parallel_step(max_concurrent)
+        # Temporarily enable parallel execution with specified concurrency
+        original_parallel = self.parallel_execution
+        original_concurrent = self.max_concurrent_tasks
+        
+        self.set_parallel_execution(True, max_concurrent)
+        
+        try:
+            result = await self.step()
+        finally:
+            # Restore original settings
+            self.parallel_execution = original_parallel
+            self.max_concurrent_tasks = original_concurrent
+            
+        return result
