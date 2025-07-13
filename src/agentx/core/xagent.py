@@ -931,30 +931,3 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         else:
             return await self._execute_single_step()
 
-    async def step_parallel(self, max_concurrent: int = 3) -> str:
-        """
-        Execute multiple tasks in parallel when possible.
-        
-        **DEPRECATED**: Use step() with set_parallel_execution(True) instead.
-        This method is kept for backward compatibility.
-        
-        Args:
-            max_concurrent: Maximum number of tasks to execute simultaneously
-            
-        Returns:
-            str: Status message about parallel execution results
-        """
-        # Temporarily enable parallel execution with specified concurrency
-        original_parallel = self.parallel_execution
-        original_concurrent = self.max_concurrent_tasks
-        
-        self.set_parallel_execution(True, max_concurrent)
-        
-        try:
-            result = await self.step()
-        finally:
-            # Restore original settings
-            self.parallel_execution = original_parallel
-            self.max_concurrent_tasks = original_concurrent
-            
-        return result

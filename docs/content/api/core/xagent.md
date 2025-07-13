@@ -135,20 +135,3 @@ For user conversation and plan adjustments, use chat() method instead.
 
 **Returns:**
     str: Status message about the step execution
-
-### step_parallel <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L934" class="source-link" title="View source code">source</a>
-
-```python
-async def step_parallel(self, max_concurrent: int = 3) -> str
-```
-
-Execute multiple tasks in parallel when possible.
-
-**DEPRECATED**: Use step() with set_parallel_execution(True) instead.
-This method is kept for backward compatibility.
-
-**Args:**
-    max_concurrent: Maximum number of tasks to execute simultaneously
-
-**Returns:**
-    str: Status message about parallel execution results
