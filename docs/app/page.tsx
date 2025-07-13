@@ -74,43 +74,6 @@ const basePath =
     ? "/agentx"
     : "";
 
-// Simple typewriter for header - only essential animation
-const TypewriterText = () => {
-  const words = ["Writing", "Coding", "Ops"];
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentWord = words[currentWordIndex];
-    let timeout: NodeJS.Timeout;
-
-    if (!isDeleting && currentText.length < currentWord.length) {
-      timeout = setTimeout(() => {
-        setCurrentText(currentWord.slice(0, currentText.length + 1));
-      }, 150);
-    } else if (!isDeleting && currentText.length === currentWord.length) {
-      timeout = setTimeout(() => {
-        setIsDeleting(true);
-      }, 2000);
-    } else if (isDeleting && currentText.length > 0) {
-      timeout = setTimeout(() => {
-        setCurrentText(currentText.slice(0, -1));
-      }, 100);
-    } else if (isDeleting && currentText.length === 0) {
-      setIsDeleting(false);
-      setCurrentWordIndex((prev) => (prev + 1) % words.length);
-    }
-
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [currentText, isDeleting, currentWordIndex]);
-
-  return (
-    <span className="text-blue-600 dark:text-blue-400">{currentText}</span>
-  );
-};
 
 // Enhanced bootstrap tabs with example code
 const BootstrapTabs = () => {
@@ -565,8 +528,7 @@ export default function HomePage() {
               variants={itemVariants}
               className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6"
             >
-              Build Vibe-
-              <TypewriterText /> Apps
+              Build Vibe-X Apps
               <br />
               <span className="inline-flex items-center gap-3 text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
                 With Agent
