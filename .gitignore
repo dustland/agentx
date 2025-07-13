@@ -210,3 +210,5 @@ user_data/*
 
 # Benchmark
 results/
+
+.mcp.json

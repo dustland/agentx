@@ -1,6 +1,12 @@
 name: "AutoWriter Production Team"
 description: "A professional multi-agent system that produces superior, consulting-quality HTML reports from a single objective."
 
+# LLM Configuration
+llm_config:
+  model: "deepseek/deepseek-chat"
+  temperature: 0.3
+  max_tokens: 4000
+
 # All agents are presets, using the detailed, high-quality prompts we developed.
 # Note: Planning is handled by the orchestrator's Brain, not a separate agent.
 agents:
