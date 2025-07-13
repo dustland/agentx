@@ -230,15 +230,18 @@ class WebTool(Tool):
             logger.warning("Regex extraction not implemented, falling back to markdown")
             extraction_type = "markdown"
 
-        # Browser configuration with Firefox for macOS stability
+        # Browser configuration optimized for stability
         browser_config = BrowserConfig(
-            browser_type="firefox",
-            headless=True,  # Set to True for better stability
+            browser_type="chromium",  # Switch to Chromium for better stability
+            headless=True,
             viewport_width=1920,
             viewport_height=1080,
             java_script_enabled=True,
             ignore_https_errors=True,
-            verbose=False
+            verbose=False,
+            # Additional stability options
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            accept_downloads=False
         )
 
         extracted_contents: List[WebContent] = []
@@ -249,14 +252,17 @@ class WebTool(Tool):
                 try:
                     logger.info(f"Extracting from {url} using {extraction_type} strategy")
 
-                    # Build run configuration with correct parameters
+                    # Build run configuration with conservative timeouts for stability
                     run_config = CrawlerRunConfig(
                         cache_mode=CacheMode.BYPASS,
-                        page_timeout=120000,  # 2 minutes timeout
-                        wait_for_timeout=10000,  # 10 seconds wait timeout
+                        page_timeout=60000,  # Reduced to 1 minute for faster recovery
+                        wait_for_timeout=5000,  # Reduced to 5 seconds
                         screenshot=False,
                         pdf=False,
-                        verbose=True
+                        verbose=False,  # Reduce verbosity to minimize interference
+                        delay_before_return_html=1.0,  # Give page time to settle
+                        simulate_user=True,  # Help avoid bot detection
+                        override_navigator=True  # Mask automation detection
                     )
 
                     if extraction_strategy:
@@ -291,9 +297,29 @@ class WebTool(Tool):
                         except Exception as e:
                             logger.warning(f"Virtual scroll configuration failed: {e}")
 
-                    # Execute crawling
-                    crawl_result = await crawler.arun(url=url, config=run_config)
+                    # Execute crawling with retry logic for browser issues
+                    crawl_result = None
+                    max_retries = 2
+                    for attempt in range(max_retries + 1):
+                        try:
+                            crawl_result = await crawler.arun(url=url, config=run_config)
+                            break  # Success, exit retry loop
+                        except Exception as e:
+                            if attempt < max_retries and any(phrase in str(e) for phrase in [
+                                "Target page, context or browser has been closed",
+                                "BrowserContext",
+                                "Page.goto"
+                            ]):
+                                logger.warning(f"Browser issue on attempt {attempt + 1}, retrying: {e}")
+                                await asyncio.sleep(1.0)  # Brief pause before retry
+                                continue
+                            else:
+                                raise  # Re-raise if not retryable or max retries exceeded
 
+                    # Check if crawling succeeded
+                    if crawl_result is None:
+                        raise Exception("Crawling failed after all retry attempts")
+                        
                     # Type assertion to help static analyzers understand the interface
                     # CrawlResultContainer delegates all attributes to CrawlResult
                     success: bool = getattr(crawl_result, 'success', False)
