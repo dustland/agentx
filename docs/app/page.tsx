@@ -207,33 +207,23 @@ if __name__ == "__main__":
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Workflow Tabs - Enhanced with gradients and better styling */}
-      <div className="flex items-center justify-center gap-2 mb-8 p-1.5 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl shadow-inner">
+      {/* Workflow Tabs - Clean and minimal styling */}
+      <div className="flex items-center justify-center gap-1 mb-8 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
         {workflows.map((workflow, index) => {
           const isActive = activeTab === index;
-          const tabColors = [
-            "from-blue-500 to-indigo-500",
-            "from-purple-500 to-pink-500",
-            "from-emerald-500 to-teal-500"
-          ];
           
           return (
             <button
               key={workflow.id}
               onClick={() => setActiveTab(index)}
-              className={`relative flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 whitespace-nowrap ${
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
                 isActive
-                  ? "text-white shadow-lg scale-105"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/30 dark:hover:bg-slate-600/30"
+                  ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
               }`}
             >
-              {isActive && (
-                <div className={`absolute inset-0 bg-gradient-to-r ${tabColors[index]} rounded-xl`}></div>
-              )}
-              <div className="relative flex items-center gap-2">
-                <workflow.icon className={`w-4 h-4 ${isActive ? "text-white" : ""}`} />
-                {workflow.title}
-              </div>
+              <workflow.icon className="w-4 h-4" />
+              {workflow.title}
             </button>
           );
         })}
