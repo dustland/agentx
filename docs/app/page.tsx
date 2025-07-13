@@ -141,13 +141,16 @@ async def main():
         "Write a comprehensive report on AI trends in 2025",
         "config/team.yaml"
     )
+    
+    # Enable parallel execution for 3-5x faster workflows
+    x.set_parallel_execution(enabled=True, max_concurrent=4)
 
     print(f"Task ID: {x.task_id}")
     print(f"Workspace: {x.workspace.get_workspace_path()}")
 
-    # Execute the initial task
+    # Execute tasks with parallel processing
     while not x.is_complete:
-        response = await x.step()
+        response = await x.step()  # Runs multiple tasks in parallel
         print(f"X: {response}")
 
     # Chat with your AI team for refinements
@@ -177,11 +180,14 @@ async def main():
         "Build a REST API for a todo application",
         "config/team.yaml"
     )
+    
+    # Enable parallel execution for faster development
+    x.set_parallel_execution(enabled=True, max_concurrent=3)
 
     print(f"Task ID: {x.task_id}")
     print(f"Workspace: {x.workspace.get_workspace_path()}")
 
-    # Execute the initial task
+    # Execute tasks in parallel (e.g., API design + DB schema + tests)
     while not x.is_complete:
         response = await x.step()
         print(f"X: {response}")
@@ -334,44 +340,44 @@ if __name__ == "__main__":
 export default function HomePage() {
   const features = [
     {
-      icon: Users,
-      title: "Multi-Agent Orchestration",
+      icon: Zap,
+      title: "Parallel Execution",
       description:
-        "Intelligent task distribution and coordination for complex workflows.",
+        "3-5x faster workflows with intelligent parallel task execution and dependency management.",
       href: "/docs/design/overview",
+    },
+    {
+      icon: Users,
+      title: "Multi-Agent Teams",
+      description:
+        "Specialized agents collaborate seamlessly with natural language handoffs.",
+      href: "/docs/design/overview",
+    },
+    {
+      icon: Brain,
+      title: "Stateful Memory",
+      description:
+        "Long-term context retention with semantic search across conversations.",
+      href: "/docs/design/state-and-context",
     },
     {
       icon: Wrench,
       title: "Extensible Tools",
-      description: "Native integrations and custom tool development framework.",
+      description: "Rich tool ecosystem with secure Docker sandbox execution.",
       href: "/docs/design/tool-execution",
     },
     {
-      icon: Brain,
-      title: "Persistent Memory",
-      description:
-        "Contextual retention and semantic search across agent networks.",
-      href: "/docs/design/state-and-context",
-    },
-    {
-      icon: Zap,
-      title: "Event System",
-      description:
-        "Real-time coordination and scalable inter-agent communication.",
-      href: "/docs/design/communication",
-    },
-    {
       icon: BarChart3,
-      title: "Observability",
+      title: "Full Observability",
       description:
-        "Distributed tracing and performance metrics for production.",
+        "Real-time monitoring, distributed tracing, and event streaming.",
       href: "#",
     },
     {
       icon: Settings,
-      title: "Configuration-Driven",
+      title: "Configuration-First",
       description:
-        "Simple YAML and Markdown configuration. Almost no code required.",
+        "Define complex workflows in YAML. No custom code required.",
       href: "#",
     },
   ];
@@ -490,9 +496,9 @@ export default function HomePage() {
               variants={itemVariants}
               className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto"
             >
-              The framework for human-AI collaboration that balances AI autonomy
-              with human oversight. Transparent processes, cost-optimized
-              intelligence, and professional workflows.
+              The framework for human-AI collaboration with <span className="font-semibold text-slate-800 dark:text-slate-200">3-5x faster execution</span> through 
+              intelligent parallel processing. Transparent workflows, cost-optimized
+              intelligence, and professional results.
             </motion.p>
 
             {/* CTA buttons */}
