@@ -119,10 +119,7 @@ class ResearchTool(Tool):
                 embedding_validation_min_score=0.4  # Validation threshold
             )
 
-            # Add state persistence for long crawls
-            if max_pages > 20:
-                config.save_state = True
-                config.state_path = f"research_{hash(query)}.json"
+            # Note: State persistence is handled by the memory system, not local files
 
             # Perform adaptive crawling following best practices
             logger.info(f"Starting adaptive research for: {query}")
@@ -195,10 +192,8 @@ class ResearchTool(Tool):
 
                 logger.info(f"Adaptive crawl completed: {len(state.crawled_urls)} pages, confidence: {adaptive.confidence:.0%}")
 
-                # Export knowledge base
-                kb_path = f"research_kb_{hash(query)}.jsonl"
-                adaptive.export_knowledge_base(kb_path)
-                logger.info(f"Exported knowledge base to {kb_path}")
+                # Note: Knowledge base with embeddings should be managed by the memory system
+                # Not exported as separate files
 
                 final_adaptive = adaptive
 

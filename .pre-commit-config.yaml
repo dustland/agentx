@@ -9,15 +9,3 @@ repos:
         pass_filenames: false
         always_run: false
         description: "Automatically generate API documentation when Python files in src/agentx/ change"
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
-    hooks:
-      - id: trailing-whitespace
-      - id: check-yaml
-      - id: check-toml
-      - id: check-merge-conflict
-      - id: check-added-large-files
-        args: ["--maxkb=1000"]
-      - id: mixed-line-ending
-        args: ["--fix=lf"]
