@@ -1090,50 +1090,222 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-slate-900 pt-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 pb-8">
-            <div className="flex items-center gap-3">
-              <Image
-                src={`${basePath}/logo.png`}
-                alt="AgentX"
-                className="w-8 h-8 mr-3"
-                width={32}
-                height={32}
-              />
-              <span className="text-xl font-bold text-slate-900 dark:text-white">
-                AgentX
-              </span>
+      <footer className="relative bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 pt-20 pb-12 overflow-hidden">
+        {/* Subtle X pattern background */}
+        <div className="absolute inset-0 opacity-[0.02]">
+          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="footer-x-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M10 10L20 20M20 10L10 20" stroke="currentColor" strokeWidth="0.5" className="text-slate-600"/>
+                <path d="M20 20L30 30M30 20L20 30" stroke="currentColor" strokeWidth="0.5" className="text-slate-600"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#footer-x-pattern)" />
+          </svg>
+        </div>
+        
+        <div className="relative max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
+            {/* Brand Column */}
+            <div className="md:col-span-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative">
+                  <Image
+                    src={`${basePath}/logo.png`}
+                    alt="AgentX"
+                    className="w-10 h-10"
+                    width={40}
+                    height={40}
+                  />
+                  <div className="absolute -inset-1 bg-blue-500/20 rounded-lg blur-sm"></div>
+                </div>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                  AgentX
+                </span>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                The framework for human-AI collaboration with intelligent parallel execution.
+              </p>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://github.com/dustland/agentx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
+                >
+                  <Github className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" />
+                </a>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
+                >
+                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
-            <div className="flex items-center gap-6">
-              <a
-                href="https://github.com/dustland/agentx"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors"
-              >
-                <Github className="w-6 h-6" />
-              </a>
+            
+            {/* Resources Column */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
+                Resources
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/docs/getting-started"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Getting Started
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/design/overview"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Architecture
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/api"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    API Reference
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/tutorials/0-bootstrap"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Tutorials
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Community Column */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
+                Community
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="https://github.com/dustland/agentx/discussions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    GitHub Discussions
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/dustland/agentx/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Report Issues
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/dustland/agentx/blob/main/CONTRIBUTING.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Contributing
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
+                  >
+                    Blog
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Quick Start Column */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
+                Quick Start
+              </h3>
+              <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 mb-4">
+                <code className="text-sm font-mono text-slate-700 dark:text-slate-300">
+                  pip install agentx-py
+                </code>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
+                Get started in seconds with our Python package.
+              </p>
               <Link
                 href="/docs/getting-started"
-                style={{ color: "#475569" }}
-                className="text-sm font-medium transition-colors hover:text-blue-600"
+                className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
               >
-                Documentation
-              </Link>
-              <Link
-                href="/docs/tutorials/0-bootstrap"
-                style={{ color: "#475569" }}
-                className="text-sm font-medium transition-colors hover:text-blue-600"
-              >
-                Examples
+                View Documentation
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
-          <div className="py-8 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400">
-            <p>
-              &copy; {new Date().getFullYear()} AgentX. All rights reserved.
-            </p>
+          
+          {/* Bottom Bar */}
+          <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <span>&copy; {new Date().getFullYear()} AgentX.</span>
+                <span className="hidden md:inline">•</span>
+                <span className="hidden md:inline">Built with ❤️ by</span>
+                <a
+                  href="https://github.com/dustland"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Dustland
+                </a>
+              </div>
+              <div className="flex items-center gap-6 text-sm">
+                <Link
+                  href="/privacy"
+                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Privacy
+                </Link>
+                <Link
+                  href="/terms"
+                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  Terms
+                </Link>
+                <a
+                  href="https://github.com/dustland/agentx/blob/main/LICENSE"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
+                  License
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
