@@ -126,14 +126,13 @@ class ResearchTool(Tool):
             research_results = []
             final_adaptive = None
 
-            # Use Firefox for better stability on macOS
+            # Use Chromium for better stability and compatibility
             browser_config = BrowserConfig(
-                browser_type="firefox",
+                browser_type="chromium",
                 headless=True,
                 verbose=False,
                 viewport_width=1920,
-                viewport_height=1080,
-                page_timeout=120000  # 2 minutes default timeout
+                viewport_height=1080
             )
             
             async with AsyncWebCrawler(config=browser_config) as crawler:
@@ -152,8 +151,7 @@ class ResearchTool(Tool):
                         batch_results = await crawler.arun_many(
                             urls=batch_urls,
                             config=CrawlerRunConfig(
-                                cache_mode=CacheMode.BYPASS,
-                                page_timeout=120000  # 2 minutes timeout for research
+                                cache_mode=CacheMode.BYPASS
                             )
                         )
 
