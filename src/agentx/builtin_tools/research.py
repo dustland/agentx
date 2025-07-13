@@ -130,7 +130,9 @@ class ResearchTool(Tool):
             browser_config = BrowserConfig(
                 browser_type="firefox",
                 headless=True,
-                verbose=False
+                verbose=False,
+                viewport_width=1920,
+                viewport_height=1080
             )
             
             async with AsyncWebCrawler(config=browser_config) as crawler:
@@ -150,8 +152,7 @@ class ResearchTool(Tool):
                             urls=batch_urls,
                             config=CrawlerRunConfig(
                                 cache_mode=CacheMode.BYPASS,
-                                page_timeout=30000,
-                                browser_type="firefox"  # Ensure Firefox is used
+                                page_timeout=30000
                             )
                         )
 

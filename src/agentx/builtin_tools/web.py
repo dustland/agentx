@@ -230,14 +230,15 @@ class WebTool(Tool):
             logger.warning("Regex extraction not implemented, falling back to markdown")
             extraction_type = "markdown"
 
-        # Browser configuration with correct parameters
+        # Browser configuration with Firefox for macOS stability
         browser_config = BrowserConfig(
             browser_type="firefox",
-            headless=False,
-            viewport_width=1080,
-            viewport_height=600,
+            headless=True,  # Set to True for better stability
+            viewport_width=1920,
+            viewport_height=1080,
             java_script_enabled=True,
-            ignore_https_errors=True
+            ignore_https_errors=True,
+            verbose=False
         )
 
         extracted_contents: List[WebContent] = []
