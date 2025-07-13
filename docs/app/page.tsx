@@ -244,22 +244,36 @@ if __name__ == "__main__":
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Workflow Tabs - Polished with rounded corners and auto width */}
-      <div className="flex items-center justify-center gap-1 mb-8 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-        {workflows.map((workflow, index) => (
-          <button
-            key={workflow.id}
-            onClick={() => setActiveTab(index)}
-            className={`flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
-              activeTab === index
-                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
-            }`}
-          >
-            <workflow.icon className="w-4 h-4" />
-            {workflow.title}
-          </button>
-        ))}
+      {/* Workflow Tabs - Enhanced with gradients and better styling */}
+      <div className="flex items-center justify-center gap-2 mb-8 p-1.5 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl shadow-inner">
+        {workflows.map((workflow, index) => {
+          const isActive = activeTab === index;
+          const tabColors = [
+            "from-blue-500 to-indigo-500",
+            "from-purple-500 to-pink-500",
+            "from-emerald-500 to-teal-500"
+          ];
+          
+          return (
+            <button
+              key={workflow.id}
+              onClick={() => setActiveTab(index)}
+              className={`relative flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 whitespace-nowrap ${
+                isActive
+                  ? "text-white shadow-lg scale-105"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/30 dark:hover:bg-slate-600/30"
+              }`}
+            >
+              {isActive && (
+                <div className={`absolute inset-0 bg-gradient-to-r ${tabColors[index]} rounded-xl`}></div>
+              )}
+              <div className="relative flex items-center gap-2">
+                <workflow.icon className={`w-4 h-4 ${isActive ? "text-white" : ""}`} />
+                {workflow.title}
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <AnimatePresence mode="wait">
@@ -270,18 +284,45 @@ if __name__ == "__main__":
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
         >
-          {/* CLI Command Block - With command indicators for each line */}
-          <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 mb-6 border border-slate-200/50 dark:border-slate-700/50">
-            <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+          {/* CLI Command Block - Enhanced with better styling */}
+          <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-900/50 rounded-xl p-6 mb-6 border border-slate-200/50 dark:border-slate-700/50 overflow-hidden">
+            {/* Terminal decoration */}
+            <div className="absolute top-3 left-4 flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-400/50"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-400/50"></div>
+              <div className="w-3 h-3 rounded-full bg-green-400/50"></div>
+            </div>
+            
+            {/* Command lines */}
+            <div className="font-mono text-sm mt-6">
               {workflows[activeTab].command.split("\n").map((line, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    &gt;_
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-center gap-3 py-1"
+                >
+                  <span className="text-emerald-600 dark:text-emerald-400 select-none">
+                    $
                   </span>
-                  <span>{line}</span>
-                </div>
+                  <span className="text-slate-700 dark:text-slate-300">{line}</span>
+                </motion.div>
               ))}
             </div>
+            
+            {/* Copy button */}
+            <button
+              onClick={() => handleCopy(workflows[activeTab].command)}
+              className="absolute top-4 right-4 p-2 rounded-lg bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              title="Copy command"
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <Copy className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+              )}
+            </button>
           </div>
 
           {/* Enhanced Code Window - Claude-inspired */}
@@ -794,42 +835,78 @@ export default function HomePage() {
             variants={containerVariants}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {features.map((feature) => (
-              <motion.div
-                key={feature.title}
-                whileHover={{
-                  y: -5,
-                  boxShadow:
-                    "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-                }}
-                className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-lg border border-slate-200 dark:border-slate-700 h-full flex flex-col"
-              >
-                <StyledLink
-                  href={feature.href}
-                  lightColor="#2563eb"
-                  darkColor="#60a5fa"
-                  className="text-sm font-medium no-underline"
+            {features.map((feature, index) => {
+              const gradients = [
+                "from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20",
+                "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20", 
+                "from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20",
+                "from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20",
+                "from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20",
+                "from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20"
+              ];
+              const iconColors = [
+                "text-blue-600 dark:text-blue-400",
+                "text-purple-600 dark:text-purple-400",
+                "text-emerald-600 dark:text-emerald-400", 
+                "text-orange-600 dark:text-orange-400",
+                "text-violet-600 dark:text-violet-400",
+                "text-cyan-600 dark:text-cyan-400"
+              ];
+              
+              return (
+                <motion.div
+                  key={feature.title}
+                  whileHover={{
+                    y: -5,
+                    transition: { type: "spring", stiffness: 300 }
+                  }}
+                  className="group relative"
                 >
-                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-4">
-                    <feature.icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm flex-grow">
-                    {feature.description}
-                  </p>
-                  <div className="mt-4">
-                    <span
-                      style={{ color: "#2563eb" }}
-                      className="text-sm font-medium inline-flex items-center"
+                  <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} rounded-xl blur-sm group-hover:blur-md transition-all duration-300 opacity-60 group-hover:opacity-80`}></div>
+                  <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-6 rounded-xl border border-slate-200/50 dark:border-slate-700/50 h-full flex flex-col overflow-hidden">
+                    {/* Subtle gradient overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} opacity-10`}></div>
+                    
+                    {/* Content */}
+                    <StyledLink
+                      href={feature.href}
+                      lightColor="#2563eb"
+                      darkColor="#60a5fa"
+                      className="relative text-sm font-medium no-underline"
                     >
-                      Learn More <ArrowRight className="w-4 h-4 ml-1" />
-                    </span>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-10 h-10 bg-gradient-to-br ${gradients[index]} rounded-lg flex items-center justify-center shadow-sm`}>
+                          <feature.icon className={`w-5 h-5 ${iconColors[index]}`} />
+                        </div>
+                        {index === 0 && (
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full">
+                            New
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {feature.title}
+                      </h3>
+                      <p className="text-slate-600 dark:text-slate-400 text-sm flex-grow leading-relaxed">
+                        {feature.description}
+                      </p>
+                      <div className="mt-4 flex items-center gap-2">
+                        <span className={`text-sm font-medium inline-flex items-center ${iconColors[index]} group-hover:gap-3 transition-all`}>
+                          Learn More <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </span>
+                      </div>
+                    </StyledLink>
+                    
+                    {/* Corner accent */}
+                    <div className="absolute -top-1 -right-1 w-20 h-20 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        <path d="M50 10L90 50L50 90L10 50Z" fill="currentColor" className={iconColors[index]} />
+                      </svg>
+                    </div>
                   </div>
-                </StyledLink>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -853,23 +930,61 @@ export default function HomePage() {
             variants={containerVariants}
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
           >
-            {useCases.map((useCase) => (
-              <motion.div
-                key={useCase.title}
-                variants={itemVariants}
-                className="text-center bg-white dark:bg-slate-800 p-8 rounded-lg border border-slate-200 dark:border-slate-700"
-              >
-                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <useCase.icon className="w-8 h-8 text-slate-500 dark:text-slate-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  {useCase.title}
-                </h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
-                  {useCase.description}
-                </p>
-              </motion.div>
-            ))}
+            {useCases.map((useCase, index) => {
+              const borderColors = [
+                "border-blue-200 dark:border-blue-800",
+                "border-purple-200 dark:border-purple-800",
+                "border-emerald-200 dark:border-emerald-800",
+                "border-orange-200 dark:border-orange-800"
+              ];
+              const iconBg = [
+                "bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30",
+                "bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30",
+                "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30",
+                "bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30"
+              ];
+              const iconColors = [
+                "text-blue-600 dark:text-blue-400",
+                "text-purple-600 dark:text-purple-400",
+                "text-emerald-600 dark:text-emerald-400",
+                "text-orange-600 dark:text-orange-400"
+              ];
+              
+              return (
+                <motion.div
+                  key={useCase.title}
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  className={`group relative text-center bg-white dark:bg-slate-800 p-8 rounded-xl border-2 ${borderColors[index]} hover:shadow-lg transition-all duration-300 overflow-hidden`}
+                >
+                  {/* Background pattern */}
+                  <div className="absolute inset-0 opacity-5">
+                    <div className="absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16">
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
+                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
+                        <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <div className="relative">
+                    <div className={`w-16 h-16 ${iconBg[index]} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:shadow-md transition-shadow`}>
+                      <useCase.icon className={`w-8 h-8 ${iconColors[index]}`} />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                      {useCase.title}
+                    </h3>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                      {useCase.description}
+                    </p>
+                  </div>
+                  
+                  {/* Bottom accent line */}
+                  <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${iconBg[index]} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
