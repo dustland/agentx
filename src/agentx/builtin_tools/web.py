@@ -246,23 +246,18 @@ class WebTool(Tool):
 
         extracted_contents: List[WebContent] = []
 
-        # Create crawler with proper configuration
-        async with AsyncWebCrawler(config=browser_config) as crawler:
-            for url in url_list:
+        # Process each URL with its own browser instance to avoid context issues
+        for url in url_list:
+            # Create a new browser instance for each URL
+            async with AsyncWebCrawler(config=browser_config) as crawler:
                 try:
                     logger.info(f"Extracting from {url} using {extraction_type} strategy")
 
-                    # Build run configuration with conservative timeouts for stability
+                    # Build run configuration - only use supported parameters
                     run_config = CrawlerRunConfig(
                         cache_mode=CacheMode.BYPASS,
-                        page_timeout=60000,  # Reduced to 1 minute for faster recovery
-                        wait_for_timeout=5000,  # Reduced to 5 seconds
                         screenshot=False,
-                        pdf=False,
-                        verbose=False,  # Reduce verbosity to minimize interference
-                        delay_before_return_html=1.0,  # Give page time to settle
-                        simulate_user=True,  # Help avoid bot detection
-                        override_navigator=True  # Mask automation detection
+                        verbose=False
                     )
 
                     if extraction_strategy:
