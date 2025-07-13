@@ -84,7 +84,7 @@ For autonomous task execution, use step() method instead.
 **Returns:**
     XAgentResponse with text, artifacts, and execution details
 
-### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L771" class="source-link" title="View source code">source</a>
+### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L867" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]
@@ -92,7 +92,7 @@ async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Tas
 
 Compatibility method for TaskExecutor.execute().
 
-### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L783" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L879" class="source-link" title="View source code">source</a>
 
 ```python
 async def start(self, prompt: str) -> None
@@ -100,7 +100,7 @@ async def start(self, prompt: str) -> None
 
 Compatibility method for TaskExecutor.start().
 
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L787" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L883" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self) -> str
@@ -115,3 +115,21 @@ For user conversation and plan adjustments, use chat() method instead.
 
 **Returns:**
     str: Status message about the step execution
+
+### step_parallel <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L908" class="source-link" title="View source code">source</a>
+
+```python
+async def step_parallel(self, max_concurrent: int = 3) -> str
+```
+
+Execute multiple tasks in parallel when possible.
+
+This method identifies all actionable tasks (tasks whose dependencies 
+are satisfied) and executes them concurrently using asyncio.gather().
+Falls back to sequential execution when only one task is available.
+
+**Args:**
+    max_concurrent: Maximum number of tasks to execute simultaneously
+
+**Returns:**
+    str: Status message about parallel execution results

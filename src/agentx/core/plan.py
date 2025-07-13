@@ -91,6 +91,40 @@ class Plan(BaseModel):
 
         return None
 
+    def get_all_actionable_tasks(self, max_tasks: Optional[int] = None) -> List[PlanItem]:
+        """
+        Find all tasks that can be executed in parallel.
+        A task is actionable if it's pending and all its dependencies are completed.
+        
+        Args:
+            max_tasks: Maximum number of tasks to return (None for no limit)
+            
+        Returns:
+            List of tasks that can be executed concurrently
+        """
+        actionable_tasks = []
+        
+        for task in self.tasks:
+            if task.status != "pending":
+                continue
+                
+            # Check if all dependencies are completed
+            dependencies_met = True
+            for dep_id in task.dependencies:
+                dep_task = self.get_task_by_id(dep_id)
+                if not dep_task or dep_task.status != "completed":
+                    dependencies_met = False
+                    break
+                    
+            if dependencies_met:
+                actionable_tasks.append(task)
+                
+                # Respect max_tasks limit
+                if max_tasks and len(actionable_tasks) >= max_tasks:
+                    break
+                    
+        return actionable_tasks
+
     def get_task_by_id(self, task_id: str) -> Optional[PlanItem]:
         """Get a task by its ID."""
         for task in self.tasks:

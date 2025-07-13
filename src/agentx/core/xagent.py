@@ -627,6 +627,102 @@ Respond with a JSON object following this schema:
 
         return "\n".join(results)
 
+    async def _execute_parallel_step(self, max_concurrent: int = 3) -> str:
+        """
+        Execute multiple tasks in parallel when possible.
+        
+        Args:
+            max_concurrent: Maximum number of tasks to execute concurrently
+            
+        Returns:
+            Status message about parallel execution
+        """
+        if not self.current_plan:
+            return "No plan available for execution."
+
+        # Check if plan is already complete
+        if self.current_plan.is_complete():
+            self.is_complete = True
+            return "🎉 All tasks completed successfully!"
+
+        # Find all actionable tasks for parallel execution
+        actionable_tasks = self.current_plan.get_all_actionable_tasks(max_tasks=max_concurrent)
+        
+        if not actionable_tasks:
+            if self.current_plan.has_failed_tasks():
+                self.is_complete = True
+                return "❌ Cannot continue: some tasks have failed"
+            else:
+                return "⏳ No actionable tasks available (waiting for dependencies)"
+
+        # If only one task, fall back to sequential execution
+        if len(actionable_tasks) == 1:
+            return await self._execute_single_step()
+
+        # Execute tasks in parallel
+        logger.info(f"Executing {len(actionable_tasks)} tasks in parallel")
+        
+        # Mark all tasks as in_progress to prevent re-execution
+        for task in actionable_tasks:
+            task.status = "in_progress"
+        
+        try:
+            # Create coroutines for parallel execution
+            task_coroutines = []
+            for task in actionable_tasks:
+                logger.info(f"Starting parallel task: {task.name}")
+                task_coroutines.append(self._execute_single_task(task))
+            
+            # Execute all tasks concurrently
+            results = await asyncio.gather(*task_coroutines, return_exceptions=True)
+            
+            # Process results and update task statuses
+            completion_messages = []
+            failed_tasks = []
+            
+            for i, (task, result) in enumerate(zip(actionable_tasks, results)):
+                if isinstance(result, Exception):
+                    # Task failed
+                    logger.error(f"Parallel task failed: {task.name} - {result}")
+                    task.status = "failed"
+                    failed_tasks.append(task)
+                    
+                    if task.on_failure == "halt":
+                        completion_messages.append(f"❌ {task.name}: Failed - {result}")
+                        # Mark remaining tasks as failed too
+                        for remaining_task in actionable_tasks[i+1:]:
+                            remaining_task.status = "failed"
+                        break
+                    else:
+                        completion_messages.append(f"⚠️ {task.name}: Failed but continuing - {result}")
+                else:
+                    # Task succeeded
+                    task.status = "completed"
+                    completion_messages.append(f"✅ {task.name}: {result}")
+            
+            # Persist plan after parallel execution
+            await self._persist_plan()
+            
+            # Check if this completed all tasks
+            if self.current_plan.is_complete():
+                self.is_complete = True
+                completion_messages.append("🎉 All tasks completed successfully!")
+            
+            # If we had halt failures, mark as complete
+            if failed_tasks and any(task.on_failure == "halt" for task in failed_tasks):
+                self.is_complete = True
+                completion_messages.append("Task execution halted due to critical failure.")
+            
+            return "\n".join(completion_messages)
+            
+        except Exception as e:
+            # Rollback task statuses on unexpected failure
+            logger.error(f"Parallel execution failed: {e}")
+            for task in actionable_tasks:
+                task.status = "pending"  # Reset to allow retry
+            await self._persist_plan()
+            return f"❌ Parallel execution failed: {e}"
+
     async def _execute_single_task(self, task: PlanItem) -> str:
         """Execute a single task using the appropriate specialist agent."""
         # Get the assigned agent
@@ -808,3 +904,30 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
 
         # Execute one step of the plan
         return await self._execute_single_step()
+
+    async def step_parallel(self, max_concurrent: int = 3) -> str:
+        """
+        Execute multiple tasks in parallel when possible.
+        
+        This method identifies all actionable tasks (tasks whose dependencies 
+        are satisfied) and executes them concurrently using asyncio.gather().
+        Falls back to sequential execution when only one task is available.
+        
+        Args:
+            max_concurrent: Maximum number of tasks to execute simultaneously
+            
+        Returns:
+            str: Status message about parallel execution results
+        """
+        if self.is_complete:
+            return "Task completed"
+
+        # Ensure plan is initialized if we have an initial prompt
+        await self._ensure_plan_initialized()
+
+        # If no plan exists, cannot step
+        if not self.current_plan:
+            return "No plan available. Use chat() to create a task plan first."
+
+        # Execute multiple tasks in parallel when possible
+        return await self._execute_parallel_step(max_concurrent)
