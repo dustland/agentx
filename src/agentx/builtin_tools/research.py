@@ -75,7 +75,7 @@ class ResearchTool(Tool):
 
         try:
             # Import required modules for crawl4ai 0.7.0
-            from crawl4ai import AsyncWebCrawler, AdaptiveCrawler, AdaptiveConfig, CrawlerRunConfig, CacheMode
+            from crawl4ai import AsyncWebCrawler, AdaptiveCrawler, AdaptiveConfig, CrawlerRunConfig, CacheMode, BrowserConfig
 
             logger.info(f"Starting adaptive research with Crawl4AI 0.7.0")
             has_v070_features = True
@@ -126,7 +126,14 @@ class ResearchTool(Tool):
             research_results = []
             final_adaptive = None
 
-            async with AsyncWebCrawler(verbose=False) as crawler:
+            # Use Firefox for better stability on macOS
+            browser_config = BrowserConfig(
+                browser_type="firefox",
+                headless=True,
+                verbose=False
+            )
+            
+            async with AsyncWebCrawler(config=browser_config) as crawler:
                 # Initialize adaptive crawler with config
                 adaptive = AdaptiveCrawler(crawler, config)
 
@@ -143,7 +150,8 @@ class ResearchTool(Tool):
                             urls=batch_urls,
                             config=CrawlerRunConfig(
                                 cache_mode=CacheMode.BYPASS,
-                                page_timeout=30000
+                                page_timeout=30000,
+                                browser_type="firefox"  # Ensure Firefox is used
                             )
                         )
 
