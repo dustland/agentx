@@ -149,7 +149,7 @@ export class AgentXAPIClient {
 
   // Real-time updates using Server-Sent Events
   subscribeToTaskUpdates(taskId: string, onUpdate: (data: any) => void): () => void {
-    const eventSource = new EventSource(`${this.baseURL}/tasks/${taskId}/events`);
+    const eventSource = new EventSource(`${this.baseURL}/tasks/${taskId}/stream`);
     
     eventSource.onmessage = (event) => {
       try {

@@ -33,7 +33,7 @@ AzureFileStorage, etc. without changing the business logic.
 ### create_taskspace_storage <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/factory.py#L48" class="source-link" title="View source code">source</a>
 
 ```python
-def create_taskspace_storage(workspace_path: Union[str, Path] = None, use_git_artifacts: bool = True, base_path: Union[str, Path] = None, task_id: str = None, user_id: str = None) -> TaskspaceStorage
+def create_taskspace_storage(taskspace_path: Union[str, Path] = None, use_git_artifacts: bool = True, base_path: Union[str, Path] = None, task_id: str = None, user_id: str = None) -> TaskspaceStorage
 ```
 
 Create a taskspace storage for business logic.
@@ -42,7 +42,7 @@ Handles business concepts like artifacts, messages, execution plans
 using the filesystem abstraction underneath.
 
 **Args:**
-    workspace_path: Path to the taskspace directory (old API)
+    taskspace_path: Path to the taskspace directory (old API)
     use_git_artifacts: Whether to use Git for artifact versioning
     base_path: Base path for multi-tenant taskspaces (new API)
     task_id: Task ID for taskspace isolation (new API)

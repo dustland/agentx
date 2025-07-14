@@ -74,7 +74,6 @@ const basePath =
     ? "/agentx"
     : "";
 
-
 // Enhanced bootstrap tabs with example code
 const BootstrapTabs = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -109,7 +108,7 @@ async def main():
     x.set_parallel_execution(enabled=True, max_concurrent=4)
 
     print(f"Task ID: {x.task_id}")
-    print(f"Workspace: {x.workspace.get_workspace_path()}")
+    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
 
     # Execute tasks with parallel processing
     while not x.is_complete:
@@ -148,7 +147,7 @@ async def main():
     x.set_parallel_execution(enabled=True, max_concurrent=3)
 
     print(f"Task ID: {x.task_id}")
-    print(f"Workspace: {x.workspace.get_workspace_path()}")
+    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
 
     # Execute tasks in parallel (e.g., API design + DB schema + tests)
     while not x.is_complete:
@@ -185,7 +184,7 @@ async def main():
     )
 
     print(f"Task ID: {x.task_id}")
-    print(f"Workspace: {x.workspace.get_workspace_path()}")
+    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
 
     # Execute the initial task
     while not x.is_complete:
@@ -211,7 +210,7 @@ if __name__ == "__main__":
       <div className="flex items-center justify-center gap-1 mb-8 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
         {workflows.map((workflow, index) => {
           const isActive = activeTab === index;
-          
+
           return (
             <button
               key={workflow.id}
@@ -245,7 +244,7 @@ if __name__ == "__main__":
               <div className="w-3 h-3 rounded-full bg-yellow-400/50"></div>
               <div className="w-3 h-3 rounded-full bg-green-400/50"></div>
             </div>
-            
+
             {/* Command lines */}
             <div className="font-mono text-sm mt-6">
               {workflows[activeTab].command.split("\n").map((line, index) => (
@@ -259,11 +258,13 @@ if __name__ == "__main__":
                   <span className="text-emerald-600 dark:text-emerald-400 select-none">
                     $
                   </span>
-                  <span className="text-slate-700 dark:text-slate-300">{line}</span>
+                  <span className="text-slate-700 dark:text-slate-300">
+                    {line}
+                  </span>
                 </motion.div>
               ))}
             </div>
-            
+
             {/* Copy button */}
             <button
               onClick={() => handleCopy(workflows[activeTab].command)}
@@ -370,8 +371,7 @@ export default function HomePage() {
     {
       icon: Settings,
       title: "Configuration-First",
-      description:
-        "Define complex workflows in YAML. No custom code required.",
+      description: "Define complex workflows in YAML. No custom code required.",
       href: "#",
     },
   ];
@@ -434,29 +434,69 @@ export default function HomePage() {
         {/* X-Pattern Background */}
         <div className="absolute inset-0 overflow-hidden">
           {/* Animated X patterns */}
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="absolute inset-0 w-full h-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <pattern id="x-pattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-                <path d="M30 30L50 50M50 30L30 50" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
-                <path d="M90 30L110 50M110 30L90 50" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
-                <path d="M30 90L50 110M50 90L30 110" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
-                <path d="M90 90L110 110M110 90L90 110" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-700" opacity="0.5"/>
+              <pattern
+                id="x-pattern"
+                x="0"
+                y="0"
+                width="120"
+                height="120"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M30 30L50 50M50 30L30 50"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-slate-200 dark:text-slate-700"
+                  opacity="0.5"
+                />
+                <path
+                  d="M90 30L110 50M110 30L90 50"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-slate-200 dark:text-slate-700"
+                  opacity="0.5"
+                />
+                <path
+                  d="M30 90L50 110M50 90L30 110"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-slate-200 dark:text-slate-700"
+                  opacity="0.5"
+                />
+                <path
+                  d="M90 90L110 110M110 90L90 110"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-slate-200 dark:text-slate-700"
+                  opacity="0.5"
+                />
                 {/* Center larger X */}
-                <path d="M50 50L70 70M70 50L50 70" stroke="currentColor" strokeWidth="1.5" className="text-blue-300 dark:text-blue-800" opacity="0.3"/>
+                <path
+                  d="M50 50L70 70M70 50L50 70"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="text-blue-300 dark:text-blue-800"
+                  opacity="0.3"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#x-pattern)" />
           </svg>
-          
+
           {/* Gradient overlay to fade the pattern */}
           <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/90 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/90"></div>
         </div>
 
         {/* Floating X elements */}
         <motion.div
-          animate={{ 
+          animate={{
             rotate: [0, 90, 180, 270, 360],
-            scale: [1, 1.1, 1, 0.9, 1]
+            scale: [1, 1.1, 1, 0.9, 1],
           }}
           transition={{
             duration: 30,
@@ -466,14 +506,19 @@ export default function HomePage() {
           className="absolute top-20 left-[10%] w-24 h-24 opacity-10"
         >
           <svg viewBox="0 0 100 100" className="w-full h-full">
-            <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="3" className="text-blue-500 dark:text-blue-400" />
+            <path
+              d="M20 20L80 80M80 20L20 80"
+              stroke="currentColor"
+              strokeWidth="3"
+              className="text-blue-500 dark:text-blue-400"
+            />
           </svg>
         </motion.div>
-        
+
         <motion.div
-          animate={{ 
+          animate={{
             rotate: [360, 270, 180, 90, 0],
-            scale: [0.8, 1, 1.2, 1, 0.8]
+            scale: [0.8, 1, 1.2, 1, 0.8],
           }}
           transition={{
             duration: 25,
@@ -483,10 +528,15 @@ export default function HomePage() {
           className="absolute top-40 right-[15%] w-32 h-32 opacity-10"
         >
           <svg viewBox="0 0 100 100" className="w-full h-full">
-            <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="4" className="text-purple-500 dark:text-purple-400" />
+            <path
+              d="M20 20L80 80M80 20L20 80"
+              stroke="currentColor"
+              strokeWidth="4"
+              className="text-purple-500 dark:text-purple-400"
+            />
           </svg>
         </motion.div>
-        
+
         {/* Glowing orbs with X shapes inside */}
         <motion.div
           animate={{ y: [-10, 10, -10], x: [-5, 5, -5] }}
@@ -500,8 +550,16 @@ export default function HomePage() {
         >
           <div className="relative w-full h-full">
             <div className="absolute inset-0 bg-blue-200 dark:bg-blue-900/30 rounded-full blur-3xl opacity-40"></div>
-            <svg viewBox="0 0 100 100" className="absolute inset-4 w-32 h-32 opacity-20">
-              <path d="M25 25L75 75M75 25L25 75" stroke="currentColor" strokeWidth="2" className="text-blue-600 dark:text-blue-300" />
+            <svg
+              viewBox="0 0 100 100"
+              className="absolute inset-4 w-32 h-32 opacity-20"
+            >
+              <path
+                d="M25 25L75 75M75 25L25 75"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-blue-600 dark:text-blue-300"
+              />
             </svg>
           </div>
         </motion.div>
@@ -523,43 +581,43 @@ export default function HomePage() {
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  transition={{ 
+                  transition={{
                     type: "spring",
                     stiffness: 260,
                     damping: 20,
-                    delay: 0.5 
+                    delay: 0.5,
                   }}
                   className="inline-block"
                 >
                   <div className="relative w-12 h-12 md:w-16 md:h-16">
                     <svg viewBox="0 0 100 100" className="w-full h-full">
-                      <path 
-                        d="M20 20L80 80M80 20L20 80" 
-                        stroke="currentColor" 
-                        strokeWidth="12" 
+                      <path
+                        d="M20 20L80 80M80 20L20 80"
+                        stroke="currentColor"
+                        strokeWidth="12"
                         strokeLinecap="round"
-                        className="text-blue-600 dark:text-blue-400" 
+                        className="text-blue-600 dark:text-blue-400"
                       />
                     </svg>
                     <motion.div
-                      animate={{ 
+                      animate={{
                         scale: [1, 1.2, 1],
-                        opacity: [0.5, 0.8, 0.5]
+                        opacity: [0.5, 0.8, 0.5],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
-                        repeatType: "reverse"
+                        repeatType: "reverse",
                       }}
                       className="absolute inset-0"
                     >
                       <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <path 
-                          d="M20 20L80 80M80 20L20 80" 
-                          stroke="currentColor" 
-                          strokeWidth="8" 
+                        <path
+                          d="M20 20L80 80M80 20L20 80"
+                          stroke="currentColor"
+                          strokeWidth="8"
                           strokeLinecap="round"
-                          className="text-blue-400 dark:text-blue-300 blur-sm" 
+                          className="text-blue-400 dark:text-blue-300 blur-sm"
                         />
                       </svg>
                     </motion.div>
@@ -577,9 +635,12 @@ export default function HomePage() {
               variants={itemVariants}
               className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto"
             >
-              The framework for human-AI collaboration with <span className="font-semibold text-slate-800 dark:text-slate-200">3-5x faster execution</span> through 
-              intelligent parallel processing. Transparent workflows, cost-optimized
-              intelligence, and professional results.
+              The framework for human-AI collaboration with{" "}
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                3-5x faster execution
+              </span>{" "}
+              through intelligent parallel processing. Transparent workflows,
+              cost-optimized intelligence, and professional results.
             </motion.p>
 
             {/* CTA buttons */}
@@ -627,17 +688,37 @@ export default function HomePage() {
       <section className="relative py-20 bg-white dark:bg-slate-900 overflow-hidden">
         {/* Subtle X pattern for section background */}
         <div className="absolute inset-0 opacity-5">
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="absolute inset-0 w-full h-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <pattern id="vibe-x-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M15 15L25 25M25 15L15 25" stroke="currentColor" strokeWidth="0.5" className="text-slate-400 dark:text-slate-600"/>
-                <path d="M35 35L45 45M45 35L35 45" stroke="currentColor" strokeWidth="0.5" className="text-slate-400 dark:text-slate-600"/>
+              <pattern
+                id="vibe-x-pattern"
+                x="0"
+                y="0"
+                width="60"
+                height="60"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M15 15L25 25M25 15L15 25"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  className="text-slate-400 dark:text-slate-600"
+                />
+                <path
+                  d="M35 35L45 45M45 35L35 45"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  className="text-slate-400 dark:text-slate-600"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#vibe-x-pattern)" />
           </svg>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4">
           <motion.div
             initial="hidden"
@@ -653,10 +734,15 @@ export default function HomePage() {
               {/* X decoration in corner */}
               <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-blue-600 dark:text-blue-400" />
+                  <path
+                    d="M20 20L80 80M80 20L20 80"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    className="text-blue-600 dark:text-blue-400"
+                  />
                 </svg>
               </div>
-              
+
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-6 relative">
                 <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
@@ -676,10 +762,15 @@ export default function HomePage() {
               {/* X decoration in corner */}
               <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-purple-600 dark:text-purple-400" />
+                  <path
+                    d="M20 20L80 80M80 20L20 80"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    className="text-purple-600 dark:text-purple-400"
+                  />
                 </svg>
               </div>
-              
+
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
@@ -699,10 +790,15 @@ export default function HomePage() {
               {/* X decoration in corner */}
               <div className="absolute -top-2 -right-2 w-12 h-12 opacity-10 group-hover:opacity-20 transition-opacity">
                 <svg viewBox="0 0 100 100" className="w-full h-full">
-                  <path d="M20 20L80 80M80 20L20 80" stroke="currentColor" strokeWidth="8" className="text-green-600 dark:text-green-400" />
+                  <path
+                    d="M20 20L80 80M80 20L20 80"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    className="text-green-600 dark:text-green-400"
+                  />
                 </svg>
               </div>
-              
+
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mx-auto mb-6">
                 <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
@@ -793,35 +889,39 @@ export default function HomePage() {
             {features.map((feature, index) => {
               const gradients = [
                 "from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20",
-                "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20", 
+                "from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20",
                 "from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20",
                 "from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20",
                 "from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20",
-                "from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20"
+                "from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20",
               ];
               const iconColors = [
                 "text-blue-600 dark:text-blue-400",
                 "text-purple-600 dark:text-purple-400",
-                "text-emerald-600 dark:text-emerald-400", 
+                "text-emerald-600 dark:text-emerald-400",
                 "text-orange-600 dark:text-orange-400",
                 "text-violet-600 dark:text-violet-400",
-                "text-cyan-600 dark:text-cyan-400"
+                "text-cyan-600 dark:text-cyan-400",
               ];
-              
+
               return (
                 <motion.div
                   key={feature.title}
                   whileHover={{
                     y: -5,
-                    transition: { type: "spring", stiffness: 300 }
+                    transition: { type: "spring", stiffness: 300 },
                   }}
                   className="group relative"
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} rounded-xl blur-sm group-hover:blur-md transition-all duration-300 opacity-60 group-hover:opacity-80`}></div>
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} rounded-xl blur-sm group-hover:blur-md transition-all duration-300 opacity-60 group-hover:opacity-80`}
+                  ></div>
                   <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm p-6 rounded-xl border border-slate-200/50 dark:border-slate-700/50 h-full flex flex-col overflow-hidden">
                     {/* Subtle gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} opacity-10`}></div>
-                    
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${gradients[index]} opacity-10`}
+                    ></div>
+
                     {/* Content */}
                     <StyledLink
                       href={feature.href}
@@ -830,8 +930,12 @@ export default function HomePage() {
                       className="relative text-sm font-medium no-underline"
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        <div className={`w-10 h-10 bg-gradient-to-br ${gradients[index]} rounded-lg flex items-center justify-center shadow-sm`}>
-                          <feature.icon className={`w-5 h-5 ${iconColors[index]}`} />
+                        <div
+                          className={`w-10 h-10 bg-gradient-to-br ${gradients[index]} rounded-lg flex items-center justify-center shadow-sm`}
+                        >
+                          <feature.icon
+                            className={`w-5 h-5 ${iconColors[index]}`}
+                          />
                         </div>
                         {index === 0 && (
                           <span className="px-2 py-1 text-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full">
@@ -846,16 +950,23 @@ export default function HomePage() {
                         {feature.description}
                       </p>
                       <div className="mt-4 flex items-center gap-2">
-                        <span className={`text-sm font-medium inline-flex items-center ${iconColors[index]} group-hover:gap-3 transition-all`}>
-                          Learn More <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        <span
+                          className={`text-sm font-medium inline-flex items-center ${iconColors[index]} group-hover:gap-3 transition-all`}
+                        >
+                          Learn More{" "}
+                          <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </span>
                       </div>
                     </StyledLink>
-                    
+
                     {/* Corner accent */}
                     <div className="absolute -top-1 -right-1 w-20 h-20 opacity-10 group-hover:opacity-20 transition-opacity">
                       <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <path d="M50 10L90 50L50 90L10 50Z" fill="currentColor" className={iconColors[index]} />
+                        <path
+                          d="M50 10L90 50L50 90L10 50Z"
+                          fill="currentColor"
+                          className={iconColors[index]}
+                        />
                       </svg>
                     </div>
                   </div>
@@ -890,21 +1001,21 @@ export default function HomePage() {
                 "border-blue-200 dark:border-blue-800",
                 "border-purple-200 dark:border-purple-800",
                 "border-emerald-200 dark:border-emerald-800",
-                "border-orange-200 dark:border-orange-800"
+                "border-orange-200 dark:border-orange-800",
               ];
               const iconBg = [
                 "bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30",
                 "bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30",
                 "bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30",
-                "bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30"
+                "bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30",
               ];
               const iconColors = [
                 "text-blue-600 dark:text-blue-400",
                 "text-purple-600 dark:text-purple-400",
                 "text-emerald-600 dark:text-emerald-400",
-                "text-orange-600 dark:text-orange-400"
+                "text-orange-600 dark:text-orange-400",
               ];
-              
+
               return (
                 <motion.div
                   key={useCase.title}
@@ -916,16 +1027,44 @@ export default function HomePage() {
                   <div className="absolute inset-0 opacity-5">
                     <div className="absolute top-0 right-0 w-32 h-32 transform translate-x-16 -translate-y-16">
                       <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
-                        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
-                        <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="1" className={iconColors[index]} />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1"
+                          className={iconColors[index]}
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="30"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1"
+                          className={iconColors[index]}
+                        />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="20"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1"
+                          className={iconColors[index]}
+                        />
                       </svg>
                     </div>
                   </div>
-                  
+
                   <div className="relative">
-                    <div className={`w-16 h-16 ${iconBg[index]} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:shadow-md transition-shadow`}>
-                      <useCase.icon className={`w-8 h-8 ${iconColors[index]}`} />
+                    <div
+                      className={`w-16 h-16 ${iconBg[index]} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:shadow-md transition-shadow`}
+                    >
+                      <useCase.icon
+                        className={`w-8 h-8 ${iconColors[index]}`}
+                      />
                     </div>
                     <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
                       {useCase.title}
@@ -934,9 +1073,11 @@ export default function HomePage() {
                       {useCase.description}
                     </p>
                   </div>
-                  
+
                   {/* Bottom accent line */}
-                  <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${iconBg[index]} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${iconBg[index]} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}
+                  ></div>
                 </motion.div>
               );
             })}
@@ -951,48 +1092,80 @@ export default function HomePage() {
           <div className="relative bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 rounded-2xl shadow-xl overflow-hidden p-12 text-center">
             {/* Large X pattern background */}
             <div className="absolute inset-0 opacity-10">
-              <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                className="absolute inset-0 w-full h-full"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <defs>
-                  <pattern id="cta-x-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                    <path d="M20 20L80 80M80 20L20 80" stroke="white" strokeWidth="2"/>
-                    <path d="M0 50L50 100M50 0L100 50" stroke="white" strokeWidth="1" opacity="0.5"/>
-                    <path d="M0 50L50 0M50 100L100 50" stroke="white" strokeWidth="1" opacity="0.5"/>
+                  <pattern
+                    id="cta-x-pattern"
+                    x="0"
+                    y="0"
+                    width="100"
+                    height="100"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      d="M20 20L80 80M80 20L20 80"
+                      stroke="white"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M0 50L50 100M50 0L100 50"
+                      stroke="white"
+                      strokeWidth="1"
+                      opacity="0.5"
+                    />
+                    <path
+                      d="M0 50L50 0M50 100L100 50"
+                      stroke="white"
+                      strokeWidth="1"
+                      opacity="0.5"
+                    />
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#cta-x-pattern)" />
               </svg>
             </div>
-            
+
             {/* Animated X elements */}
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: 360,
-                scale: [1, 1.2, 1]
+                scale: [1, 1.2, 1],
               }}
               transition={{
                 rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                scale: { duration: 4, repeat: Infinity, repeatType: "reverse" }
+                scale: { duration: 4, repeat: Infinity, repeatType: "reverse" },
               }}
               className="absolute -top-20 -left-20 w-40 h-40 opacity-20"
             >
               <svg viewBox="0 0 100 100" className="w-full h-full">
-                <path d="M20 20L80 80M80 20L20 80" stroke="white" strokeWidth="4" />
+                <path
+                  d="M20 20L80 80M80 20L20 80"
+                  stroke="white"
+                  strokeWidth="4"
+                />
               </svg>
             </motion.div>
-            
+
             <motion.div
-              animate={{ 
+              animate={{
                 rotate: -360,
-                scale: [1.2, 1, 1.2]
+                scale: [1.2, 1, 1.2],
               }}
               transition={{
                 rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-                scale: { duration: 5, repeat: Infinity, repeatType: "reverse" }
+                scale: { duration: 5, repeat: Infinity, repeatType: "reverse" },
               }}
               className="absolute -bottom-16 -right-16 w-56 h-56 opacity-15"
             >
               <svg viewBox="0 0 100 100" className="w-full h-full">
-                <path d="M10 10L90 90M90 10L10 90" stroke="white" strokeWidth="3" />
+                <path
+                  d="M10 10L90 90M90 10L10 90"
+                  stroke="white"
+                  strokeWidth="3"
+                />
               </svg>
             </motion.div>
             <motion.div
@@ -1048,17 +1221,37 @@ export default function HomePage() {
       <footer className="relative bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 pt-20 pb-12 overflow-hidden">
         {/* Subtle X pattern background */}
         <div className="absolute inset-0 opacity-[0.02]">
-          <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <svg
+            className="absolute inset-0 w-full h-full"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <defs>
-              <pattern id="footer-x-pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M10 10L20 20M20 10L10 20" stroke="currentColor" strokeWidth="0.5" className="text-slate-600"/>
-                <path d="M20 20L30 30M30 20L20 30" stroke="currentColor" strokeWidth="0.5" className="text-slate-600"/>
+              <pattern
+                id="footer-x-pattern"
+                x="0"
+                y="0"
+                width="40"
+                height="40"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M10 10L20 20M20 10L10 20"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  className="text-slate-600"
+                />
+                <path
+                  d="M20 20L30 30M30 20L20 30"
+                  stroke="currentColor"
+                  strokeWidth="0.5"
+                  className="text-slate-600"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#footer-x-pattern)" />
           </svg>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             {/* Brand Column */}
@@ -1079,7 +1272,8 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                The framework for human-AI collaboration with intelligent parallel execution.
+                The framework for human-AI collaboration with intelligent
+                parallel execution.
               </p>
               <div className="flex items-center gap-3">
                 <a
@@ -1096,13 +1290,17 @@ export default function HomePage() {
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
                 >
-                  <svg className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  <svg
+                    className="w-5 h-5 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                   </svg>
                 </a>
               </div>
             </div>
-            
+
             {/* Resources Column */}
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
@@ -1147,7 +1345,7 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-            
+
             {/* Community Column */}
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
@@ -1198,7 +1396,7 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-            
+
             {/* Quick Start Column */}
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">
@@ -1221,7 +1419,7 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-          
+
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">

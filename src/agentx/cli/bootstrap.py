@@ -68,9 +68,9 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         prompts_dir = config_dir / "prompts"
         prompts_dir.mkdir()
 
-        # Create workspace directory
-        workspace_dir = project_path / "workspace"
-        workspace_dir.mkdir()
+        # Create taskspace directory
+        taskspace_dir = project_path / "taskspace"
+        taskspace_dir.mkdir()
 
         # Generate team configuration
         print(f"⚙️  Generating {template} template configuration...")
@@ -230,7 +230,7 @@ async def main():
                 print("\\n🚀 Starting your AI team...")
                 x = await start_task(user_input, str(config_path))
                 print(f"📋 Task ID: {{x.task_id}}")
-                print(f"📁 Workspace: {{x.workspace.get_workspace_path()}}")
+                print(f"📁 Taskspace: {{x.taskspace.get_taskspace_path()}}")
                 print()
 
             # Chat with X
@@ -245,10 +245,10 @@ async def main():
                 print(f"   🔄 Updated {{len(response.regenerated_steps)}} steps")
 
     except KeyboardInterrupt:
-        print("\\n\\n👋 Session ended. Your work is saved in the workspace!")
+        print("\\n\\n👋 Session ended. Your work is saved in the taskspace!")
 
     if x:
-        print(f"\\n📁 Check your results in: {{x.workspace.get_workspace_path()}}")
+        print(f"\\n📁 Check your results in: {{x.taskspace.get_taskspace_path()}}")
 
 
 if __name__ == "__main__":

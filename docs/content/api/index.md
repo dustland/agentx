@@ -17,7 +17,7 @@ Core framework components including agents, orchestration, and task management.
 ### [Builtin Tools](/api/builtin_tools)
 Built-in tools for file operations, web search, memory management, and more.
 
-- **File Operations** - Workspace file management with versioning
+- **File Operations** - Taskspace file management with versioning
 - **Web Search** - SerpAPI integration for web searches
 - **Memory Tool** - Context and memory management
 - **Web Scraping** - Content extraction from web pages
@@ -35,6 +35,14 @@ Configuration loading and management utilities.
 - **Agent Configuration** - Agent setup and prompt loading
 - **Team Configuration** - Multi-agent team configuration
 - **Prompt Management** - Template and prompt handling
+
+### [Server](/api/server)
+REST API server and real-time communication components.
+
+- **REST API** - Complete HTTP API reference with endpoints
+- **Streaming** - Server-Sent Events for real-time updates
+- **Models** - Request/response validation and data structures
+- **OpenAPI** - Interactive documentation and testing
 
 ### [Events](/api/event)
 Event system for inter-agent communication and middleware.
@@ -59,9 +67,9 @@ Search capabilities and backend integrations.
 - **Search Interfaces** - Abstract search contracts
 
 ### [Storage](/api/storage)
-File storage and workspace management.
+File storage and taskspace management.
 
-- **Workspace Management** - Project workspace handling
+- **Taskspace Management** - Project taskspace handling
 - **Git Storage** - Version control integration
 - **Storage Backends** - File storage abstractions
 

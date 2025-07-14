@@ -1,24 +1,24 @@
 # Multi-Tenant Security Architecture
 
-AgentX provides built-in multi-tenant support through workspace isolation and user-scoped API access. This design ensures that different users can securely share the same AgentX instance while maintaining complete data isolation.
+AgentX provides built-in multi-tenant support through taskspace isolation and user-scoped API access. This design ensures that different users can securely share the same AgentX instance while maintaining complete data isolation.
 
 ## Overview
 
-Multi-tenancy in AgentX is implemented as a lightweight extension to the workspace system, providing user isolation without requiring complex authentication infrastructure. This approach maintains backward compatibility while enabling secure multi-user deployments.
+Multi-tenancy in AgentX is implemented as a lightweight extension to the taskspace system, providing user isolation without requiring complex authentication infrastructure. This approach maintains backward compatibility while enabling secure multi-user deployments.
 
 ### Key Security Principles
 
 - **User Isolation**: Each user's tasks and data are completely isolated
-- **Workspace Segregation**: File system isolation prevents cross-user access
+- **Taskspace Segregation**: File system isolation prevents cross-user access
 - **API Filtering**: All endpoints filter results by user_id
 - **Backward Compatibility**: Single-tenant deployments continue to work unchanged
 
-## Workspace Isolation Design
+## Taskspace Isolation Design
 
 ### Directory Structure
 
 ```
-workspace/
+taskspace/
 ├── {user_id}/
 │   ├── {task_id}/
 │   │   ├── artifacts/          # User's task files
@@ -35,7 +35,7 @@ workspace/
 For backward compatibility, tasks without a `user_id` are stored in the legacy format:
 
 ```
-workspace/
+taskspace/
 ├── {task_id}/                 # Legacy single-tenant format
 └── {user_id}/                 # New multi-tenant format
     └── {task_id}/
@@ -69,31 +69,33 @@ GET /tasks/{task_id}/artifacts?user_id=alice
 - **Task Creation**: Tasks are created with user_id association
 - **Task Listing**: Results filtered by user_id parameter
 - **Task Access**: 404 returned for tasks not owned by requesting user
-- **Artifact Access**: File system access limited to user's workspace
+- **Artifact Access**: File system access limited to user's taskspace
 
 ## Implementation Details
 
 ### Core Components
 
-#### WorkspaceStorage
+#### TaskspaceStorage
+
 ```python
-class WorkspaceStorage:
+class TaskspaceStorage:
     def __init__(self, base_path, task_id, user_id=None):
         if user_id:
-            # Multi-tenant: workspace/{user_id}/{task_id}
-            self.workspace_path = Path(base_path) / user_id / task_id
+            # Multi-tenant: taskspace/{user_id}/{task_id}
+            self.taskspace_path = Path(base_path) / user_id / task_id
         else:
-            # Single-tenant: workspace/{task_id}
-            self.workspace_path = Path(base_path) / task_id
+            # Single-tenant: taskspace/{task_id}
+            self.taskspace_path = Path(base_path) / task_id
 ```
 
 #### XAgent Integration
+
 ```python
 class XAgent:
     def __init__(self, team_config, user_id=None):
         self.user_id = user_id
-        self.workspace = StorageFactory.create_workspace_storage(
-            base_path=Path("./workspace"),
+        self.taskspace = StorageFactory.create_taskspace_storage(
+            base_path=Path("./taskspace"),
             task_id=self.task_id,
             user_id=self.user_id
         )
@@ -121,19 +123,19 @@ class TaskResponse(BaseModel):
 
 - **File System**: Complete directory separation by user_id
 - **Memory**: Task storage scoped to prevent cross-user access
-- **Artifacts**: Git versioning isolated per user workspace
+- **Artifacts**: Git versioning isolated per user taskspace
 - **Logs**: Execution logs stored in user-specific directories
 
 ### Path Traversal Protection
 
-The workspace system includes built-in protection against path traversal attacks:
+The taskspace system includes built-in protection against path traversal attacks:
 
 ```python
-# Safe: resolves to workspace/alice/task123/file.txt
-workspace.get_artifact("file.txt")
+# Safe: resolves to taskspace/alice/task123/file.txt
+taskspace.get_artifact("file.txt")
 
 # Blocked: attempts to access ../bob/task456/ are prevented
-# by Path.resolve() and workspace boundary checks
+# by Path.resolve() and taskspace boundary checks
 ```
 
 ### Resource Limits
@@ -153,7 +155,7 @@ While basic isolation is provided, production deployments should implement:
 # Start AgentX without user isolation
 agentx start
 
-# All tasks use legacy workspace structure
+# All tasks use legacy taskspace structure
 POST /tasks {"config_path": "config.yaml", "task_description": "..."}
 ```
 
@@ -163,7 +165,7 @@ POST /tasks {"config_path": "config.yaml", "task_description": "..."}
 # Start AgentX with multi-tenant support
 agentx start
 
-# Tasks created with user_id use isolated workspaces
+# Tasks created with user_id use isolated taskspaces
 POST /tasks {"user_id": "alice", "config_path": "config.yaml", "task_description": "..."}
 ```
 
@@ -178,7 +180,7 @@ from jwt import decode
 async def get_current_user(authorization: str = Header(None)):
     if not authorization:
         return None
-    
+
     token = authorization.replace("Bearer ", "")
     payload = decode(token, SECRET_KEY, algorithms=["HS256"])
     return payload.get("user_id")
@@ -195,18 +197,18 @@ async def create_task(request: TaskRequest, user_id: str = Depends(get_current_u
 
 1. **Update API calls** to include `user_id` parameter
 2. **Configure authentication** middleware (optional)
-3. **Migrate existing workspaces** if needed:
+3. **Migrate existing taskspaces** if needed:
 
 ```bash
-# Migrate legacy workspaces to user-scoped structure
-for task_dir in workspace/*/; do
+# Migrate legacy taskspaces to user-scoped structure
+for task_dir in taskspace/*/; do
     task_id=$(basename "$task_dir")
     if [[ ! "$task_id" =~ ^[a-zA-Z0-9_-]+$ ]]; then
         continue  # Skip if already user-scoped
     fi
-    
-    mkdir -p "workspace/default/$task_id"
-    mv "$task_dir"/* "workspace/default/$task_id/"
+
+    mkdir -p "taskspace/default/$task_id"
+    mv "$task_dir"/* "taskspace/default/$task_id/"
     rmdir "$task_dir"
 done
 ```
@@ -216,15 +218,15 @@ done
 ```typescript
 // Before: Single-tenant
 const task = await api.createTask({
-    config_path: "config.yaml",
-    task_description: "Build website"
+  config_path: "config.yaml",
+  task_description: "Build website",
 });
 
 // After: Multi-tenant
 const task = await api.createTask({
-    config_path: "config.yaml", 
-    task_description: "Build website",
-    user_id: getCurrentUser().id
+  config_path: "config.yaml",
+  task_description: "Build website",
+  user_id: getCurrentUser().id,
 });
 ```
 
@@ -240,14 +242,14 @@ const task = await api.createTask({
 
 ### Performance
 
-1. **Clean up old workspaces** periodically
+1. **Clean up old taskspaces** periodically
 2. **Implement disk quotas** to prevent storage exhaustion
 3. **Consider task archival** for long-term storage
 4. **Monitor concurrent tasks** per user
 
 ### Monitoring
 
-1. **Track workspace sizes** per user
+1. **Track taskspace sizes** per user
 2. **Monitor API access patterns** for anomalies
 3. **Log security events** (unauthorized access attempts)
 4. **Set up alerts** for resource threshold breaches
@@ -267,12 +269,12 @@ app = create_app()
 async def get_current_user(api_key: str = Header(None)):
     if not api_key:
         raise HTTPException(401, "API key required")
-    
+
     # Validate API key and return user_id
     user_id = validate_api_key(api_key)
     if not user_id:
         raise HTTPException(401, "Invalid API key")
-    
+
     return user_id
 
 @app.post("/secure/tasks")

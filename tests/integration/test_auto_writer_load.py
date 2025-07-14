@@ -24,12 +24,12 @@ async def simulate_researcher_agent():
     print("\n🔬 SIMULATING RESEARCHER AGENT")
     print("=" * 60)
     
-    # Create tools with workspace
+    # Create tools with taskspace
     temp_dir = tempfile.mkdtemp()
-    workspace = TaskspaceStorage(workspace_path=temp_dir)
-    web_tool = WebTool(workspace_storage=workspace)
-    research_tool = ResearchTool(workspace_storage=workspace)
-    file_tool = FileTool(workspace_storage=workspace)
+    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
+    web_tool = WebTool(taskspace_storage=taskspace)
+    research_tool = ResearchTool(taskspace_storage=taskspace)
+    file_tool = FileTool(taskspace_storage=taskspace)
     
     # Heavy URLs like auto_writer uses
     heavy_urls = [
@@ -124,7 +124,7 @@ async def simulate_researcher_agent():
         print(f"\n💥 RESEARCH PHASE CRASHED: {type(e).__name__}: {str(e)}")
         raise
     
-    print("\n📋 Phase 3: File Operations (mimics workspace saves)")
+    print("\n📋 Phase 3: File Operations (mimics taskspace saves)")
     print("Simulating file writes that happen during research...")
     
     # Simulate file operations
@@ -139,7 +139,7 @@ async def simulate_researcher_agent():
             print(f"  ❌ File write failed: {e}")
     
     print("\n✅ Researcher simulation complete")
-    return workspace
+    return taskspace
 
 
 async def simulate_full_auto_writer_load():
@@ -154,7 +154,7 @@ async def simulate_full_auto_writer_load():
         
         try:
             # Each step involves heavy parallel operations
-            workspace = await simulate_researcher_agent()
+            taskspace = await simulate_researcher_agent()
             
             # Brief pause between steps (like agent handoffs)
             await asyncio.sleep(1)

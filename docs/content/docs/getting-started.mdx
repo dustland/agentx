@@ -167,7 +167,7 @@ async def main():
     x = await start_task(prompt, str(config_path))
 
     print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
     print("-" * 80)
 
     # Execute the task autonomously
@@ -178,12 +178,12 @@ async def main():
         print("-" * 40)
 
     print("\n✅ TASK COMPLETE")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
     print(f"📋 Task ID: {x.task_id}")
 
-    # Check for artifacts in the workspace
-    workspace_path = x.workspace.get_workspace_path()
-    artifacts_path = workspace_path / "artifacts"
+    # Check for artifacts in the taskspace
+    taskspace_path = x.taskspace.get_taskspace_path()
+    artifacts_path = taskspace_path / "artifacts"
 
     if artifacts_path.exists():
         artifact_files = list(artifacts_path.glob("*"))
@@ -192,8 +192,8 @@ async def main():
             for artifact in artifact_files:
                 print(f"   - {artifact.name}")
 
-    print(f"\n🔗 Full workspace path: {workspace_path}")
-    print("📁 Check the workspace directory for the generated report and artifacts.")
+    print(f"\n🔗 Full taskspace path: {taskspace_path}")
+    print("📁 Check the taskspace directory for the generated report and artifacts.")
 
     # Demonstrate conversational interaction
     print("\n💬 You can also chat with X to modify the report:")

@@ -1,9 +1,9 @@
 # Memory database folders
 memory_db/
-workspace/memory_db/
+taskspace/memory_db/
 
-# Workspace folders that contain runtime data
-workspace/
+# Taskspace folders that contain runtime data
+taskspace/
 *.db
 *.sqlite
 *.sqlite3

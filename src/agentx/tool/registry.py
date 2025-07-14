@@ -23,8 +23,8 @@ class ToolRegistry:
             return
         self._tools: Dict[str, ToolFunction] = {}
         self._toolsets: Dict[str, List[str]] = {}
-        # Note: Builtin tools are now registered by ToolManager with proper workspace context
-        # This prevents duplicate registrations and ensures correct workspace paths
+        # Note: Builtin tools are now registered by ToolManager with proper taskspace context
+        # This prevents duplicate registrations and ensures correct taskspace paths
         self.__initialized = True
 
     def register_tool(self, tool: Tool):

@@ -22,7 +22,7 @@ class HandoffContext(BaseModel):
     task_result: str
     task_goal: str
     conversation_history: List[Dict[str, Any]]
-    workspace_files: List[str]
+    taskspace_files: List[str]
 
 
 class HandoffEvaluator:
@@ -87,7 +87,7 @@ CURRENT CONTEXT:
 - Current Agent: {context.current_agent}
 - Task Goal: {context.task_goal}
 - Task Result Summary: {context.task_result[:500]}...
-- Workspace Files: {', '.join(context.workspace_files)}
+- Taskspace Files: {', '.join(context.taskspace_files)}
 
 Based on the task result and context, has the condition "{handoff.condition}" been met?
 

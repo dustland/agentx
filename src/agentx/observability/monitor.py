@@ -2,7 +2,7 @@
 AgentX Observability Monitor
 
 Read-only observability system that monitors AgentX project data:
-- Reads workspace data from {project_path}/workspace/
+- Reads taskspace data from {project_path}/taskspace/
 - Reads configuration from {project_path}/config/
 - Provides web interface for viewing project data
 - Does NOT create or modify any files
@@ -24,22 +24,22 @@ class ProjectStorage:
 
     def __init__(self, project_path: str):
         self.project_path = Path(project_path)
-        self.workspace_dir = self.project_path / "workspace"
+        self.taskspace_dir = self.project_path / "taskspace"
         self.config_dir = self.project_path / "config"
 
-    def _get_workspace_file_path(self, filename: str) -> Path:
-        """Get full path for a workspace data file."""
+    def _get_taskspace_file_path(self, filename: str) -> Path:
+        """Get full path for a taskspace data file."""
         if not filename.endswith('.json'):
             filename += '.json'
-        return self.workspace_dir / filename
+        return self.taskspace_dir / filename
 
     def _get_config_file_path(self, filename: str) -> Path:
         """Get full path for a config file."""
         return self.config_dir / filename
 
-    def read_workspace_file(self, filename: str) -> Dict[str, Any]:
-        """Read data from workspace file."""
-        file_path = self._get_workspace_file_path(filename)
+    def read_taskspace_file(self, filename: str) -> Dict[str, Any]:
+        """Read data from taskspace file."""
+        file_path = self._get_taskspace_file_path(filename)
 
         if not file_path.exists():
             return {}
@@ -51,7 +51,7 @@ class ProjectStorage:
                 data.pop('_metadata', None)
                 return data
         except (json.JSONDecodeError, IOError) as e:
-            logger.warning(f"Failed to read workspace file {filename}: {e}")
+            logger.warning(f"Failed to read taskspace file {filename}: {e}")
             return {}
 
     def read_config_file(self, filename: str) -> Dict[str, Any]:
@@ -72,17 +72,17 @@ class ProjectStorage:
             logger.warning(f"Failed to read config file {filename}: {e}")
             return {}
 
-    def workspace_file_exists(self, filename: str) -> bool:
-        """Check if workspace file exists."""
-        return self._get_workspace_file_path(filename).exists()
+    def taskspace_file_exists(self, filename: str) -> bool:
+        """Check if taskspace file exists."""
+        return self._get_taskspace_file_path(filename).exists()
 
     def config_file_exists(self, filename: str) -> bool:
         """Check if config file exists."""
         return self._get_config_file_path(filename).exists()
 
-    def get_workspace_file_info(self, filename: str) -> Dict[str, Any]:
-        """Get workspace file information."""
-        file_path = self._get_workspace_file_path(filename)
+    def get_taskspace_file_info(self, filename: str) -> Dict[str, Any]:
+        """Get taskspace file information."""
+        file_path = self._get_taskspace_file_path(filename)
         if not file_path.exists():
             return {"exists": False}
 
@@ -95,7 +95,7 @@ class ProjectStorage:
                 "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
             }
         except Exception as e:
-            logger.error(f"Error getting workspace file info for {filename}: {e}")
+            logger.error(f"Error getting taskspace file info for {filename}: {e}")
             return {"exists": True, "error": str(e)}
 
     def get_config_file_info(self, filename: str) -> Dict[str, Any]:
@@ -116,15 +116,15 @@ class ProjectStorage:
             logger.error(f"Error getting config file info for {filename}: {e}")
             return {"exists": True, "error": str(e)}
 
-    def list_workspace_files(self) -> List[str]:
-        """List all files in workspace directory."""
-        if not self.workspace_dir.exists():
+    def list_taskspace_files(self) -> List[str]:
+        """List all files in taskspace directory."""
+        if not self.taskspace_dir.exists():
             return []
 
         try:
-            return [f.name for f in self.workspace_dir.iterdir() if f.is_file()]
+            return [f.name for f in self.taskspace_dir.iterdir() if f.is_file()]
         except Exception as e:
-            logger.error(f"Error listing workspace files: {e}")
+            logger.error(f"Error listing taskspace files: {e}")
             return []
 
     def list_config_files(self) -> List[str]:
@@ -140,7 +140,7 @@ class ProjectStorage:
 
 
 class ConversationHistory:
-    """Read conversation history from workspace/conversations.json."""
+    """Read conversation history from taskspace/conversations.json."""
 
     def __init__(self, storage: ProjectStorage):
         self.storage = storage
@@ -148,12 +148,12 @@ class ConversationHistory:
 
     def get_conversation(self, task_id: str) -> List[Dict[str, Any]]:
         """Get conversation for a task."""
-        data = self.storage.read_workspace_file(self.filename)
+        data = self.storage.read_taskspace_file(self.filename)
         return data.get("tasks", {}).get(task_id, [])
 
     def get_recent_tasks(self, limit: int = 10) -> List[str]:
         """Get list of recent task IDs."""
-        data = self.storage.read_workspace_file(self.filename)
+        data = self.storage.read_taskspace_file(self.filename)
         tasks = data.get("tasks", {})
 
         # Sort by last message timestamp
@@ -186,7 +186,7 @@ class ConversationHistory:
 
     def get_stats(self) -> Dict[str, Any]:
         """Get conversation statistics."""
-        data = self.storage.read_workspace_file(self.filename)
+        data = self.storage.read_taskspace_file(self.filename)
         tasks = data.get("tasks", {})
 
         if not tasks:
@@ -209,7 +209,7 @@ class ConversationHistory:
 
 
 class EventCapture:
-    """Read events from workspace/events.json."""
+    """Read events from taskspace/events.json."""
 
     def __init__(self, storage: ProjectStorage):
         self.storage = storage
@@ -217,7 +217,7 @@ class EventCapture:
 
     def get_events(self, event_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
         """Get recent events."""
-        data = self.storage.read_workspace_file(self.filename)
+        data = self.storage.read_taskspace_file(self.filename)
         events = data.get("events", [])
 
         if event_type:
@@ -227,7 +227,7 @@ class EventCapture:
 
     def get_event_stats(self) -> Dict[str, Any]:
         """Get event statistics."""
-        data = self.storage.read_workspace_file(self.filename)
+        data = self.storage.read_taskspace_file(self.filename)
         events = data.get("events", [])
 
         if not events:
@@ -250,19 +250,19 @@ class EventCapture:
 
 
 class ArtifactsViewer:
-    """Browse and view workspace files as artifacts."""
+    """Browse and view taskspace files as artifacts."""
 
     def __init__(self, storage: ProjectStorage):
         self.storage = storage
 
     def get_file_list(self) -> List[Dict[str, Any]]:
-        """Get list of all workspace files."""
+        """Get list of all taskspace files."""
         files = []
-        workspace_files = self.storage.list_workspace_files()
+        taskspace_files = self.storage.list_taskspace_files()
 
-        for filename in workspace_files:
+        for filename in taskspace_files:
             try:
-                file_info = self.storage.get_workspace_file_info(filename)
+                file_info = self.storage.get_taskspace_file_info(filename)
                 files.append({
                     "name": filename,
                     "path": filename,
@@ -289,7 +289,7 @@ class ArtifactsViewer:
     def get_file_content(self, filename: str) -> Dict[str, Any]:
         """Get file content and metadata."""
         try:
-            file_info = self.storage.get_workspace_file_info(filename)
+            file_info = self.storage.get_taskspace_file_info(filename)
             is_text = self._is_text_file(filename)
 
             if is_text:
@@ -297,12 +297,12 @@ class ArtifactsViewer:
                 try:
                     if filename.endswith('.json'):
                         # For JSON files, read as dict and format nicely
-                        content_dict = self.storage.read_workspace_file(filename)
+                        content_dict = self.storage.read_taskspace_file(filename)
                         import json
                         content = json.dumps(content_dict, indent=2, ensure_ascii=False)
                     else:
                         # For other text files, read raw content
-                        file_path = self.storage._get_workspace_file_path(filename)
+                        file_path = self.storage._get_taskspace_file_path(filename)
                         with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read()
 
@@ -467,15 +467,15 @@ class ObservabilityMonitor:
     def get_project_status(self) -> Dict[str, Any]:
         """Get status of the project directories."""
         project_path = Path(self.project_path)
-        workspace_path = project_path / "workspace"
+        taskspace_path = project_path / "taskspace"
         config_path = project_path / "config"
 
         return {
             "project_path": str(project_path.absolute()),
-            "workspace": {
-                "exists": workspace_path.exists(),
-                "path": str(workspace_path),
-                "files": self.storage.list_workspace_files() if workspace_path.exists() else []
+            "taskspace": {
+                "exists": taskspace_path.exists(),
+                "path": str(taskspace_path),
+                "files": self.storage.list_taskspace_files() if taskspace_path.exists() else []
             },
             "config": {
                 "exists": config_path.exists(),
@@ -551,14 +551,14 @@ class ObservabilityMonitor:
                 "platform": platform.system(),
                 "is_running": self.is_running,
                 "mode": "Read-Only Project Monitor",
-                "data_directory": str(self.storage.workspace_dir)
+                "data_directory": str(self.storage.taskspace_dir)
             },
             "storage": {
-                "workspace_dir": str(self.storage.workspace_dir),
+                "taskspace_dir": str(self.storage.taskspace_dir),
                 "config_dir": str(self.storage.config_dir),
-                "conversations_file": str(self.storage._get_workspace_file_path("conversations")),
-                "events_file": str(self.storage._get_workspace_file_path("events")),
-                "memory_file": str(self.storage._get_workspace_file_path("memory"))
+                "conversations_file": str(self.storage._get_taskspace_file_path("conversations")),
+                "events_file": str(self.storage._get_taskspace_file_path("events")),
+                "memory_file": str(self.storage._get_taskspace_file_path("memory"))
             },
             "project_status": self.get_project_status()
         }
@@ -572,18 +572,18 @@ def get_monitor(project_path: Optional[str] = None) -> ObservabilityMonitor:
 
 
 def find_project_directory() -> str:
-    """Find existing project directory with workspace and config subdirectories."""
+    """Find existing project directory with taskspace and config subdirectories."""
     current_dir = Path.cwd()
 
     # Check current directory
-    if (current_dir / "workspace").exists() and (current_dir / "config").exists():
+    if (current_dir / "taskspace").exists() and (current_dir / "config").exists():
         return str(current_dir)
 
     # Check parent directories
     for parent in [current_dir.parent, current_dir.parent.parent, current_dir.parent.parent.parent]:
         if parent == current_dir:
             break
-        if (parent / "workspace").exists() and (parent / "config").exists():
+        if (parent / "taskspace").exists() and (parent / "config").exists():
             return str(parent)
 
     # Return current directory as default

@@ -31,7 +31,7 @@ async def main():
         x = await start_task(prompt, config_path)
 
         print(f"📋 Task ID: {x.task_id}")
-        print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+        print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
         print("-" * 60)
 
         # Execute the team collaboration autonomously
@@ -59,7 +59,7 @@ async def main():
             print("-" * 60)
 
         print("✅ Team collaboration completed!")
-        print(f"📁 Check workspace for collaboration artifacts: {x.workspace.get_workspace_path()}")
+        print(f"📁 Check taskspace for collaboration artifacts: {x.taskspace.get_taskspace_path()}")
 
         # Demonstrate conversational team capabilities
         print("\n💬 You can continue chatting with the team:")

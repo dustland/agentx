@@ -62,20 +62,20 @@ class ToolManager:
         self.registry.register_tool(file_tool)
 
         # Register other builtin tools with taskspace storage
-        search_tool = SearchTool(workspace_storage=taskspace_storage)
+        search_tool = SearchTool(taskspace_storage=taskspace_storage)
         self.registry.register_tool(search_tool)
 
-        web_tool = WebTool(workspace_storage=taskspace_storage)
+        web_tool = WebTool(taskspace_storage=taskspace_storage)
         self.registry.register_tool(web_tool)
 
-        context_tool = ContextTool(workspace_path=taskspace_path)
+        context_tool = ContextTool(taskspace_path=taskspace_path)
         self.registry.register_tool(context_tool)
 
         # Document tool replaces both summarize and polish tools
-        document_tool = DocumentTool(workspace_storage=taskspace_storage)
+        document_tool = DocumentTool(taskspace_storage=taskspace_storage)
         self.registry.register_tool(document_tool)
 
-        research_tool = ResearchTool(workspace_storage=taskspace_storage)
+        research_tool = ResearchTool(taskspace_storage=taskspace_storage)
         self.registry.register_tool(research_tool)
 
         logger.info(f"Registered builtin tools for taskspace: {taskspace_path}")

@@ -58,6 +58,6 @@ addon/*.pem
 Thumbs.db
 ehthumbs.db
 
-# Workspace artifacts
-workspace/
+# Taskspace artifacts
+taskspace/
 *.tmp

@@ -11,7 +11,7 @@ The AgentX orchestration model is designed to coordinate multiple autonomous age
 
 1.  **Unified Conversational Interface**: Users interact with a single entity (`XAgent`) that manages the entire multi-agent team behind the scenes. This provides a natural, chat-like experience while maintaining sophisticated orchestration capabilities.
 2.  **Plan-Driven Execution**: Every task is driven by a structured, machine-readable `Plan`. The `Plan` is the single source of truth for XAgent, defining the sequence of tasks, their dependencies, and their goals. This ensures the process is predictable, repeatable, and resumable.
-3.  **Autonomous Specialist Agents**: Specialist agents are independent, expert problem-solvers. They are given specific tasks from the Plan and the autonomy to use their configured tools to achieve them. The framework provides them with resources (`Workspace`, `Memory`) but does not dictate the specifics of their internal process.
+3.  **Autonomous Specialist Agents**: Specialist agents are independent, expert problem-solvers. They are given specific tasks from the Plan and the autonomy to use their configured tools to achieve them. The framework provides them with resources (`Taskspace`, `Memory`) but does not dictate the specifics of their internal process.
 
 ## 2. Core Architecture Components
 
@@ -26,7 +26,7 @@ graph TD
 
     subgraph "XAgent Orchestration"
         XAgent -- "Manages" --> Plan
-        XAgent -- "Provides" --> Workspace
+        XAgent -- "Provides" --> Taskspace
         XAgent -- "Provides" --> Memory
         XAgent -- "Uses for planning & routing" --> Brain
     end
@@ -49,8 +49,8 @@ graph TD
     SpecialistAgent1 -- "Uses" --> Tool1
     SpecialistAgent2 -- "Uses" --> Tool2
     SpecialistAgent3 -- "Uses" --> Tool3
-    Tool1 -- "Writes to" --> Workspace
-    Tool2 -- "Writes to" --> Workspace
+    Tool1 -- "Writes to" --> Taskspace
+    Tool2 -- "Writes to" --> Taskspace
     Tool3 -- "Updates" --> Memory
 ```
 
@@ -63,7 +63,7 @@ XAgent is the single point of contact that users interact with to manage complex
 - **Rich Message Handling**: Supports text, attachments, images, and other multimedia content
 - **LLM-Driven Plan Adjustment**: Intelligently determines which tasks need regeneration while preserving completed work
 - **Conversational Task Management**: Users can chat naturally to request changes, ask questions, or provide guidance
-- **Automatic Workspace Management**: Handles file storage, artifact management, and workspace organization
+- **Automatic Taskspace Management**: Handles file storage, artifact management, and taskspace organization
 
 **Core Conversation Loop:**
 
@@ -198,7 +198,7 @@ The **Plan** remains a declarative data structure that outlines all steps requir
 - **Declarative**: Describes what needs to be done, not how
 - **Structured**: Uses formal Pydantic schema for validation
 - **Dynamically Adjustable**: XAgent can modify plans based on user requests
-- **Persistent**: Saved to workspace for resumability
+- **Persistent**: Saved to taskspace for resumability
 
 ## 3. Error Handling and Recovery
 

@@ -77,12 +77,12 @@ async def test_handoff_execution(tmp_path):
     assert handoff_occurred, "Handoff did not occur as expected"
 
     # Verify the plan was modified
-    assert x.current_plan is not None
-    assert len(x.current_plan.tasks) >= 2, "Plan should have at least 2 tasks after handoff"
+    assert x.plan is not None
+    assert len(x.plan.tasks) >= 2, "Plan should have at least 2 tasks after handoff"
 
     # Find the handoff task
     handoff_task = None
-    for task in x.current_plan.tasks:
+    for task in x.plan.tasks:
         if task.id.startswith("handoff_"):
             handoff_task = task
             break
@@ -156,6 +156,6 @@ async def test_no_handoff_when_condition_not_met(tmp_path):
     assert not handoff_occurred, "Handoff should not have occurred"
 
     # Verify plan wasn't modified with handoff tasks
-    if x.current_plan:
-        for task in x.current_plan.tasks:
+    if x.plan:
+        for task in x.plan.tasks:
             assert not task.id.startswith("handoff_"), "No handoff tasks should be in plan"

@@ -1,13 +1,13 @@
-# AgentX Workspace Organization Guide
+# AgentX Taskspace Organization Guide
 
 ## Overview
 
-Every AgentX task creates a structured workspace directory. This guide defines what goes where and how agents should use the storage tools.
+Every AgentX task creates a structured taskspace directory. This guide defines what goes where and how agents should use the storage tools.
 
-## Workspace Structure
+## Taskspace Structure
 
 ```
-workspace/<task_id>/
+taskspace/<task_id>/
 ├── artifacts/          # Default location for all files
 ├── temp/              # Temporary files (only when requested)
 ├── logs/              # Framework execution logs

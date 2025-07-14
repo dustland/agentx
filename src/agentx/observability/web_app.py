@@ -174,7 +174,7 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
         """Download artifact file."""
         from fastapi.responses import FileResponse
         try:
-            file_path = monitor.storage._get_workspace_file_path(filename)
+            file_path = monitor.storage._get_taskspace_file_path(filename)
             if file_path.exists():
                 return FileResponse(
                     path=str(file_path),
@@ -285,14 +285,14 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
                 new_project_path = Path.cwd() / new_project_path
 
             # Check if it's a valid project directory
-            workspace_dir = new_project_path / "workspace"
+            taskspace_dir = new_project_path / "taskspace"
             config_dir = new_project_path / "config"
 
             if not new_project_path.exists():
                 return {"success": False, "error": f"Project directory does not exist: {new_project_path}"}
 
-            if not workspace_dir.exists():
-                return {"success": False, "error": f"Workspace directory not found: {workspace_dir}"}
+            if not taskspace_dir.exists():
+                return {"success": False, "error": f"Taskspace directory not found: {taskspace_dir}"}
 
             if not config_dir.exists():
                 return {"success": False, "error": f"Config directory not found: {config_dir}"}

@@ -31,12 +31,12 @@ class DocumentTool(Tool):
     
     def __init__(
         self, 
-        workspace_storage: Optional[Any] = None, 
+        taskspace_storage: Optional[Any] = None, 
         polish_model: Optional[str] = None,
         summary_model: Optional[str] = None
     ) -> None:
         super().__init__("document")
-        self.taskspace = workspace_storage
+        self.taskspace = taskspace_storage
         # Default models for different operations
         self.polish_model = polish_model or "deepseek/deepseek-reasoner"
         self.summary_model = summary_model or "deepseek/deepseek-chat"
@@ -71,12 +71,12 @@ class DocumentTool(Tool):
             # Read the draft document
             logger.info(f"Reading draft document: {draft_path}")
             
-            if self.workspace:
-                # Try workspace first
+            if self.taskspace:
+                # Try taskspace first
                 try:
-                    draft_content = await self.workspace.get_artifact(draft_path)
+                    draft_content = await self.taskspace.get_artifact(draft_path)
                     if draft_content is None:
-                        raise FileNotFoundError(f"File not found in workspace: {draft_path}")
+                        raise FileNotFoundError(f"File not found in taskspace: {draft_path}")
                 except:
                     # Fall back to file system
                     draft_path_obj = Path(draft_path)
@@ -187,8 +187,8 @@ Output the polished document directly without any meta-commentary."""
             # Save polished document
             logger.info(f"Saving polished document to: {output_path}")
             
-            if self.workspace:
-                save_result = await self.workspace.store_artifact(
+            if self.taskspace:
+                save_result = await self.taskspace.store_artifact(
                     name=output_path,
                     content=polished_content,
                     content_type="text/markdown",
@@ -263,8 +263,8 @@ Output the polished document directly without any meta-commentary."""
         
         try:
             # Find section files
-            if self.workspace:
-                files = await self.workspace.list_artifacts()
+            if self.taskspace:
+                files = await self.taskspace.list_artifacts()
                 # files is a list of dicts with 'name' key
                 section_files = sorted([f['name'] for f in files if Path(f['name']).match(section_pattern)])
             else:
@@ -282,8 +282,8 @@ Output the polished document directly without any meta-commentary."""
             # Read and merge sections
             merged_content = []
             for i, section_file in enumerate(section_files):
-                if self.workspace:
-                    content = await self.workspace.get_artifact(section_file)
+                if self.taskspace:
+                    content = await self.taskspace.get_artifact(section_file)
                 else:
                     content = Path(section_file).read_text()
                 
@@ -296,8 +296,8 @@ Output the polished document directly without any meta-commentary."""
             final_content = "\n\n".join(merged_content)
             
             # Save merged document
-            if self.workspace:
-                await self.workspace.store_artifact(
+            if self.taskspace:
+                await self.taskspace.store_artifact(
                     name=output_path,
                     content=final_content,
                     content_type="text/markdown",
@@ -360,9 +360,9 @@ Output the polished document directly without any meta-commentary."""
         summary_model = model_override or self.summary_model
         
         try:
-            if not self.workspace:
+            if not self.taskspace:
                 return ToolResult.error_result(
-                    error="No workspace available for file operations",
+                    error="No taskspace available for file operations",
                     execution_time=time.time() - start_time
                 )
 
@@ -372,7 +372,7 @@ Output the polished document directly without any meta-commentary."""
             
             for filename in input_files:
                 try:
-                    content = await self.workspace.get_artifact(filename)
+                    content = await self.taskspace.get_artifact(filename)
                     if content:
                         # Truncate if needed
                         if len(content) > max_content_per_file:
@@ -453,7 +453,7 @@ SOURCE FILES ({len(file_contents)} files, {total_chars} total characters):
             final_content = header + (summary_content or "")
 
             # Save the summary
-            result = await self.workspace.store_artifact(
+            result = await self.taskspace.store_artifact(
                 name=output_filename,
                 content=final_content,
                 content_type="text/markdown",

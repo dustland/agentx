@@ -50,7 +50,7 @@ def tools():
 @tools.command(name="list")
 def list_cli():
     """List all available tools with descriptions."""
-    _register_builtin_tools(with_workspace=False)
+    _register_builtin_tools(with_taskspace=False)
     _print_available_tools()
 
 
@@ -62,7 +62,7 @@ def validate(tool_names):
         click.echo("Usage: agentx tools validate <tool_name1> <tool_name2> ...")
         return
 
-    _register_builtin_tools(with_workspace=False)
+    _register_builtin_tools(with_taskspace=False)
     registry = ToolRegistry()
 
     valid_tools = []
@@ -92,11 +92,11 @@ def suggest(agent_name, description):
     click.echo("Tool suggestion is not implemented yet.")
 
 
-def _register_builtin_tools(with_workspace: bool = True):
+def _register_builtin_tools(with_taskspace: bool = True):
     """Register built-in tools for CLI commands."""
     registry = ToolRegistry()
-    workspace_path = "./workspace" if with_workspace else None
-    register_builtin_tools(registry, workspace_path=workspace_path, memory_system=None)
+    taskspace_path = "./taskspace" if with_taskspace else None
+    register_builtin_tools(registry, taskspace_path=taskspace_path, memory_system=None)
 
 
 if __name__ == "__main__":

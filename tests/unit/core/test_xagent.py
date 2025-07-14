@@ -31,9 +31,9 @@ def mock_team_config():
 
 
 @pytest.fixture
-def mock_workspace_path(tmp_path):
-    """Create a temporary workspace path."""
-    return tmp_path / "test_workspace"
+def mock_taskspace_path(tmp_path):
+    """Create a temporary taskspace path."""
+    return tmp_path / "test_taskspace"
 
 
 class TestXAgent:
@@ -42,20 +42,20 @@ class TestXAgent:
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
-    def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test XAgent initializes correctly."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
         # Act
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Assert
         assert x.task_id is not None
         assert x.team_config == mock_team_config
-        assert x.workspace == mock_workspace
+        assert x.taskspace == mock_taskspace
         assert "test_agent" in x.specialist_agents
         assert x.name == "X"
         assert not x.is_complete
@@ -66,14 +66,14 @@ class TestXAgent:
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test chat with simple text message creates plan but doesn't execute automatically."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Mock the brain's response
         with patch.object(x.brain, 'generate_response') as mock_generate:
@@ -107,21 +107,21 @@ class TestXAgent:
                 assert len(x.conversation_history) == 1
                 assert x.conversation_history[0].content == "Hello, create a test report"
                 # Verify plan was set
-                assert x.current_plan is not None
-                assert x.current_plan.goal == "Test goal"
+                assert x.plan is not None
+                assert x.plan.goal == "Test goal"
 
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test chat with Message object."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         message = Message.user_message("Test with message object")
 
@@ -144,17 +144,17 @@ class TestXAgent:
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test that plan adjustment preserves completed work."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Set up existing plan with completed tasks
-        x.current_plan = Plan(
+        x.plan = Plan(
             goal="Test goal",
             tasks=[
                 PlanItem(
@@ -206,14 +206,14 @@ class TestXAgent:
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test error handling in chat method."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Mock brain to raise an exception
         with patch.object(x.brain, 'generate_response') as mock_generate:
@@ -230,17 +230,17 @@ class TestXAgent:
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
-    def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test plan summary generation."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Set up plan with mixed statuses
-        x.current_plan = Plan(
+        x.plan = Plan(
             goal="Test comprehensive plan",
             tasks=[
                 PlanItem(id="task_1", name="Task 1", goal="Goal 1", agent="test_agent", status="completed"),
@@ -259,14 +259,14 @@ class TestXAgent:
     @patch('agentx.storage.factory.StorageFactory')
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
-    def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test conversation summary generation."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Add some conversation history
         x.conversation_history = [
@@ -288,21 +288,21 @@ class TestXAgent:
     @patch('agentx.core.xagent.setup_task_file_logging')
     @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_workspace_path):
+    async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test XAgent methods."""
         # Arrange
-        mock_workspace = Mock()
-        mock_workspace.get_workspace_path.return_value = mock_workspace_path
-        mock_storage_factory.create_workspace_storage.return_value = mock_workspace
+        mock_taskspace = Mock()
+        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
+        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
 
-        x = XAgent(team_config=mock_team_config, workspace_dir=mock_workspace_path)
+        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
 
         # Test is_complete property
         assert not x.is_complete
 
-        # Test workspace access
-        workspace_path = x.workspace.get_workspace_path()
-        assert workspace_path == mock_workspace_path
+        # Test taskspace access
+        taskspace_path = x.taskspace.get_taskspace_path()
+        assert taskspace_path == mock_taskspace_path
 
         # Test task_id is set
         assert x.task_id is not None

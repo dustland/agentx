@@ -8,35 +8,35 @@ The top-level configuration file defines a team of agents and their collaboratio
 
 ```yaml
 # Team identification
-name: "Your Team Name"          # Required: A descriptive name for your team
+name: "Your Team Name" # Required: A descriptive name for your team
 description: "Team description" # Optional: What this team does
 
-# Workspace configuration
-output_dir: "workspace"         # Optional: Where to store outputs (default: "workspace")
+# Taskspace configuration
+output_dir: "taskspace" # Optional: Where to store outputs (default: "taskspace")
 
 # Agent definitions
-agents:                         # Required: List of agents in the team
-  - "researcher"                # Can be preset names (strings)
-  - name: "custom_agent"        # Or detailed agent configurations
+agents: # Required: List of agents in the team
+  - "researcher" # Can be preset names (strings)
+  - name: "custom_agent" # Or detailed agent configurations
     description: "Custom agent"
     prompt_file: "prompts/custom.md"
     tools: ["web_search", "write_file"]
 
 # Agent collaboration
-handoffs:                       # Optional: Define agent handoff rules
+handoffs: # Optional: Define agent handoff rules
   - from_agent: "researcher"
     to_agent: "writer"
     condition: "When research is complete"
-    priority: 1                 # Optional: Higher = higher priority
+    priority: 1 # Optional: Higher = higher priority
 
 # Advanced configurations
-collaboration_patterns: []      # Optional: Custom collaboration patterns
-tools: []                      # Optional: Custom tool definitions
-guardrail_policies: []         # Optional: Safety and compliance rules
-memory: {}                     # Optional: Memory system configuration
-execution: {}                  # Optional: Task execution settings
-orchestrator: {}               # Optional: Orchestrator (X) configuration
-deployment_config: {}          # Optional: Deployment-specific settings
+collaboration_patterns: [] # Optional: Custom collaboration patterns
+tools: [] # Optional: Custom tool definitions
+guardrail_policies: [] # Optional: Safety and compliance rules
+memory: {} # Optional: Memory system configuration
+execution: {} # Optional: Task execution settings
+orchestrator: {} # Optional: Orchestrator (X) configuration
+deployment_config: {} # Optional: Deployment-specific settings
 ```
 
 ## Core Configuration Options
@@ -44,9 +44,9 @@ deployment_config: {}          # Optional: Deployment-specific settings
 ### Team Metadata
 
 ```yaml
-name: "AutoWriter Production Team"  # Required
-description: "Professional research and writing system"  # Optional
-output_dir: "reports"  # Optional (default: "workspace")
+name: "AutoWriter Production Team" # Required
+description: "Professional research and writing system" # Optional
+output_dir: "reports" # Optional (default: "taskspace")
 ```
 
 ### Agent Configuration
@@ -59,11 +59,11 @@ Use built-in agent presets by name:
 
 ```yaml
 agents:
-  - "researcher"      # Evidence-based research specialist
-  - "writer"          # Professional content creator
-  - "web_designer"    # HTML/CSS expert
-  - "reviewer"        # Quality assurance specialist
-  - "developer"       # Software engineer
+  - "researcher" # Evidence-based research specialist
+  - "writer" # Professional content creator
+  - "web_designer" # HTML/CSS expert
+  - "reviewer" # Quality assurance specialist
+  - "developer" # Software engineer
 ```
 
 #### 2. Custom Agent Configuration
@@ -74,7 +74,7 @@ Define custom agents with specific settings:
 agents:
   - name: "data_analyst"
     description: "Analyzes datasets and creates visualizations"
-    prompt_file: "prompts/analyst.md"  # Path to prompt file
+    prompt_file: "prompts/analyst.md" # Path to prompt file
     tools: ["read_file", "python_repl", "create_chart"]
     brain_config:
       model: "gpt-4"
@@ -107,7 +107,7 @@ handoffs:
   - from_agent: "researcher"
     to_agent: "writer"
     condition: "When comprehensive research is gathered and ready for writing"
-    priority: 1  # Higher priority handoffs are evaluated first
+    priority: 1 # Higher priority handoffs are evaluated first
 
   - from_agent: "writer"
     to_agent: "reviewer"
@@ -122,21 +122,21 @@ Configure the LLM settings for agents or the orchestrator:
 ```yaml
 # Team-level default
 llm_provider:
-  provider: "openai"        # Options: openai, anthropic, deepseek, ollama
-  model: "gpt-4"           # Model name
-  temperature: 0.7         # 0.0-2.0, controls randomness
-  max_tokens: 8000         # Maximum response length
-  api_key: null            # Optional: Override env variable
-  base_url: null           # Optional: Custom endpoint
-  timeout: 30              # Request timeout in seconds
-  streaming: true          # Enable streaming responses
+  provider: "openai" # Options: openai, anthropic, deepseek, ollama
+  model: "gpt-4" # Model name
+  temperature: 0.7 # 0.0-2.0, controls randomness
+  max_tokens: 8000 # Maximum response length
+  api_key: null # Optional: Override env variable
+  base_url: null # Optional: Custom endpoint
+  timeout: 30 # Request timeout in seconds
+  streaming: true # Enable streaming responses
 
 # Agent-specific override
 agents:
   - name: "precise_analyst"
     brain_config:
       model: "gpt-4"
-      temperature: 0.1     # Lower temperature for more deterministic output
+      temperature: 0.1 # Lower temperature for more deterministic output
       max_tokens: 4000
 ```
 
@@ -146,13 +146,13 @@ Control how agents remember and use context:
 
 ```yaml
 memory:
-  enabled: true                    # Enable memory system
-  max_context_tokens: 8000         # Maximum context window
-  semantic_search_enabled: true    # Enable semantic memory search
-  short_term_limit: 10000          # Short-term memory token limit
-  long_term_enabled: true          # Enable long-term memory
-  consolidation_interval: 3600     # Memory consolidation interval (seconds)
-  vector_db_config:               # Vector database settings
+  enabled: true # Enable memory system
+  max_context_tokens: 8000 # Maximum context window
+  semantic_search_enabled: true # Enable semantic memory search
+  short_term_limit: 10000 # Short-term memory token limit
+  long_term_enabled: true # Enable long-term memory
+  consolidation_interval: 3600 # Memory consolidation interval (seconds)
+  vector_db_config: # Vector database settings
     provider: "chroma"
     collection_name: "agent_memory"
 ```
@@ -164,11 +164,11 @@ Define custom tools for agents:
 ```yaml
 tools:
   - name: "data_processor"
-    type: "python_function"       # Options: python_function, shell_script, mcp_tool, builtin
+    type: "python_function" # Options: python_function, shell_script, mcp_tool, builtin
     description: "Process CSV data files"
     source: "tools/data_processor.py"
     function: "process_data"
-    parameters:                   # JSON Schema for parameters
+    parameters: # JSON Schema for parameters
       type: "object"
       properties:
         file_path:
@@ -188,18 +188,18 @@ Control how tasks are executed:
 
 ```yaml
 execution:
-  mode: "autonomous"              # Options: autonomous, step_through
-  max_rounds: 10                  # Maximum conversation rounds
-  timeout_seconds: 300            # Task timeout
-  initial_agent: "researcher"     # Starting agent
-  step_through_enabled: false     # Enable step-by-step mode
-  breakpoints:                    # Pause execution at these points
+  mode: "autonomous" # Options: autonomous, step_through
+  max_rounds: 10 # Maximum conversation rounds
+  timeout_seconds: 300 # Task timeout
+  initial_agent: "researcher" # Starting agent
+  step_through_enabled: false # Enable step-by-step mode
+  breakpoints: # Pause execution at these points
     - "after_research"
     - "before_final_review"
-  success_criteria:               # Define success conditions
+  success_criteria: # Define success conditions
     - "HTML report generated"
     - "All tests pass"
-  failure_criteria:               # Define failure conditions
+  failure_criteria: # Define failure conditions
     - "API rate limit exceeded"
     - "Critical error encountered"
 ```
@@ -213,11 +213,11 @@ orchestrator:
   brain_config:
     provider: "deepseek"
     model: "deepseek-chat"
-    temperature: 0.3              # Lower for more consistent planning
+    temperature: 0.3 # Lower for more consistent planning
     max_tokens: 8000
     timeout: 120
-  max_rounds: 50                  # Maximum orchestration rounds
-  timeout: 3600                   # Total orchestration timeout
+  max_rounds: 50 # Maximum orchestration rounds
+  timeout: 3600 # Total orchestration timeout
 ```
 
 ### Collaboration Patterns
@@ -227,12 +227,12 @@ Define custom collaboration workflows:
 ```yaml
 collaboration_patterns:
   - name: "peer_review"
-    type: "parallel"              # Options: sequential, parallel, consensus, dynamic
+    type: "parallel" # Options: sequential, parallel, consensus, dynamic
     agents: ["writer_1", "writer_2", "editor"]
-    coordination_agent: "editor"   # Agent that coordinates the pattern
+    coordination_agent: "editor" # Agent that coordinates the pattern
     config:
-      min_consensus: 2            # Minimum agreements needed
-      timeout: 600                # Pattern timeout
+      min_consensus: 2 # Minimum agreements needed
+      timeout: 600 # Pattern timeout
 ```
 
 ### Guardrail Policies
@@ -242,9 +242,9 @@ Implement safety and compliance rules:
 ```yaml
 guardrail_policies:
   - name: "content_safety"
-    type: "content_filter"        # Options: input_validation, output_filtering, rate_limiting, content_safety
-    severity: "high"              # Options: low, medium, high
-    action: "block"               # Options: block, warn, log
+    type: "content_filter" # Options: input_validation, output_filtering, rate_limiting, content_safety
+    severity: "high" # Options: low, medium, high
+    action: "block" # Options: block, warn, log
     rules:
       - type: "regex"
         pattern: "\\b(password|secret|key)\\b"

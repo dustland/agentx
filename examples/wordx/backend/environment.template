@@ -58,8 +58,8 @@ AGENTX_VERBOSE=0
 # Maximum conversation rounds
 AGENTX_MAX_ROUNDS=50
 
-# Default workspace directory
-AGENTX_WORKSPACE_DIR=./workspace
+# Default taskspace directory
+AGENTX_WORKSPACE_DIR=./taskspace
 
 # =============================================================================
 # WordX Backend Configuration

@@ -105,14 +105,14 @@ class DebugSession:
             print(f"📊 Task Status: {self.task_id}")
             print(f"  Complete: {self.xagent.is_complete}")
             print(f"  History Length: {len(self.xagent.history.messages)}")
-            print(f"  Current Plan: {'Yes' if self.xagent.current_plan else 'No'}")
+            print(f"  Current Plan: {'Yes' if self.xagent.plan else 'No'}")
 
-            if self.xagent.current_plan:
-                completed = sum(1 for task in self.xagent.current_plan.tasks if task.status == "completed")
-                total = len(self.xagent.current_plan.tasks)
+            if self.xagent.plan:
+                completed = sum(1 for task in self.xagent.plan.tasks if task.status == "completed")
+                total = len(self.xagent.plan.tasks)
                 print(f"  Plan Progress: {completed}/{total} tasks completed")
 
-            taskspace_path = self.xagent.taskspace.get_workspace_path()
+            taskspace_path = self.xagent.taskspace.get_taskspace_path()
             artifacts = list(taskspace_path.glob("**/*"))
             print(f"  Taskspace Files: {len([f for f in artifacts if f.is_file()])}")
         except Exception as e:
@@ -125,15 +125,15 @@ class DebugSession:
                 "task_id": self.task_id,
                 "is_complete": self.xagent.is_complete,
                 "specialist_agents": list(self.xagent.specialist_agents.keys()),
-                "taskspace_path": str(self.xagent.taskspace.get_workspace_path()),
+                "taskspace_path": str(self.xagent.taskspace.get_taskspace_path()),
                 "plan_initialized": self.xagent._plan_initialized,
                 "conversation_history_length": len(self.xagent.conversation_history),
                 "message_history_length": len(self.xagent.history.messages),
             }
 
-            if self.xagent.current_plan:
+            if self.xagent.plan:
                 state["plan"] = {
-                    "goal": self.xagent.current_plan.goal,
+                    "goal": self.xagent.plan.goal,
                     "tasks": [
                         {
                             "id": task.id,
@@ -141,7 +141,7 @@ class DebugSession:
                             "status": task.status,
                             "agent": task.agent
                         }
-                        for task in self.xagent.current_plan.tasks
+                        for task in self.xagent.plan.tasks
                     ]
                 }
 
@@ -190,11 +190,11 @@ class DebugSession:
     async def _show_plan(self):
         """Show the current execution plan."""
         try:
-            if not self.xagent.current_plan:
+            if not self.xagent.plan:
                 print("📋 No plan created yet")
                 return
 
-            plan = self.xagent.current_plan
+            plan = self.xagent.plan
             print(f"📋 Execution Plan: {plan.goal}")
             print("Tasks:")
 
@@ -212,7 +212,7 @@ class DebugSession:
     async def _list_taskspace(self):
         """List files in the taskspace."""
         try:
-            taskspace_path = self.xagent.taskspace.get_workspace_path()
+            taskspace_path = self.xagent.taskspace.get_taskspace_path()
             print(f"📁 Taskspace: {taskspace_path}")
 
             # List all files recursively
@@ -260,23 +260,23 @@ class DebugSession:
         print("  quit           - Exit debug session")
 
 
-async def debug_task(team_config_path: str, task_id: Optional[str] = None, workspace_dir: Optional[str] = None):
+async def debug_task(team_config_path: str, task_id: Optional[str] = None, taskspace_dir: Optional[str] = None):
     """Start a debugging session for a task."""
     try:
         # Check if we're loading an existing task
-        if workspace_dir:
-            workspace_path = Path(workspace_dir)
-            if not workspace_path.exists():
-                print(f"❌ Workspace not found: {workspace_dir}")
+        if taskspace_dir:
+            taskspace_path = Path(taskspace_dir)
+            if not taskspace_path.exists():
+                print(f"❌ Taskspace not found: {taskspace_dir}")
                 return
 
-            # Create XAgent with existing workspace
+            # Create XAgent with existing taskspace
             xagent = XAgent(
                 team_config=team_config_path,
                 task_id=task_id,
-                workspace_dir=workspace_path
+                taskspace_dir=taskspace_path
             )
-            print(f"📂 Loaded task from workspace: {workspace_path}")
+            print(f"📂 Loaded task from taskspace: {taskspace_path}")
         else:
             # Create new XAgent
             xagent = XAgent(
@@ -298,11 +298,11 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python -m agentx.cli.debug <team_config_path> [task_id] [workspace_dir]")
+        print("Usage: python -m agentx.cli.debug <team_config_path> [task_id] [taskspace_dir]")
         sys.exit(1)
 
     team_config_path = sys.argv[1]
     task_id = sys.argv[2] if len(sys.argv) > 2 else None
-    workspace_dir = sys.argv[3] if len(sys.argv) > 3 else None
+    taskspace_dir = sys.argv[3] if len(sys.argv) > 3 else None
 
-    asyncio.run(debug_task(team_config_path, task_id, workspace_dir))
+    asyncio.run(debug_task(team_config_path, task_id, taskspace_dir))

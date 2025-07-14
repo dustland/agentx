@@ -21,10 +21,10 @@ async def test_auto_writer_research_pattern():
     print("This tests search_first=True with adaptive crawling")
     print("=" * 60)
     
-    # Create workspace like auto_writer does
+    # Create taskspace like auto_writer does
     temp_dir = tempfile.mkdtemp()
-    workspace = TaskspaceStorage(workspace_path=temp_dir)
-    research_tool = ResearchTool(workspace_storage=workspace)
+    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
+    research_tool = ResearchTool(taskspace_storage=taskspace)
     
     # Test the exact queries that auto_writer uses
     test_queries = [

@@ -24,7 +24,7 @@ Enhanced for crawl4ai 0.7.0 with:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/research.py#L44" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage: Optional[Any] = None) -> None
+def __init__(self, taskspace_storage: Optional[Any] = None) -> None
 ```
 ### research_topic <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/research.py#L53" class="source-link" title="View source code">source</a>
 

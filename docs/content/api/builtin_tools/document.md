@@ -21,7 +21,7 @@ Capabilities include:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L32" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage: Optional[Any] = None, polish_model: Optional[str] = None, summary_model: Optional[str] = None) -> None
+def __init__(self, taskspace_storage: Optional[Any] = None, polish_model: Optional[str] = None, summary_model: Optional[str] = None) -> None
 ```
 ### polish_document <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/document.py#L48" class="source-link" title="View source code">source</a>
 

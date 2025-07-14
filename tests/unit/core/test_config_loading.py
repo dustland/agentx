@@ -36,7 +36,7 @@ def tool_registry():
 @pytest.fixture
 def sample_team_config_path():
     """Fixture that provides the path to the sample team config."""
-    return "tests/test_workspaces/sample_team/team.yaml"
+    return "tests/test_taskspaces/sample_team/team.yaml"
 
 @pytest.fixture(autouse=True)
 def clear_tool_registry_fixture():

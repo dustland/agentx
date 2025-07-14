@@ -9,7 +9,7 @@ from pathlib import Path
 from agentx.models.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import AgentConfig
-from agentx.core.workspace import WorkspaceStorage
+from agentx.core.taskspace import TaskspaceStorage
 
 
 class TestWriterMerge:
@@ -31,11 +31,11 @@ class TestWriterMerge:
         )
     
     @pytest.fixture
-    def mock_workspace(self, tmp_path):
-        """Create mock workspace with section files."""
-        workspace_dir = tmp_path / "test_workspace"
-        workspace_dir.mkdir()
-        artifacts_dir = workspace_dir / "artifacts"
+    def mock_taskspace(self, tmp_path):
+        """Create mock taskspace with section files."""
+        taskspace_dir = tmp_path / "test_taskspace"
+        taskspace_dir.mkdir()
+        artifacts_dir = taskspace_dir / "artifacts"
         artifacts_dir.mkdir()
         
         # Create test section files
@@ -49,14 +49,14 @@ class TestWriterMerge:
         for filename, content in section_files:
             (artifacts_dir / filename).write_text(content)
         
-        workspace = WorkspaceStorage(
+        taskspace = TaskspaceStorage(
             task_id="test_task",
-            workspace_path=workspace_dir
+            taskspace_path=taskspace_dir
         )
-        return workspace
+        return taskspace
     
     @pytest.mark.asyncio
-    async def test_writer_discovers_section_files(self, writer_config, mock_workspace):
+    async def test_writer_discovers_section_files(self, writer_config, mock_taskspace):
         """Test that writer can discover section files using list_files."""
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -71,12 +71,12 @@ class TestWriterMerge:
             # Create writer agent
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(workspace=mock_workspace)
+                task_config=Mock(taskspace=mock_taskspace)
             )
             
             # Mock list_files tool to return section files
             async def mock_list_files():
-                files = list(mock_workspace.artifacts_path.glob("*.md"))
+                files = list(mock_taskspace.artifacts_path.glob("*.md"))
                 return [f.name for f in files]
             
             writer.tool_manager = Mock()
@@ -105,7 +105,7 @@ class TestWriterMerge:
             assert call_args['tool_name'] == 'list_files'
     
     @pytest.mark.asyncio
-    async def test_writer_merges_sections_in_order(self, writer_config, mock_workspace):
+    async def test_writer_merges_sections_in_order(self, writer_config, mock_taskspace):
         """Test that writer reads and merges sections in correct order."""
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -114,7 +114,7 @@ class TestWriterMerge:
             # Create writer agent
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(workspace=mock_workspace)
+                task_config=Mock(taskspace=mock_taskspace)
             )
             
             # Track tool calls
@@ -132,7 +132,7 @@ class TestWriterMerge:
                     ])
                 elif tool_name == "read_file":
                     filename = kwargs.get('filename')
-                    content = (mock_workspace.artifacts_path / filename).read_text()
+                    content = (mock_taskspace.artifacts_path / filename).read_text()
                     return Mock(success=True, result=content)
                 elif tool_name == "write_file":
                     return Mock(success=True, result="File written")
@@ -170,12 +170,12 @@ class TestWriterMerge:
             assert read_calls[3][1]['filename'] == "section_04_conclusion.md"
     
     @pytest.mark.asyncio
-    async def test_writer_filters_non_section_files(self, writer_config, mock_workspace):
+    async def test_writer_filters_non_section_files(self, writer_config, mock_taskspace):
         """Test that writer only processes section_*.md files."""
         # Add non-section files
-        (mock_workspace.artifacts_path / "README.md").write_text("Readme")
-        (mock_workspace.artifacts_path / "notes.txt").write_text("Notes")
-        (mock_workspace.artifacts_path / "research_data.md").write_text("Research")
+        (mock_taskspace.artifacts_path / "README.md").write_text("Readme")
+        (mock_taskspace.artifacts_path / "notes.txt").write_text("Notes")
+        (mock_taskspace.artifacts_path / "research_data.md").write_text("Research")
         
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -183,14 +183,14 @@ class TestWriterMerge:
             
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(workspace=mock_workspace)
+                task_config=Mock(taskspace=mock_taskspace)
             )
             
             processed_files = []
             
             async def track_reads(tool_name, **kwargs):
                 if tool_name == "list_files":
-                    all_files = [f.name for f in mock_workspace.artifacts_path.glob("*")]
+                    all_files = [f.name for f in mock_taskspace.artifacts_path.glob("*")]
                     return Mock(success=True, result=all_files)
                 elif tool_name == "read_file":
                     processed_files.append(kwargs.get('filename'))

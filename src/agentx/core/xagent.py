@@ -149,7 +149,7 @@ class XAgent(Agent):
         self.brain = Brain.from_config(orchestrator_brain_config)
 
         # Task state
-        self.current_plan: Optional[Plan] = None
+        self.plan: Optional[Plan] = None
         self.is_complete: bool = False
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
@@ -242,14 +242,14 @@ class XAgent(Agent):
             try:
                 with open(plan_path, 'r') as f:
                     plan_data = json.load(f)
-                self.current_plan = Plan(**plan_data)
+                self.plan = Plan(**plan_data)
                 logger.info("Loaded existing plan from taskspace")
             except Exception as e:
                 logger.warning(f"Failed to load existing plan: {e}")
 
         # Generate new plan if none exists
-        if not self.current_plan:
-            self.current_plan = await self._generate_plan(prompt)
+        if not self.plan:
+            self.plan = await self._generate_plan(prompt)
             await self._persist_plan()
 
     async def _ensure_plan_initialized(self) -> None:
@@ -305,7 +305,7 @@ class XAgent(Agent):
                 return await self._handle_informational_query(message)
 
             # If no plan exists and this is a new task request
-            elif not self.current_plan and impact_analysis.get("is_new_task", False):
+            elif not self.plan and impact_analysis.get("is_new_task", False):
                 return await self._handle_new_task_request(message)
 
             # Default: treat as conversational input
@@ -337,7 +337,7 @@ Analyze this user message in the context of the current execution plan:
 USER MESSAGE: {message.content}
 
 CURRENT PLAN STATUS:
-{self._get_plan_summary() if self.current_plan else "No plan exists yet"}
+{self._get_plan_summary() if self.plan else "No plan exists yet"}
 
 CONVERSATION CONTEXT:
 {self._get_conversation_summary()}
@@ -378,7 +378,7 @@ Respond with a JSON object:
                                                for word in ["regenerate", "redo", "change", "update", "revise"]),
                 "is_informational": any(word in message.content.lower()
                                        for word in ["what", "how", "why", "explain", "show"]),
-                "is_new_task": not self.current_plan,
+                "is_new_task": not self.plan,
                 "affected_tasks": [],
                 "preserved_tasks": [],
                 "adjustment_type": "regenerate",
@@ -387,7 +387,7 @@ Respond with a JSON object:
 
     async def _handle_plan_adjustment(self, message: Message, impact_analysis: Dict[str, Any]) -> XAgentResponse:
         """Handle messages that require adjusting the current plan."""
-        if not self.current_plan:
+        if not self.plan:
             return await self._handle_new_task_request(message)
 
         preserved_tasks = impact_analysis.get("preserved_tasks", [])
@@ -397,7 +397,7 @@ Respond with a JSON object:
 
         # Reset affected tasks to pending status
         for task_id in affected_tasks:
-            for task in self.current_plan.tasks:
+            for task in self.plan.tasks:
                 if task.id == task_id:
                     task.status = "pending"
                     logger.info(f"Reset task '{task.name}' to pending for regeneration")
@@ -427,7 +427,7 @@ The user is asking an informational question about the current task:
 USER QUESTION: {message.content}
 
 CURRENT PLAN STATUS:
-{self._get_plan_summary() if self.current_plan else "No plan exists yet"}
+{self._get_plan_summary() if self.plan else "No plan exists yet"}
 
 CONVERSATION HISTORY:
 {self._get_conversation_summary()}
@@ -451,12 +451,12 @@ Please provide a helpful, informative response based on the current state of the
     async def _handle_new_task_request(self, message: Message) -> XAgentResponse:
         """Handle new task requests when no plan exists."""
         # Create a new plan
-        self.current_plan = await self._generate_plan(message.content)
+        self.plan = await self._generate_plan(message.content)
         await self._persist_plan()
 
         return XAgentResponse(
-            text=f"I've created a plan for your task: {self.current_plan.goal}\n\n"
-                 f"The plan includes {len(self.current_plan.tasks)} tasks. "
+            text=f"I've created a plan for your task: {self.plan.goal}\n\n"
+                 f"The plan includes {len(self.plan.tasks)} tasks. "
                  f"Use step() to execute the plan autonomously, or continue chatting to refine it.",
             metadata={"execution_type": "plan_created"}
         )
@@ -469,7 +469,7 @@ The user is having a conversation about the current task:
 USER MESSAGE: {message.content}
 
 CURRENT PLAN STATUS:
-{self._get_plan_summary() if self.current_plan else "No plan exists yet"}
+{self._get_plan_summary() if self.plan else "No plan exists yet"}
 
 CONVERSATION HISTORY:
 {self._get_conversation_summary()}
@@ -576,18 +576,18 @@ Respond with a JSON object following this schema:
 
     async def _execute_single_step(self) -> str:
         """Execute a single step of the plan."""
-        if not self.current_plan:
+        if not self.plan:
             return "No plan available for execution."
 
         # Check if plan is already complete
-        if self.current_plan.is_complete():
+        if self.plan.is_complete():
             self.is_complete = True
             return "🎉 All tasks completed successfully!"
 
         # Find next actionable task
-        next_task = self.current_plan.get_next_actionable_task()
+        next_task = self.plan.get_next_actionable_task()
         if not next_task:
-            if self.current_plan.has_failed_tasks():
+            if self.plan.has_failed_tasks():
                 self.is_complete = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
@@ -603,7 +603,7 @@ Respond with a JSON object following this schema:
             await self._persist_plan()
 
             # Check if this was the last task
-            if self.current_plan.is_complete():
+            if self.plan.is_complete():
                 self.is_complete = True
                 return f"✅ {next_task.name}: {result}\n\n🎉 All tasks completed successfully!"
             else:
@@ -622,12 +622,12 @@ Respond with a JSON object following this schema:
 
     async def _execute_plan_steps(self) -> str:
         """Execute the current plan step by step (for compatibility)."""
-        if not self.current_plan:
+        if not self.plan:
             return "No plan available for execution."
 
         results = []
 
-        while not self.current_plan.is_complete():
+        while not self.plan.is_complete():
             step_result = await self._execute_single_step()
             results.append(step_result)
 
@@ -650,19 +650,19 @@ Respond with a JSON object following this schema:
         Returns:
             Status message about parallel execution
         """
-        if not self.current_plan:
+        if not self.plan:
             return "No plan available for execution."
 
         # Check if plan is already complete
-        if self.current_plan.is_complete():
+        if self.plan.is_complete():
             self.is_complete = True
             return "🎉 All tasks completed successfully!"
 
         # Find all actionable tasks for parallel execution
-        actionable_tasks = self.current_plan.get_all_actionable_tasks(max_tasks=max_concurrent)
+        actionable_tasks = self.plan.get_all_actionable_tasks(max_tasks=max_concurrent)
         
         if not actionable_tasks:
-            if self.current_plan.has_failed_tasks():
+            if self.plan.has_failed_tasks():
                 self.is_complete = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
@@ -717,7 +717,7 @@ Respond with a JSON object following this schema:
             await self._persist_plan()
             
             # Check if this completed all tasks
-            if self.current_plan.is_complete():
+            if self.plan.is_complete():
                 self.is_complete = True
                 completion_messages.append("🎉 All tasks completed successfully!")
             
@@ -808,8 +808,8 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                 )
 
                 # Add to plan dynamically
-                if self.current_plan:
-                    self.current_plan.tasks.append(handoff_task)
+                if self.plan:
+                    self.plan.tasks.append(handoff_task)
                     await self._persist_plan()
 
                     logger.info(f"Handoff task created: {task.agent} -> {next_agent}")
@@ -819,28 +819,28 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
 
     async def _persist_plan(self) -> None:
         """Persist the current plan to taskspace."""
-        if not self.current_plan:
+        if not self.plan:
             return
 
         plan_path = self.taskspace.get_taskspace_path() / "plan.json"
         try:
             import json
             with open(plan_path, 'w') as f:
-                json.dump(self.current_plan.model_dump(), f, indent=2)
+                json.dump(self.plan.model_dump(), f, indent=2)
             logger.debug("Plan persisted to taskspace")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
 
     def _get_plan_summary(self) -> str:
         """Get a summary of the current plan status."""
-        if not self.current_plan:
+        if not self.plan:
             return "No plan exists"
 
-        total_tasks = len(self.current_plan.tasks)
-        completed_tasks = len([t for t in self.current_plan.tasks if t.status == "completed"])
-        failed_tasks = len([t for t in self.current_plan.tasks if t.status == "failed"])
+        total_tasks = len(self.plan.tasks)
+        completed_tasks = len([t for t in self.plan.tasks if t.status == "completed"])
+        failed_tasks = len([t for t in self.plan.tasks if t.status == "failed"])
 
-        summary = f"Plan: {self.current_plan.goal}\n"
+        summary = f"Plan: {self.plan.goal}\n"
         summary += f"Progress: {completed_tasks}/{total_tasks} completed"
         if failed_tasks > 0:
             summary += f", {failed_tasks} failed"
@@ -931,7 +931,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         await self._ensure_plan_initialized()
 
         # If no plan exists, cannot step
-        if not self.current_plan:
+        if not self.plan:
             return "No plan available. Use chat() to create a task plan first."
 
         # Execute based on parallel execution setting

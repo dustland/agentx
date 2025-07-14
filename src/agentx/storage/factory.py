@@ -46,7 +46,7 @@ class StorageFactory:
 
     @staticmethod
     def create_taskspace_storage(
-        workspace_path: Union[str, Path] = None,
+        taskspace_path: Union[str, Path] = None,
         use_git_artifacts: bool = True,
         base_path: Union[str, Path] = None,
         task_id: str = None,
@@ -59,7 +59,7 @@ class StorageFactory:
         using the filesystem abstraction underneath.
 
         Args:
-            workspace_path: Path to the taskspace directory (old API)
+            taskspace_path: Path to the taskspace directory (old API)
             use_git_artifacts: Whether to use Git for artifact versioning
             base_path: Base path for multi-tenant taskspaces (new API)
             task_id: Task ID for taskspace isolation (new API)
@@ -68,26 +68,26 @@ class StorageFactory:
         Returns:
             TaskspaceStorage instance
         """
-        if workspace_path is not None:
-            # Old API: direct workspace path
-            workspace_path = Path(workspace_path)
-            workspace_path.mkdir(parents=True, exist_ok=True)
+        if taskspace_path is not None:
+            # Old API: direct taskspace path
+            taskspace_path = Path(taskspace_path)
+            taskspace_path.mkdir(parents=True, exist_ok=True)
 
             # Create the filesystem abstraction
-            file_storage = StorageFactory.create_file_storage(workspace_path)
+            file_storage = StorageFactory.create_file_storage(taskspace_path)
 
             # Create the taskspace with business logic
-            workspace = TaskspaceStorage(workspace_path, file_storage, use_git_artifacts)
-            logger.info(f"Created taskspace storage: {workspace_path} (Git artifacts: {use_git_artifacts})")
-            return workspace
+            taskspace = TaskspaceStorage(taskspace_path, file_storage, use_git_artifacts)
+            logger.info(f"Created taskspace storage: {taskspace_path} (Git artifacts: {use_git_artifacts})")
+            return taskspace
         else:
             # New API: base_path + task_id + optional user_id
             if base_path is None or task_id is None:
-                raise ValueError("base_path and task_id are required when workspace_path is not provided")
+                raise ValueError("base_path and task_id are required when taskspace_path is not provided")
             
             # Create taskspace using new API
-            workspace = TaskspaceStorage(
-                workspace_path=None,
+            taskspace = TaskspaceStorage(
+                taskspace_path=None,
                 file_storage=None,
                 use_git_artifacts=use_git_artifacts,
                 base_path=base_path,
@@ -96,8 +96,8 @@ class StorageFactory:
             )
             
             # Create the filesystem abstraction for the computed taskspace path
-            file_storage = StorageFactory.create_file_storage(workspace.workspace_path)
-            workspace.file_storage = file_storage
+            file_storage = StorageFactory.create_file_storage(taskspace.taskspace_path)
+            taskspace.file_storage = file_storage
             
-            logger.info(f"Created taskspace storage: {workspace.workspace_path} (Git artifacts: {use_git_artifacts}, User: {user_id})")
-            return workspace
+            logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Git artifacts: {use_git_artifacts}, User: {user_id})")
+            return taskspace

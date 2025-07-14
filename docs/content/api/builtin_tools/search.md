@@ -22,7 +22,7 @@ Simple and reliable - uses best practices as defaults.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L38" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, api_key: Optional[str] = None, workspace_storage = None)
+def __init__(self, api_key: Optional[str] = None, taskspace_storage = None)
 ```
 ### search_web <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/search.py#L59" class="source-link" title="View source code">source</a>
 

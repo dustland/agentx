@@ -39,7 +39,7 @@ class TaskspaceStorage:
             # Old API: taskspace_path directly
             self.taskspace_path = Path(taskspace_path)
         elif base_path is not None and task_id is not None:
-            # New API: base_path + optional user_id + task_id for workspace isolation
+            # New API: base_path + optional user_id + task_id for taskspace isolation
             if user_id is not None:
                 # Multi-tenant: taskspace/{user_id}/{task_id}
                 self.taskspace_path = Path(base_path) / user_id / task_id
@@ -455,7 +455,7 @@ class TaskspaceStorage:
             }
 
         except Exception as e:
-            logger.error(f"Failed to get workspace summary: {e}")
+            logger.error(f"Failed to get taskspace summary: {e}")
             return {
                 "taskspace_path": str(self.taskspace_path),
                 "error": str(e)

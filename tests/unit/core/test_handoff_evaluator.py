@@ -75,7 +75,7 @@ class TestHandoffEvaluator:
             task_result="Still working on the draft...",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator.evaluate_handoffs(context)
@@ -91,7 +91,7 @@ class TestHandoffEvaluator:
             task_result="The draft has been completed and saved to draft.md",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=["draft.md"]
+            taskspace_files=["draft.md"]
         )
 
         result = await evaluator.evaluate_handoffs(context)
@@ -109,7 +109,7 @@ class TestHandoffEvaluator:
             task_result="Urgent: Draft completed with critical errors that need immediate editing",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=["draft.md"]
+            taskspace_files=["draft.md"]
         )
 
         # Mock the evaluation to make both conditions true
@@ -137,7 +137,7 @@ class TestHandoffEvaluator:
             task_result="Task completed successfully",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator._evaluate_condition(handoff, context_match)
@@ -149,7 +149,7 @@ class TestHandoffEvaluator:
             task_result="Still in progress",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator._evaluate_condition(handoff, context_no_match)
@@ -172,7 +172,7 @@ class TestHandoffEvaluator:
             task_result="Error: Unable to complete task due to missing data",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator._evaluate_condition(handoff, context_error)
@@ -184,7 +184,7 @@ class TestHandoffEvaluator:
             task_result="Task failed: Invalid input format",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator._evaluate_condition(handoff, context_failed)
@@ -208,7 +208,7 @@ class TestHandoffEvaluator:
             task_result="Task completed",
             task_goal="Write article",
             conversation_history=[],
-            workspace_files=[]
+            taskspace_files=[]
         )
 
         result = await evaluator.evaluate_handoffs(context)

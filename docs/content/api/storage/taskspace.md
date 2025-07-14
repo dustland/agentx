@@ -1,4 +1,4 @@
-# Taskspace
+# Taskspace Management
 
 *Module: [`agentx.storage.taskspace`](https://github.com/dustland/agentx/blob/main/src/agentx/storage/taskspace.py)*
 

@@ -193,15 +193,15 @@ taskspace/
 **/taskspace/
 !taskspace/.gitkeep
 
-# Legacy workspace references
-workspace/
-!workspace/.gitkeep
-roboco_workspace/
+# Legacy taskspace references
+taskspace/
+!taskspace/.gitkeep
+roboco_taskspace/
 
-# Test workspaces (generated during test runs)
-tests/test_workspaces/
-!tests/test_workspaces/.gitkeep
-!tests/test_workspaces/sample_team/
+# Test taskspaces (generated during test runs)
+tests/test_taskspaces/
+!tests/test_taskspaces/.gitkeep
+!tests/test_taskspaces/sample_team/
 
 # User data
 user_data/

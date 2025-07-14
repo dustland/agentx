@@ -35,6 +35,7 @@ import {
 import { generateId } from "@/lib/utils";
 import NextImage from "next/image";
 import { useTheme } from "next-themes";
+import { useAgentXAPI } from "@/lib/api-client";
 
 export default function HomePage() {
   const router = useRouter();
@@ -54,13 +55,14 @@ export default function HomePage() {
 
   const sampleTasks = [
     {
-      title: "AI Agent Character Creation",
+      title: "Research Assistant Chat",
       description:
-        "Design and develop custom AI agent personalities with unique traits and capabilities",
-      contentType: "Image",
-      icon: Image,
+        "Chat with an AI assistant that can search the web for current information and provide helpful responses",
+      contentType: "Chat",
+      icon: Users,
       prompt:
-        "Create a comprehensive AI agent character with unique personality traits, capabilities, and visual design for interactive applications.",
+        "Hello! I'm your research assistant with web search capabilities. What would you like to know about today?",
+      configPath: "examples/simple_chat/config/team.yaml",
     },
     {
       title: "15-Second Product Demo Video",
@@ -136,15 +138,22 @@ export default function HomePage() {
     },
   ];
 
-  const createTask = async (description: string) => {
+  const createTask = async (description: string, configPath?: string) => {
     if (!description.trim()) return;
 
     setIsCreating(true);
     try {
-      const taskId = generateId();
-      router.push(
-        `/x/${taskId}?description=${encodeURIComponent(description)}`
-      );
+      const apiClient = useAgentXAPI();
+      
+      // Create task via API
+      const taskResponse = await apiClient.createTask({
+        config_path: configPath || "examples/simple_chat/config/team.yaml",
+        task_description: description,
+        context: { source: "studio_homepage" },
+      });
+
+      // Navigate to task page
+      router.push(`/x/${taskResponse.task_id}`);
     } catch (error) {
       console.error("Error creating task:", error);
       setIsCreating(false);
@@ -157,7 +166,7 @@ export default function HomePage() {
   };
 
   const handleSampleTaskClick = (task: any) => {
-    createTask(task.prompt);
+    createTask(task.prompt, task.configPath);
   };
 
   return (

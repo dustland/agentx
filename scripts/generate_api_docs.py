@@ -271,7 +271,7 @@ def get_document_title(module_name: str, module_data: Dict[str, Any]) -> str:
         'git_storage': 'Git Storage',
         'interfaces': 'Storage Interfaces',
         'models': 'Storage Models',
-        'workspace': 'Workspace Management',
+        'taskspace': 'Taskspace Management',
 
         # Tool modules
         'executor': 'Tool Executor',
@@ -407,7 +407,8 @@ def main():
         ("event", "Event System"),
         ("memory", "Memory Management"),
         ("search", "Search Capabilities"),
-        ("storage", "Storage & Workspace"),
+        ("server", "Server & API"),
+        ("storage", "Storage & Taskspace"),
         ("tool", "Tool Management"),
         ("utils", "Utilities")
     ]
@@ -465,7 +466,7 @@ Core framework components including agents, orchestration, and task management.
 ### [Builtin Tools](/api/builtin_tools)
 Built-in tools for file operations, web search, memory management, and more.
 
-- **File Operations** - Workspace file management with versioning
+- **File Operations** - Taskspace file management with versioning
 - **Web Search** - SerpAPI integration for web searches
 - **Memory Tool** - Context and memory management
 - **Web Scraping** - Content extraction from web pages
@@ -507,9 +508,9 @@ Search capabilities and backend integrations.
 - **Search Interfaces** - Abstract search contracts
 
 ### [Storage](/api/storage)
-File storage and workspace management.
+File storage and taskspace management.
 
-- **Workspace Management** - Project workspace handling
+- **Taskspace Management** - Project taskspace handling
 - **Git Storage** - Version control integration
 - **Storage Backends** - File storage abstractions
 

@@ -53,7 +53,7 @@ async def main():
     x.set_parallel_execution(enabled=True, max_concurrent=4)
     
     print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
     print(f"⚡ Parallel execution: {x.get_parallel_settings()}")
     print("-" * 80)
 
@@ -79,9 +79,9 @@ async def main():
     end_datetime = datetime.now()
     total_duration = end_time - start_time
 
-    # Check for artifacts in the workspace
-    workspace_path = x.workspace.get_workspace_path()
-    artifacts_path = workspace_path / "artifacts"
+    # Check for artifacts in the taskspace
+    taskspace_path = x.taskspace.get_taskspace_path()
+    artifacts_path = taskspace_path / "artifacts"
     artifact_files = list(artifacts_path.glob("*")) if artifacts_path.exists() else []
     artifact_count = len(artifact_files)
 
@@ -90,7 +90,7 @@ async def main():
     print("✅ TASK COMPLETE - EXECUTION SUMMARY")
     print("=" * 80)
     print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Workspace: {workspace_path}")
+    print(f"📁 Taskspace: {taskspace_path}")
     print("-" * 80)
     print(f"📅 Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"📅 End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")

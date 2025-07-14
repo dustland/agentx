@@ -182,16 +182,16 @@ class TestWebToolCrawl4AI:
             assert hasattr(run_config, 'extraction_strategy')
 
     @pytest.mark.asyncio
-    async def test_extract_urls_workspace_integration(self):
-        """Test workspace storage integration."""
+    async def test_extract_urls_taskspace_integration(self):
+        """Test taskspace storage integration."""
         test_url = "https://example.com"
         test_content = "# Test Content\nThis is test content."
         
-        # Mock workspace
-        mock_workspace = AsyncMock()
-        mock_workspace.store_artifact = AsyncMock(return_value=Mock(success=True))
+        # Mock taskspace
+        mock_taskspace = AsyncMock()
+        mock_taskspace.store_artifact = AsyncMock(return_value=Mock(success=True))
         
-        self.web_tool.workspace = mock_workspace
+        self.web_tool.taskspace = mock_taskspace
         
         # Mock crawler
         mock_result = Mock()
@@ -210,10 +210,10 @@ class TestWebToolCrawl4AI:
             result = await self.web_tool.extract_urls(test_url)
             
             assert result.success is True
-            # Verify workspace was called
-            mock_workspace.store_artifact.assert_called_once()
+            # Verify taskspace was called
+            mock_taskspace.store_artifact.assert_called_once()
             
             # Check the stored content includes metadata
-            stored_content = mock_workspace.store_artifact.call_args[1]['content']
+            stored_content = mock_taskspace.store_artifact.call_args[1]['content']
             assert "Test Page" in stored_content
             assert test_url in stored_content

@@ -3,15 +3,19 @@ description:
 globs: *.py
 alwaysApply: false
 ---
+
 ---
+
 description: Guidelines for Python Development with FastAPI, Pydantic, and AG2 Framework
 globs: ["**/*.py"]
 alwaysApply: false
+
 ---
 
 # Python Development Guidelines
 
 ## Code Style
+
 - Adhere to ](https://www.python.org/dev/peps/pep-0008/) for consistent code formatting.
 - Use descriptive variable and function names with lowercase and underscores (e.g., `is_active`, `has_permission`).
 - Limit line length to 79 characters.
@@ -19,6 +23,7 @@ alwaysApply: false
 - Try to keep the length of each python file to be less than 500 lines.
 
 ## Functions and Methods
+
 - Use `def` for synchronous functions and `async def` for asynchronous functions.
 - Include type hints for all function signatures to enhance code clarity and tooling support.
 - Apply the Receive an Object, Return an Object (RORO) pattern for function inputs and outputs.
@@ -26,31 +31,37 @@ alwaysApply: false
 - Provide default values for optional parameters when sensible.
 
 ## Error Handling
+
 - IMPORTANT: DO NOT write any fallback code try to hide issuses, let it fail at the first place.
 - Utilize FastAPI's `HTTPException` for expected errors, specifying appropriate status codes and detail messages.
 - Implement middleware to handle unexpected errors, ensuring they are logged and monitored effectively.
 - Log detailed error information for debugging purposes.
 
 ## Dependencies
-- Manage project dependencies with [uv](mdc:roboco/roboco_workspace/https:/github.com/astral-sh/uv) for consistent environments.
+
+- Manage project dependencies with [uv](https:/github.com/astral-sh/uv) for consistent environments.
 - Use asynchronous database libraries like `asyncpg` or `aiomysql` for non-blocking database operations.
 - If employing ORM features, adopt SQLAlchemy 2.0 with its async support.
 - Specify version constraints for dependencies to ensure compatibility.
 
 ## Agent Design Patterns
+
 - Use the singleton pattern for factories and services that shoupplor e.glempproach to agent registration and discovery.
 - Design agents to be modular and extensible.
 
 ## Document subproject
+
 - Use 'pnpm' instead of 'npm' as package manager.
-- When we have decisions on arhictecture design, make sure design docs under docs/  folder are updated beforehand.
+- When we have decisions on arhictecture design, make sure design docs under docs/ folder are updated beforehand.
 
 ## Examples
-- Alway set current directory to the example when run it, so that workspace folder will be created within that example folder.
+
+- Alway set current directory to the example when run it, so that taskspace folder will be created within that example folder.
 
 ## References
-- [FastAPI Documentation](mdc:roboco/roboco_workspace/https:/fastapi.tiangolo.com)
-- [Pydantic Documentation](mdc:roboco/roboco_workspace/https:/docs.pydantic.dev)
-- [SQLAlchemy 2.0 Documentation](mdc:roboco/roboco_workspace/https:/docs.sqlalchemy.org/en/20)
-- [AG2 GitHub Repository](mdc:roboco/roboco_workspace/https:/github.com/ag2ai/ag2)
-- [AG2 Documentation](mdc:roboco/roboco_workspace/https:/docs.ag2.ai)
+
+- [FastAPI Documentation](https:/fastapi.tiangolo.com)
+- [Pydantic Documentation](https:/docs.pydantic.dev)
+- [SQLAlchemy 2.0 Documentation](https:/docs.sqlalchemy.org/en/20)
+- [AG2 GitHub Repository](https:/github.com/ag2ai/ag2)
+- [AG2 Documentation](https:/docs.ag2.ai)

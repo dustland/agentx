@@ -30,7 +30,7 @@ Create a sophisticated project structure for your research system:
 mkdir research-system
 cd research-system
 mkdir -p config/{prompts,memory}
-mkdir -p workspace/{research,reports,temp}
+mkdir -p taskspace/{research,reports,temp}
 mkdir -p tools
 mkdir logs
 ```
@@ -51,7 +51,7 @@ research-system/
 │   ├── __init__.py
 │   ├── research_tools.py   # Custom research tools
 │   └── file_tools.py       # File operation tools
-├── workspace/
+├── taskspace/
 │   ├── research/           # Research data
 │   ├── reports/            # Final reports
 │   └── temp/               # Temporary files
@@ -159,9 +159,9 @@ memory:
       model: "deepseek-chat"
       temperature: 0.1
 
-# Workspace configuration
-workspace:
-  base_path: "workspace"
+# Taskspace configuration
+taskspace:
+  base_path: "taskspace"
   auto_cleanup: false # Keep files for production
   max_file_size: "10MB"
 ```
@@ -209,7 +209,7 @@ You are the research coordinator responsible for managing complex research proje
 
 ## File Operations
 
-- Create project folders and organize workspace
+- Create project folders and organize taskspace
 - Save research plans and progress reports
 - Track deliverables and versions
 
@@ -217,7 +217,7 @@ You are the research coordinator responsible for managing complex research proje
 
 1. Receive research request
 2. Create detailed research plan
-3. Set up project workspace
+3. Set up project taskspace
 4. Hand off to researcher for data gathering
 5. Coordinate analysis and synthesis
 6. Oversee report writing
@@ -547,18 +547,18 @@ class FileOperationsTool(Tool):
 
     def __init__(self):
         super().__init__()
-        self.workspace_path = Path("workspace")
+        self.taskspace_path = Path("taskspace")
         self.allowed_extensions = {'.txt', '.md', '.json', '.csv', '.html'}
         self.max_file_size = 10 * 1024 * 1024  # 10MB
 
     async def save_file(self, filename: str, content: str, folder: str = "temp") -> str:
         """
-        Save content to a file in the workspace.
+        Save content to a file in the taskspace.
 
         Args:
             filename: Name of the file to save
             content: Content to write to the file
-            folder: Subfolder within workspace (temp, research, reports)
+            folder: Subfolder within taskspace (temp, research, reports)
 
         Returns:
             Success message with file path
@@ -575,7 +575,7 @@ class FileOperationsTool(Tool):
                 return f"Error: File size exceeds maximum allowed size of {self.max_file_size // (1024*1024)}MB."
 
             # Create directory structure
-            folder_path = self.workspace_path / folder
+            folder_path = self.taskspace_path / folder
             folder_path.mkdir(parents=True, exist_ok=True)
 
             # Save file
@@ -590,17 +590,17 @@ class FileOperationsTool(Tool):
 
     async def read_file(self, filename: str, folder: str = "temp") -> str:
         """
-        Read content from a file in the workspace.
+        Read content from a file in the taskspace.
 
         Args:
             filename: Name of the file to read
-            folder: Subfolder within workspace
+            folder: Subfolder within taskspace
 
         Returns:
             File content or error message
         """
         try:
-            file_path = self.workspace_path / folder / filename
+            file_path = self.taskspace_path / folder / filename
 
             if not file_path.exists():
                 return f"❌ File not found: {file_path}"
@@ -618,7 +618,7 @@ class FileOperationsTool(Tool):
 
     async def list_files(self, folder: str = "temp") -> str:
         """
-        List files in a workspace folder.
+        List files in a taskspace folder.
 
         Args:
             folder: Subfolder to list
@@ -627,7 +627,7 @@ class FileOperationsTool(Tool):
             Formatted list of files
         """
         try:
-            folder_path = self.workspace_path / folder
+            folder_path = self.taskspace_path / folder
 
             if not folder_path.exists():
                 return f"📁 Folder '{folder}' does not exist or is empty."
@@ -733,7 +733,7 @@ class ResearchSystem:
             2. Conduct thorough information gathering
             3. Perform detailed analysis and synthesis
             4. Generate a professional research report
-            5. Save all work products to appropriate workspace folders
+            5. Save all work products to appropriate taskspace folders
 
             DELIVERABLES REQUIRED:
             - Research plan document
@@ -855,12 +855,12 @@ async def main():
         result = await research_system.conduct_research(research_request)
         print(f"\n✅ {result}")
 
-        # Show workspace contents
-        workspace_path = Path("workspace")
-        if workspace_path.exists():
-            print(f"\n📁 Check the workspace folder for research deliverables:")
+        # Show taskspace contents
+        taskspace_path = Path("taskspace")
+        if taskspace_path.exists():
+            print(f"\n📁 Check the taskspace folder for research deliverables:")
             for folder in ["research", "reports", "temp"]:
-                folder_path = workspace_path / folder
+                folder_path = taskspace_path / folder
                 if folder_path.exists() and any(folder_path.iterdir()):
                     print(f"  • {folder}/ - {len(list(folder_path.iterdir()))} files")
 

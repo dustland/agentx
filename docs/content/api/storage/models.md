@@ -147,13 +147,13 @@ async def health(self) -> Dict[str, Any]
 
 Get storage backend health information.
 
-## WorkspaceConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/models.py#L222" class="source-link" title="View source code">source</a>
+## TaskspaceConfig <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/models.py#L222" class="source-link" title="View source code">source</a>
 
-Configuration for a workspace.
+Configuration for a taskspace.
 
-## WorkspaceState <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/models.py#L249" class="source-link" title="View source code">source</a>
+## TaskspaceState <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/models.py#L249" class="source-link" title="View source code">source</a>
 
-Current state of a workspace.
+Current state of a taskspace.
 
 ## FileInfo <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/models.py#L276" class="source-link" title="View source code">source</a>
 

@@ -10,7 +10,7 @@ Features:
 - Virtual scroll for infinite scroll pages
 - Custom JavaScript execution
 - Flexible extraction strategies
-- Workspace integration for saving extracted content
+- Taskspace integration for saving extracted content
 """
 
 from ..utils.logger import get_logger
@@ -66,9 +66,9 @@ class WebTool(Tool):
     - Custom JavaScript execution
     """
 
-    def __init__(self, workspace_storage: Optional[Any] = None) -> None:
+    def __init__(self, taskspace_storage: Optional[Any] = None) -> None:
         super().__init__("web")
-        self.workspace = workspace_storage
+        self.taskspace = taskspace_storage
 
     @tool(  # type: ignore[misc]
         description="Extract content from web URLs using advanced crawling. Supports markdown, structured extraction via CSS selectors, and virtual scroll for infinite scroll pages.",
@@ -115,8 +115,8 @@ class WebTool(Tool):
             }
             content_summaries.append(summary)
 
-            # Save to workspace if available and extraction was successful
-            if self.workspace and content_obj.success and content_obj.content:
+            # Save to taskspace if available and extraction was successful
+            if self.taskspace and content_obj.success and content_obj.content:
                 try:
                     # Create safe filename from URL
                     parsed_url = urlparse(content_obj.url)
@@ -147,8 +147,8 @@ class WebTool(Tool):
 {content_obj.content}
 """
 
-                    # Save to workspace (no separate metadata file needed - it's in the content)
-                    result = await self.workspace.store_artifact(
+                    # Save to taskspace (no separate metadata file needed - it's in the content)
+                    result = await self.taskspace.store_artifact(
                         name=filename,
                         content=content_with_header,
                         content_type="text/markdown",
@@ -159,7 +159,7 @@ class WebTool(Tool):
                         saved_files.append(filename)
                         logger.info(f"Saved content to {filename}")
                 except Exception as e:
-                    logger.error(f"Failed to save content to workspace: {e}")
+                    logger.error(f"Failed to save content to taskspace: {e}")
 
         # Return results
         successful_extractions = sum(1 for s in content_summaries if s["extraction_successful"])
@@ -178,7 +178,7 @@ class WebTool(Tool):
                 "successful_extractions": successful_extractions,
                 "failed_extractions": len(url_list) - successful_extractions,
                 "saved_files": saved_files,
-                "workspace_integration": self.workspace is not None,
+                "taskspace_integration": self.taskspace is not None,
                 "extraction_method": method,
                 "message": f"Extracted content from {successful_extractions}/{len(url_list)} URLs"
             }

@@ -29,7 +29,7 @@ Start the interactive debugging session.
 ## debug_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/debug.py#L263" class="source-link" title="View source code">source</a>
 
 ```python
-async def debug_task(team_config_path: str, task_id: Optional[str] = None, workspace_dir: Optional[str] = None)
+async def debug_task(team_config_path: str, task_id: Optional[str] = None, taskspace_dir: Optional[str] = None)
 ```
 
 Start a debugging session for a task.

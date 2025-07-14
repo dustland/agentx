@@ -52,6 +52,7 @@ python main.py
 ```
 
 **Prerequisites**:
+
 ```bash
 # Install Crawl4AI (if not already done)
 uv add crawl4ai
@@ -66,24 +67,27 @@ The researcher will demonstrate:
 - **Search Integration**: Using `search_and_extract` for comprehensive research
 - **Quality Content**: Rich, detailed information with proper formatting
 
-Check the workspace folder for the extracted content files.
+Check the taskspace folder for the extracted content files.
 
 ## Key Features Tested
 
 ### 1. **Complex Site Handling**
+
 - Reddit discussions and technical content
 - Twitter/X posts and threads
 - Research papers and academic sites
 - News articles with dynamic loading
 
 ### 2. **Parallel Processing**
+
 - Multiple search queries executed simultaneously
 - Batch URL extraction for efficiency
 - Reduced total processing time
 
 ### 3. **Integrated Workflow**
+
 - `search_and_extract()` - search + extraction in one step
-- Automatic content saving to workspace files
+- Automatic content saving to taskspace files
 - Clean markdown output ready for analysis
 
 ## The Demonstration

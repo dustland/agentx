@@ -4,22 +4,23 @@ After two years of building production systems with AutoGen/AG2, we created Agen
 
 ## Quick Comparison Table
 
-| Feature | AgentX | AG2/AutoGen | CrewAI | LangGraph | LlamaIndex |
-|---------|---------|-------------|---------|-----------|------------|
-| **Configuration** | YAML-based, no code required | Python code | Python/YAML hybrid | Python code | Python code |
-| **Agent Presets** | ✅ Built-in optimized agents | ❌ Manual setup | ✅ Role templates | ❌ Manual setup | ❌ Manual setup |
-| **Event System** | ✅ Comprehensive event bus | ❌ Limited callbacks | ❌ Basic events | ✅ State-based | ❌ Limited |
-| **Tool Ecosystem** | ✅ Built-in + MCP support | ⚠️ Basic tools | ✅ Good selection | ⚠️ Basic tools | ✅ Good selection |
-| **Memory System** | ✅ Semantic + conversation | ⚠️ Basic context | ✅ Short/long term | ⚠️ State-based | ✅ Index-based |
-| **Handoff Control** | ✅ Natural language rules | ⚠️ Code-based | ⚠️ Sequential | ✅ State machine | ❌ Manual |
-| **Production Ready** | ✅ REST API, monitoring | ⚠️ Library only | ⚠️ Library only | ⚠️ Library only | ⚠️ Library only |
-| **Orchestration** | ✅ X (unified interface) | ⚠️ GroupChat | ✅ Process-based | ✅ Graph-based | ❌ Manual |
+| Feature              | AgentX                       | AG2/AutoGen          | CrewAI             | LangGraph        | LlamaIndex        |
+| -------------------- | ---------------------------- | -------------------- | ------------------ | ---------------- | ----------------- |
+| **Configuration**    | YAML-based, no code required | Python code          | Python/YAML hybrid | Python code      | Python code       |
+| **Agent Presets**    | ✅ Built-in optimized agents | ❌ Manual setup      | ✅ Role templates  | ❌ Manual setup  | ❌ Manual setup   |
+| **Event System**     | ✅ Comprehensive event bus   | ❌ Limited callbacks | ❌ Basic events    | ✅ State-based   | ❌ Limited        |
+| **Tool Ecosystem**   | ✅ Built-in + MCP support    | ⚠️ Basic tools       | ✅ Good selection  | ⚠️ Basic tools   | ✅ Good selection |
+| **Memory System**    | ✅ Semantic + conversation   | ⚠️ Basic context     | ✅ Short/long term | ⚠️ State-based   | ✅ Index-based    |
+| **Handoff Control**  | ✅ Natural language rules    | ⚠️ Code-based        | ⚠️ Sequential      | ✅ State machine | ❌ Manual         |
+| **Production Ready** | ✅ REST API, monitoring      | ⚠️ Library only      | ⚠️ Library only    | ⚠️ Library only  | ⚠️ Library only   |
+| **Orchestration**    | ✅ X (unified interface)     | ⚠️ GroupChat         | ✅ Process-based   | ✅ Graph-based   | ❌ Manual         |
 
 ## Why We Built AgentX
 
 ### 1. Configuration Without Code
 
 **The Problem with AG2/AutoGen:**
+
 ```python
 # AG2 requires extensive Python code for basic setups
 assistant = AssistantAgent(
@@ -35,11 +36,12 @@ user_proxy = UserProxyAgent(
 ```
 
 **AgentX Solution:**
+
 ```yaml
 # Complete team setup in YAML - no Python required
 agents:
-  - "researcher"    # Use optimized presets
-  - "writer"        # Automatically configured
+  - "researcher" # Use optimized presets
+  - "writer" # Automatically configured
 ```
 
 ### 2. Natural Language Handoffs
@@ -48,6 +50,7 @@ agents:
 Most frameworks require programming state machines or complex conditional logic for agent coordination.
 
 **AgentX Innovation:**
+
 ```yaml
 handoffs:
   - from_agent: "researcher"
@@ -56,6 +59,7 @@ handoffs:
 ```
 
 Handoffs are evaluated by an LLM that understands context, not rigid rules. This enables:
+
 - Dynamic routing based on content
 - Natural language conditions
 - Adaptive workflows
@@ -64,12 +68,14 @@ Handoffs are evaluated by an LLM that understands context, not rigid rules. This
 
 **Traditional Approach:**
 Frameworks typically use callbacks or polling, making it hard to:
+
 - Monitor agent interactions in real-time
 - Build responsive UIs
 - Implement complex workflows
 - Add observability
 
 **AgentX Event System:**
+
 ```python
 # Every significant action emits typed events
 @event_bus.subscribe(EventType.TASK_STARTED)
@@ -80,6 +86,7 @@ async def on_task_start(event: TaskEvent):
 ```
 
 This enables:
+
 - Real-time monitoring dashboards
 - Webhook integrations
 - Custom middleware
@@ -109,6 +116,7 @@ tools:
 ```
 
 Benefits:
+
 - Use any MCP-compatible tool server
 - Standard protocol for tool interaction
 - Growing ecosystem of tools
@@ -117,12 +125,14 @@ Benefits:
 ### 6. Unified Orchestration with X
 
 **AG2's GroupChat Limitations:**
+
 - Rigid speaker selection
 - Limited context awareness
 - Difficult to debug
 - No conversation memory
 
 **AgentX's X (Orchestrator):**
+
 ```python
 # Single interface for all interactions
 x = await start_task("Build a web app", "team.yaml")
@@ -136,6 +146,7 @@ response = await x.chat("Make it more colorful")
 ```
 
 X provides:
+
 - Intelligent task planning
 - Dynamic plan adjustment
 - Conversational interface
@@ -145,19 +156,22 @@ X provides:
 
 **Manual Setup Fatigue:**
 Other frameworks require you to write and maintain every agent's prompt, leading to:
+
 - Inconsistent quality
 - Repeated boilerplate
 - Maintenance burden
 
 **AgentX Presets:**
+
 ```yaml
 agents:
-  - "researcher"      # 500+ lines of optimized prompt
-  - "developer"       # Production-tested configuration
-  - "web_designer"    # Including best practices
+  - "researcher" # 500+ lines of optimized prompt
+  - "developer" # Production-tested configuration
+  - "web_designer" # Including best practices
 ```
 
 Each preset includes:
+
 - Carefully crafted system prompts
 - Optimal LLM configurations
 - Appropriate tool selections
@@ -178,7 +192,7 @@ While AG2 uses basic conversation history, AgentX implements:
 **Complete vs. Minimal:**
 Unlike frameworks that provide minimal tools, AgentX includes:
 
-- **File Operations**: Full workspace management
+- **File Operations**: Full taskspace management
 - **Web Tools**: Search, scraping, content extraction
 - **Development**: Code execution, git operations
 - **Memory**: Context management, semantic search
@@ -190,6 +204,7 @@ Unlike frameworks that provide minimal tools, AgentX includes:
 Most frameworks offer limited visibility into agent decisions.
 
 **AgentX Transparency:**
+
 - Structured logging
 - Event stream access
 - Task execution traces
@@ -201,12 +216,14 @@ Most frameworks offer limited visibility into agent decisions.
 ### From AG2/AutoGen
 
 **What You Gain:**
+
 - 90% less code to maintain
 - Better agent coordination
 - Production deployment options
 - Comprehensive monitoring
 
 **Migration Path:**
+
 1. Convert agent definitions to YAML
 2. Replace GroupChat with handoffs
 3. Use event system for callbacks
@@ -215,12 +232,14 @@ Most frameworks offer limited visibility into agent decisions.
 ### From CrewAI
 
 **What You Gain:**
+
 - More flexible agent routing
 - Event-driven architecture
 - MCP tool support
 - Better memory system
 
 **Migration Path:**
+
 1. Convert crew definitions to teams
 2. Update tool definitions
 3. Leverage presets for common roles
@@ -228,12 +247,14 @@ Most frameworks offer limited visibility into agent decisions.
 ### From LangGraph
 
 **What You Gain:**
+
 - No-code configuration
 - Natural language workflows
 - Built-in tool suite
 - REST API deployment
 
 **Migration Path:**
+
 1. Convert graph logic to handoffs
 2. Use X for orchestration
 3. Migrate state to context variables
@@ -251,6 +272,7 @@ AgentX represents a fundamental shift in how we think about multi-agent systems:
 ## When to Choose AgentX
 
 **Choose AgentX when you need:**
+
 - Rapid prototyping without coding
 - Production deployment with monitoring
 - Complex agent coordination
@@ -259,6 +281,7 @@ AgentX represents a fundamental shift in how we think about multi-agent systems:
 - Natural language workflows
 
 **Consider alternatives when:**
+
 - You need fine-grained programmatic control
 - You're building a simple single-agent system
 - You require specific language bindings (not Python)

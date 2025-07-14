@@ -1,9 +1,11 @@
 # Auto Writer Execution Plan - STRICT
 
 ## Goal
+
 Create a high-quality HTML report with REAL content, not fake summaries.
 
 ## Principles
+
 1. **No fallbacks** - If a step fails, STOP
 2. **Validate outputs** - Check file sizes, content quality
 3. **Use actual data** - No mock content or brief summaries
@@ -12,16 +14,19 @@ Create a high-quality HTML report with REAL content, not fake summaries.
 ## Step-by-Step Plan
 
 ### Step 1: Initialize Environment ✓
-- Create workspace directory
+
+- Create taskspace directory
 - Verify artifacts directory exists
-- FAIL if workspace can't be created
+- FAIL if taskspace can't be created
 
 ### Step 2: Initialize Tools ✓
-- Create SearchTool with workspace
-- Create WebTool with workspace
-- FAIL if tools can't access workspace
+
+- Create SearchTool with taskspace
+- Create WebTool with taskspace
+- FAIL if tools can't access taskspace
 
 ### Step 3: Search & Extract Content
+
 - Search for 3-5 queries about web development 2025
 - Extract content from top 3 results per query
 - **Validation:**
@@ -31,6 +36,7 @@ Create a high-quality HTML report with REAL content, not fake summaries.
 - FAIL if extraction produces tiny/no files
 
 ### Step 4: Create Research Analysis
+
 - Read all extracted files
 - Combine into comprehensive research document
 - **Validation:**
@@ -40,6 +46,7 @@ Create a high-quality HTML report with REAL content, not fake summaries.
 - FAIL if research is too brief
 
 ### Step 5: Generate HTML Report
+
 - Use AgentX with clear instructions
 - Reference the actual research files
 - **Validation:**
@@ -49,12 +56,14 @@ Create a high-quality HTML report with REAL content, not fake summaries.
 - FAIL if no HTML or tiny file
 
 ## Expected Results
+
 - 3-9 extracted content files (5-50KB each)
 - 1 research analysis file (30KB+)
 - 1 HTML report (50KB+)
-- Total workspace: 100KB+ of real content
+- Total taskspace: 100KB+ of real content
 
 ## NO Fallbacks Policy
+
 - NO "simple extraction" with 3KB limit
 - NO brief summaries instead of content
 - NO mock data generation

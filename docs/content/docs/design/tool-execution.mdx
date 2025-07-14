@@ -122,7 +122,7 @@ Executing arbitrary, LLM-generated shell commands is a major security risk. Agen
 - **Technology**: The default implementation uses **Docker containers**. Each shell tool execution spins up a new, short-lived container.
 - **Isolation**:
   - **Network**: Containers run with networking disabled by default (`--net=none`) to prevent exfiltration of data or attacks on the local network. Tools that explicitly need network access must be granted it.
-  - **Filesystem**: The container is only granted access to the current task's workspace directory (`/app/workspace`). It cannot read from or write to any other part of the host filesystem.
+  - **Filesystem**: The container is only granted access to the current task's taskspace directory (`/app/taskspace`). It cannot read from or write to any other part of the host filesystem.
   - **Permissions**: The process inside the container runs as a non-root user to limit its privileges even within the sandbox.
 
 ## 5. Extensibility

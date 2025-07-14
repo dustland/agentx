@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary
 
-AgentX is an open-source backbone for building secure, observable, and fully autonomous multi-agent systems. A lightweight micro-kernel orchestrates specialised agents, turning a single user request into a coordinated workflow that spans tool execution, memory retrieval, and artifact management—all within isolated, version-controlled workspaces. Every decision, message, and side effect is captured as a structured event, providing complete auditability and real-time insight into system behaviour.
+AgentX is an open-source backbone for building secure, observable, and fully autonomous multi-agent systems. A lightweight micro-kernel orchestrates specialised agents, turning a single user request into a coordinated workflow that spans tool execution, memory retrieval, and artifact management—all within isolated, version-controlled taskspaces. Every decision, message, and side effect is captured as a structured event, providing complete auditability and real-time insight into system behaviour.
 
 ## 2. Vision & Principles
 
@@ -20,7 +20,7 @@ The architecture rests on the following foundational principles:
 - **Event-Driven Coordination**: Asynchronous, structured events enable scalable, loosely-coupled communication among subsystems.
 - **Configuration-Driven Behaviour**: Teams, agents, and workflows are defined declaratively, allowing rapid iteration without code changes.
 - **Security by Design**: All external interactions pass through audited, policy-enforced channels; least-privilege boundaries are maintained throughout.
-- **Workspace Isolation**: Every task executes in its own version-controlled workspace, ensuring reproducibility and clean separation of artifacts.
+- **Taskspace Isolation**: Every task executes in its own version-controlled taskspace, ensuring reproducibility and clean separation of artifacts.
 
 ## 3. System Architecture Overview
 
@@ -33,7 +33,7 @@ graph TD
     AGENTS["Specialist Agents<br/>(planner, researcher, writer, etc.)"]
     BRAIN["Agent Brain"]
     TM["Tool Manager"]
-    WORKSPACE["Workspace<br/>(plan.md, artifacts)"]
+    WORKSPACE["Taskspace<br/>(plan.md, artifacts)"]
     PLAT["Platform Services"]
     LLM["LLM Providers"]
     TOOLS["Builtin Tools"]
@@ -97,14 +97,14 @@ graph TD
         MEM["memory/<br/>• models.py<br/>• backend.py<br/>• factory.py<br/>• synthesis_engine.py"]
         EVENT["event/<br/>• models.py<br/>• bus.py<br/>• api.py<br/>• subscribers.py"]
         CONFIG["config/<br/>• models.py<br/>• team_loader.py<br/>• agent_loader.py"]
-        STORAGE["storage/<br/>• models.py<br/>• backends.py<br/>• git_storage.py<br/>• workspace.py"]
+        STORAGE["storage/<br/>• models.py<br/>• backends.py<br/>• git_storage.py<br/>• taskspace.py"]
         BUILTIN["builtin_tools/<br/>• models.py<br/>• storage_tools.py<br/>• web_tools.py<br/>• memory_tools.py"]
     end
 
     subgraph "External Systems"
         LLM["LLM Providers<br/>• OpenAI<br/>• Anthropic<br/>• DeepSeek"]
         VDB["Vector DBs<br/>• mem0<br/>• Chroma<br/>• Pinecone"]
-        GIT["Git<br/>• Workspace versioning<br/>• Artifact storage"]
+        GIT["Git<br/>• Taskspace versioning<br/>• Artifact storage"]
         EXT_API["External APIs<br/>• Web search<br/>• Third-party services"]
     end
 
@@ -154,7 +154,7 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 
 **Orchestration Logic (Built into XAgent)**
 
-- **Stateful:** Maintains task progress in `plan.json` and workspace files
+- **Stateful:** Maintains task progress in `plan.json` and taskspace files
 - **Intelligent Routing:** Decides which specialist agent handles each step
 - **Persistent:** Survives across multiple turns and can resume interrupted tasks
 - **LLM-Powered:** Uses Brain for intelligent decision making
@@ -169,7 +169,7 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 **XAgent (The Unified Interface)**
 
 - **Conversational Interface:** Single point of contact for all user interactions
-- **Lifecycle Manager:** Handles workspace setup, tool management, streaming
+- **Lifecycle Manager:** Handles taskspace setup, tool management, streaming
 - **Orchestration Logic:** Built-in intelligent routing and task coordination
 - **Stateful:** Maintains conversation history and task state
 
@@ -270,7 +270,7 @@ An agent's core behavior and persona are defined by its system prompt, which is 
 - The full conversation history.
 - A list of available tools and their JSON schemas.
 - The initial task objective and any user-provided parameters.
-- Summaries or references to artifacts in the workspace.
+- Summaries or references to artifacts in the taskspace.
 
 This just-in-time templating allows agents to be both powerful and reusable, adapting their behavior to the specific needs of each task.
 
@@ -328,13 +328,13 @@ This architecture allows a developer or user to watch the entire multi-agent col
 
 ## 6. State and Context Management
 
-AgentX is designed around the core principle that agents should operate on a rich, durable, and easily accessible context. This is achieved through two tightly integrated components: the **Workspace** and the **Memory System**.
+AgentX is designed around the core principle that agents should operate on a rich, durable, and easily accessible context. This is achieved through two tightly integrated components: the **Taskspace** and the **Memory System**.
 
-### 6.1 Workspace: A Durable Foundation
+### 6.1 Taskspace: A Durable Foundation
 
-The **Workspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the workspace, AgentX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
+The **Taskspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the taskspace, AgentX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
 
-Every workspace contains:
+Every taskspace contains:
 
 - A complete, append-only log of the conversation history (`history.jsonl`).
 - A version-controlled `artifacts` directory where all agent outputs (code, documents, data) are stored.
@@ -344,26 +344,26 @@ This robust state management is what enables developers to treat tasks not as ep
 
 ### 6.2 Memory: Intelligent Context Retrieval
 
-The **Memory** acts as the intelligent, unified gateway for retrieving contextual data from the Workspace. It is more than a simple wrapper around a vector database; it is the sole entry point for agents to perform intelligent data fetching, ensuring they have the most relevant information without exceeding token limits.
+The **Memory** acts as the intelligent, unified gateway for retrieving contextual data from the Taskspace. It is more than a simple wrapper around a vector database; it is the sole entry point for agents to perform intelligent data fetching, ensuring they have the most relevant information without exceeding token limits.
 
 Its responsibilities are twofold:
 
-1.  **Context Ingestion**: It automatically captures and indexes conversational history, agent-generated artifacts, and other designated data sources from the Workspace into a long-term, searchable store.
+1.  **Context Ingestion**: It automatically captures and indexes conversational history, agent-generated artifacts, and other designated data sources from the Taskspace into a long-term, searchable store.
 2.  **Intelligent Retrieval**: It provides a simple query interface for agents to retrieve contextually relevant information. The system handles the complexity of searching across different data types and uses semantic ranking to return only the most salient facts.
 
-By abstracting away the complexities of data storage and retrieval, the Memory System allows agents to remain focused on reasoning, while ensuring their prompts are always grounded with high-quality, relevant context from the Workspace.
+By abstracting away the complexities of data storage and retrieval, the Memory System allows agents to remain focused on reasoning, while ensuring their prompts are always grounded with high-quality, relevant context from the Taskspace.
 
 ### 6.3 Example Scenario: Context-Aware Writing
 
-To illustrate how these components work together, consider a `Writer` agent tasked with drafting a report. A `Researcher` agent has already run, populating the `Workspace` with dozens of source documents.
+To illustrate how these components work together, consider a `Writer` agent tasked with drafting a report. A `Researcher` agent has already run, populating the `Taskspace` with dozens of source documents.
 
-1.  **Initial State**: The `Workspace` contains all source documents as artifacts (e.g., `source_01.txt`, `source_02.txt`, etc.). The `Memory System` has indexed the content of each of these sources. The main report is still empty.
-2.  **Writing the First Section**: The `Writer` is tasked with "Write the introduction." It queries the `Memory System`: _"Find sources relevant to the overall topic."_ The `Memory System` returns the most relevant source documents. The `Writer` uses them to draft the introduction, which is then saved back to the `Workspace` as `report_v1.md`.
+1.  **Initial State**: The `Taskspace` contains all source documents as artifacts (e.g., `source_01.txt`, `source_02.txt`, etc.). The `Memory System` has indexed the content of each of these sources. The main report is still empty.
+2.  **Writing the First Section**: The `Writer` is tasked with "Write the introduction." It queries the `Memory System`: _"Find sources relevant to the overall topic."_ The `Memory System` returns the most relevant source documents. The `Writer` uses them to draft the introduction, which is then saved back to the `Taskspace` as `report_v1.md`.
 3.  **Preventing Redundancy**: When the `Writer` is next tasked with "Write the 'History of AI' section," it performs a more sophisticated query: _"Find sources related to 'the history of AI' that are not already referenced in `report_v1.md`."_
 4.  **Intelligent Retrieval**: The `Memory System` understands this query. It performs a semantic search for "history of AI" across all source documents, but it also performs a negative semantic search, filtering out any sources whose content closely matches what is already in `report_v1.md`.
 5.  **Grounded Response**: The `Memory System` returns a fresh, relevant, and unused set of sources. The `Writer` can now draft the new section with confidence, knowing it is not repeating information.
 
-This scenario demonstrates how the combination of a durable `Workspace` and an intelligent `Memory System` enables agents to perform complex, stateful tasks that would be impossible with a simple conversational context window.
+This scenario demonstrates how the combination of a durable `Taskspace` and an intelligent `Memory System` enables agents to perform complex, stateful tasks that would be impossible with a simple conversational context window.
 
 ### 6.3 Standard Agents Library
 
@@ -423,7 +423,7 @@ While Section 6 described the Memory System from a business logic perspective, t
 
 **Key Infrastructure Features**:
 
-- **Automatic Indexing**: Background processes that continuously index new content from workspaces
+- **Automatic Indexing**: Background processes that continuously index new content from taskspaces
 - **Scalable Storage**: Support for both local and distributed memory storage backends
 - **Memory Lifecycle Management**: Automatic cleanup, archival, and optimization of stored memories
 - **Provider Abstraction**: Clean separation between the memory interface and underlying storage technology
@@ -435,7 +435,7 @@ This infrastructure design ensures that the Memory System can scale from develop
 The Observability service provides real-time insight into the inner workings of the AgentX framework. It subscribes to the `Event Bus` to receive a live stream of all system events—from task creation to agent handoffs to tool executions. This data is then exposed through a built-in web dashboard, allowing developers to:
 
 - Visually trace the entire lifecycle of a task.
-- Inspect the contents of any agent's workspace, including conversation history and artifacts.
+- Inspect the contents of any agent's taskspace, including conversation history and artifacts.
 - Debug complex multi-agent interactions in real-time.
 
 By making the system transparent by default, the Observability service dramatically reduces the time required to build, test, and refine sophisticated agent-based workflows.
@@ -465,7 +465,7 @@ Builtin Tools extend AgentX with first-class capabilities without requiring user
 
 Key builtin tools include:
 
-- **Storage Tools**: Clean file operations that use the storage layer, providing secure workspace-scoped file management with proper isolation and version control. Includes `read_file`, `write_file`, `list_directory`, `delete_file`, and other essential file operations.
+- **Storage Tools**: Clean file operations that use the storage layer, providing secure taskspace-scoped file management with proper isolation and version control. Includes `read_file`, `write_file`, `list_directory`, `delete_file`, and other essential file operations.
 - **Web Tools**: Advanced web capabilities including `web_search`, `extract_content` for web scraping, and `automate_browser` for AI-driven browser automation using natural language instructions.
 - **Memory Tools**: Direct interface to the Memory system for storing and retrieving contextual information across task sessions.
 - **Context Tools**: Tools for managing and updating task context variables, allowing agents to maintain and share state information.

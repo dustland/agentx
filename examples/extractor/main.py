@@ -38,7 +38,7 @@ Keep it simple and focused on demonstrating reliable extraction."""
     )
 
     print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
     print("-" * 70)
 
     # Execute the extraction test
@@ -62,7 +62,7 @@ Keep it simple and focused on demonstrating reliable extraction."""
         print("-" * 70)
 
     print("✅ Extraction testing completed!")
-    print(f"📁 Check workspace for extracted content: {x.workspace.get_workspace_path()}")
+    print(f"📁 Check taskspace for extracted content: {x.taskspace.get_taskspace_path()}")
 
     # Show the power of the new system
     print("\n🚀 Crawl4AI Extraction System Features Demonstrated:")

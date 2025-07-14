@@ -40,7 +40,7 @@ You are responsible for creating sophisticated execution plans that decompose co
 - Rich message handling with attachments and multimedia
 - LLM-driven plan adjustment that preserves completed work
 - Single point of contact for all user interactions
-- Automatic workspace and tool management
+- Automatic taskspace and tool management
 
 ## Advanced Planning Strategies
 

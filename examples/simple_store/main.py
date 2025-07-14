@@ -82,7 +82,7 @@ Use the write_file tool to save this file directly in the taskspace.
 
         print("\n💬 You can continue chatting with X:")
         print("   Example: x.chat('Create a JSON file with sample data')")
-        print("   Example: x.chat('List all files in the workspace')")
+        print("   Example: x.chat('List all files in the taskspace')")
         print("   Example: x.chat('Create a folder structure for a project')")
 
     except Exception as e:

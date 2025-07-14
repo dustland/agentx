@@ -9,7 +9,7 @@ from pathlib import Path
 from agentx.models.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import AgentConfig
-from agentx.core.workspace import WorkspaceStorage
+from agentx.core.taskspace import TaskspaceStorage
 
 
 class TestReviewerPolish:
@@ -31,11 +31,11 @@ class TestReviewerPolish:
         )
     
     @pytest.fixture
-    def mock_workspace_with_draft(self, tmp_path):
-        """Create mock workspace with a draft document."""
-        workspace_dir = tmp_path / "test_workspace"
-        workspace_dir.mkdir()
-        artifacts_dir = workspace_dir / "artifacts"
+    def mock_taskspace_with_draft(self, tmp_path):
+        """Create mock taskspace with a draft document."""
+        taskspace_dir = tmp_path / "test_taskspace"
+        taskspace_dir.mkdir()
+        artifacts_dir = taskspace_dir / "artifacts"
         artifacts_dir.mkdir()
         
         # Create draft with issues to polish
@@ -69,14 +69,14 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
         
         (artifacts_dir / "draft_report.md").write_text(draft_content)
         
-        workspace = WorkspaceStorage(
+        taskspace = TaskspaceStorage(
             task_id="test_task",
-            workspace_path=workspace_dir
+            taskspace_path=taskspace_dir
         )
-        return workspace
+        return taskspace
     
     @pytest.mark.asyncio
-    async def test_reviewer_identifies_draft_for_polishing(self, reviewer_config, mock_workspace_with_draft):
+    async def test_reviewer_identifies_draft_for_polishing(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer correctly identifies draft documents."""
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -84,7 +84,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(workspace=mock_workspace_with_draft)
+                task_config=Mock(taskspace=mock_taskspace_with_draft)
             )
             
             # Track tool calls
@@ -96,7 +96,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
                     return Mock(success=True, result=["draft_report.md", "notes.txt"])
                 elif tool_name == "read_file":
                     if kwargs.get('filename') == "draft_report.md":
-                        content = (mock_workspace_with_draft.artifacts_path / "draft_report.md").read_text()
+                        content = (mock_taskspace_with_draft.artifacts_path / "draft_report.md").read_text()
                         return Mock(success=True, result=content)
                 return Mock(success=True)
             
@@ -121,7 +121,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
                       for call in tool_calls)
     
     @pytest.mark.asyncio
-    async def test_reviewer_creates_polished_version(self, reviewer_config, mock_workspace_with_draft):
+    async def test_reviewer_creates_polished_version(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer creates a polished version of the document."""
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -129,7 +129,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(workspace=mock_workspace_with_draft)
+                task_config=Mock(taskspace=mock_taskspace_with_draft)
             )
             
             # Expected polished content (with improvements)
@@ -179,7 +179,7 @@ Both databases continue to evolve, with active communities ensuring long-term vi
                     written_content = kwargs.get('content')
                     return Mock(success=True, result="File written")
                 elif tool_name == "read_file":
-                    content = (mock_workspace_with_draft.artifacts_path / "draft_report.md").read_text()
+                    content = (mock_taskspace_with_draft.artifacts_path / "draft_report.md").read_text()
                     return Mock(success=True, result=content)
                 return Mock(success=True)
             
@@ -204,10 +204,10 @@ Both databases continue to evolve, with active communities ensuring long-term vi
             assert written_content is not None
             assert "PostgreSQL vs MySQL: A Comprehensive Comparison" in written_content
             assert "Executive Summary" in written_content
-            assert len(written_content) > len((mock_workspace_with_draft.artifacts_path / "draft_report.md").read_text())
+            assert len(written_content) > len((mock_taskspace_with_draft.artifacts_path / "draft_report.md").read_text())
     
     @pytest.mark.asyncio  
-    async def test_reviewer_identifies_polish_improvements(self, reviewer_config, mock_workspace_with_draft):
+    async def test_reviewer_identifies_polish_improvements(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer identifies specific issues to polish."""
         with patch('agentx.models.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
@@ -215,7 +215,7 @@ Both databases continue to evolve, with active communities ensuring long-term vi
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(workspace=mock_workspace_with_draft)
+                task_config=Mock(taskspace=mock_taskspace_with_draft)
             )
             
             reviewer.tool_manager = Mock()

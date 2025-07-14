@@ -31,18 +31,46 @@ export default function TaskPage({
   const [taskStatus, setTaskStatus] = useState<TaskStatus>("idle");
   const [taskInfo, setTaskInfo] = useState<any>(null);
 
-  // Load task info
+  // Load task info and set up streaming
   useEffect(() => {
     const loadTask = async () => {
       try {
         const task = await apiClient.getTask(id);
         setTaskInfo(task);
         setTaskStatus(task.status || "idle");
+        
+        // Set up streaming for task updates
+        const cleanup = apiClient.subscribeToTaskUpdates(id, (data) => {
+          console.log("Task update:", data);
+          
+          if (data.event === "agent_message") {
+            const message: ChatMessage = {
+              id: nanoid(),
+              role: data.data.agent_id === "user" ? "user" : "assistant",
+              content: data.data.message,
+              timestamp: new Date(),
+              status: "complete",
+              metadata: data.data.metadata,
+            };
+            setMessages(prev => [...prev, message]);
+          } else if (data.event === "agent_status") {
+            setTaskStatus(data.data.status === "working" ? "running" : "idle");
+          } else if (data.event === "task_update") {
+            setTaskStatus(data.data.status);
+          }
+        });
+        
+        return cleanup;
       } catch (error) {
         console.error("Failed to load task:", error);
       }
     };
-    loadTask();
+    
+    const cleanupPromise = loadTask();
+    
+    return () => {
+      cleanupPromise.then(cleanup => cleanup && cleanup());
+    };
   }, [id]);
 
   const handleSendMessage = (message: string) => {

@@ -179,7 +179,7 @@ class TeamConfig(BaseModel):
     """Configuration for a team of agents."""
     name: str
     description: str = ""
-    output_dir: str = "workspace"
+    output_dir: str = "taskspace"
     agents: List[AgentConfig] = Field(default_factory=list)
     handoffs: List[Handoff] = Field(default_factory=list)
     collaboration_patterns: List[CollaborationPattern] = Field(default_factory=list)

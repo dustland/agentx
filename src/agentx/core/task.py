@@ -68,7 +68,7 @@ class Task:
 
         self.is_complete: bool = False
         self.created_at: datetime = datetime.now()
-        self.current_plan: Optional[Plan] = None
+        self.plan: Optional[Plan] = None
 
     def get_agent(self, name: str) -> Agent:
         """Retrieves an agent by name."""
@@ -93,48 +93,48 @@ class Task:
         }
 
         # Add plan information if available
-        if self.current_plan:
+        if self.plan:
             context["plan"] = {
-                "goal": self.current_plan.goal,
-                "total_tasks": len(self.current_plan.tasks),
-                "progress": self.current_plan.get_progress_summary(),
-                "is_complete": self.current_plan.is_complete(),
+                "goal": self.plan.goal,
+                "total_tasks": len(self.plan.tasks),
+                "progress": self.plan.get_progress_summary(),
+                "is_complete": self.plan.is_complete(),
             }
 
         return context
 
     def create_plan(self, plan: Plan) -> None:
         """Creates a new plan for the task."""
-        self.current_plan = plan
+        self.plan = plan
         logger.info(f"Created plan for task {self.task_id} with {len(plan.tasks)} tasks")
 
     async def update_plan(self, plan: Plan) -> None:
         """Updates the current plan and persists it."""
-        self.current_plan = plan
+        self.plan = plan
         logger.info(f"Updated plan for task {self.task_id}")
         await self._persist_plan()
 
     async def update_task_status(self, task_id: str, status: TaskStatus) -> bool:
         """Update task status and automatically persist the plan."""
-        if not self.current_plan:
+        if not self.plan:
             return False
 
-        success = self.current_plan.update_task_status(task_id, status)
+        success = self.plan.update_task_status(task_id, status)
         if success:
             await self._persist_plan()
         return success
 
     def get_plan(self) -> Optional[Plan]:
         """Returns the current plan."""
-        return self.current_plan
+        return self.plan
 
     async def _persist_plan(self) -> None:
         """Persists the current plan to plan.json."""
-        if not self.current_plan:
+        if not self.plan:
             return
 
         try:
-            plan_data = self.current_plan.model_dump()
+            plan_data = self.plan.model_dump()
             await self.taskspace.store_plan(plan_data)
             logger.debug(f"Plan persisted to plan.json")
         except Exception as e:
@@ -145,9 +145,9 @@ class Task:
         try:
             plan_data = await self.taskspace.get_plan()
             if plan_data:
-                self.current_plan = Plan(**plan_data)
+                self.plan = Plan(**plan_data)
                 logger.info(f"Loaded existing plan from plan.json")
-                return self.current_plan
+                return self.plan
             return None
         except Exception as e:
             logger.error(f"Failed to load plan: {e}")

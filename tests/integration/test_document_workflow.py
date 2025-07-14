@@ -20,26 +20,26 @@ class TestDocumentWorkflow:
     """Test the complete document workflow integration."""
 
     @pytest.fixture
-    async def temp_workspace(self):
-        """Create a temporary workspace for testing."""
+    async def temp_taskspace(self):
+        """Create a temporary taskspace for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        workspace = TaskspaceStorage(
+        taskspace = TaskspaceStorage(
             task_id="test_document_workflow",
-            workspace_path=str(temp_dir)
+            taskspace_path=str(temp_dir)
         )
         
-        yield workspace
+        yield taskspace
         
         # Cleanup
         shutil.rmtree(temp_dir, ignore_errors=True)
 
     @pytest.fixture
-    def document_tool(self, temp_workspace):
-        """Create DocumentTool with test workspace."""
-        return DocumentTool(workspace_storage=temp_workspace)
+    def document_tool(self, temp_taskspace):
+        """Create DocumentTool with test taskspace."""
+        return DocumentTool(taskspace_storage=temp_taskspace)
 
     @pytest.mark.asyncio
-    async def test_section_merge_workflow(self, document_tool, temp_workspace):
+    async def test_section_merge_workflow(self, document_tool, temp_taskspace):
         """Test section creation and merging workflow."""
         # Create test sections
         section1 = """# Section 1: Introduction
@@ -61,9 +61,9 @@ We've covered both basic and advanced topics.
 """
 
         # Store sections using section naming convention
-        await temp_workspace.store_artifact("section_01_introduction.md", section1)
-        await temp_workspace.store_artifact("section_02_advanced.md", section2) 
-        await temp_workspace.store_artifact("section_03_conclusion.md", section3)
+        await temp_taskspace.store_artifact("section_01_introduction.md", section1)
+        await temp_taskspace.store_artifact("section_02_advanced.md", section2) 
+        await temp_taskspace.store_artifact("section_03_conclusion.md", section3)
 
         # Test merge functionality
         result = await document_tool.merge_sections(
@@ -76,14 +76,14 @@ We've covered both basic and advanced topics.
         assert "merged_guide.md" in result.result["output_path"]
 
         # Verify merged content exists
-        merged_content = await temp_workspace.get_artifact("merged_guide.md")
+        merged_content = await temp_taskspace.get_artifact("merged_guide.md")
         assert merged_content is not None
         assert "Section 1: Introduction" in merged_content
         assert "Section 2: Advanced Topics" in merged_content
         assert "Section 3: Conclusion" in merged_content
 
     @pytest.mark.asyncio
-    async def test_polish_workflow(self, document_tool, temp_workspace):
+    async def test_polish_workflow(self, document_tool, temp_taskspace):
         """Test document polishing workflow."""
         # Create a draft document that needs polishing
         draft_content = """# Quick Report
@@ -101,7 +101,7 @@ Point 3 completes the trio.
 That's all folks.
 """
 
-        await temp_workspace.store_artifact("draft_report.md", draft_content)
+        await temp_taskspace.store_artifact("draft_report.md", draft_content)
 
         # Test polish functionality
         result = await document_tool.polish_document(
@@ -114,12 +114,12 @@ That's all folks.
         assert "polished_report.md" in result.result["output_path"]
         
         # Verify polished content exists and is different
-        polished_content = await temp_workspace.get_artifact("polished_report.md")
+        polished_content = await temp_taskspace.get_artifact("polished_report.md")
         assert polished_content is not None
         assert len(polished_content) != len(draft_content)  # Should be different
 
     @pytest.mark.asyncio 
-    async def test_summarize_workflow(self, document_tool, temp_workspace):
+    async def test_summarize_workflow(self, document_tool, temp_taskspace):
         """Test document summarization workflow."""
         # Create multiple research files
         research1 = """# Research File 1: Market Analysis
@@ -143,9 +143,9 @@ Implement circuit breakers for resilience.
 Container orchestration platforms simplify deployment.
 """
 
-        await temp_workspace.store_artifact("research_market.md", research1)
-        await temp_workspace.store_artifact("research_technical.md", research2)
-        await temp_workspace.store_artifact("research_practices.md", research3)
+        await temp_taskspace.store_artifact("research_market.md", research1)
+        await temp_taskspace.store_artifact("research_technical.md", research2)
+        await temp_taskspace.store_artifact("research_practices.md", research3)
 
         # Test summarization
         result = await document_tool.summarize_documents(
@@ -158,12 +158,12 @@ Container orchestration platforms simplify deployment.
         assert result.result["files_processed"] == 3
         
         # Verify summary content exists
-        summary_content = await temp_workspace.get_artifact("research_summary.md")
+        summary_content = await temp_taskspace.get_artifact("research_summary.md")
         assert summary_content is not None
         assert len(summary_content) > 100  # Should have substantial content
 
     @pytest.mark.asyncio
-    async def test_complete_document_pipeline(self, document_tool, temp_workspace):
+    async def test_complete_document_pipeline(self, document_tool, temp_taskspace):
         """Test the complete pipeline: sections -> merge -> polish."""
         # Step 1: Create sections
         sections = {
@@ -173,7 +173,7 @@ Container orchestration platforms simplify deployment.
         }
 
         for filename, content in sections.items():
-            await temp_workspace.store_artifact(filename, content)
+            await temp_taskspace.store_artifact(filename, content)
 
         # Step 2: Merge sections
         merge_result = await document_tool.merge_sections(
@@ -191,7 +191,7 @@ Container orchestration platforms simplify deployment.
         assert polish_result.success
 
         # Verify final document exists
-        final_content = await temp_workspace.get_artifact("final_document.md")
+        final_content = await temp_taskspace.get_artifact("final_document.md")
         assert final_content is not None
         assert len(final_content) > 50  # Should have content
 
@@ -217,12 +217,12 @@ Container orchestration platforms simplify deployment.
                 step_count += 1
                 assert response is not None
 
-            # Verify workspace was created
-            workspace_path = Path(task.workspace.get_workspace_path())
-            assert workspace_path.exists()
+            # Verify taskspace was created
+            taskspace_path = Path(task.taskspace.get_taskspace_path())
+            assert taskspace_path.exists()
 
             # Check if any artifacts were created
-            artifacts_path = workspace_path / "artifacts"
+            artifacts_path = taskspace_path / "artifacts"
             if artifacts_path.exists():
                 files = list(artifacts_path.glob("*.md"))
                 # We expect at least some research or planning files to be created
@@ -236,7 +236,7 @@ Container orchestration platforms simplify deployment.
                 raise
 
     @pytest.mark.asyncio
-    async def test_error_handling(self, document_tool, temp_workspace):
+    async def test_error_handling(self, document_tool, temp_taskspace):
         """Test error handling in document workflow."""
         # Test merge with no files
         result = await document_tool.merge_sections(

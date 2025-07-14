@@ -13,7 +13,7 @@ Features:
 - Virtual scroll for infinite scroll pages
 - Custom JavaScript execution
 - Flexible extraction strategies
-- Workspace integration for saving extracted content
+- Taskspace integration for saving extracted content
 
 ## WebContent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L49" class="source-link" title="View source code">source</a>
 
@@ -31,7 +31,7 @@ Provides intelligent content extraction with multiple strategies:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L69" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage: Optional[Any] = None) -> None
+def __init__(self, taskspace_storage: Optional[Any] = None) -> None
 ```
 ### extract_urls <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/web.py#L77" class="source-link" title="View source code">source</a>
 

@@ -19,10 +19,10 @@ async def test_research_content_extraction():
     print("🧪 TESTING RESEARCH CONTENT EXTRACTION")
     print("=" * 60)
     
-    # Create workspace
+    # Create taskspace
     temp_dir = tempfile.mkdtemp()
-    workspace = TaskspaceStorage(workspace_path=temp_dir)
-    research_tool = ResearchTool(workspace_storage=workspace)
+    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
+    research_tool = ResearchTool(taskspace_storage=taskspace)
     
     # Test with a simple query
     query = "React framework features 2025"
@@ -47,7 +47,7 @@ async def test_research_content_extraction():
             print(f"\n📄 Checking content of: {first_file}")
             
             # Read the file
-            content = await workspace.get_artifact(first_file)
+            content = await taskspace.get_artifact(first_file)
             
             # Check for the problematic patterns
             has_no_content = "No content available" in content

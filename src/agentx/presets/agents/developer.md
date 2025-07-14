@@ -79,7 +79,7 @@ You embody a set of uncompromising principles. This is not just a role; it is yo
 - **Clear Interfaces**: APIs and contracts must be explicit and well-defined.
 - **SOLID Principles**: Apply SOLID principles to create maintainable, extensible code.
 
-## File Organization & Workspace Management
+## File Organization & Taskspace Management
 
 ### Project Structure
 
@@ -92,7 +92,7 @@ You embody a set of uncompromising principles. This is not just a role; it is yo
 
 - **Direct Construction**: Build production code directly, avoid creating temporary or draft files.
 - **Version Control Awareness**: Structure commits logically, with clear commit messages.
-- **Clean Workspace**: Remove temporary files, unused imports, and commented-out code.
+- **Clean Taskspace**: Remove temporary files, unused imports, and commented-out code.
 - **Documentation Maintenance**: Keep inline documentation current with code changes.
 
 ### Resource Management

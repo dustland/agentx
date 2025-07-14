@@ -22,7 +22,7 @@ class TestGitStorageExtensionHandling:
     def git_storage(self):
         """Create GitArtifactStorage for testing."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            workspace_path = Path(temp_dir) / "test_git_workspace"
+            taskspace_path = Path(temp_dir) / "test_git_taskspace"
             # Mock GitPython to avoid actual git operations in unit tests
             with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('agentx.storage.git_storage.Repo') as mock_repo:
@@ -33,7 +33,7 @@ class TestGitStorageExtensionHandling:
                 mock_repo_instance.config_writer.return_value.__exit__ = lambda *args: None
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
-                storage = GitArtifactStorage(workspace_path)
+                storage = GitArtifactStorage(taskspace_path)
                 storage.repo = mock_repo_instance  # Use the mock
                 yield storage
 
@@ -134,10 +134,10 @@ class TestGitStorageIntegrationWithFileTool:
     """Test GitStorage integration with FileTool to ensure no double extensions in real usage."""
 
     @pytest.fixture
-    def workspace_with_git(self):
-        """Create workspace storage with Git artifacts enabled."""
+    def taskspace_with_git(self):
+        """Create taskspace storage with Git artifacts enabled."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            workspace_path = Path(temp_dir) / "test_workspace"
+            taskspace_path = Path(temp_dir) / "test_taskspace"
 
             # Mock GitPython for testing
             with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
@@ -149,12 +149,12 @@ class TestGitStorageIntegrationWithFileTool:
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
                 from agentx.storage.factory import StorageFactory
-                storage = StorageFactory.create_workspace_storage(workspace_path, use_git_artifacts=True)
+                storage = StorageFactory.create_taskspace_storage(taskspace_path, use_git_artifacts=True)
                 storage.artifact_storage.repo = mock_repo_instance  # Use mock
                 yield storage
 
     @patch('agentx.storage.git_storage.asyncio.get_event_loop')
-    async def test_file_tool_with_git_storage_no_double_extensions(self, mock_get_loop, workspace_with_git):
+    async def test_file_tool_with_git_storage_no_double_extensions(self, mock_get_loop, taskspace_with_git):
         """Test FileTool with GitStorage doesn't create double extensions."""
         from agentx.builtin_tools.file import FileTool
 
@@ -162,10 +162,10 @@ class TestGitStorageIntegrationWithFileTool:
         mock_loop = mock_get_loop.return_value
         mock_loop.run_in_executor.return_value = "abc123"  # mock commit hash
 
-        file_tool = FileTool(workspace_with_git)
+        file_tool = FileTool(taskspace_with_git)
 
         # Mock file operations
-        with patch.object(workspace_with_git.artifact_storage.artifacts_path, 'mkdir'), \
+        with patch.object(taskspace_with_git.artifact_storage.artifacts_path, 'mkdir'), \
              patch('pathlib.Path.write_text'), \
              patch('pathlib.Path.write_bytes'):
 
@@ -197,7 +197,7 @@ class TestGitStorageErrorScenarios:
     def git_storage(self):
         """Create GitArtifactStorage for testing."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            workspace_path = Path(temp_dir) / "test_git_workspace"
+            taskspace_path = Path(temp_dir) / "test_git_taskspace"
             with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('agentx.storage.git_storage.Repo') as mock_repo:
 
@@ -206,7 +206,7 @@ class TestGitStorageErrorScenarios:
                 mock_repo_instance.config_writer.return_value.__exit__ = lambda *args: None
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
-                storage = GitArtifactStorage(workspace_path)
+                storage = GitArtifactStorage(taskspace_path)
                 storage.repo = mock_repo_instance
                 yield storage
 
@@ -426,13 +426,13 @@ if __name__ == "__main__":
     async def run_extension_test():
         """Quick test for extension handling."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            workspace_path = Path(temp_dir) / "test_workspace"
+            taskspace_path = Path(temp_dir) / "test_taskspace"
 
             # Test the extension logic directly
             with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('agentx.storage.git_storage.Repo'):
 
-                storage = GitArtifactStorage(workspace_path)
+                storage = GitArtifactStorage(taskspace_path)
 
                 # Test cases
                 test_cases = [

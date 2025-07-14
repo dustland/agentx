@@ -41,9 +41,9 @@ class ResearchTool(Tool):
     - Improved adaptive crawling with learning capabilities
     """
 
-    def __init__(self, workspace_storage: Optional[Any] = None) -> None:
+    def __init__(self, taskspace_storage: Optional[Any] = None) -> None:
         super().__init__("research")
-        self.taskspace = workspace_storage
+        self.taskspace = taskspace_storage
         self.SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
     @tool(
@@ -326,8 +326,8 @@ class ResearchTool(Tool):
         return unique_results
 
     async def _save_research_content(self, result: Dict, query: str, index: int) -> Optional[str]:
-        """Save research content to workspace."""
-        if not self.workspace:
+        """Save research content to taskspace."""
+        if not self.taskspace:
             return None
 
         try:
@@ -359,8 +359,8 @@ class ResearchTool(Tool):
 {result.get('content', 'No content available')}
 """
 
-            # Save to workspace (metadata already in content header)
-            result = await self.workspace.store_artifact(
+            # Save to taskspace (metadata already in content header)
+            result = await self.taskspace.store_artifact(
                 name=filename,
                 content=content,
                 content_type="text/markdown",

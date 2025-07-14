@@ -122,7 +122,7 @@ class ToolExecutionContext(BaseModel):
     """Context information for tool execution."""
     task_id: str
     agent_name: Optional[str] = None
-    workspace_path: Optional[str] = None
+    taskspace_path: Optional[str] = None
     execution_id: str = Field(default_factory=lambda: f"exec_{generate_short_id()}")
     started_at: datetime = Field(default_factory=datetime.now)
     timeout: Optional[int] = None

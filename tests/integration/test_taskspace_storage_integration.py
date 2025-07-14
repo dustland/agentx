@@ -1,17 +1,17 @@
 """
-Integration tests for WorkspaceStorage with real storage backends.
+Integration tests for TaskspaceStorage with real storage backends.
 """
 
 import pytest
 import tempfile
 from pathlib import Path
 
-from agentx.storage import WorkspaceStorage
+from agentx.storage import TaskspaceStorage
 from agentx.storage.git_storage import GitArtifactStorage
 
 
-class TestWorkspaceStorageIntegration:
-    """Test WorkspaceStorage integration with real storage."""
+class TestTaskspaceStorageIntegration:
+    """Test TaskspaceStorage integration with real storage."""
 
     def setup_method(self):
         """Setup test environment with real storage."""
@@ -21,7 +21,7 @@ class TestWorkspaceStorageIntegration:
             base_path=self.temp_dir,
             task_id=self.task_id
         )
-        self.workspace = WorkspaceStorage(
+        self.taskspace = TaskspaceStorage(
             task_id=self.task_id,
             base_path=self.temp_dir,
             file_storage=self.file_storage
@@ -33,10 +33,10 @@ class TestWorkspaceStorageIntegration:
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     @pytest.mark.asyncio
-    async def test_full_workspace_lifecycle_integration(self):
-        """Test complete workspace operations with real storage."""
+    async def test_full_taskspace_lifecycle_integration(self):
+        """Test complete taskspace operations with real storage."""
         # Store an artifact
-        store_result = await self.workspace.store_artifact(
+        store_result = await self.taskspace.store_artifact(
             "test_report.md",
             "# Test Report\n\nThis is a test report.",
             content_type="text/markdown"
@@ -44,11 +44,11 @@ class TestWorkspaceStorageIntegration:
         assert store_result.success is True
 
         # Retrieve the artifact
-        get_result = await self.workspace.get_artifact("test_report.md")
+        get_result = await self.taskspace.get_artifact("test_report.md")
         assert get_result == "# Test Report\n\nThis is a test report."
 
         # List artifacts
-        list_result = await self.workspace.list_artifacts()
+        list_result = await self.taskspace.list_artifacts()
         assert len(list_result) >= 1
         artifact_names = [a["name"] for a in list_result]
         assert "test_report.md" in artifact_names
@@ -58,19 +58,19 @@ class TestWorkspaceStorageIntegration:
         analysis_dir.mkdir(parents=True, exist_ok=True)
 
         # List directory contents
-        list_dir_result = await self.workspace.list_directory(".")
+        list_dir_result = await self.taskspace.list_directory(".")
         assert list_dir_result["success"] is True
 
-        # Get workspace summary
-        summary_result = await self.workspace.get_workspace_summary()
+        # Get taskspace summary
+        summary_result = await self.taskspace.get_taskspace_summary()
         assert "error" not in summary_result
         assert summary_result["total_artifacts"] >= 1
 
     @pytest.mark.asyncio
-    async def test_workspace_isolation_integration(self):
-        """Test that different workspaces are properly isolated."""
-        # Create second workspace
-        workspace2 = WorkspaceStorage(
+    async def test_taskspace_isolation_integration(self):
+        """Test that different taskspaces are properly isolated."""
+        # Create second taskspace
+        taskspace2 = TaskspaceStorage(
             task_id="other_task",
             base_path=self.temp_dir,
             file_storage=GitArtifactStorage(
@@ -79,34 +79,34 @@ class TestWorkspaceStorageIntegration:
             )
         )
 
-        # Store different artifacts in each workspace
-        await self.workspace.store_artifact("file1.txt", "content1")
-        await workspace2.store_artifact("file2.txt", "content2")
+        # Store different artifacts in each taskspace
+        await self.taskspace.store_artifact("file1.txt", "content1")
+        await taskspace2.store_artifact("file2.txt", "content2")
 
         # Verify isolation
-        files1 = await self.workspace.list_artifacts()
-        files2 = await workspace2.list_artifacts()
+        files1 = await self.taskspace.list_artifacts()
+        files2 = await taskspace2.list_artifacts()
 
         assert len(files1) == 1
         assert len(files2) == 1
         assert files1[0]["name"] == "file1.txt"
         assert files2[0]["name"] == "file2.txt"
 
-        # Verify each workspace can't access the other's files
-        get_result1 = await self.workspace.get_artifact("file2.txt")
-        get_result2 = await workspace2.get_artifact("file1.txt")
+        # Verify each taskspace can't access the other's files
+        get_result1 = await self.taskspace.get_artifact("file2.txt")
+        get_result2 = await taskspace2.get_artifact("file1.txt")
 
         assert get_result1 is None
         assert get_result2 is None
 
     @pytest.mark.asyncio
-    async def test_workspace_persistence_integration(self):
-        """Test that workspace data persists across instances."""
-        # Store data in workspace
-        await self.workspace.store_artifact("persistent.txt", "persistent data")
+    async def test_taskspace_persistence_integration(self):
+        """Test that taskspace data persists across instances."""
+        # Store data in taskspace
+        await self.taskspace.store_artifact("persistent.txt", "persistent data")
 
-        # Create new workspace instance with same task_id
-        workspace2 = WorkspaceStorage(
+        # Create new taskspace instance with same task_id
+        taskspace2 = TaskspaceStorage(
             task_id=self.task_id,
             base_path=self.temp_dir,
             file_storage=GitArtifactStorage(
@@ -116,10 +116,10 @@ class TestWorkspaceStorageIntegration:
         )
 
         # Verify data is accessible
-        get_result = await workspace2.get_artifact("persistent.txt")
+        get_result = await taskspace2.get_artifact("persistent.txt")
         assert get_result == "persistent data"
 
         # Verify file list
-        files = await workspace2.list_artifacts()
+        files = await taskspace2.list_artifacts()
         assert len(files) == 1
         assert files[0]["name"] == "persistent.txt"

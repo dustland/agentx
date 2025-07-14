@@ -219,9 +219,9 @@ class StorageBackend(ABC):
 # WORKSPACE MODELS
 # ============================================================================
 
-class WorkspaceConfig(BaseModel):
-    """Configuration for a workspace."""
-    workspace_id: str = Field(default_factory=lambda: f"ws_{generate_short_id()}")
+class TaskspaceConfig(BaseModel):
+    """Configuration for a taskspace."""
+    taskspace_id: str = Field(default_factory=lambda: f"ws_{generate_short_id()}")
     name: str
     path: str
     description: Optional[str] = None
@@ -230,7 +230,7 @@ class WorkspaceConfig(BaseModel):
     backend: StorageBackendType = StorageBackendType.LOCAL
     backend_config: Dict[str, Any] = Field(default_factory=dict)
 
-    # Workspace settings
+    # Taskspace settings
     auto_commit: bool = True
     auto_sync: bool = False
     max_size_mb: Optional[int] = None
@@ -246,9 +246,9 @@ class WorkspaceConfig(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class WorkspaceState(BaseModel):
-    """Current state of a workspace."""
-    workspace_id: str
+class TaskspaceState(BaseModel):
+    """Current state of a taskspace."""
+    taskspace_id: str
     total_artifacts: int = 0
     total_size_bytes: int = 0
     last_activity: Optional[datetime] = None
@@ -480,7 +480,7 @@ class StorageConfig(BaseModel):
     config: Dict[str, Any] = Field(default_factory=dict)
 
     # General settings
-    workspace_path: str = "./workspace"
+    taskspace_path: str = "./taskspace"
     max_file_size_mb: int = 100
     allowed_extensions: Optional[List[str]] = None
     blocked_extensions: List[str] = Field(default_factory=lambda: ['.exe', '.bat', '.sh'])

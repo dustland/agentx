@@ -22,15 +22,15 @@ class TestParallelExecution:
     """Test parallel task execution functionality."""
 
     @pytest.fixture
-    async def temp_workspace(self):
-        """Create a temporary workspace for testing."""
+    async def temp_taskspace(self):
+        """Create a temporary taskspace for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        workspace = TaskspaceStorage(
+        taskspace = TaskspaceStorage(
             task_id="test_parallel_execution",
-            workspace_path=str(temp_dir)
+            taskspace_path=str(temp_dir)
         )
         
-        yield workspace
+        yield taskspace
         
         # Cleanup
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -137,7 +137,7 @@ class TestParallelExecution:
         assert len(actionable_tasks) == 2
 
     @pytest.mark.asyncio
-    async def test_parallel_execution_logic(self, temp_workspace, mock_team_config):
+    async def test_parallel_execution_logic(self, temp_taskspace, mock_team_config):
         """Test the parallel execution logic without actual LLM calls."""
         
         # Create XAgent with mocked components
@@ -155,12 +155,12 @@ class TestParallelExecution:
                 # Initialize XAgent
                 xagent = XAgent(
                     task_id="test_parallel",
-                    workspace=temp_workspace,
+                    taskspace=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
                 # Create a plan with parallel tasks
-                xagent.current_plan = Plan(
+                xagent.plan = Plan(
                     goal="Test parallel research",
                     tasks=[
                         PlanItem(
@@ -209,14 +209,14 @@ class TestParallelExecution:
                 assert "Research Django" in result
                 
                 # Verify all tasks were marked as completed
-                for task in xagent.current_plan.tasks:
+                for task in xagent.plan.tasks:
                     assert task.status == "completed"
                 
                 # Verify agents were called
                 assert mock_researcher.generate_response.call_count == 3
 
     @pytest.mark.asyncio
-    async def test_fallback_to_sequential(self, temp_workspace, mock_team_config):
+    async def test_fallback_to_sequential(self, temp_taskspace, mock_team_config):
         """Test that parallel execution falls back to sequential when only one task available."""
         
         with patch('agentx.core.xagent.load_team_config', return_value=mock_team_config):
@@ -227,12 +227,12 @@ class TestParallelExecution:
                 
                 xagent = XAgent(
                     task_id="test_sequential_fallback",
-                    workspace=temp_workspace,
+                    taskspace=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
                 # Create a plan with only one actionable task
-                xagent.current_plan = Plan(
+                xagent.plan = Plan(
                     goal="Test sequential fallback",
                     tasks=[
                         PlanItem(
@@ -259,7 +259,7 @@ class TestParallelExecution:
                 xagent._execute_single_step.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_error_handling_in_parallel(self, temp_workspace, mock_team_config):
+    async def test_error_handling_in_parallel(self, temp_taskspace, mock_team_config):
         """Test error handling during parallel execution."""
         
         with patch('agentx.core.xagent.load_team_config', return_value=mock_team_config):
@@ -279,12 +279,12 @@ class TestParallelExecution:
                 
                 xagent = XAgent(
                     task_id="test_error_handling", 
-                    workspace=temp_workspace,
+                    taskspace=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
                 # Create plan with tasks that have different failure policies
-                xagent.current_plan = Plan(
+                xagent.plan = Plan(
                     goal="Test error handling",
                     tasks=[
                         PlanItem(
@@ -319,8 +319,8 @@ class TestParallelExecution:
                 assert "API error" in result
                 
                 # Check final task statuses
-                successful_task = xagent.current_plan.get_task_by_id("task_success")
-                failed_task = xagent.current_plan.get_task_by_id("task_failure")
+                successful_task = xagent.plan.get_task_by_id("task_success")
+                failed_task = xagent.plan.get_task_by_id("task_failure")
                 
                 assert successful_task.status == "completed"
                 assert failed_task.status == "failed"

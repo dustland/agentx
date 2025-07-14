@@ -6,7 +6,7 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from agentx.storage import WorkspaceStorage
+from agentx.storage import TaskspaceStorage
 from agentx.storage.git_storage import GitArtifactStorage
 from agentx.builtin_tools.file import FileTool
 
@@ -22,12 +22,12 @@ class TestFileToolIntegration:
             base_path=self.temp_dir,
             task_id=self.task_id
         )
-        self.workspace = WorkspaceStorage(
+        self.taskspace = TaskspaceStorage(
             task_id=self.task_id,
             base_path=self.temp_dir,
             file_storage=self.artifact_storage
         )
-        self.file_tool = FileTool(workspace_storage=self.workspace)
+        self.file_tool = FileTool(taskspace_storage=self.taskspace)
 
     def teardown_method(self):
         """Clean up test environment."""
@@ -51,13 +51,13 @@ class TestFileToolIntegration:
         # List files
         list_result = await self.file_tool.list_files()
         assert list_result.success is True
-        assert "Workspace files" in list_result.result and "📂" in list_result.result
+        assert "Taskspace files" in list_result.result and "📂" in list_result.result
         assert "test_report.md" in list_result.result
 
-        # Get workspace summary
-        summary_result = await self.file_tool.get_workspace_summary()
+        # Get taskspace summary
+        summary_result = await self.file_tool.get_taskspace_summary()
         assert summary_result.success is True
-        assert "Workspace Summary" in summary_result.result and "📊" in summary_result.result
+        assert "Taskspace Summary" in summary_result.result and "📊" in summary_result.result
 
     @pytest.mark.skip(reason="Git storage has issues with nested paths")
     @pytest.mark.asyncio
@@ -80,13 +80,13 @@ class TestFileToolIntegration:
         assert "# API Overview" in read_result.result
 
     @pytest.mark.asyncio
-    async def test_workspace_isolation_integration(self):
-        """Test that file operations are isolated to workspace."""
+    async def test_taskspace_isolation_integration(self):
+        """Test that file operations are isolated to taskspace."""
         # Create a file
         await self.file_tool.write_file("isolated.txt", "isolated content")
 
-        # Create a second workspace/file tool
-        workspace2 = WorkspaceStorage(
+        # Create a second taskspace/file tool
+        taskspace2 = TaskspaceStorage(
             task_id="other_task",
             base_path=self.temp_dir,
             file_storage=GitArtifactStorage(
@@ -94,9 +94,9 @@ class TestFileToolIntegration:
                 task_id="other_task"
             )
         )
-        file_tool2 = FileTool(workspace_storage=workspace2)
+        file_tool2 = FileTool(taskspace_storage=taskspace2)
 
-        # Write different file in second workspace
+        # Write different file in second taskspace
         await file_tool2.write_file("other.txt", "other content")
 
         # Verify isolation
@@ -109,7 +109,7 @@ class TestFileToolIntegration:
         assert "other.txt" in list2.result
         assert "isolated.txt" not in list2.result
 
-        # Try to read across workspaces (should fail)
+        # Try to read across taskspaces (should fail)
         read1 = await self.file_tool.read_file("other.txt")
         read2 = await file_tool2.read_file("isolated.txt")
 

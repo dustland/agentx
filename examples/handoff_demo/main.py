@@ -64,9 +64,9 @@ async def main():
         print(f"⚠️ Task stopped after {step_count} steps")
 
     # Show the final plan to see all tasks including handoffs
-    if x.current_plan:
+    if x.plan:
         print("\n📊 Final Execution Plan:")
-        for i, task in enumerate(x.current_plan.tasks, 1):
+        for i, task in enumerate(x.plan.tasks, 1):
             status_emoji = {
                 "completed": "✅",
                 "failed": "❌",
