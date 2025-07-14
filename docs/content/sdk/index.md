@@ -1,8 +1,8 @@
-# API Reference
+# Python SDK Reference
 
-Complete API reference for the AgentX framework.
+Complete Python SDK reference for the AgentX framework.
 
-AgentX is a modern, AI-powered multi-agent framework for building intelligent systems. This API reference covers all the core modules and components.
+This section contains the auto-generated documentation for all Python classes, functions, and modules in the AgentX SDK (`agentx-py`). For REST API endpoints and HTTP interface documentation, see the [REST API Explorer](/api-explorer).
 
 ## Core Modules
 
@@ -35,14 +35,6 @@ Configuration loading and management utilities.
 - **Agent Configuration** - Agent setup and prompt loading
 - **Team Configuration** - Multi-agent team configuration
 - **Prompt Management** - Template and prompt handling
-
-### [Server](/api/server)
-REST API server and real-time communication components.
-
-- **REST API** - Complete HTTP API reference with endpoints
-- **Streaming** - Server-Sent Events for real-time updates
-- **Models** - Request/response validation and data structures
-- **OpenAPI** - Interactive documentation and testing
 
 ### [Events](/api/event)
 Event system for inter-agent communication and middleware.

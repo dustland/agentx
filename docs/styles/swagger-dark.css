@@ -1,0 +1,152 @@
+/* Swagger UI Dark Mode Overrides */
+
+/* Base dark theme colors */
+:root {
+  --swagger-dark-bg: #0a0a0a;
+  --swagger-dark-bg-secondary: #1a1a1a;
+  --swagger-dark-border: #2a2a2a;
+  --swagger-dark-text: #e4e4e7;
+  --swagger-dark-text-secondary: #a1a1aa;
+  --swagger-dark-accent: #3b82f6;
+  --swagger-dark-success: #22c55e;
+  --swagger-dark-error: #ef4444;
+}
+
+/* Main container */
+.swagger-ui {
+  background: var(--swagger-dark-bg) !important;
+  color: var(--swagger-dark-text) !important;
+}
+
+/* Headers */
+.swagger-ui .info .title,
+.swagger-ui .info h1,
+.swagger-ui .info h2,
+.swagger-ui .info h3,
+.swagger-ui .info h4 {
+  color: var(--swagger-dark-text) !important;
+}
+
+/* Descriptions */
+.swagger-ui .info .description,
+.swagger-ui .info p,
+.swagger-ui .markdown p {
+  color: var(--swagger-dark-text-secondary) !important;
+}
+
+/* Operation blocks */
+.swagger-ui .opblock {
+  background: var(--swagger-dark-bg-secondary) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+.swagger-ui .opblock .opblock-summary {
+  background: var(--swagger-dark-bg-secondary) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+.swagger-ui .opblock .opblock-summary-method {
+  background: var(--swagger-dark-accent) !important;
+  color: white !important;
+}
+
+/* GET method */
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+  background: #3b82f6 !important;
+}
+
+/* POST method */
+.swagger-ui .opblock.opblock-post .opblock-summary-method {
+  background: #22c55e !important;
+}
+
+/* PUT method */
+.swagger-ui .opblock.opblock-put .opblock-summary-method {
+  background: #f59e0b !important;
+}
+
+/* DELETE method */
+.swagger-ui .opblock.opblock-delete .opblock-summary-method {
+  background: #ef4444 !important;
+}
+
+/* Parameters section */
+.swagger-ui .parameters,
+.swagger-ui .responses-wrapper {
+  background: var(--swagger-dark-bg) !important;
+}
+
+.swagger-ui table tbody tr td {
+  color: var(--swagger-dark-text) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+/* Input fields */
+.swagger-ui input[type=text],
+.swagger-ui input[type=password],
+.swagger-ui input[type=email],
+.swagger-ui input[type=file],
+.swagger-ui textarea {
+  background: var(--swagger-dark-bg) !important;
+  color: var(--swagger-dark-text) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+/* Select dropdowns */
+.swagger-ui select {
+  background: var(--swagger-dark-bg) !important;
+  color: var(--swagger-dark-text) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+/* Buttons */
+.swagger-ui .btn {
+  background: var(--swagger-dark-accent) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.swagger-ui .btn:hover {
+  background: #2563eb !important;
+}
+
+.swagger-ui .btn.cancel {
+  background: #6b7280 !important;
+}
+
+/* Response section */
+.swagger-ui .responses-inner {
+  background: var(--swagger-dark-bg-secondary) !important;
+}
+
+.swagger-ui .response {
+  background: var(--swagger-dark-bg) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+/* Code blocks */
+.swagger-ui .highlight-code,
+.swagger-ui pre {
+  background: #1a1a1a !important;
+  color: var(--swagger-dark-text) !important;
+}
+
+/* Model section */
+.swagger-ui .model-container {
+  background: var(--swagger-dark-bg-secondary) !important;
+  border-color: var(--swagger-dark-border) !important;
+}
+
+/* Links */
+.swagger-ui a {
+  color: var(--swagger-dark-accent) !important;
+}
+
+/* Tabs */
+.swagger-ui .tab li {
+  color: var(--swagger-dark-text-secondary) !important;
+}
+
+.swagger-ui .tab li.active {
+  color: var(--swagger-dark-text) !important;
+}

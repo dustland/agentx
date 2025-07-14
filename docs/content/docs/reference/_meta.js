@@ -1,4 +1,5 @@
 export default {
   "configuration": "Configuration",
-  "prompt-engineering": "Prompt Engineering"
+  "prompt-engineering": "Prompt Engineering",
+  "rest-api": "REST API"
 }

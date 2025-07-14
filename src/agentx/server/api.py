@@ -8,6 +8,7 @@ Provides endpoints for creating and managing tasks, and accessing task memory.
 import asyncio
 from datetime import datetime
 from typing import Dict, Any, Optional, List
+from pathlib import Path
 from ..utils.logger import get_logger
 import json
 
@@ -18,6 +19,7 @@ from sse_starlette.sse import EventSourceResponse
 import uvicorn
 
 from ..core.xagent import XAgent
+from ..core.message import TaskHistory
 from .models import (
     TaskRequest, TaskResponse, TaskInfo, TaskStatus,
     MemoryRequest, MemoryResponse,
@@ -87,6 +89,7 @@ def add_routes(app: FastAPI):
     
     # Import streaming support
     from .streaming import event_stream_manager, send_agent_message, send_agent_status, send_task_update
+    from ..storage.chat_history import chat_history_manager
 
     @app.get("/health", response_model=HealthResponse)
     async def health_check():
@@ -470,6 +473,173 @@ def add_routes(app: FastAPI):
             logger.error(f"Failed to read file {file_path}: {e}")
             raise HTTPException(status_code=500, detail="Failed to read file")
     
+    @app.get("/tasks/{task_id}/chat")
+    async def get_chat_history(task_id: str, user_id: Optional[str] = None):
+        """Get the chat history for a task"""
+        # Check if task exists in active tasks and get user permissions
+        task = active_tasks.get(task_id)
+        if task:
+            # Task is active - check user permissions and use task's actual taskspace path
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                raise HTTPException(status_code=404, detail="Task not found")
+            taskspace_path = task.taskspace.taskspace_path
+        else:
+            # Task not active - check if taskspace exists
+            # Try both user-scoped and legacy paths
+            if user_id:
+                taskspace_path = f"taskspace/{user_id}/{task_id}"
+            else:
+                taskspace_path = f"taskspace/{task_id}"
+            
+            if not Path(taskspace_path).exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = f"taskspace/{task_id}"
+                    if Path(legacy_path).exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
+        
+        try:
+            # Load chat history from persistent storage
+            history = await chat_history_manager.load_history(task_id, taskspace_path)
+            
+            # Get any active streaming messages
+            storage = chat_history_manager.get_storage(taskspace_path)
+            active_streaming = storage.get_active_streaming_messages(task_id)
+            
+            # Convert to API format
+            messages = []
+            for msg in history.messages:
+                message_data = {
+                    "id": msg.id,
+                    "role": msg.role,
+                    "content": msg.content,
+                    "parts": [part.model_dump() for part in msg.parts],
+                    "timestamp": msg.timestamp.isoformat(),
+                    "type": "complete"
+                }
+                
+                # Add agent name if this is from a TaskStep (assistant message with step_id format)
+                if msg.role == "assistant" and msg.id.startswith("step_"):
+                    # Extract agent name from parts if available
+                    for part in msg.parts:
+                        if hasattr(part, 'agent_name'):
+                            message_data["agent_name"] = part.agent_name
+                            break
+                
+                messages.append(message_data)
+            
+            # Steps are now stored as messages, so no need to convert them separately
+            
+            # Sort messages by timestamp
+            messages.sort(key=lambda x: x["timestamp"])
+            
+            return {
+                "task_id": task_id,
+                "messages": messages,
+                "total_messages": len(messages),
+                "active_streaming": active_streaming,
+                "last_updated": history.updated_at.isoformat() if history.messages or history.steps else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get chat history for task {task_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to retrieve chat history")
+    
+    @app.post("/tasks/{task_id}/chat")
+    async def send_chat_message(
+        task_id: str, 
+        message_data: Dict[str, Any],
+        user_id: Optional[str] = None
+    ):
+        """Send a new message to a task's chat"""
+        # Check if task exists and is active
+        task = active_tasks.get(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found or not active")
+        
+        # Check user permissions
+        if user_id is not None and getattr(task, 'user_id', None) != user_id:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        try:
+            from ..core.message import Message
+            
+            # Create user message
+            user_message = Message.user_message(
+                content=message_data.get("content", "")
+            )
+            
+            # Add to task's history and persist
+            task.history.add_message(user_message)
+            await chat_history_manager.save_message(
+                task_id, 
+                task.taskspace.taskspace_path, 
+                user_message
+            )
+            
+            # Send to streaming for real-time updates
+            from .streaming import send_complete_message
+            await send_complete_message(
+                task_id,
+                task.taskspace.taskspace_path,
+                user_message
+            )
+            
+            return {
+                "message_id": user_message.id,
+                "status": "sent",
+                "timestamp": user_message.timestamp.isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to send chat message for task {task_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to send message")
+    
+    @app.delete("/tasks/{task_id}/chat")
+    async def clear_chat_history(task_id: str, user_id: Optional[str] = None):
+        """Clear the chat history for a task"""
+        # Check if task exists in active tasks and get user permissions
+        task = active_tasks.get(task_id)
+        if task:
+            # Task is active - check user permissions
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                raise HTTPException(status_code=404, detail="Task not found")
+            taskspace_path = task.taskspace.taskspace_path
+            # Also clear in-memory history
+            task.history = TaskHistory(task_id=task_id)
+        else:
+            # Task not active - check if taskspace exists
+            if user_id:
+                taskspace_path = f"taskspace/{user_id}/{task_id}"
+            else:
+                taskspace_path = f"taskspace/{task_id}"
+            
+            if not Path(taskspace_path).exists():
+                # Try legacy path
+                if user_id:
+                    legacy_path = f"taskspace/{task_id}"
+                    if Path(legacy_path).exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
+        
+        try:
+            # Clear persistent storage
+            storage = chat_history_manager.get_storage(taskspace_path)
+            await storage.clear_history(task_id)
+            
+            return {"message": "Chat history cleared successfully"}
+            
+        except Exception as e:
+            logger.error(f"Failed to clear chat history for task {task_id}: {e}")
+            raise HTTPException(status_code=500, detail="Failed to clear chat history")
+
     @app.get("/tasks/{task_id}/logs")
     async def get_task_logs(task_id: str, tail: Optional[int] = None):
         """Get the execution logs for a task"""

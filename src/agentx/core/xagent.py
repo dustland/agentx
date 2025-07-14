@@ -135,6 +135,10 @@ class XAgent(Agent):
         self.message_queue = MessageQueue()
         self.specialist_agents = self._initialize_specialist_agents()
         self.history = TaskHistory(task_id=self.task_id)
+        
+        # Initialize chat history storage
+        from ..storage.chat_history import chat_history_manager
+        self.chat_storage = chat_history_manager.get_storage(self.taskspace.taskspace_path)
 
         # Initialize XAgent's own brain for orchestration decisions
         orchestrator_brain_config = self._get_orchestrator_brain_config()
@@ -286,6 +290,11 @@ class XAgent(Agent):
         # Add to conversation history
         self.conversation_history.append(message)
         self.history.add_message(message)
+        
+        # Persist message to chat history
+        import asyncio
+        if hasattr(self, 'chat_storage'):
+            asyncio.create_task(self.chat_storage.save_message(self.task_id, message))
 
         logger.info(f"XAgent received chat message: {message.content[:100]}...")
 
@@ -887,6 +896,12 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             parts=[TextPart(text=response.text)]
         )
         self.history.add_step(message)
+        
+        # Persist step to chat history
+        import asyncio
+        if hasattr(self, 'chat_storage'):
+            asyncio.create_task(self.chat_storage.save_step(self.task_id, message))
+        
         yield message
 
     async def start(self, prompt: str) -> None:

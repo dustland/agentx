@@ -3,8 +3,12 @@ export default {
     title: "Documentation",
     type: "page"
   },
+  sdk: {
+    title: "Python SDK",
+    type: "page"
+  },
   api: {
-    title: "API",
+    title: "REST API",
     type: "page"
   }
 }

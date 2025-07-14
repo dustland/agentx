@@ -7,6 +7,8 @@ import json
 from typing import AsyncGenerator, Dict, Any, Optional
 from datetime import datetime
 from ..utils.logger import get_logger
+from ..core.message import Message, StreamChunk
+from ..storage.chat_history import chat_history_manager
 
 logger = get_logger(__name__)
 
@@ -119,3 +121,40 @@ async def send_tool_call(task_id: str, agent_id: str, tool_name: str, parameters
             "status": status
         }
     )
+
+async def send_streaming_chunk(task_id: str, taskspace_path: str, chunk: StreamChunk):
+    """Send a streaming message chunk and handle persistence."""
+    # Send to live stream for real-time UI updates
+    await event_stream_manager.send_event(
+        task_id,
+        "message_chunk",
+        {
+            "step_id": chunk.step_id,
+            "agent_name": chunk.agent_name,
+            "text": chunk.text,
+            "is_final": chunk.is_final,
+            "token_count": chunk.token_count,
+            "timestamp": chunk.timestamp.isoformat()
+        }
+    )
+    
+    # Handle persistence (accumulate chunks, persist only when complete)
+    storage = chat_history_manager.get_storage(taskspace_path)
+    await storage.handle_streaming_chunk(task_id, chunk)
+
+async def send_complete_message(task_id: str, taskspace_path: str, message: Message):
+    """Send a complete message and persist it."""
+    # Send to live stream
+    await event_stream_manager.send_event(
+        task_id,
+        "complete_message",
+        {
+            "message_id": message.id,
+            "role": message.role,
+            "content": message.content,
+            "timestamp": message.timestamp.isoformat()
+        }
+    )
+    
+    # Persist immediately
+    await chat_history_manager.save_message(task_id, taskspace_path, message)

@@ -12,9 +12,18 @@ aside[data-nextra-sidebar] {
   width: 320px !important;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling and stable scrollbar */
 html {
   scroll-behavior: smooth;
+  /* Always show scrollbar gutter to prevent navbar shift */
+  scrollbar-gutter: stable;
+}
+
+/* Fallback for browsers that don't support scrollbar-gutter */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
 }
 
 /* Custom gradient backgrounds for dark mode */
