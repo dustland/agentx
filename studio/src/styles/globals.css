@@ -1,0 +1,347 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* Layout */
+  --radius: 0.625rem;
+  --header-height: 48px;
+
+  /* Base colors */
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0.129 0.042 264.695);
+
+  /* Semantic colors - Light mode */
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.129 0.042 264.695);
+  --color-primary: oklch(0.7 0.25 130);
+  --color-primary-foreground: oklch(0.129 0.042 264.695);
+  --color-secondary: oklch(0.7 0.3 230);
+  --color-secondary-foreground: oklch(0.984 0.003 247.858);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.984 0.003 247.858);
+  --color-muted: oklch(0.968 0.007 247.896);
+  --color-muted-foreground: oklch(0.554 0.046 257.417);
+  --color-accent: oklch(0.96 0.005 247.896);
+  --color-accent-foreground: oklch(0.208 0.042 265.755);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.129 0.042 264.695);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.129 0.042 264.695);
+  --color-border: oklch(0.929 0.013 255.508);
+  --color-input: oklch(0.929 0.013 255.508);
+  --color-ring: oklch(0.7 0.25 130);
+  --color-brand: oklch(0.7 0.25 130);
+  --color-brand-foreground: oklch(0.129 0.042 264.695);
+
+  /* Success, Warning, Info colors */
+  --color-success: oklch(0.6 0.15 145);
+  --color-success-foreground: oklch(0.984 0.003 247.858);
+  --color-warning: oklch(0.7 0.15 85);
+  --color-warning-foreground: oklch(0.129 0.042 264.695);
+  --color-info: oklch(0.6 0.15 220);
+  --color-info-foreground: oklch(0.984 0.003 247.858);
+
+  /* Surface colors */
+  --color-surface: oklch(0.99 0.005 247.896);
+  --color-surface-foreground: oklch(0.129 0.042 264.695);
+  --color-surface-muted: oklch(0.95 0.01 247.896);
+  --color-surface-subtle: oklch(0.975 0.007 247.896);
+
+  /* Other semantic colors */
+  --color-overlay: oklch(0 0 0 / 0.5);
+  --color-overlay-light: oklch(0 0 0 / 0.1);
+  --color-overlay-subtle: oklch(0 0 0 / 0.05);
+
+  /* Chart colors */
+  --color-chart-1: oklch(0.488 0.243 264.376);
+  --color-chart-2: oklch(0.6 0.118 184.704);
+  --color-chart-3: oklch(0.398 0.07 227.392);
+  --color-chart-4: oklch(0.828 0.189 84.429);
+  --color-chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar colors */
+  --color-sidebar: oklch(0.984 0.003 247.858);
+  --color-sidebar-foreground: oklch(0.129 0.042 264.695);
+  --color-sidebar-primary: oklch(0.208 0.042 265.755);
+  --color-sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --color-sidebar-accent: oklch(0.968 0.007 247.896);
+  --color-sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --color-sidebar-border: oklch(0.929 0.013 255.508);
+  --color-sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+/* Configure dark mode variant */
+@variant dark (&:where(.dark, .dark *));
+
+/* Dark mode theme overrides */
+.dark {
+  --color-background: oklch(0.129 0.042 264.695);
+  --color-foreground: oklch(0.984 0.003 247.858);
+  --color-primary: oklch(0.75 0.28 130);
+  --color-primary-foreground: oklch(0.129 0.042 264.695);
+  --color-secondary: oklch(0.6 0.25 230);
+  --color-secondary-foreground: oklch(0.984 0.003 247.858);
+  --color-destructive: oklch(0.704 0.191 22.216);
+  --color-destructive-foreground: oklch(0.984 0.003 247.858);
+  --color-muted: oklch(0.279 0.041 260.031);
+  --color-muted-foreground: oklch(0.704 0.04 256.788);
+  --color-accent: oklch(0.279 0.041 260.031);
+  --color-accent-foreground: oklch(0.984 0.003 247.858);
+  --color-card: oklch(0.208 0.042 265.755);
+  --color-card-foreground: oklch(0.984 0.003 247.858);
+  --color-popover: oklch(0.208 0.042 265.755);
+  --color-popover-foreground: oklch(0.984 0.003 247.858);
+  --color-border: oklch(1 0 0 / 10%);
+  --color-input: oklch(1 0 0 / 15%);
+  --color-ring: oklch(0.75 0.28 130);
+  --color-brand: oklch(0.75 0.28 130);
+  --color-brand-foreground: oklch(0.129 0.042 264.695);
+
+  /* Success, Warning, Info colors for dark mode */
+  --color-success: oklch(0.6 0.15 145);
+  --color-success-foreground: oklch(0.984 0.003 247.858);
+  --color-warning: oklch(0.7 0.15 85);
+  --color-warning-foreground: oklch(0.129 0.042 264.695);
+  --color-info: oklch(0.6 0.15 220);
+  --color-info-foreground: oklch(0.984 0.003 247.858);
+
+  /* Surface colors for dark mode */
+  --color-surface: oklch(0.18 0.04 265);
+  --color-surface-foreground: oklch(0.984 0.003 247.858);
+  --color-surface-muted: oklch(0.25 0.04 265);
+  --color-surface-subtle: oklch(0.22 0.04 265);
+
+  /* Other semantic colors for dark mode */
+  --color-overlay: oklch(0 0 0 / 0.7);
+  --color-overlay-light: oklch(1 0 0 / 0.1);
+  --color-overlay-subtle: oklch(1 0 0 / 0.05);
+
+  /* Chart colors for dark mode */
+  --color-chart-1: oklch(0.488 0.243 264.376);
+  --color-chart-2: oklch(0.696 0.17 162.48);
+  --color-chart-3: oklch(0.769 0.188 70.08);
+  --color-chart-4: oklch(0.627 0.265 303.9);
+  --color-chart-5: oklch(0.645 0.246 16.439);
+
+  /* Sidebar colors for dark mode */
+  --color-sidebar: oklch(0.208 0.042 265.755);
+  --color-sidebar-foreground: oklch(0.984 0.003 247.858);
+  --color-sidebar-primary: oklch(0.488 0.243 264.376);
+  --color-sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --color-sidebar-accent: oklch(0.279 0.041 260.031);
+  --color-sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --color-sidebar-border: oklch(1 0 0 / 10%);
+  --color-sidebar-ring: oklch(0.551 0.027 264.364);
+  --sidebar: hsl(240 5.9% 10%);
+  --sidebar-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-primary: hsl(224.3 76.3% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(240 3.7% 15.9%);
+  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
+  --sidebar-border: hsl(240 3.7% 15.9%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar styles to match ScrollArea component */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode scrollbar adjustments */
+.dark *::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.dark * {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+/* Smooth transitions for locale switching */
+html {
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    transition: none;
+  }
+}
+
+/* Text gradient animation for tool calls - Metal reflection style */
+@keyframes text-gradient {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+@keyframes border-gradient {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+.text-gradient-animated {
+  background: linear-gradient(
+    135deg,
+    #8b5cf6 0%,
+    #3b82f6 25%,
+    #06b6d4 50%,
+    #3b82f6 75%,
+    #8b5cf6 100%
+  );
+  background-size: 300% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-gradient 6s ease-out infinite;
+  color: transparent;
+}
+
+/* Alternative version with more subtle colors */
+.text-gradient-subtle {
+  background: linear-gradient(
+    135deg,
+    #6366f1 0%,
+    #4f46e5 25%,
+    #0ea5e9 50%,
+    #4f46e5 75%,
+    #6366f1 100%
+  );
+  background-size: 350% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: text-gradient 8s ease-out infinite;
+  color: transparent;
+}
+
+/* Animated border effects */
+.border-gradient-animated {
+  position: relative;
+  border-radius: 0.75rem;
+  background: transparent;
+}
+
+.border-gradient-animated::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    135deg,
+    #8b5cf6 0%,
+    #3b82f6 25%,
+    #06b6d4 50%,
+    #3b82f6 75%,
+    #8b5cf6 100%
+  );
+  background-size: 300% 100%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: border-gradient 6s ease-out infinite;
+}
+
+.border-gradient-subtle {
+  position: relative;
+  border-radius: 0.75rem;
+  background: transparent;
+}
+
+.border-gradient-subtle::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    135deg,
+    #6366f1 0%,
+    #4f46e5 25%,
+    #0ea5e9 50%,
+    #4f46e5 75%,
+    #6366f1 100%
+  );
+  background-size: 350% 100%;
+  border-radius: inherit;
+  z-index: -1;
+  animation: border-gradient 8s ease-out infinite;
+}
+
+:root {
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Gradient animation for streaming messages */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}

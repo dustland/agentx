@@ -11,7 +11,7 @@ Separates pure filesystem abstraction from business logic.
 Factory for creating storage providers.
 
 Creates filesystem abstractions that can be swapped for different backends
-(local, S3, Azure, etc.) and workspace storage for business logic.
+(local, S3, Azure, etc.) and taskspace storage for business logic.
 
 ### create_file_storage <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/factory.py#L27" class="source-link" title="View source code">source</a>
 
@@ -30,20 +30,23 @@ AzureFileStorage, etc. without changing the business logic.
 **Returns:**
     FileStorage implementation
 
-### create_workspace_storage <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/factory.py#L48" class="source-link" title="View source code">source</a>
+### create_taskspace_storage <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/factory.py#L48" class="source-link" title="View source code">source</a>
 
 ```python
-def create_workspace_storage(workspace_path: Union[str, Path], use_git_artifacts: bool = True) -> WorkspaceStorage
+def create_taskspace_storage(workspace_path: Union[str, Path] = None, use_git_artifacts: bool = True, base_path: Union[str, Path] = None, task_id: str = None, user_id: str = None) -> TaskspaceStorage
 ```
 
-Create a workspace storage for business logic.
+Create a taskspace storage for business logic.
 
 Handles business concepts like artifacts, messages, execution plans
 using the filesystem abstraction underneath.
 
 **Args:**
-    workspace_path: Path to the workspace directory
+    workspace_path: Path to the taskspace directory (old API)
     use_git_artifacts: Whether to use Git for artifact versioning
+    base_path: Base path for multi-tenant taskspaces (new API)
+    task_id: Task ID for taskspace isolation (new API)
+    user_id: User ID for multi-tenant isolation (new API)
 
 **Returns:**
-    WorkspaceStorage instance
+    TaskspaceStorage instance

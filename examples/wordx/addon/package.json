@@ -10,7 +10,10 @@
     "stop": "office-addin-debugging stop manifest.xml",
     "validate": "office-addin-manifest validate manifest.xml",
     "build": "echo 'No build step required for static add-in'",
-    "test": "echo 'No tests specified'"
+    "test": "echo 'No tests specified'",
+    "generate-cert": "office-addin-dev-certs install",
+    "serve": "node server.js",
+    "dev": "WORDX_ADDON_PORT=3456 node server.js"
   },
   "keywords": [
     "office-addin",
@@ -22,9 +25,9 @@
   "author": "Dustland Team",
   "license": "MIT",
   "devDependencies": {
-    "office-addin-debugging": "^5.1.5",
+    "office-addin-debugging": "^6.0.3",
     "office-addin-dev-certs": "^1.13.5",
-    "office-addin-manifest": "^1.13.5"
+    "office-addin-manifest": "^2.0.3"
   },
   "dependencies": {
     "@types/office-js": "^1.0.0"

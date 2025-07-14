@@ -18,43 +18,37 @@ models:
 
 # Agents configuration
 agents:
-  document_reviewer:
-    name: "Document Reviewer"
+  - name: "Document Reviewer"
     description: "Analyzes document structure, clarity, and overall quality"
-    model: "default"
     prompt_file: "prompts/document_reviewer.md"
     tools:
-      - "web_search"
-      - "memory"
-      - "file_operations"
+      - "read_file"
+      - "write_file"
+      - "list_files"
 
-  content_editor:
-    name: "Content Editor"
+  - name: "Content Editor"
     description: "Improves writing quality, clarity, and engagement"
-    model: "default"
     prompt_file: "prompts/content_editor.md"
     tools:
-      - "memory"
-      - "file_operations"
+      - "read_file"
+      - "write_file"
+      - "list_files"
 
-  formatter:
-    name: "Formatter"
+  - name: "Formatter"
     description: "Optimizes document layout, styling, and visual presentation"
-    model: "default"
     prompt_file: "prompts/formatter.md"
     tools:
-      - "memory"
-      - "file_operations"
+      - "read_file"
+      - "write_file"
+      - "list_files"
 
-  compliance_auditor:
-    name: "Compliance Auditor"
+  - name: "Compliance Auditor"
     description: "Ensures document meets industry standards and compliance requirements"
-    model: "default"
     prompt_file: "prompts/compliance_auditor.md"
     tools:
-      - "web_search"
-      - "memory"
-      - "file_operations"
+      - "read_file"
+      - "write_file"
+      - "list_files"
 
 # Workflow configuration
 workflow:

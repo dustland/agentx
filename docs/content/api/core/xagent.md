@@ -11,7 +11,7 @@ Key Features:
 - Rich message handling with attachments and multimedia
 - LLM-driven plan adjustment that preserves completed work
 - Single point of contact for all user interactions
-- Automatic workspace and tool management
+- Automatic taskspace and tool management
 
 API Design:
 - chat(message) - For user conversation, plan adjustments, and Q&A
@@ -38,7 +38,7 @@ interface that users can chat with naturally.
 Key capabilities:
 - Rich message handling (text, attachments, multimedia)
 - LLM-driven plan adjustment preserving completed work
-- Automatic workspace and tool management
+- Automatic taskspace and tool management
 - Conversational task management
 
 Usage Pattern:
@@ -59,9 +59,9 @@ Usage Pattern:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L100" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, team_config: TeamConfig, task_id: Optional[str] = None, workspace_dir: Optional[Path] = None, initial_prompt: Optional[str] = None)
+def __init__(self, team_config: TeamConfig, task_id: Optional[str] = None, taskspace_dir: Optional[Path] = None, initial_prompt: Optional[str] = None, user_id: Optional[str] = None)
 ```
-### chat <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L252" class="source-link" title="View source code">source</a>
+### chat <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L261" class="source-link" title="View source code">source</a>
 
 ```python
 async def chat(self, message: Union[str, Message]) -> XAgentResponse
@@ -84,7 +84,7 @@ For autonomous task execution, use step() method instead.
 **Returns:**
     XAgentResponse with text, artifacts, and execution details
 
-### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L871" class="source-link" title="View source code">source</a>
+### execute <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L880" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]
@@ -92,7 +92,7 @@ async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Tas
 
 Compatibility method for TaskExecutor.execute().
 
-### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L883" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L892" class="source-link" title="View source code">source</a>
 
 ```python
 async def start(self, prompt: str) -> None
@@ -100,7 +100,7 @@ async def start(self, prompt: str) -> None
 
 Compatibility method for TaskExecutor.start().
 
-### set_parallel_execution <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L887" class="source-link" title="View source code">source</a>
+### set_parallel_execution <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L896" class="source-link" title="View source code">source</a>
 
 ```python
 def set_parallel_execution(self, enabled: bool = True, max_concurrent: int = 3) -> None
@@ -112,7 +112,7 @@ Configure parallel execution settings.
     enabled: Whether to enable parallel execution
     max_concurrent: Maximum number of tasks to execute simultaneously
 
-### get_parallel_settings <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L899" class="source-link" title="View source code">source</a>
+### get_parallel_settings <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L908" class="source-link" title="View source code">source</a>
 
 ```python
 def get_parallel_settings(self) -> Dict[str, Any]
@@ -120,7 +120,7 @@ def get_parallel_settings(self) -> Dict[str, Any]
 
 Get current parallel execution settings.
 
-### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L906" class="source-link" title="View source code">source</a>
+### step <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/xagent.py#L915" class="source-link" title="View source code">source</a>
 
 ```python
 async def step(self) -> str

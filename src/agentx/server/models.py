@@ -28,6 +28,7 @@ class TaskRequest(BaseModel):
     config_path: str = Field(description="Path to the task configuration file")
     task_description: str = Field(description="Description of the task to execute")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context for the task")
+    user_id: Optional[str] = Field(default=None, description="User ID for multi-tenant isolation")
 
 
 class TaskResponse(BaseModel):
@@ -38,6 +39,7 @@ class TaskResponse(BaseModel):
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
     completed_at: Optional[datetime] = None
+    user_id: Optional[str] = None
 
 
 class TaskInfo(BaseModel):
@@ -49,6 +51,7 @@ class TaskInfo(BaseModel):
     context: Optional[Dict[str, Any]] = None
     created_at: datetime
     completed_at: Optional[datetime] = None
+    user_id: Optional[str] = None
 
 
 class MemoryRequest(BaseModel):
@@ -74,3 +77,8 @@ class HealthResponse(BaseModel):
     timestamp: datetime = Field(default_factory=utc_now)
     version: str = "0.4.0"
     active_tasks: int = 0
+    service_name: str = "AgentX API"
+    service_type: str = "agentx-task-orchestration"
+    api_endpoints: List[str] = Field(default_factory=lambda: [
+        "/tasks", "/tasks/{task_id}", "/tasks/{task_id}/memory", "/health", "/monitor"
+    ])

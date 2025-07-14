@@ -24,7 +24,7 @@ from agentx.core.config import TeamConfig, TaskConfig
 from agentx.core.message import MessageQueue, TaskHistory, Message, UserMessage, TaskStep, TextPart
 # Orchestrator functionality moved to XAgent
 from agentx.core.plan import Plan, PlanItem, TaskStatus
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 from agentx.tool.manager import ToolManager
 from agentx.utils.id import generate_short_id
 from agentx.utils.logger import (
@@ -55,7 +55,7 @@ class Task:
         history: TaskHistory,
         message_queue: MessageQueue,
         agents: Dict[str, Agent],
-        workspace: WorkspaceStorage,
+        taskspace: TaskspaceStorage,
         initial_prompt: str,
     ):
         self.task_id = task_id
@@ -63,7 +63,7 @@ class Task:
         self.history = history
         self.message_queue = message_queue
         self.agents = agents
-        self.workspace = workspace
+        self.taskspace = taskspace
         self.initial_prompt = initial_prompt
 
         self.is_complete: bool = False
@@ -87,7 +87,7 @@ class Task:
             "task_id": self.task_id,
             "status": "completed" if self.is_complete else "in_progress",
             "initial_prompt": self.initial_prompt,
-            "workspace": str(self.workspace.get_workspace_path()),
+            "taskspace": str(self.taskspace.get_taskspace_path()),
             "agents": list(self.agents.keys()),
             "history_length": len(self.history.messages),
         }
@@ -135,7 +135,7 @@ class Task:
 
         try:
             plan_data = self.current_plan.model_dump()
-            await self.workspace.store_plan(plan_data)
+            await self.taskspace.store_plan(plan_data)
             logger.debug(f"Plan persisted to plan.json")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
@@ -143,7 +143,7 @@ class Task:
     async def load_plan(self) -> Optional[Plan]:
         """Loads the plan from plan.json if it exists."""
         try:
-            plan_data = await self.workspace.get_plan()
+            plan_data = await self.taskspace.get_plan()
             if plan_data:
                 self.current_plan = Plan(**plan_data)
                 logger.info(f"Loaded existing plan from plan.json")
@@ -186,7 +186,7 @@ async def start_task(
     prompt: str,
     config_path: Union[str, Path, TeamConfig],
     task_id: Optional[str] = None,
-    workspace_dir: Optional[Path] = None,
+    taskspace_dir: Optional[Path] = None,
 ) -> XAgent:
     """
     High-level function to start a task and return an initialized XAgent.
@@ -198,7 +198,7 @@ async def start_task(
         prompt: The initial task prompt
         config_path: Path to the team configuration file
         task_id: Optional custom task ID
-        workspace_dir: Optional custom workspace directory
+        taskspace_dir: Optional custom taskspace directory
 
     Returns:
         XAgent: The initialized XAgent ready for conversational interaction
@@ -235,7 +235,7 @@ async def start_task(
     x = XAgent(
         team_config=team_config,
         task_id=task_id,
-        workspace_dir=workspace_dir,
+        taskspace_dir=taskspace_dir,
         initial_prompt=prompt
     )
 

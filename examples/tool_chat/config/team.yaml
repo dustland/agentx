@@ -1,6 +1,6 @@
 name: "ToolChatTeam"
 description: "A single agent that uses search and custom weather tools to answer questions"
-output_dir: "workspace"
+output_dir: "taskspace"
 
 agents:
   - name: assistant

@@ -28,11 +28,11 @@ class ContextTool(Tool):
     - File-based persistence with backup
     """
 
-    def __init__(self, context_file: str = "context.json", workspace_path: str = "./workspace"):
+    def __init__(self, context_file: str = "context.json", workspace_path: str = "./taskspace"):
         super().__init__()
-        self.workspace_path = Path(workspace_path).resolve()
-        self.workspace_path.mkdir(parents=True, exist_ok=True)
-        self.context_file = self.workspace_path / context_file
+        self.taskspace_path = Path(workspace_path).resolve()
+        self.taskspace_path.mkdir(parents=True, exist_ok=True)
+        self.context_file = self.taskspace_path / context_file
         self.context_data = self._load_context()
 
     def _load_context(self) -> Dict[str, Any]:

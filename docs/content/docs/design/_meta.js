@@ -7,5 +7,6 @@ export default {
   'system-architecture': 'System Architecture',
   'orchestration': 'Orchestration System',
   'tool-execution': 'Tool Execution',
-  'communication': 'Agent Communication'
+  'communication': 'Agent Communication',
+  'multi-tenant-security': 'Multi-Tenant Security'
 }

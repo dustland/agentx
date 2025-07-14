@@ -8,7 +8,7 @@ Key Features:
 - Rich message handling with attachments and multimedia
 - LLM-driven plan adjustment that preserves completed work
 - Single point of contact for all user interactions
-- Automatic workspace and tool management
+- Automatic taskspace and tool management
 
 API Design:
 - chat(message) - For user conversation, plan adjustments, and Q&A
@@ -78,7 +78,7 @@ class XAgent(Agent):
     Key capabilities:
     - Rich message handling (text, attachments, multimedia)
     - LLM-driven plan adjustment preserving completed work
-    - Automatic workspace and tool management
+    - Automatic taskspace and tool management
     - Conversational task management
 
     Usage Pattern:
@@ -101,22 +101,31 @@ class XAgent(Agent):
         self,
         team_config: TeamConfig,
         task_id: Optional[str] = None,
-        workspace_dir: Optional[Path] = None,
+        taskspace_dir: Optional[Path] = None,
         initial_prompt: Optional[str] = None,
+        user_id: Optional[str] = None,
     ):
         # Generate unique task ID
         self.task_id = task_id or generate_short_id()
+        self.user_id = user_id
 
         # Accept only TeamConfig objects
         if not isinstance(team_config, TeamConfig):
             raise TypeError(f"team_config must be a TeamConfig object, got {type(team_config)}")
         self.team_config = team_config
 
-        # Initialize workspace storage
+        # Initialize taskspace storage
         from agentx.storage.factory import StorageFactory
-        self.workspace = StorageFactory.create_workspace_storage(
-            workspace_path=workspace_dir or (Path("./workspace") / self.task_id)
-        )
+        if taskspace_dir:
+            # Use explicit taskspace directory
+            self.taskspace = StorageFactory.create_taskspace_storage(taskspace_path=taskspace_dir)
+        else:
+            # Use user-scoped taskspace: taskspace/{user_id}/{task_id} or taskspace/{task_id}
+            self.taskspace = StorageFactory.create_taskspace_storage(
+                base_path=Path("./taskspace"),
+                task_id=self.task_id,
+                user_id=self.user_id
+            )
         self._setup_task_logging()
 
         logger.info(f"Initializing XAgent for task: {self.task_id}")
@@ -162,7 +171,7 @@ class XAgent(Agent):
 
     def _setup_task_logging(self) -> None:
         """Sets up file-based logging for the task."""
-        log_dir = self.workspace.get_workspace_path() / "logs"
+        log_dir = self.taskspace.get_taskspace_path() / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file_path = log_dir / f"{self.task_id}.log"
         setup_task_file_logging(str(log_file_path))
@@ -171,7 +180,7 @@ class XAgent(Agent):
         """Initializes the ToolManager and registers builtin tools."""
         tool_manager = ToolManager(
             task_id=self.task_id,
-            workspace_path=str(self.workspace.get_workspace_path())
+            taskspace_path=str(self.taskspace.get_taskspace_path())
         )
         logger.info("ToolManager initialized.")
         return tool_manager
@@ -228,13 +237,13 @@ class XAgent(Agent):
         self.initial_prompt = prompt
 
         # Try to load existing plan
-        plan_path = self.workspace.get_workspace_path() / "plan.json"
+        plan_path = self.taskspace.get_taskspace_path() / "plan.json"
         if plan_path.exists():
             try:
                 with open(plan_path, 'r') as f:
                     plan_data = json.load(f)
                 self.current_plan = Plan(**plan_data)
-                logger.info("Loaded existing plan from workspace")
+                logger.info("Loaded existing plan from taskspace")
             except Exception as e:
                 logger.warning(f"Failed to load existing plan: {e}")
 
@@ -533,16 +542,16 @@ Respond with a JSON object following this schema:
             logger.info(f"Generated plan with {len(plan.tasks)} tasks")
 
             # Save document outline if provided
-            if document_outline and self.workspace:
+            if document_outline and self.taskspace:
                 try:
-                    await self.workspace.store_artifact(
+                    await self.taskspace.store_artifact(
                         name="document_outline.md",
                         content=document_outline,
                         content_type="text/markdown",
                         metadata={"created_by": "XAgent", "purpose": "document_structure"},
                         commit_message="Created document outline for task execution"
                     )
-                    logger.info("Saved document outline to workspace")
+                    logger.info("Saved document outline to taskspace")
                 except Exception as e:
                     logger.warning(f"Failed to save document outline: {e}")
 
@@ -748,7 +757,7 @@ Respond with a JSON object following this schema:
 TASK: {task.name}
 GOAL: {task.goal}
 
-Complete this specific task using your available tools. Save any outputs that other agents might need as files in the workspace.
+Complete this specific task using your available tools. Save any outputs that other agents might need as files in the taskspace.
 
 Original user request: {self.initial_prompt or "No initial prompt provided"}{outline_reference}
 """
@@ -782,7 +791,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                 task_result=response,
                 task_goal=task.goal,
                 conversation_history=conversation_dicts,
-                workspace_files=[f["name"] for f in await self.workspace.list_artifacts()]
+                taskspace_files=[f["name"] for f in await self.taskspace.list_artifacts()]
             )
 
             next_agent = await self.handoff_evaluator.evaluate_handoffs(context)
@@ -809,16 +818,16 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         return response
 
     async def _persist_plan(self) -> None:
-        """Persist the current plan to workspace."""
+        """Persist the current plan to taskspace."""
         if not self.current_plan:
             return
 
-        plan_path = self.workspace.get_workspace_path() / "plan.json"
+        plan_path = self.taskspace.get_taskspace_path() / "plan.json"
         try:
             import json
             with open(plan_path, 'w') as f:
                 json.dump(self.current_plan.model_dump(), f, indent=2)
-            logger.debug("Plan persisted to workspace")
+            logger.debug("Plan persisted to taskspace")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
 
@@ -853,9 +862,9 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         return "\n".join(summary)
 
     def _get_artifacts_summary(self) -> str:
-        """Get a summary of available artifacts in workspace."""
+        """Get a summary of available artifacts in taskspace."""
         try:
-            artifacts_dir = self.workspace.get_workspace_path() / "artifacts"
+            artifacts_dir = self.taskspace.get_taskspace_path() / "artifacts"
             if not artifacts_dir.exists():
                 return "No artifacts available"
 

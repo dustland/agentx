@@ -40,21 +40,21 @@ class GitArtifactStorage:
     - Meaningful commit messages
     """
 
-    def __init__(self, workspace_path: Union[str, Path] = None, base_path: Union[str, Path] = None, task_id: str = None):
+    def __init__(self, taskspace_path: Union[str, Path] = None, base_path: Union[str, Path] = None, task_id: str = None):
         if not GIT_AVAILABLE:
             raise ImportError("GitPython is required for Git-based artifact storage")
 
-        # Support both old API (workspace_path) and new API (base_path + task_id)
-        if workspace_path is not None:
-            # Old API: workspace_path directly
-            self.workspace_path = Path(workspace_path)
+        # Support both old API (taskspace_path) and new API (base_path + task_id)
+        if taskspace_path is not None:
+            # Old API: taskspace_path directly
+            self.taskspace_path = Path(taskspace_path)
         elif base_path is not None and task_id is not None:
-            # New API: base_path + task_id for workspace isolation
-            self.workspace_path = Path(base_path) / task_id
+            # New API: base_path + task_id for taskspace isolation
+            self.taskspace_path = Path(base_path) / task_id
         else:
-            raise ValueError("Either workspace_path or (base_path + task_id) must be provided")
+            raise ValueError("Either taskspace_path or (base_path + task_id) must be provided")
 
-        self.artifacts_path = self.workspace_path / "artifacts"
+        self.artifacts_path = self.taskspace_path / "artifacts"
         self.artifacts_path.mkdir(parents=True, exist_ok=True)
 
         # Thread pool for Git operations (Git operations are not async)
@@ -142,7 +142,7 @@ class GitArtifactStorage:
 
             return StorageResult(
                 success=True,
-                path=str(artifact_path.relative_to(self.workspace_path)),
+                path=str(artifact_path.relative_to(self.taskspace_path)),
                 size=len(content) if isinstance(content, (str, bytes)) else 0,
                 data={"commit_hash": commit_hash, "version": commit_hash[:8]},
                 metadata={"git_commit": commit_hash, "content_type": content_type}

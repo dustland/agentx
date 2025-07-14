@@ -1,0 +1,13 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "env": {
+    "AGENTX_API_URL": "@agentx_api_url"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "/api/agentx"
+    }
+  }
+}

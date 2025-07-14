@@ -19,14 +19,14 @@ instance to prevent tool conflicts between tasks.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L27" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, task_id: str = 'default', workspace_path: Optional[str] = None)
+def __init__(self, task_id: str = 'default', taskspace_path: Optional[str] = None)
 ```
 
 Initialize tool manager with task isolation.
 
 **Args:**
     task_id: Unique identifier for this task (for logging/debugging)
-    workspace_path: Path to task-specific workspace (for file tools)
+    taskspace_path: Path to task-specific taskspace (for file tools)
 
 ### register_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/tool/manager.py#L84" class="source-link" title="View source code">source</a>
 

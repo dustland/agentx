@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 from agentx.builtin_tools.document import DocumentTool
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 from agentx import start_task
 
 
@@ -23,7 +23,7 @@ class TestDocumentWorkflow:
     async def temp_workspace(self):
         """Create a temporary workspace for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        workspace = WorkspaceStorage(
+        workspace = TaskspaceStorage(
             task_id="test_document_workflow",
             workspace_path=str(temp_dir)
         )

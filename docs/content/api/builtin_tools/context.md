@@ -21,7 +21,7 @@ Features:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/context.py#L31" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, context_file: str = 'context.json', workspace_path: str = './workspace')
+def __init__(self, context_file: str = 'context.json', workspace_path: str = './taskspace')
 ```
 ### update_context <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/context.py#L149" class="source-link" title="View source code">source</a>
 

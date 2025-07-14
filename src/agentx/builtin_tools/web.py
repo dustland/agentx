@@ -230,26 +230,21 @@ class WebTool(Tool):
             logger.warning("Regex extraction not implemented, falling back to markdown")
             extraction_type = "markdown"
 
-        # Browser configuration optimized for stability
+        # Browser configuration with minimal flags for macOS compatibility
         browser_config = BrowserConfig(
-            browser_type="chromium",  # Chromium is most stable, crashpad warnings are harmless
+            browser_type="chromium",
             headless=True,
             viewport_width=1920,
             viewport_height=1080,
-            java_script_enabled=True,
-            ignore_https_errors=True,
-            verbose=False,
-            # Additional stability options
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
-            accept_downloads=False
+            verbose=False
         )
 
         extracted_contents: List[WebContent] = []
 
-        # Process each URL with its own browser instance to avoid context issues
-        for url in url_list:
-            # Create a new browser instance for each URL
-            async with AsyncWebCrawler(config=browser_config) as crawler:
+        # Create a single browser instance and reuse it
+        async with AsyncWebCrawler(config=browser_config) as crawler:
+            # Process each URL with the same browser instance
+            for url in url_list:
                 try:
                     logger.info(f"Extracting from {url} using {extraction_type} strategy")
 

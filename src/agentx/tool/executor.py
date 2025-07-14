@@ -143,7 +143,7 @@ class SecurityPolicy:
     """Security policies for tool execution."""
 
     # Resource limits
-    MAX_EXECUTION_TIME = 120.0  # seconds
+    MAX_EXECUTION_TIME = 600.0  # seconds (10 minutes)
     MAX_TOOLS_PER_BATCH = 10
     MAX_CONCURRENT_EXECUTIONS = 5
 

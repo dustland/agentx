@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from agentx.builtin_tools.file import FileTool, create_file_tool
 from agentx.storage.factory import StorageFactory
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 from agentx.storage.interfaces import StorageResult
 from agentx.core.config import TaskConfig
 
@@ -23,7 +23,7 @@ class TestFileToolWorkspaceIntegration:
     @pytest.fixture
     def mock_workspace(self):
         """Create a mock workspace storage."""
-        workspace = MagicMock(spec=WorkspaceStorage)
+        workspace = MagicMock(spec=TaskspaceStorage)
         workspace.store_artifact = AsyncMock()
         workspace.get_artifact = AsyncMock()
         workspace.list_artifacts = AsyncMock()

@@ -398,55 +398,6 @@ def build_docs(command: str = "build"):
         return 1
 
 
-def setup_hooks():
-    """Set up pre-commit hooks for the project."""
-    print("🪝 AgentX Pre-commit Hooks Setup")
-    print("=" * 35)
-
-    # Check if .pre-commit-config.yaml exists
-    config_file = Path(".pre-commit-config.yaml")
-    if not config_file.exists():
-        print(f"❌ Pre-commit configuration not found: {config_file}")
-        print("💡 Make sure .pre-commit-config.yaml exists in the project root")
-        return 1
-
-    try:
-        print("📦 Installing dev dependencies...")
-        # Ensure dev dependencies are installed
-        result = subprocess.run(["uv", "sync", "--dev"], capture_output=True, text=True)
-        if result.returncode != 0:
-            print("❌ Failed to install dev dependencies")
-            print(f"Error: {result.stderr}")
-            return 1
-
-        print("🔧 Installing pre-commit hooks...")
-        # Run pre-commit install using uv run to ensure proper environment
-        result = subprocess.run(["uv", "run", "pre-commit", "install"], capture_output=True, text=True)
-        if result.returncode != 0:
-            print("❌ Failed to install pre-commit hooks")
-            print(f"Error: {result.stderr}")
-            return 1
-
-        print("✅ Pre-commit hooks installed successfully")
-        print()
-        print("🎯 What happens now:")
-        print("  • API docs will be auto-generated when src/agentx/*.py files change")
-        print("  • Code formatting and linting will run before each commit")
-        print("  • Large files and merge conflicts will be detected")
-        print()
-        print("💡 To test the hooks:")
-        print("  • Make a change to a Python file in src/agentx/")
-        print("  • Run: git add . && git commit -m 'test'")
-        print("  • Watch the API docs get generated automatically!")
-        print()
-        print("🚀 To run hooks manually: pre-commit run --all-files")
-
-        return 0
-
-    except Exception as e:
-        print(f"❌ Error setting up hooks: {e}")
-        return 1
-
 
 def dev():
     """Run AgentX in development mode with hot reloading."""

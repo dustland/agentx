@@ -23,7 +23,7 @@ This class is a data container and does not have execution logic.
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L51" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, task_id: str, config: TaskConfig, history: TaskHistory, message_queue: MessageQueue, agents: Dict[str, Agent], workspace: WorkspaceStorage, initial_prompt: str)
+def __init__(self, task_id: str, config: TaskConfig, history: TaskHistory, message_queue: MessageQueue, agents: Dict[str, Agent], taskspace: TaskspaceStorage, initial_prompt: str)
 ```
 ### get_agent <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L73" class="source-link" title="View source code">source</a>
 
@@ -103,7 +103,7 @@ This function runs the task to completion autonomously.
 ## start_task <a href="https://github.com/dustland/agentx/blob/main/src/agentx/core/task.py#L185" class="source-link" title="View source code">source</a>
 
 ```python
-async def start_task(prompt: str, config_path: Union[str, Path, TeamConfig], task_id: Optional[str] = None, workspace_dir: Optional[Path] = None) -> XAgent
+async def start_task(prompt: str, config_path: Union[str, Path, TeamConfig], task_id: Optional[str] = None, taskspace_dir: Optional[Path] = None) -> XAgent
 ```
 
 High-level function to start a task and return an initialized XAgent.
@@ -115,7 +115,7 @@ to manage complex multi-agent tasks conversationally.
     prompt: The initial task prompt
     config_path: Path to the team configuration file
     task_id: Optional custom task ID
-    workspace_dir: Optional custom workspace directory
+    taskspace_dir: Optional custom taskspace directory
 
 **Returns:**
     XAgent: The initialized XAgent ready for conversational interaction

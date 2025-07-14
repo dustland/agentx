@@ -38,7 +38,7 @@ class SearchTool(Tool):
     def __init__(self, api_key: Optional[str] = None, workspace_storage=None):
         super().__init__("search")
         self.api_key = api_key
-        self.workspace = workspace_storage
+        self.taskspace = workspace_storage
         self._backend = None
         self._init_backend()
 

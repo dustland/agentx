@@ -43,7 +43,7 @@ class ResearchTool(Tool):
 
     def __init__(self, workspace_storage: Optional[Any] = None) -> None:
         super().__init__("research")
-        self.workspace = workspace_storage
+        self.taskspace = workspace_storage
         self.SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY")
 
     @tool(
@@ -80,9 +80,9 @@ class ResearchTool(Tool):
             logger.info(f"Starting adaptive research with Crawl4AI 0.7.0")
             has_v070_features = True
 
-            # Get starting URLs
+            # Get starting URLs - use simple direct extraction for auto_writer
             if start_urls:
-                urls_to_crawl = start_urls
+                urls_to_crawl = start_urls[:5]  # Limit to 5 URLs max
                 logger.info(f"Using provided URLs: {urls_to_crawl}")
             elif search_first and self.SERPAPI_API_KEY:
                 logger.info(f"Searching for starting points for: {query}")
@@ -102,31 +102,13 @@ class ResearchTool(Tool):
                     metadata={"error": "No starting URLs provided and search is disabled"}
                 )
 
-            # Remove URL seeding for now - focus on core adaptive crawling
-            logger.info(f"Using {len(urls_to_crawl)} starting URLs for adaptive crawling")
-
-            # Configure adaptive crawling based on examples
-            config = AdaptiveConfig(
-                strategy="embedding",  # Use embedding strategy for semantic understanding
-                confidence_threshold=confidence_threshold,
-                max_pages=max_pages,
-                top_k_links=3,  # Follow top 3 relevant links per page
-                min_gain_threshold=0.05,  # Lower threshold for continuation
-
-                # Embedding-specific parameters
-                embedding_k_exp=3.0,  # Stricter similarity requirements
-                embedding_min_confidence_threshold=0.1,  # Stop if < 10% relevant
-                embedding_validation_min_score=0.4  # Validation threshold
-            )
-
-            # Note: State persistence is handled by the memory system, not local files
-
-            # Perform adaptive crawling following best practices
-            logger.info(f"Starting adaptive research for: {query}")
+            # Switch to direct extraction approach for better reliability
+            logger.info(f"Using direct extraction approach for: {query}")
             research_results = []
-            final_adaptive = None
+            failed_urls = []
+            browser_errors = []
 
-            # Use Chromium for best stability (crashpad warnings are harmless)
+            # Browser config for macOS compatibility
             browser_config = BrowserConfig(
                 browser_type="chromium",
                 headless=True,
@@ -135,48 +117,107 @@ class ResearchTool(Tool):
                 viewport_height=1080
             )
             
-            # Process each URL with its own browser instance to avoid context issues
+            # Process URLs with direct extraction
             for url_idx, url in enumerate(urls_to_crawl):
-                logger.info(f"Processing URL {url_idx + 1}/{len(urls_to_crawl)}: {url}")
+                logger.info(f"Extracting content from URL {url_idx + 1}/{len(urls_to_crawl)}: {url}")
                 
-                # Create a new browser instance for each URL
-                async with AsyncWebCrawler(config=browser_config) as crawler:
-                    # Initialize adaptive crawler with config
-                    adaptive = AdaptiveCrawler(crawler, config)
-                    
-                    try:
-                        # Use direct adaptive crawling for each URL
-                        logger.info(f"Starting adaptive crawling for: {url}")
-                        state = await adaptive.digest(
-                            start_url=url,
-                            query=query
-                        )
-                        
-                        # Get relevant content from this crawl
-                        relevant_pages = adaptive.get_relevant_content(top_k=5)  # Limit per URL
-                        research_results.extend(relevant_pages)
-                        
-                        logger.info(f"Successfully crawled {url} - found {len(relevant_pages)} relevant pages")
-                        
-                    except Exception as e:
-                        logger.error(f"Failed to crawl {url}: {e}")
-                        continue
+                try:
+                    # Create a new browser instance for each URL
+                    async with AsyncWebCrawler(config=browser_config) as crawler:
+                        try:
+                            # Direct extraction with markdown conversion
+                            result = await crawler.arun(
+                                url=url,
+                                config=CrawlerRunConfig(
+                                    cache_mode=CacheMode.BYPASS,
+                                    wait_for="networkidle",
+                                    screenshot=False,
+                                    magic=True,  # Enable anti-bot features
+                                    remove_overlay_elements=True
+                                )
+                            )
+                            
+                            if result and result.markdown_v2 and result.markdown_v2.raw_markdown:
+                                content = result.markdown_v2.raw_markdown.strip()
+                                
+                                # Only save if we got meaningful content
+                                if len(content) > 500:  # Minimum content threshold
+                                    title = result.metadata.get('title', url)
+                                    
+                                    research_results.append({
+                                        'url': url,
+                                        'title': title,
+                                        'score': 0.8,  # Default high score for direct extraction
+                                        'summary': content[:500] + "...",  # First 500 chars as summary
+                                        'content': content  # Full content
+                                    })
+                                    
+                                    logger.info(f"Successfully extracted {len(content)} characters from {url}")
+                                else:
+                                    logger.warning(f"Insufficient content from {url}: only {len(content)} characters")
+                            else:
+                                logger.warning(f"No markdown content extracted from {url}")
+                                
+                        except Exception as e:
+                            error_msg = str(e)
+                            logger.error(f"Failed to extract from {url}: {error_msg}")
+                            failed_urls.append(url)
+                            if "Target page, context or browser has been closed" in error_msg:
+                                browser_errors.append(f"{url}: Browser context crash")
+                            else:
+                                browser_errors.append(f"{url}: {error_msg[:100]}")
+                            continue
+                            
+                except Exception as e:
+                    # Browser creation failed
+                    error_msg = str(e)
+                    logger.error(f"Failed to create browser for {url}: {error_msg}")
+                    failed_urls.append(url)
+                    browser_errors.append(f"{url}: Browser creation failed - {error_msg[:100]}")
+                    continue
                 
-                # Break if we have enough results
-                if len(research_results) >= 15:
+                # Limit to reasonable number of results
+                if len(research_results) >= 10:
                     logger.info(f"Collected sufficient results ({len(research_results)} pages)")
                     break
             
-            logger.info(f"Research completed: collected {len(research_results)} total pages")
+            logger.info(f"Adaptive research completed: collected {len(research_results)} total pages")
             
-            # Note: Knowledge base with embeddings should be managed by the memory system
-            # Not exported as separate files
-            
-            final_adaptive = None  # No single adaptive instance when processing multiple URLs
+            # Check if all URLs failed
+            if len(failed_urls) == len(urls_to_crawl):
+                logger.error(f"All {len(urls_to_crawl)} URLs failed to crawl")
+                return ToolResult(
+                    success=False,
+                    result=None,
+                    execution_time=time.time() - start_time,
+                    metadata={
+                        "error": "All URLs failed to crawl",
+                        "failed_urls": failed_urls,
+                        "browser_errors": browser_errors,
+                        "message": "Browser context crashes prevented research completion"
+                    }
+                )
 
             # Process and save results
             saved_files = []
             unique_results = self._deduplicate_results(research_results)
+            
+            # Check if we got no results at all
+            if len(unique_results) == 0:
+                logger.error("No content extracted from any URL")
+                return ToolResult(
+                    success=False,
+                    result=None,
+                    execution_time=time.time() - start_time,
+                    metadata={
+                        "error": "No content extracted",
+                        "failed_urls": failed_urls,
+                        "browser_errors": browser_errors,
+                        "attempted_urls": len(urls_to_crawl),
+                        "successful_urls": len(urls_to_crawl) - len(failed_urls),
+                        "message": "Research completed but no relevant content was found"
+                    }
+                )
 
             for idx, result in enumerate(unique_results[:10]):  # Save top 10 results
                 filename = await self._save_research_content(result, query, idx)
@@ -189,7 +230,7 @@ class ResearchTool(Tool):
             # Create research result
             research_result = ResearchResult(
                 query=query,
-                confidence=0.8,  # Default confidence for multi-URL research
+                confidence=0.8,  # Default confidence for direct extraction
                 pages_crawled=len(research_results),
                 relevant_content=unique_results[:5],  # Top 5 for response
                 saved_files=saved_files,
@@ -197,19 +238,16 @@ class ResearchTool(Tool):
                 metadata={
                     "total_results": len(unique_results),
                     "starting_urls": urls_to_crawl,
-                    "strategy": config.strategy,
+                    "strategy": "direct_extraction",
                     "crawl4ai_version": "0.7.0",
-                    "adaptive_config": {
-                        "confidence_threshold": confidence_threshold,
-                        "max_pages": max_pages,
-                        "top_k_links": config.top_k_links,
-                        "min_gain_threshold": config.min_gain_threshold
-                    }
+                    "extraction_method": "markdown_v2",
+                    "failed_urls": failed_urls if failed_urls else None,
+                    "browser_errors": browser_errors if browser_errors else None
                 }
             )
 
             execution_time = time.time() - start_time
-            logger.info(f"Adaptive research completed in {execution_time:.2f}s using crawl4ai 0.7.0 embedding strategy")
+            logger.info(f"Direct content extraction completed in {execution_time:.2f}s using crawl4ai 0.7.0")
 
             return ToolResult(
                 success=True,
@@ -293,17 +331,22 @@ class ResearchTool(Tool):
             return None
 
         try:
-            # Generate filename
-            url = result.get("url", "")
-            parsed = urlparse(url)
-            domain = parsed.netloc.replace("www.", "").replace(".", "_")
-            filename = f"research_{domain}_{index:02d}.md"
+            # Generate filename using topic-based naming for better categorization
+            import re
+            # Create clean topic slug from query
+            topic_slug = re.sub(r'[^\w\s-]', '', query.lower())
+            topic_slug = re.sub(r'[-\s]+', '_', topic_slug).strip('_')
+            # Limit length and ensure it's meaningful
+            topic_slug = topic_slug[:30] if len(topic_slug) > 30 else topic_slug
+            if not topic_slug:
+                topic_slug = "general_research"
+            filename = f"research_{topic_slug}_{index:02d}.md"
 
             # Create content
             content = f"""# Research Result: {result.get('title', 'Untitled')}
 
 **Query:** {query}
-**Source:** {url}
+**Source:** {result.get('url', '')}
 **Relevance Score:** {result.get('score', 0):.2f}
 **Extracted:** {datetime.now().isoformat()}
 

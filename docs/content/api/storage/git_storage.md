@@ -21,7 +21,7 @@ Uses Git for versioning artifacts, providing:
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L43" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_path: Union[str, Path] = None, base_path: Union[str, Path] = None, task_id: str = None)
+def __init__(self, taskspace_path: Union[str, Path] = None, base_path: Union[str, Path] = None, task_id: str = None)
 ```
 ### store_artifact <a href="https://github.com/dustland/agentx/blob/main/src/agentx/storage/git_storage.py#L89" class="source-link" title="View source code">source</a>
 

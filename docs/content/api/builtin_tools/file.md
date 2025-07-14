@@ -6,12 +6,12 @@ File operations for AgentX.
 
 ## FileTool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L17" class="source-link" title="View source code">source</a>
 
-File tool that works with workspace artifacts and provides simple file operations.
+File tool that works with taskspace artifacts and provides simple file operations.
 
 ### __init__ <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L20" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, workspace_storage: WorkspaceStorage)
+def __init__(self, taskspace_storage: TaskspaceStorage)
 ```
 ### write_file <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L34" class="source-link" title="View source code">source</a>
 
@@ -19,7 +19,7 @@ def __init__(self, workspace_storage: WorkspaceStorage)
 async def write_file(self, filename: Annotated[str, "Name of the file (e.g., 'report.html', 'requirements.md')"], content: Annotated[str, 'Content to write to the file']) -> ToolResult
 ```
 
-Write content to file as a workspace artifact with versioning.
+Write content to file as a taskspace artifact with versioning.
 
 ### append_file <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L87" class="source-link" title="View source code">source</a>
 
@@ -42,7 +42,7 @@ For structured files, read the entire content, modify it, and use write_file ins
 async def read_file(self, filename: Annotated[str, 'Name of the file to read'], version: Annotated[Optional[str], 'Specific version to read (optional, defaults to latest)'] = None) -> ToolResult
 ```
 
-Read file contents from workspace artifacts.
+Read file contents from taskspace artifacts.
 
 ### list_files <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L192" class="source-link" title="View source code">source</a>
 
@@ -50,7 +50,7 @@ Read file contents from workspace artifacts.
 async def list_files(self) -> ToolResult
 ```
 
-List all file artifacts in the workspace.
+List all file artifacts in the taskspace.
 
 ### file_exists <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L254" class="source-link" title="View source code">source</a>
 
@@ -58,7 +58,7 @@ List all file artifacts in the workspace.
 async def file_exists(self, filename: Annotated[str, 'Name of the file to check']) -> ToolResult
 ```
 
-Check if a file artifact exists in the workspace.
+Check if a file artifact exists in the taskspace.
 
 ### delete_file <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L312" class="source-link" title="View source code">source</a>
 
@@ -66,7 +66,7 @@ Check if a file artifact exists in the workspace.
 async def delete_file(self, filename: Annotated[str, 'Name of the file to delete'], version: Annotated[Optional[str], 'Specific version to delete (optional, deletes all versions if not specified)'] = None) -> ToolResult
 ```
 
-Delete a file artifact from the workspace.
+Delete a file artifact from the taskspace.
 
 ### get_file_versions <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L352" class="source-link" title="View source code">source</a>
 
@@ -76,13 +76,13 @@ async def get_file_versions(self, filename: Annotated[str, 'Name of the file to 
 
 Get version history of a file artifact.
 
-### get_workspace_summary <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L415" class="source-link" title="View source code">source</a>
+### get_taskspace_summary <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L415" class="source-link" title="View source code">source</a>
 
 ```python
-async def get_workspace_summary(self) -> ToolResult
+async def get_taskspace_summary(self) -> ToolResult
 ```
 
-Get a summary of the workspace contents.
+Get a summary of the taskspace contents.
 
 ### create_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L453" class="source-link" title="View source code">source</a>
 
@@ -90,28 +90,28 @@ Get a summary of the workspace contents.
 async def create_directory(self, path: Annotated[str, "Directory path to create (e.g., 'reports', 'data/sources')"]) -> ToolResult
 ```
 
-Create a directory in the workspace using the underlying file storage.
+Create a directory in the taskspace using the underlying file storage.
 
 ### list_directory <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L492" class="source-link" title="View source code">source</a>
 
 ```python
-async def list_directory(self, path: Annotated[str, 'Directory path to list (defaults to workspace root)'] = '') -> ToolResult
+async def list_directory(self, path: Annotated[str, 'Directory path to list (defaults to taskspace root)'] = '') -> ToolResult
 ```
 
-List the contents of a directory in the workspace.
+List the contents of a directory in the taskspace.
 
 ## Functions
 
 ## create_file_tool <a href="https://github.com/dustland/agentx/blob/main/src/agentx/builtin_tools/file.py#L570" class="source-link" title="View source code">source</a>
 
 ```python
-def create_file_tool(workspace_path: str) -> FileTool
+def create_file_tool(taskspace_path: str) -> FileTool
 ```
 
-Create a file tool for workspace operations.
+Create a file tool for taskspace operations.
 
 **Args:**
-    workspace_path: Path to the workspace directory
+    taskspace_path: Path to the taskspace directory
 
 **Returns:**
-    FileTool instance that properly uses workspace abstraction
+    FileTool instance that properly uses taskspace abstraction

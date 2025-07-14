@@ -21,6 +21,8 @@ Examples:
   agentx start                    # Start API server with observability
   agentx monitor                  # Start observability monitor (CLI)
   agentx monitor --web            # Start web dashboard
+  agentx studio                   # Launch AgentX Studio UI
+  agentx studio dev               # Start API and Studio in dev mode
   agentx status                   # Show system status
   agentx example superwriter      # Run specific example
 
@@ -57,6 +59,9 @@ For more information, visit: https://github.com/dustland/agentx
 
     # Debug command
     _add_debug_parser(subparsers)
+
+    # Studio command
+    _add_studio_parser(subparsers)
 
     return parser
 
@@ -200,4 +205,75 @@ def _add_debug_parser(subparsers) -> None:
     debug_parser.add_argument(
         "task_id",
         help="Task ID to debug"
+    )
+
+
+def _add_studio_parser(subparsers) -> None:
+    """Add the studio command parser."""
+    studio_parser = subparsers.add_parser(
+        "studio",
+        help="AgentX Studio - Web UI for task execution and observability",
+        description="Launch and manage the AgentX Studio web interface"
+    )
+    
+    studio_subparsers = studio_parser.add_subparsers(
+        dest="studio_action",
+        help="Studio actions"
+    )
+    
+    # Start subcommand
+    start_parser = studio_subparsers.add_parser(
+        "start",
+        help="Start AgentX Studio UI"
+    )
+    start_parser.add_argument(
+        "--port", "-p",
+        type=int,
+        default=3000,
+        help="Port for the studio UI (default: 3000)"
+    )
+    start_parser.add_argument(
+        "--api-port",
+        type=int,
+        default=8000,
+        help="Port for the API server (default: 8000)"
+    )
+    start_parser.add_argument(
+        "--no-api",
+        action="store_true",
+        help="Don't start the API server"
+    )
+    start_parser.add_argument(
+        "--open", "-o",
+        action="store_true",
+        help="Open studio in browser"
+    )
+    start_parser.add_argument(
+        "--production",
+        action="store_true",
+        help="Run in production mode"
+    )
+    
+    # Setup subcommand
+    studio_subparsers.add_parser(
+        "setup",
+        help="Install studio dependencies"
+    )
+    
+    # Dev subcommand
+    dev_parser = studio_subparsers.add_parser(
+        "dev",
+        help="Start both API and Studio in development mode"
+    )
+    dev_parser.add_argument(
+        "--port", "-p",
+        type=int,
+        default=3000,
+        help="Port for the studio UI (default: 3000)"
+    )
+    dev_parser.add_argument(
+        "--api-port",
+        type=int,
+        default=8000,
+        help="Port for the API server (default: 8000)"
     )

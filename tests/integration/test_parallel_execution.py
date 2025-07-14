@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, patch
 from agentx.core.plan import Plan, PlanItem
 from agentx.core.xagent import XAgent
 from agentx.core.config import TeamConfig, AgentConfig, BrainConfig
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 
 
 class TestParallelExecution:
@@ -25,7 +25,7 @@ class TestParallelExecution:
     async def temp_workspace(self):
         """Create a temporary workspace for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        workspace = WorkspaceStorage(
+        workspace = TaskspaceStorage(
             task_id="test_parallel_execution",
             workspace_path=str(temp_dir)
         )

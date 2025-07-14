@@ -40,7 +40,7 @@ class DebugSession:
         print("  step       - Execute one step")
         print("  chat       - Send a chat message")
         print("  plan       - Show current plan")
-        print("  workspace  - List workspace files")
+        print("  taskspace  - List taskspace files")
         print("  quit       - Exit debug session")
         print()
 
@@ -90,8 +90,8 @@ class DebugSession:
         elif cmd == "plan":
             await self._show_plan()
 
-        elif cmd == "workspace":
-            await self._list_workspace()
+        elif cmd == "taskspace":
+            await self._list_taskspace()
 
         elif cmd == "help":
             await self._show_help()
@@ -112,9 +112,9 @@ class DebugSession:
                 total = len(self.xagent.current_plan.tasks)
                 print(f"  Plan Progress: {completed}/{total} tasks completed")
 
-            workspace_path = self.xagent.workspace.get_workspace_path()
-            artifacts = list(workspace_path.glob("**/*"))
-            print(f"  Workspace Files: {len([f for f in artifacts if f.is_file()])}")
+            taskspace_path = self.xagent.taskspace.get_workspace_path()
+            artifacts = list(taskspace_path.glob("**/*"))
+            print(f"  Taskspace Files: {len([f for f in artifacts if f.is_file()])}")
         except Exception as e:
             print(f"❌ Error getting status: {e}")
 
@@ -125,7 +125,7 @@ class DebugSession:
                 "task_id": self.task_id,
                 "is_complete": self.xagent.is_complete,
                 "specialist_agents": list(self.xagent.specialist_agents.keys()),
-                "workspace_path": str(self.xagent.workspace.get_workspace_path()),
+                "taskspace_path": str(self.xagent.taskspace.get_workspace_path()),
                 "plan_initialized": self.xagent._plan_initialized,
                 "conversation_history_length": len(self.xagent.conversation_history),
                 "message_history_length": len(self.xagent.history.messages),
@@ -209,25 +209,25 @@ class DebugSession:
         except Exception as e:
             print(f"❌ Error showing plan: {e}")
 
-    async def _list_workspace(self):
-        """List files in the workspace."""
+    async def _list_taskspace(self):
+        """List files in the taskspace."""
         try:
-            workspace_path = self.xagent.workspace.get_workspace_path()
-            print(f"📁 Workspace: {workspace_path}")
+            taskspace_path = self.xagent.taskspace.get_workspace_path()
+            print(f"📁 Taskspace: {taskspace_path}")
 
             # List all files recursively
-            files = list(workspace_path.rglob("*"))
+            files = list(taskspace_path.rglob("*"))
             files = [f for f in files if f.is_file()]
 
             if not files:
                 print("  (empty)")
             else:
                 for file in sorted(files):
-                    relative_path = file.relative_to(workspace_path)
+                    relative_path = file.relative_to(taskspace_path)
                     size = file.stat().st_size
                     print(f"  📄 {relative_path} ({size} bytes)")
         except Exception as e:
-            print(f"❌ Error listing workspace: {e}")
+            print(f"❌ Error listing taskspace: {e}")
 
     async def _step_execution(self):
         """Execute one step."""
@@ -256,7 +256,7 @@ class DebugSession:
         print("  step           - Execute one step of the plan")
         print("  chat MESSAGE   - Send a chat message to X")
         print("  plan           - Show current execution plan")
-        print("  workspace      - List files in workspace")
+        print("  taskspace      - List files in taskspace")
         print("  quit           - Exit debug session")
 
 

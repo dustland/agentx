@@ -28,7 +28,7 @@ async def test_storage():
     # Simple, direct prompt that should result in file creation
     prompt = """
 Create a simple text file called 'hello.txt' with the content 'Hello, World!'
-Use the write_file tool to save this file directly in the workspace.
+Use the write_file tool to save this file directly in the taskspace.
 """
 
     try:
@@ -39,7 +39,7 @@ Use the write_file tool to save this file directly in the workspace.
         )
 
         print(f"📋 Task ID: {x.task_id}")
-        print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+        print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
 
         # Execute the task autonomously
         print("\n🤖 X: Starting file creation...")
@@ -48,8 +48,8 @@ Use the write_file tool to save this file directly in the workspace.
             print(f"🤖 X: {response}")
 
         # Check if file was created
-        workspace_path = x.workspace.get_workspace_path()
-        artifact_file = workspace_path / "artifacts" / "hello.txt"
+        taskspace_path = x.taskspace.get_taskspace_path()
+        artifact_file = taskspace_path / "artifacts" / "hello.txt"
 
         if artifact_file.exists():
             print(f"\n✅ SUCCESS: hello.txt created as artifact!")
@@ -60,11 +60,11 @@ Use the write_file tool to save this file directly in the workspace.
             print(f"  Checked: {artifact_file}")
 
         # List all files created
-        print(f"\n📁 All files in workspace:")
-        if workspace_path.exists():
-            for f in workspace_path.rglob("*"):
+        print(f"\n📁 All files in taskspace:")
+        if taskspace_path.exists():
+            for f in taskspace_path.rglob("*"):
                 if f.is_file() and not f.name.startswith('.'):
-                    print(f"  📄 {f.relative_to(workspace_path)}")
+                    print(f"  📄 {f.relative_to(taskspace_path)}")
 
         # Demonstrate conversational file operations
         print("\n💬 Testing conversational file operations...")

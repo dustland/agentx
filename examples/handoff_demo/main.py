@@ -38,7 +38,7 @@ async def main():
     )
 
     print(f"🆔 Task ID: {x.task_id}")
-    print(f"📁 Workspace: {x.workspace.get_workspace_path()}")
+    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
     print("-" * 60)
 
     # Execute the task - handoffs will happen automatically
@@ -78,7 +78,7 @@ async def main():
             if task.id.startswith("handoff_"):
                 print(f"   ↳ (Automatic handoff based on conditions)")
 
-    print(f"\n📁 Check the workspace for outputs: {x.workspace.get_workspace_path()}")
+    print(f"\n📁 Check the taskspace for outputs: {x.taskspace.get_taskspace_path()}")
 
 if __name__ == "__main__":
     asyncio.run(main())

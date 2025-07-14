@@ -24,28 +24,28 @@ class ToolManager:
     instance to prevent tool conflicts between tasks.
     """
 
-    def __init__(self, task_id: str = "default", workspace_path: Optional[str] = None):
+    def __init__(self, task_id: str = "default", taskspace_path: Optional[str] = None):
         """
         Initialize tool manager with task isolation.
 
         Args:
             task_id: Unique identifier for this task (for logging/debugging)
-            workspace_path: Path to task-specific workspace (for file tools)
+            taskspace_path: Path to task-specific taskspace (for file tools)
         """
         self.task_id = task_id
-        self.workspace_path = workspace_path
+        self.taskspace_path = taskspace_path
         self.registry = ToolRegistry()
 
-        # Register task-specific builtin tools if workspace_path is provided
-        if workspace_path:
-            self._register_builtin_tools(workspace_path)
+        # Register task-specific builtin tools if taskspace_path is provided
+        if taskspace_path:
+            self._register_builtin_tools(taskspace_path)
 
         self.executor = ToolExecutor(registry=self.registry)
 
-        logger.debug(f"ToolManager initialized for task {task_id} with workspace: {workspace_path}")
+        logger.debug(f"ToolManager initialized for task {task_id} with taskspace: {taskspace_path}")
 
-    def _register_builtin_tools(self, workspace_path: str):
-        """Register builtin tools with correct workspace path."""
+    def _register_builtin_tools(self, taskspace_path: str):
+        """Register builtin tools with correct taskspace path."""
         from ..builtin_tools.file import create_file_tool
         from ..builtin_tools.search import SearchTool
         from ..builtin_tools.web import WebTool
@@ -54,31 +54,31 @@ class ToolManager:
         from ..builtin_tools.research import ResearchTool
         from ..storage.factory import StorageFactory
 
-        # Create workspace storage for tools that need it
-        workspace_storage = StorageFactory.create_workspace_storage(workspace_path)
+        # Create taskspace storage for tools that need it
+        taskspace_storage = StorageFactory.create_taskspace_storage(taskspace_path)
 
-        # Create file tool with correct workspace
-        file_tool = create_file_tool(workspace_path=workspace_path)
+        # Create file tool with correct taskspace
+        file_tool = create_file_tool(taskspace_path=taskspace_path)
         self.registry.register_tool(file_tool)
 
-        # Register other builtin tools with workspace storage
-        search_tool = SearchTool(workspace_storage=workspace_storage)
+        # Register other builtin tools with taskspace storage
+        search_tool = SearchTool(workspace_storage=taskspace_storage)
         self.registry.register_tool(search_tool)
 
-        web_tool = WebTool(workspace_storage=workspace_storage)
+        web_tool = WebTool(workspace_storage=taskspace_storage)
         self.registry.register_tool(web_tool)
 
-        context_tool = ContextTool(workspace_path=workspace_path)
+        context_tool = ContextTool(workspace_path=taskspace_path)
         self.registry.register_tool(context_tool)
 
         # Document tool replaces both summarize and polish tools
-        document_tool = DocumentTool(workspace_storage=workspace_storage)
+        document_tool = DocumentTool(workspace_storage=taskspace_storage)
         self.registry.register_tool(document_tool)
 
-        research_tool = ResearchTool(workspace_storage=workspace_storage)
+        research_tool = ResearchTool(workspace_storage=taskspace_storage)
         self.registry.register_tool(research_tool)
 
-        logger.info(f"Registered builtin tools for workspace: {workspace_path}")
+        logger.info(f"Registered builtin tools for taskspace: {taskspace_path}")
 
     # Registry methods (delegation)
     def register_tool(self, tool: Tool) -> None:

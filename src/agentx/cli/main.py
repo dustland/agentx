@@ -6,6 +6,8 @@ Provides a unified command-line interface for all AgentX operations.
 """
 
 import sys
+import os
+from pathlib import Path
 from ..run import start, monitor, web, run_example
 from .parser import create_parser
 from .status import show_status, show_version, show_config, init_config
@@ -77,6 +79,52 @@ def main():
             from .debug import debug_task
             asyncio.run(debug_task(args.team_config, args.task_id))
             return 0
+
+        elif args.command == "studio":
+            # Handle studio commands
+            studio_action = getattr(args, 'studio_action', None)
+            
+            # Check if we're in a project directory with full studio
+            local_studio = Path.cwd() / "studio"
+            if local_studio.exists():
+                # Use full studio implementation
+                try:
+                    from .commands.studio import handle_studio_command
+                    return handle_studio_command(args)
+                except ImportError:
+                    pass
+            
+            # Use simplified studio for pip-installed version
+            from .commands.studio_simple import run_studio_command
+            
+            if not studio_action:
+                # Default to start if no subcommand given
+                return run_studio_command(
+                    action="start",
+                    open_browser=True
+                )
+            
+            if studio_action == "start":
+                return run_studio_command(
+                    action="start",
+                    port=args.port,
+                    api_port=args.api_port,
+                    no_api=args.no_api,
+                    open_browser=args.open,
+                    production=args.production
+                )
+            elif studio_action == "setup":
+                return run_studio_command(action="setup")
+            elif studio_action == "dev":
+                return run_studio_command(
+                    action="start",
+                    port=args.port,
+                    api_port=args.api_port,
+                    production=False
+                )
+            else:
+                print(f"Unknown studio action: {studio_action}")
+                return 1
 
         else:
             parser.print_help()

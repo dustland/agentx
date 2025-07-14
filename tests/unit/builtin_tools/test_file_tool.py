@@ -11,7 +11,7 @@ import asyncio
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
 from agentx.builtin_tools.file import FileTool, create_file_tool
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 from agentx.storage.git_storage import GitArtifactStorage
 from agentx.core.config import TaskConfig
 from agentx.storage.interfaces import StorageResult

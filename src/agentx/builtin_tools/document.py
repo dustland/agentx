@@ -36,7 +36,7 @@ class DocumentTool(Tool):
         summary_model: Optional[str] = None
     ) -> None:
         super().__init__("document")
-        self.workspace = workspace_storage
+        self.taskspace = workspace_storage
         # Default models for different operations
         self.polish_model = polish_model or "deepseek/deepseek-reasoner"
         self.summary_model = summary_model or "deepseek/deepseek-chat"
@@ -96,12 +96,16 @@ class DocumentTool(Tool):
                     )
                 draft_content = draft_path_obj.read_text()
             
-            # Check draft size
+            # Check draft size and implement chunking for large documents
             draft_size = len(draft_content)
             logger.info(f"Draft document size: {draft_size} characters")
             
-            if draft_size > 100000:  # ~25k tokens
-                logger.warning("Draft document is very large, may exceed model limits")
+            # If document is too large, process in chunks to avoid timeouts
+            max_chunk_size = 50000  # ~12k tokens, safe for most models
+            should_chunk = draft_size > max_chunk_size
+            
+            if should_chunk:
+                logger.info(f"Document size ({draft_size}) exceeds chunk limit ({max_chunk_size}), will process in chunks")
             
             # Create reasoning brain for polishing
             logger.info(f"Initializing {polish_model} for document polishing")
@@ -121,7 +125,8 @@ class DocumentTool(Tool):
                 model=polish_model,
                 supports_function_calls=supports_functions,
                 temperature=0.3,  # Lower temperature for consistent polishing
-                max_tokens=32000  # Support long documents
+                max_tokens=8000,  # Max tokens supported by DeepSeek
+                timeout=300  # 5 minutes timeout for large documents with reasoner
             ))
             
             # Build polishing prompt
@@ -151,15 +156,23 @@ Output the polished document directly without any meta-commentary."""
             # Use AI model for polishing
             logger.info(f"Starting document polish with {polish_model}...")
             
-            if supports_functions:
-                # For models with function calling, use generate_response
-                response = await reasoning_brain.generate_response(
-                    messages=[{"role": "user", "content": prompt}]
+            if should_chunk:
+                # Process large documents in chunks to avoid timeouts
+                polished_content = await self._polish_in_chunks(
+                    draft_content, base_instructions, polish_instructions, 
+                    reasoning_brain, supports_functions, max_chunk_size
                 )
-                polished_content = response.content
             else:
-                # For pure reasoning models, use think
-                polished_content = await reasoning_brain.think(prompt)
+                # Process smaller documents normally
+                if supports_functions:
+                    # For models with function calling, use generate_response
+                    response = await reasoning_brain.generate_response(
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    polished_content = response.content
+                else:
+                    # For pure reasoning models, use think
+                    polished_content = await reasoning_brain.think(prompt)
             
             if not polished_content or len(polished_content.strip()) < 100:
                 raise ValueError("Polishing produced insufficient content")
@@ -399,7 +412,8 @@ Output the polished document directly without any meta-commentary."""
                 model=summary_model,
                 supports_function_calls=True,
                 temperature=0.3,
-                max_tokens=8000
+                max_tokens=8000,
+                timeout=120  # 2 minutes timeout for summaries
             ))
             
             # Build the summary prompt
@@ -476,6 +490,152 @@ SOURCE FILES ({len(file_contents)} files, {total_chars} total characters):
                 error=str(e),
                 execution_time=time.time() - start_time
             )
+
+    async def _polish_in_chunks(
+        self,
+        content: str,
+        base_instructions: str,
+        polish_instructions: Optional[str],
+        brain: "Brain",
+        supports_functions: bool,
+        max_chunk_size: int
+    ) -> str:
+        """Polish large documents in chunks to avoid timeouts."""
+        logger.info("Processing large document in chunks to avoid timeouts")
+        
+        # Split content into sections based on headers and paragraphs
+        chunks = self._smart_chunk_content(content, max_chunk_size)
+        logger.info(f"Split document into {len(chunks)} chunks")
+        
+        polished_chunks = []
+        
+        for i, chunk in enumerate(chunks):
+            logger.info(f"Polishing chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
+            
+            # Create chunk-specific prompt
+            chunk_instructions = f"{base_instructions}\n\nThis is part {i+1} of {len(chunks)} of a larger document. Polish this section while maintaining consistency with the overall document style."
+            
+            if polish_instructions:
+                chunk_prompt = f"{chunk_instructions}\n\nAdditional instructions: {polish_instructions}\n\nCONTENT SECTION:\n\n{chunk}"
+            else:
+                chunk_prompt = f"{chunk_instructions}\n\nCONTENT SECTION:\n\n{chunk}"
+            
+            try:
+                if supports_functions:
+                    response = await brain.generate_response(
+                        messages=[{"role": "user", "content": chunk_prompt}]
+                    )
+                    polished_chunk = response.content
+                else:
+                    polished_chunk = await brain.think(chunk_prompt)
+                
+                polished_chunks.append(polished_chunk)
+                
+            except Exception as e:
+                logger.warning(f"Failed to polish chunk {i+1}: {e}, keeping original")
+                polished_chunks.append(chunk)
+        
+        # Combine polished chunks
+        result = "\n\n".join(polished_chunks)
+        logger.info(f"Combined {len(polished_chunks)} polished chunks into final document")
+        
+        return result
+
+    def _smart_chunk_content(self, content: str, max_size: int) -> list[str]:
+        """Split content into chunks at section boundaries only."""
+        if len(content) <= max_size:
+            return [content]
+        
+        import re
+        
+        chunks = []
+        
+        # Split by ALL markdown headers (H1-H6)
+        # This ensures we chunk at any logical section boundary
+        header_pattern = r'^(#{1,6})\s+(.+)$'
+        
+        sections = []
+        current_section = []
+        current_header = None
+        
+        lines = content.split('\n')
+        
+        for line in lines:
+            header_match = re.match(header_pattern, line, re.MULTILINE)
+            
+            if header_match:
+                # Save previous section if exists
+                if current_section:
+                    section_content = '\n'.join(current_section)
+                    sections.append({
+                        'header': current_header,
+                        'content': section_content,
+                        'size': len(section_content)
+                    })
+                
+                # Start new section
+                current_header = line
+                current_section = [line]
+            else:
+                current_section.append(line)
+        
+        # Don't forget the last section
+        if current_section:
+            section_content = '\n'.join(current_section)
+            sections.append({
+                'header': current_header,
+                'content': section_content,
+                'size': len(section_content)
+            })
+        
+        # If no sections found, treat the whole document as one section
+        if not sections:
+            logger.warning("No section headers found in document, treating as single chunk")
+            return [content]
+        
+        # Group sections into chunks that respect size limits
+        current_chunk_sections = []
+        current_chunk_size = 0
+        
+        for section in sections:
+            section_size = section['size']
+            
+            # If this single section is too large, it must be its own chunk
+            # We do NOT split sections further
+            if section_size > max_size:
+                logger.warning(f"Section '{section['header']}' ({section_size} chars) exceeds max size ({max_size}), keeping as single chunk")
+                
+                # First, save any accumulated sections
+                if current_chunk_sections:
+                    chunk_content = '\n\n'.join([s['content'] for s in current_chunk_sections])
+                    chunks.append(chunk_content)
+                    current_chunk_sections = []
+                    current_chunk_size = 0
+                
+                # Add this large section as its own chunk
+                chunks.append(section['content'])
+                
+            # If adding this section would exceed limit, start new chunk
+            elif current_chunk_size + section_size + 2 > max_size:
+                if current_chunk_sections:
+                    chunk_content = '\n\n'.join([s['content'] for s in current_chunk_sections])
+                    chunks.append(chunk_content)
+                
+                current_chunk_sections = [section]
+                current_chunk_size = section_size
+                
+            # Otherwise, add section to current chunk
+            else:
+                current_chunk_sections.append(section)
+                current_chunk_size += section_size + 2
+        
+        # Don't forget the last chunk
+        if current_chunk_sections:
+            chunk_content = '\n\n'.join([s['content'] for s in current_chunk_sections])
+            chunks.append(chunk_content)
+        
+        logger.info(f"Split document into {len(chunks)} chunks at section boundaries only")
+        return chunks
 
 
 # Export

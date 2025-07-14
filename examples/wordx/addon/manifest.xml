@@ -6,14 +6,14 @@
            xsi:type="TaskPaneApp">
 
   <!-- Begin Basic Settings: Add-in metadata, used for all versions of Office unless override provided. -->
-  <Id>12345678-1234-1234-1234-123456789012</Id>
+  <Id>2fbe8b09-5046-4144-a202-4646073aef00</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>Dustland</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="WordX"/>
   <Description DefaultValue="AI-powered document processing with multi-agent teams"/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <IconUrl DefaultValue="https://localhost:3456/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3456/assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://github.com/dustland/agentx"/>
 
   <!-- End Basic Settings. -->
@@ -30,7 +30,7 @@
   </Requirements>
 
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+    <SourceLocation DefaultValue="https://localhost:3456/taskpane.html"/>
   </DefaultSettings>
 
   <!-- End TaskPane Mode integration. -->
@@ -111,15 +111,15 @@
     <!-- You can use resources across hosts and form factors. -->
     <Resources>
       <bt:Images>
-        <bt:Image id="WordX.tpicon_16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-        <bt:Image id="WordX.tpicon_32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-        <bt:Image id="WordX.tpicon_80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="WordX.tpicon_16x16" DefaultValue="https://localhost:3456/assets/icon-16.png"/>
+        <bt:Image id="WordX.tpicon_32x32" DefaultValue="https://localhost:3456/assets/icon-32.png"/>
+        <bt:Image id="WordX.tpicon_80x80" DefaultValue="https://localhost:3456/assets/icon-80.png"/>
       </bt:Images>
 
       <bt:Urls>
-        <bt:Url id="WordX.Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <bt:Url id="WordX.Taskpane.Url" DefaultValue="https://localhost:3456/taskpane.html"/>
         <bt:Url id="WordX.GetStarted.LearnMoreUrl" DefaultValue="https://github.com/dustland/agentx"/>
-        <bt:Url id="WordX.DesktopFunctionFile.Url" DefaultValue="https://localhost:3000/function-file/function-file.html"/>
+        <bt:Url id="WordX.DesktopFunctionFile.Url" DefaultValue="https://localhost:3456/function-file/function-file.html"/>
       </bt:Urls>
 
       <bt:ShortStrings>

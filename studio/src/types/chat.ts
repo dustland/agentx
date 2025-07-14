@@ -1,0 +1,25 @@
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: Date;
+  status?: "streaming" | "complete" | "error";
+  metadata?: {
+    agentId?: string;
+    agentName?: string;
+    toolCalls?: Array<{
+      name: string;
+      status: "running" | "completed" | "error";
+      parameters?: any;
+      result?: any;
+    }>;
+  };
+}
+
+export type TaskStatus = "idle" | "running" | "paused" | "completed" | "error";
+
+export interface StreamEvent {
+  type: "message" | "tool_call" | "status_update" | "error";
+  data: any;
+  timestamp: Date;
+}

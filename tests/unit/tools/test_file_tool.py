@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from agentx.builtin_tools.file import FileTool, create_file_tool
 from agentx.storage.factory import StorageFactory
-from agentx.storage.workspace import WorkspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 from agentx.storage.interfaces import StorageResult
 from agentx.core.config import TaskConfig
 
@@ -24,7 +24,7 @@ class TestFileToolWorkspaceIntegration:
         """Create a test workspace storage."""
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace_path = Path(temp_dir) / "test_task_id"
-            storage = StorageFactory.create_workspace_storage(workspace_path)
+            storage = StorageFactory.create_taskspace_storage(workspace_path)
             yield storage
 
     @pytest.fixture
@@ -442,7 +442,7 @@ if __name__ == "__main__":
         """Quick test runner for development."""
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace_path = Path(temp_dir) / "test_task"
-            storage = StorageFactory.create_workspace_storage(workspace_path)
+            storage = StorageFactory.create_taskspace_storage(workspace_path)
             tool = FileTool(storage)
 
             # Test basic operations

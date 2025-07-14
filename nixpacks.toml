@@ -1,0 +1,34 @@
+# Nixpacks configuration for AgentX
+# This deploys both the API server and Studio
+
+[phases.setup]
+nixPkgs = ["python311", "nodejs_20", "pnpm", "git"]
+
+[phases.install]
+dependsOn = ["setup"]
+cmds = [
+    # Install Python dependencies
+    "pip install uv",
+    "uv pip install -e .",
+    
+    # Install Studio dependencies
+    "cd studio && pnpm install --frozen-lockfile"
+]
+
+[phases.build]
+dependsOn = ["install"]
+cmds = [
+    # Build Studio
+    "cd studio && pnpm run build"
+]
+
+[start]
+# Start both API and Studio using a process manager
+cmd = "python -m agentx.railway_start"
+
+[variables]
+PYTHONUNBUFFERED = "1"
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"
+PORT = "8000"
+STUDIO_PORT = "3000"

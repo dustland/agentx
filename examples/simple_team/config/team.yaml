@@ -1,6 +1,6 @@
 name: "WriterReviewerTeam"
 description: "A focused team demonstrating orchestration and handoffs between Writer and Reviewer"
-output_dir: "workspace"
+output_dir: "taskspace"
 
 agents:
   - name: writer

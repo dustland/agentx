@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WordX Debug Console</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        #logs {
+            background: #000;
+            padding: 10px;
+            border: 1px solid #333;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .error { color: #f48771; }
+        .warn { color: #dcdcaa; }
+        .info { color: #9cdcfe; }
+        .debug { color: #808080; }
+    </style>
+</head>
+<body>
+    <h2>WordX Debug Console</h2>
+    <div id="logs"></div>
+    <button onclick="clearLogs()">Clear</button>
+    <button onclick="testConnection()">Test Backend Connection</button>
+    
+    <script>
+        const logsDiv = document.getElementById('logs');
+        
+        // Override console methods to capture logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addLog(level, ...args) {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${level}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${level.toUpperCase()}: ${args.join(' ')}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog('info', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('error', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('warn', ...args);
+        };
+        
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+        }
+        
+        async function testConnection() {
+            try {
+                console.log('Testing backend connection...');
+                const response = await fetch('http://localhost:8000/');
+                const data = await response.json();
+                console.log('Backend response:', JSON.stringify(data));
+            } catch (error) {
+                console.error('Backend connection failed:', error.message);
+            }
+        }
+        
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            console.log('Debug console loaded');
+            testConnection();
+        });
+    </script>
+</body>
+</html>

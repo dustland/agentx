@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WordX Icon Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .icon-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .icon-box img {
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #eee;
+        }
+        .icon-box .size {
+            color: #666;
+            font-size: 12px;
+        }
+        .status {
+            margin-top: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>WordX Icon Test</h1>
+    <p>This page shows all the icons referenced in the manifest.xml</p>
+    
+    <div class="icon-grid">
+        <div class="icon-box">
+            <img src="/assets/icon-16.png" alt="16x16 icon" width="16" height="16">
+            <div>Icon 16x16</div>
+            <div class="size">/assets/icon-16.png</div>
+            <div class="status" id="status-16"></div>
+        </div>
+        
+        <div class="icon-box">
+            <img src="/assets/icon-32.png" alt="32x32 icon" width="32" height="32">
+            <div>Icon 32x32</div>
+            <div class="size">/assets/icon-32.png</div>
+            <div class="status" id="status-32"></div>
+        </div>
+        
+        <div class="icon-box">
+            <img src="/assets/icon-64.png" alt="64x64 icon" width="64" height="64">
+            <div>Icon 64x64</div>
+            <div class="size">/assets/icon-64.png</div>
+            <div class="status" id="status-64"></div>
+        </div>
+        
+        <div class="icon-box">
+            <img src="/assets/icon-80.png" alt="80x80 icon" width="80" height="80">
+            <div>Icon 80x80</div>
+            <div class="size">/assets/icon-80.png</div>
+            <div class="status" id="status-80"></div>
+        </div>
+    </div>
+    
+    <h2>Logo Source</h2>
+    <div class="icon-box" style="max-width: 300px;">
+        <img src="/assets/logo.png" alt="Original logo" style="max-width: 100%; height: auto;">
+        <div>Original Logo</div>
+        <div class="size">/assets/logo.png</div>
+    </div>
+    
+    <script>
+        // Test each icon
+        const sizes = [16, 32, 64, 80];
+        
+        sizes.forEach(size => {
+            const img = new Image();
+            const statusEl = document.getElementById(`status-${size}`);
+            
+            img.onload = function() {
+                statusEl.textContent = '✓ Loaded';
+                statusEl.className = 'status success';
+            };
+            
+            img.onerror = function() {
+                statusEl.textContent = '✗ Failed';
+                statusEl.className = 'status error';
+            };
+            
+            img.src = `/assets/icon-${size}.png`;
+        });
+    </script>
+</body>
+</html>

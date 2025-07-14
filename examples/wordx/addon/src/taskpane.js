@@ -7,22 +7,46 @@
 // Global variables
 let currentTaskId = null;
 let statusCheckInterval = null;
+let retryCount = 0;
+let maxRetries = 3;
+let retryDelay = 1000; // Start with 1 second
+
 // Use configured backend URL or default
 const API_BASE_URL = (window.WORDX_CONFIG && window.WORDX_CONFIG.BACKEND_URL)
     ? `${window.WORDX_CONFIG.BACKEND_URL}/api`
-    : 'http://localhost:8000/api';
+    : 'http://localhost:8765/api';
 
 // Office.js initialization
 Office.onReady((info) => {
+    console.log('Office.onReady called with info:', info);
+    
     if (info.host === Office.HostType.Word) {
         console.log('WordX add-in loaded successfully');
+        console.log('API Base URL:', API_BASE_URL);
 
-        // Initialize the interface
-        initializeInterface();
+        try {
+            // Initialize the interface
+            initializeInterface();
 
-        // Set up event handlers
-        setupEventHandlers();
+            // Set up event handlers
+            setupEventHandlers();
+            
+            // Test backend connection
+            fetch(`${API_BASE_URL.replace('/api', '')}`)
+                .then(res => res.json())
+                .then(data => console.log('Backend connected:', data))
+                .catch(err => console.error('Backend connection error:', err));
+                
+        } catch (error) {
+            console.error('Error during initialization:', error);
+            showError('Failed to initialize add-in: ' + error.message);
+        }
+    } else {
+        console.error('Not running in Word. Host:', info.host);
     }
+}).catch((error) => {
+    console.error('Office.onReady error:', error);
+    document.body.innerHTML = '<div style="padding:20px; color:red;">Error loading Office.js: ' + error.message + '</div>';
 });
 
 /**
@@ -82,6 +106,48 @@ function hideSection(sectionId) {
 }
 
 /**
+ * Retry utility function with exponential backoff
+ */
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+    let attempt = 0;
+    
+    while (attempt < maxRetries) {
+        try {
+            return await fn();
+        } catch (error) {
+            attempt++;
+            
+            if (attempt >= maxRetries) {
+                throw error;
+            }
+            
+            const delay = baseDelay * Math.pow(2, attempt - 1);
+            console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
+/**
+ * Make API request with retry logic
+ */
+async function apiRequest(url, options = {}) {
+    return retryWithBackoff(async () => {
+        const response = await fetch(url, {
+            timeout: 30000, // 30 second timeout
+            ...options
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        return response.json();
+    }, maxRetries, retryDelay);
+}
+
+/**
  * Get the current document content
  */
 async function getDocumentContent() {
@@ -137,8 +203,8 @@ async function processDocument() {
         // Update button text
         processButton.textContent = 'Starting agent team...';
 
-        // Start the processing
-        const response = await fetch(`${API_BASE_URL}/process-document`, {
+        // Start the processing with retry logic
+        const result = await apiRequest(`${API_BASE_URL}/process-document`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -149,12 +215,6 @@ async function processDocument() {
                 document_type: documentType
             })
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
         currentTaskId = result.task_id;
 
         // Show processing status
@@ -207,15 +267,23 @@ function showProcessingStatus() {
 function startStatusMonitoring() {
     if (!currentTaskId) return;
 
+    let statusRetryCount = 0;
+    const maxStatusRetries = 5;
+
     statusCheckInterval = setInterval(async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/task-status/${currentTaskId}`);
+            const status = await retryWithBackoff(async () => {
+                const response = await fetch(`${API_BASE_URL}/task-status/${currentTaskId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return response.json();
+            }, 2, 1000); // Shorter retry for status checks
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const status = await response.json();
+            // Reset retry count on successful request
+            statusRetryCount = 0;
 
             // Update progress
             updateProgress(status.progress * 100, getStatusMessage(status));
@@ -228,17 +296,24 @@ function startStatusMonitoring() {
             if (status.status === 'completed') {
                 clearInterval(statusCheckInterval);
                 showProcessingComplete();
-            } else if (status.status === 'failed') {
+            } else if (status.status === 'failed' || status.status === 'error') {
                 clearInterval(statusCheckInterval);
                 showError(status.final_result || 'Processing failed');
             }
 
         } catch (error) {
             console.error('Error checking status:', error);
-            clearInterval(statusCheckInterval);
-            showError('Lost connection to processing service');
+            statusRetryCount++;
+            
+            if (statusRetryCount >= maxStatusRetries) {
+                clearInterval(statusCheckInterval);
+                showError('Lost connection to processing service. Please check your internet connection and try again.');
+            } else {
+                // Show temporary connection issue warning
+                updateProgress(null, `Connection issue (${statusRetryCount}/${maxStatusRetries})... retrying`);
+            }
         }
-    }, 2000); // Check every 2 seconds
+    }, 3000); // Check every 3 seconds (slightly slower to reduce load)
 }
 
 /**
@@ -248,8 +323,8 @@ function updateProgress(percent, message) {
     const progressFill = document.getElementById('progressFill');
     const statusMessage = document.getElementById('statusMessage');
 
-    if (progressFill) {
-        progressFill.style.width = `${percent}%`;
+    if (progressFill && percent !== null && percent !== undefined) {
+        progressFill.style.width = `${Math.max(0, Math.min(100, percent))}%`;
     }
 
     if (statusMessage) {
@@ -328,7 +403,7 @@ async function sendChatMessage() {
     addChatMessage('agent', 'Agent team is thinking...');
 
     try {
-        const response = await fetch(`${API_BASE_URL}/chat`, {
+        const result = await apiRequest(`${API_BASE_URL}/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -339,12 +414,6 @@ async function sendChatMessage() {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
         // Remove thinking indicator
         removeChatThinking();
 
@@ -354,7 +423,14 @@ async function sendChatMessage() {
     } catch (error) {
         console.error('Error sending chat message:', error);
         removeChatThinking();
-        addChatMessage('agent', 'Sorry, there was an error communicating with the agent team. Please try again.');
+        
+        if (error.message.includes('HTTP 404')) {
+            addChatMessage('agent', 'The processing session has expired. Please start a new document processing task.');
+        } else if (error.message.includes('timeout') || error.message.includes('network')) {
+            addChatMessage('agent', 'Network connection issue. Please check your internet connection and try again.');
+        } else {
+            addChatMessage('agent', 'Sorry, there was an error communicating with the agent team. Please try again.');
+        }
     }
 }
 

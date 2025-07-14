@@ -8,7 +8,7 @@ and wrapped as tools for LLM agents.
 from .interfaces import StorageBackend, FileStorage, ArtifactStorage, StorageResult
 from .backends import LocalFileStorage
 from .factory import StorageFactory
-from .workspace import WorkspaceStorage
+from .taskspace import TaskspaceStorage
 from .git_storage import GitArtifactStorage
 
 __all__ = [
@@ -18,6 +18,6 @@ __all__ = [
     "StorageResult",
     "LocalFileStorage",
     "StorageFactory",
-    "WorkspaceStorage",
+    "TaskspaceStorage",
     "GitArtifactStorage"
 ]
