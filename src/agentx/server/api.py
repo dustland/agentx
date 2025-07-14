@@ -341,23 +341,36 @@ def add_routes(app: FastAPI):
                 if item.is_file():
                     relative_path = item.relative_to(taskspace_path)
                     # For artifacts API, return paths that can be used directly
-                    # If file is in artifacts/ directory, strip the prefix
                     path_str = str(relative_path)
+                    
+                    # Categorize files by their location
                     if path_str.startswith('artifacts/'):
-                        # This is an artifact file - return path without artifacts/ prefix
+                        # Artifact files - return path without artifacts/ prefix for clean API
                         clean_path = path_str.removeprefix('artifacts/')
                         artifacts.append({
                             "path": clean_path,
                             "type": "file",
+                            "category": "artifact",
+                            "size": item.stat().st_size,
+                            "created_at": datetime.fromtimestamp(item.stat().st_ctime).isoformat(),
+                            "modified_at": datetime.fromtimestamp(item.stat().st_mtime).isoformat()
+                        })
+                    elif path_str.startswith('logs/'):
+                        # Log files - keep logs/ prefix to distinguish from artifacts
+                        artifacts.append({
+                            "path": path_str,
+                            "type": "file",
+                            "category": "log",
                             "size": item.stat().st_size,
                             "created_at": datetime.fromtimestamp(item.stat().st_ctime).isoformat(),
                             "modified_at": datetime.fromtimestamp(item.stat().st_mtime).isoformat()
                         })
                     else:
-                        # Non-artifact files (logs, plan.json, etc.) - return full path
+                        # Other files (plan.json, etc.) - return full path
                         artifacts.append({
                             "path": path_str,
-                            "type": "file", 
+                            "type": "file",
+                            "category": "meta",
                             "size": item.stat().st_size,
                             "created_at": datetime.fromtimestamp(item.stat().st_ctime).isoformat(),
                             "modified_at": datetime.fromtimestamp(item.stat().st_mtime).isoformat()
@@ -374,23 +387,45 @@ def add_routes(app: FastAPI):
         return {"artifacts": artifacts}
     
     @app.get("/tasks/{task_id}/artifacts/{file_path:path}")
-    async def get_artifact_content(task_id: str, file_path: str):
+    async def get_artifact_content(task_id: str, file_path: str, user_id: Optional[str] = None):
         """Get the content of a specific artifact file"""
         from pathlib import Path
         
-        # Construct full path safely - artifacts endpoint should be scoped to artifacts directory
-        taskspace_path = Path(f"taskspace/{task_id}")
+        # Check if task exists in active tasks and get user permissions
+        task = active_tasks.get(task_id)
+        if task:
+            # Task is active - check user permissions and use task's actual taskspace path
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                raise HTTPException(status_code=404, detail="Task not found")
+            taskspace_path = Path(task.taskspace.taskspace_path)
+        else:
+            # Task not active - check if taskspace exists
+            # Try both user-scoped and legacy paths
+            if user_id:
+                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+            else:
+                taskspace_path = Path(f"taskspace/{task_id}")
+            
+            if not taskspace_path.exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = Path(f"taskspace/{task_id}")
+                    if legacy_path.exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
         
-        # If file_path starts with 'artifacts/', use it as-is for backward compatibility
-        # Otherwise, scope it to the artifacts directory
-        if file_path.startswith('artifacts/'):
+        # Handle different path types:
+        # 1. If file_path starts with 'artifacts/', use it as-is (backward compatibility)
+        # 2. If file_path starts with 'logs/', use it as-is (logs are at same level as artifacts)
+        # 3. Otherwise, scope it to the artifacts directory
+        if file_path.startswith(('artifacts/', 'logs/')):
             full_path = taskspace_path / file_path
         else:
             full_path = taskspace_path / "artifacts" / file_path
         
-        # Check if task exists in active tasks or if taskspace exists
-        if task_id not in active_tasks and not taskspace_path.exists():
-            raise HTTPException(status_code=404, detail="Task not found")
         
         # Security: ensure path is within taskspace
         try:
@@ -398,7 +433,10 @@ def add_routes(app: FastAPI):
             taskspace_path = taskspace_path.resolve()
             if not str(full_path).startswith(str(taskspace_path)):
                 raise HTTPException(status_code=403, detail="Access denied")
-        except Exception:
+        except Exception as e:
+            logger.error(f"Path resolution failed for {file_path}: {e}")
+            logger.error(f"Taskspace path: {taskspace_path}")
+            logger.error(f"Full path attempted: {full_path}")
             raise HTTPException(status_code=404, detail="File not found")
         
         if not full_path.exists() or not full_path.is_file():
@@ -406,8 +444,15 @@ def add_routes(app: FastAPI):
         
         try:
             content = full_path.read_text(encoding='utf-8')
-            # Return clean path for artifacts endpoint (strip artifacts/ prefix if present)
-            clean_path = file_path.removeprefix('artifacts/')
+            # Return appropriate path based on file type:
+            # - For artifacts: strip artifacts/ prefix for clean API
+            # - For logs: keep logs/ prefix to distinguish from artifacts
+            # - For others: keep as-is
+            if file_path.startswith('artifacts/'):
+                clean_path = file_path.removeprefix('artifacts/')
+            else:
+                clean_path = file_path
+                
             return {
                 "path": clean_path,
                 "content": content,
