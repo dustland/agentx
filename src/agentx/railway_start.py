@@ -16,8 +16,8 @@ def start_services():
     processes = []
     
     # Get ports from environment
-    api_port = os.environ.get('PORT', '8000')
-    studio_port = os.environ.get('STUDIO_PORT', '3000')
+    api_port = os.environ.get('PORT', '7770')
+    studio_port = os.environ.get('STUDIO_PORT', '7777')
     
     # Start API server
     print(f"Starting AgentX API on port {api_port}...")

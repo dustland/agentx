@@ -26,7 +26,7 @@ class TaskStatus(str, Enum):
 class TaskRequest(BaseModel):
     """Request to create and run a task"""
     config_path: str = Field(description="Path to the task configuration file")
-    task_description: str = Field(description="Description of the task to execute")
+    task_description: Optional[str] = Field(default="", description="Description of the task to execute")
     context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context for the task")
     user_id: Optional[str] = Field(default=None, description="User ID for multi-tenant isolation")
 

@@ -3,7 +3,7 @@
 AgentX provides a comprehensive REST API for managing agents, tasks, and real-time communication. The API server can be started with:
 
 ```bash
-uv run start --port 8000
+uv run start --port 7770
 ```
 
 ## API Documentation
@@ -11,12 +11,12 @@ uv run start --port 8000
 The AgentX server provides interactive API documentation through two interfaces:
 
 - **[REST API Explorer](/api-explorer)** - Interactive documentation with ReDoc/Swagger UI
-- **OpenAPI Specification** - Available at `http://localhost:8000/openapi.json`
+- **OpenAPI Specification** - Available at `http://localhost:7770/openapi.json`
 
 ## Base URL
 
 ```
-http://localhost:8000
+http://localhost:7770
 ```
 
 ## Authentication
@@ -24,7 +24,7 @@ http://localhost:8000
 If user authentication is enabled, include the `user_id` parameter in your requests:
 
 ```bash
-curl "http://localhost:8000/tasks?user_id=your_user_id"
+curl "http://localhost:7770/tasks?user_id=your_user_id"
 ```
 
 ## Key Endpoints
@@ -63,7 +63,7 @@ curl "http://localhost:8000/tasks?user_id=your_user_id"
 ### Creating a Task
 
 ```bash
-curl -X POST "http://localhost:8000/tasks" \
+curl -X POST "http://localhost:7770/tasks" \
   -H "Content-Type: application/json" \
   -d '{
     "config_path": "examples/simple_writer/config/team.yaml",
@@ -75,16 +75,18 @@ curl -X POST "http://localhost:8000/tasks" \
 ### Streaming Task Events
 
 ```javascript
-const eventSource = new EventSource('http://localhost:8000/tasks/TASK_ID/stream');
+const eventSource = new EventSource(
+  "http://localhost:7770/tasks/TASK_ID/stream"
+);
 
-eventSource.addEventListener('agent_message', (event) => {
+eventSource.addEventListener("agent_message", (event) => {
   const data = JSON.parse(event.data);
-  console.log('Agent message:', data);
+  console.log("Agent message:", data);
 });
 
-eventSource.addEventListener('task_update', (event) => {
+eventSource.addEventListener("task_update", (event) => {
   const data = JSON.parse(event.data);
-  console.log('Task status:', data.status);
+  console.log("Task status:", data.status);
 });
 ```
 
@@ -113,15 +115,15 @@ The API server enables CORS by default, allowing requests from any origin. In pr
 If you receive connection errors, ensure the AgentX server is running:
 
 ```bash
-uv run start --port 8000
+uv run start --port 7770
 ```
 
 ### Port Conflicts
 
-If port 8000 is already in use, you can specify a different port:
+If port 7770 is already in use, you can specify a different port:
 
 ```bash
-uv run start --port 8080
+uv run start --port 7771
 ```
 
 ### Missing Dependencies

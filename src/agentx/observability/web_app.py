@@ -348,7 +348,7 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
     return app
 
 
-def run_web_app(host: str = "0.0.0.0", port: int = 8501, project_path: Optional[str] = None):
+def run_web_app(host: str = "0.0.0.0", port: int = 7772, project_path: Optional[str] = None):
     """Run the web application."""
     app = create_web_app(project_path)
     uvicorn.run(app, host=host, port=port)

@@ -11,19 +11,21 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   // Configure for Railway deployment
-  output: 'standalone',
+  output: "standalone",
   // Allow API proxy to AgentX backend
   async rewrites() {
     return [
       {
-        source: '/api/agentx/:path*',
-        destination: `${process.env.AGENTX_API_URL || 'http://localhost:8000'}/:path*`,
+        source: "/api/agentx/:path*",
+        destination: `${
+          process.env.AGENTX_API_URL || "http://localhost:7770"
+        }/:path*`,
       },
-    ]
+    ];
   },
   // Environment variables that can be used in the browser
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '/api/agentx',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api/agentx",
   },
 };
 

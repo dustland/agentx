@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 
-const API_URL = process.env.NEXT_PUBLIC_AGENTX_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_AGENTX_API_URL || 'http://localhost:7770';
 const HEALTH_CHECK_TIMEOUT = 3000; // 3 seconds
 const HEALTH_CHECK_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 second

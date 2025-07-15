@@ -1,92 +1,93 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  PlayIcon, 
-  PauseIcon, 
-  CheckCircleIcon, 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  PlayIcon,
+  PauseIcon,
+  CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
   RefreshCwIcon,
-  TrashIcon
-} from 'lucide-react'
-import { useAgentXAPI, TaskResponse } from '@/lib/api-client'
-import { formatDate } from '@/lib/utils'
+  TrashIcon,
+} from "lucide-react";
+import { useAgentXAPI } from "@/lib/api-client";
+import { Task as TaskResponse } from "@/types/agentx";
+import { formatDate } from "@/lib/utils";
 
 interface TaskListProps {
-  onTaskSelect?: (task: TaskResponse) => void
-  selectedTaskId?: string
+  onTaskSelect?: (task: TaskResponse) => void;
+  selectedTaskId?: string;
 }
 
 export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
-  const apiClient = useAgentXAPI()
-  const [tasks, setTasks] = useState<TaskResponse[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const apiClient = useAgentXAPI();
+  const [tasks, setTasks] = useState<TaskResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const loadTasks = async () => {
     try {
-      setLoading(true)
-      setError(null)
-      const response = await apiClient.getTasks()
-      setTasks(response.tasks)
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.getTasks();
+      setTasks(response.tasks);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks')
+      setError(err instanceof Error ? err.message : "Failed to load tasks");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadTasks()
+    loadTasks();
     // Refresh every 5 seconds
-    const interval = setInterval(loadTasks, 5000)
-    return () => clearInterval(interval)
-  }, [])
+    const interval = setInterval(loadTasks, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'running':
-        return <RefreshCwIcon className="w-4 h-4 animate-spin" />
-      case 'completed':
-        return <CheckCircleIcon className="w-4 h-4" />
-      case 'failed':
-        return <XCircleIcon className="w-4 h-4" />
-      case 'pending':
-        return <ClockIcon className="w-4 h-4" />
+      case "running":
+        return <RefreshCwIcon className="w-4 h-4 animate-spin" />;
+      case "completed":
+        return <CheckCircleIcon className="w-4 h-4" />;
+      case "failed":
+        return <XCircleIcon className="w-4 h-4" />;
+      case "pending":
+        return <ClockIcon className="w-4 h-4" />;
       default:
-        return <ClockIcon className="w-4 h-4" />
+        return <ClockIcon className="w-4 h-4" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'running':
-        return 'bg-blue-500'
-      case 'completed':
-        return 'bg-green-500'
-      case 'failed':
-        return 'bg-red-500'
-      case 'pending':
-        return 'bg-yellow-500'
+      case "running":
+        return "bg-blue-500";
+      case "completed":
+        return "bg-green-500";
+      case "failed":
+        return "bg-red-500";
+      case "pending":
+        return "bg-yellow-500";
       default:
-        return 'bg-gray-500'
+        return "bg-gray-500";
     }
-  }
+  };
 
   const handleDelete = async (taskId: string, e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     try {
-      await apiClient.deleteTask(taskId)
-      await loadTasks()
+      await apiClient.deleteTask(taskId);
+      await loadTasks();
     } catch (err) {
-      console.error('Failed to delete task:', err)
+      console.error("Failed to delete task:", err);
     }
-  }
+  };
 
   if (loading && tasks.length === 0) {
     return (
@@ -96,7 +97,7 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
           <p className="text-muted-foreground">Loading tasks...</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -105,22 +106,29 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
         <CardContent className="p-8 text-center">
           <XCircleIcon className="w-8 h-8 mx-auto mb-4 text-red-500" />
           <p className="text-red-500">{error}</p>
-          <Button onClick={loadTasks} variant="outline" size="sm" className="mt-4">
+          <Button
+            onClick={loadTasks}
+            variant="outline"
+            size="sm"
+            className="mt-4"
+          >
             Retry
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (tasks.length === 0) {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <p className="text-muted-foreground">No tasks yet. Create one to get started!</p>
+          <p className="text-muted-foreground">
+            No tasks yet. Create one to get started!
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -140,22 +148,34 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
               <Card
                 key={task.task_id}
                 className={`cursor-pointer transition-colors hover:bg-accent ${
-                  selectedTaskId === task.task_id ? 'ring-2 ring-primary' : ''
+                  selectedTaskId === task.task_id ? "ring-2 ring-primary" : ""
                 }`}
                 onClick={() => onTaskSelect?.(task)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${getStatusColor(task.status)}`} />
-                      <span className="font-medium text-sm">Task {task.task_id.slice(0, 8)}</span>
+                      <div
+                        className={`w-2 h-2 rounded-full ${getStatusColor(
+                          task.status
+                        )}`}
+                      />
+                      <span className="font-medium text-sm">
+                        Task {task.task_id.slice(0, 8)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={
-                        task.status === 'completed' ? 'default' :
-                        task.status === 'failed' ? 'destructive' :
-                        task.status === 'running' ? 'secondary' : 'outline'
-                      }>
+                      <Badge
+                        variant={
+                          task.status === "completed"
+                            ? "default"
+                            : task.status === "failed"
+                            ? "destructive"
+                            : task.status === "running"
+                            ? "secondary"
+                            : "outline"
+                        }
+                      >
                         <span className="flex items-center gap-1">
                           {getStatusIcon(task.status)}
                           {task.status}
@@ -170,11 +190,13 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="text-xs text-muted-foreground">
                     <p>Created: {formatDate(new Date(task.created_at))}</p>
                     {task.completed_at && (
-                      <p>Completed: {formatDate(new Date(task.completed_at))}</p>
+                      <p>
+                        Completed: {formatDate(new Date(task.completed_at))}
+                      </p>
                     )}
                   </div>
 
@@ -190,5 +212,5 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
         </ScrollArea>
       </CardContent>
     </Card>
-  )
+  );
 }

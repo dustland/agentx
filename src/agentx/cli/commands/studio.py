@@ -83,8 +83,8 @@ def get_studio_path() -> Path:
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.option('--port', '-p', default=3333, help='Port for the studio UI')
-@click.option('--api-port', default=8000, help='Port for the API server')
+@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@click.option('--api-port', default=7770, help='Port for the API server')
 @click.option('--no-api', is_flag=True, help='Don\'t start the API server')
 @click.option('--open', '-o', is_flag=True, help='Open studio in browser')
 def studio(ctx, port: int, api_port: int, no_api: bool, open: bool):
@@ -98,8 +98,8 @@ def studio(ctx, port: int, api_port: int, no_api: bool, open: bool):
 
 
 @studio.command()
-@click.option('--port', '-p', default=3333, help='Port for the studio UI')
-@click.option('--api-port', default=8000, help='Port for the API server')
+@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@click.option('--api-port', default=7770, help='Port for the API server')
 @click.option('--no-api', is_flag=True, help='Don\'t start the API server')
 @click.option('--open', '-o', is_flag=True, help='Open studio in browser')
 @click.option('--production', is_flag=True, help='Run in production mode')
@@ -215,8 +215,8 @@ def setup():
 
 
 @studio.command()
-@click.option('--port', '-p', default=3333, help='Port for the studio UI')
-@click.option('--api-port', default=8000, help='Port for the API server')
+@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@click.option('--api-port', default=7770, help='Port for the API server')
 def dev(port: int, api_port: int):
     """Start both API and Studio in development mode."""
     # Just invoke the start command with the same parameters

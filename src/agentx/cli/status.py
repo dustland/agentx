@@ -32,9 +32,9 @@ def show_status() -> None:
     try:
         # Check if server is running
         import requests
-        response = requests.get("http://localhost:8000/health", timeout=2)
+        response = requests.get("http://localhost:7770/health", timeout=2)
         print(f"🌐 API Server: {'🟢 Running' if response.status_code == 200 else '🔴 Error'}")
-        print(f"   URL: http://localhost:8000")
+        print(f"   URL: http://localhost:7770")
         print(f"   Start with: agentx start")
     except:
         print("🌐 API Server: 🔴 Not running")
@@ -43,9 +43,9 @@ def show_status() -> None:
     try:
         # Check if web dashboard is running
         import requests
-        response = requests.get("http://localhost:8501", timeout=2)
+        response = requests.get("http://localhost:7772", timeout=2)
         print(f"📱 Web Dashboard: {'🟢 Running' if response.status_code == 200 else '🔴 Error'}")
-        print(f"   URL: http://localhost:8501")
+        print(f"   URL: http://localhost:7772")
         print(f"   Tech: FastAPI + HTMX + TailwindCSS + Preline UI v3.10")
         print(f"   Theme: Professional SaaS dashboard styling")
     except:

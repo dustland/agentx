@@ -88,7 +88,7 @@ export default function Home() {
   const [tasks, setTasks] = useState([])
   
   useEffect(() => {
-    setApiUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
+    setApiUrl(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7770')
   }, [])
 
   return (
@@ -108,7 +108,7 @@ export default function Home() {
       
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
         <h3>API Status</h3>
-        <p>Make sure AgentX API is running on port 8000</p>
+        <p>Make sure AgentX API is running on port 7770</p>
         <pre>agentx start</pre>
       </div>
     </div>
@@ -121,7 +121,7 @@ export default function Home() {
 module.exports = {
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_API_URL: process.env.AGENTX_API_URL || 'http://localhost:8000',
+            NEXT_PUBLIC_API_URL: process.env.AGENTX_API_URL || 'http://localhost:7770',
   },
 }
 """)
@@ -203,8 +203,8 @@ def ensure_studio_available() -> tuple[Path, bool]:
 
 def run_studio_command(
     action: str = "start",
-    port: int = 3000,
-    api_port: int = 8000,
+    port: int = 7777,
+    api_port: int = 7770,
     no_api: bool = False,
     open_browser: bool = True,
     production: bool = False

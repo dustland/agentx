@@ -38,8 +38,8 @@ pnpm run start:http  # or npm run start:http
 
 The add-in will be served at:
 
-- HTTPS: `https://localhost:4321`
-- HTTP: `http://localhost:4321`
+- HTTPS: `https://localhost:7778`
+- HTTP: `http://localhost:7778`
 
 ## Files
 
@@ -58,7 +58,7 @@ The add-in will be served at:
 
 ## Development
 
-The add-in communicates with the backend API at `http://localhost:8765`. Make sure the backend is running before using the add-in.
+The add-in communicates with the backend API at `http://localhost:7779`. Make sure the backend is running before using the add-in.
 
 ## Troubleshooting
 

@@ -70,7 +70,7 @@
         async function testConnection() {
             try {
                 console.log('Testing backend connection...');
-                const response = await fetch('http://localhost:8000/');
+                const response = await fetch('http://localhost:7779/');
                 const data = await response.json();
                 console.log('Backend response:', JSON.stringify(data));
             } catch (error) {

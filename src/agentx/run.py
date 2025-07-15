@@ -44,7 +44,7 @@ def start():
     print("  • Real-time event capture")
     print("  • Task conversation tracking")
     print("  • Memory monitoring")
-    print("  • Web dashboard at http://localhost:8000/monitor")
+    print("  • Web dashboard at http://localhost:7770/monitor")
     print()
 
     try:
@@ -93,10 +93,10 @@ def start():
             """Get memory by category."""
             return monitor.get_memory_by_category(category)
 
-        print("🌐 Server starting at http://localhost:8000")
-        print("📊 Monitor dashboard at http://localhost:8000/monitor")
+        print("🌐 Server starting at http://localhost:7770")
+        print("📊 Monitor dashboard at http://localhost:7770/monitor")
 
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        uvicorn.run(app, host="0.0.0.0", port=7770)
         return 0
 
     except Exception as e:
@@ -238,7 +238,7 @@ def monitor(project_path: Optional[str] = None):
                         # Run streamlit with proper environment
                         result = subprocess.run([
                             sys.executable, "-m", "streamlit", "run", str(web_file),
-                            "--server.port", "8501",
+                            "--server.port", "7772",
                             "--server.headless", "false",
                             "--server.runOnSave", "true"
                         ], env=env)
@@ -267,7 +267,7 @@ def monitor(project_path: Optional[str] = None):
         print(f"❌ Error starting monitor: {e}")
         return 1
 
-def web(project_path: Optional[str] = None, host: str = "0.0.0.0", port: int = 8501):
+def web(project_path: Optional[str] = None, host: str = "0.0.0.0", port: int = 7772):
     """Start the modern web-based observability dashboard."""
     print("🌐 Starting AgentX Observability Web Dashboard")
     print("=" * 50)
@@ -379,7 +379,7 @@ def build_docs(command: str = "build"):
 
         elif command == "dev" or command == "serve":
             print("🚀 Starting development server...")
-            print("📖 Documentation will open at http://localhost:3000")
+            print("📖 Documentation will open at http://localhost:7771")
             print("🔄 Press Ctrl+C to stop")
             try:
                 result = subprocess.run(["pnpm", "dev"], cwd=docs_dir)
@@ -413,18 +413,35 @@ def dev():
         from agentx.server.api import app
         import uvicorn
 
-        print("🌐 Development server starting at http://localhost:8000")
+        print("🌐 Development server starting at http://localhost:7770")
         print("🔄 Changes will trigger automatic reload")
-        print("📊 Monitor dashboard at http://localhost:8000/monitor")
+        print("📊 Monitor dashboard at http://localhost:7770/monitor")
         print("🔄 Press Ctrl+C to stop")
 
+        # Note: reload=True forces single worker mode
+        # For development with concurrent requests, we need to choose between:
+        # 1. Hot reload (single worker) - current setting
+        # 2. Multiple workers (no hot reload) - better for testing concurrent operations
+        
+        # To enable concurrent request handling during development, uncomment this:
+        # uvicorn.run(
+        #     "agentx.server.api:app",
+        #     host="0.0.0.0",
+        #     port=7770,
+        #     workers=4,  # Multiple workers for concurrent requests
+        #     log_level="debug"
+        # )
+        
+        # Current setting: Hot reload enabled (single worker)
         uvicorn.run(
             "agentx.server.api:app",
             host="0.0.0.0",
-            port=8000,
+            port=7770,
             reload=True,
             reload_dirs=["src/agentx"],
-            log_level="debug"
+            log_level="debug",
+            # Note: Can't use workers with reload=True
+            # Consider running with --workers flag in production
         )
         return 0
 
@@ -433,6 +450,42 @@ def dev():
         return 0
     except Exception as e:
         print(f"❌ Error starting development server: {e}")
+        return 1
+
+
+def prod():
+    """Run AgentX in production mode with multiple workers."""
+    print("⚡ Starting AgentX Production Mode")
+    print("=" * 40)
+    print("🔧 Features enabled:")
+    print("  • Multiple workers (4)")
+    print("  • Concurrent request handling")
+    print("  • Production logging")
+    print()
+
+    try:
+        import uvicorn
+
+        print("🌐 Production server starting at http://localhost:7770")
+        print("🚀 Running with 4 workers for concurrent requests")
+        print("📊 Monitor dashboard at http://localhost:7770/monitor")
+        print("🔄 Press Ctrl+C to stop")
+
+        uvicorn.run(
+            "agentx.server.api:app",
+            host="0.0.0.0",
+            port=7770,
+            workers=4,  # Multiple workers for concurrent requests
+            log_level="info",
+            access_log=True
+        )
+        return 0
+
+    except KeyboardInterrupt:
+        print("\n🛑 Production server stopped")
+        return 0
+    except Exception as e:
+        print(f"❌ Error starting production server: {e}")
         return 1
 
 

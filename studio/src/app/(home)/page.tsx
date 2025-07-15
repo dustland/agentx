@@ -33,11 +33,13 @@ import { TaskSidebar } from "@/components/layout/task-sidebar";
 import { useUser } from "@/contexts/user-context";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { useCallback } from "react";
+import { useTaskStore } from "@/lib/stores/task-store";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const apiClient = useAgentXAPI();
+  const { setInitialMessage } = useTaskStore();
   const [taskInput, setTaskInput] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
@@ -146,14 +148,17 @@ export default function HomePage() {
 
     setIsCreating(true);
     try {
+      // Store the initial message in Zustand store
+      setInitialMessage(description);
+
       // Create task via API
       const taskResponse = await apiClient.createTask({
         config_path: configPath || "examples/simple_chat/config/team.yaml",
-        task_description: description,
+        task_description: "", // Empty description, will use chat message instead
         context: { source: "studio_homepage" },
       });
 
-      // Navigate to task page
+      // Navigate to task page (initial message will be consumed from store)
       router.push(`/x/${taskResponse.task_id}`);
     } catch (error) {
       console.error("Error creating task:", error);

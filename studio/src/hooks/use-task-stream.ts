@@ -8,18 +8,18 @@ interface UseTaskStreamProps {
   onError?: (error: Error) => void;
 }
 
-export function useTaskStream({ 
-  taskId, 
+export function useTaskStream({
+  taskId,
   enabled = true,
-  onEvent, 
-  onError 
+  onEvent,
+  onError,
 }: UseTaskStreamProps) {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     if (!taskId || !enabled) return;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7770";
     const eventSource = new EventSource(`${apiUrl}/tasks/${taskId}/stream`);
     eventSourceRef.current = eventSource;
 

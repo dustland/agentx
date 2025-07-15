@@ -13,7 +13,7 @@
     "test": "echo 'No tests specified'",
     "generate-cert": "office-addin-dev-certs install",
     "serve": "node server.js",
-    "dev": "WORDX_ADDON_PORT=3456 node server.js"
+    "dev": "WORDX_ADDON_PORT=7778 node server.js"
   },
   "keywords": [
     "office-addin",

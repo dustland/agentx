@@ -76,15 +76,15 @@ python main.py
 # Or use the script: python ../wordx_setup.py --start-dev
 ```
 
-The backend will be available at `http://localhost:8765`
+The backend will be available at `http://localhost:7779`
 
 #### Custom Ports
 
 To use custom ports, set these environment variables before starting:
 
 ```bash
-export WORDX_BACKEND_PORT=9000  # Custom backend port
-export WORDX_ADDON_PORT=5000     # Custom add-in port
+export WORDX_BACKEND_PORT=7779  # Custom backend port
+export WORDX_ADDON_PORT=7778     # Custom add-in port
 
 # Then start the servers
 python wordx_setup.py --start-dev
@@ -101,7 +101,7 @@ pnpm install  # or npm install
 pnpm start  # or npm start
 ```
 
-The add-in will be available at `https://localhost:4321` (or `http://localhost:4321` if certificates are not configured)
+The add-in will be available at `https://localhost:7778` (or `http://localhost:7778` if certificates are not configured)
 
 ### 3. Word Add-in Installation
 
@@ -210,7 +210,7 @@ CLAUDE_API_KEY="your_claude_api_key"
 
 # Optional configuration
 AGENTX_VERBOSE=1              # Enable verbose logging
-WORDX_BACKEND_URL="http://localhost:8765"  # Backend URL
+WORDX_BACKEND_URL="http://localhost:7779"  # Backend URL
 WORDX_TIMEOUT=300             # Processing timeout (seconds)
 ```
 
@@ -314,11 +314,11 @@ pnpm run validate  # or npm run validate
 
 - Check that all dependencies are installed: `uv pip install -e .`
 - Verify API keys are set correctly
-- Check port 8765 is available
+- Check port 7779 is available
 
 **Add-in won't load:**
 
-- Ensure development server is running on port 4321
+- Ensure development server is running on port 7778
 - Check that manifest.xml is valid
 - Verify Office.js is supported in your Word version
 

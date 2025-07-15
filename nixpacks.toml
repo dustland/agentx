@@ -10,16 +10,16 @@ cmds = [
     # Install Python dependencies
     "pip install uv",
     "uv pip install -e .",
-    
+
     # Install Studio dependencies
-    "cd studio && pnpm install --frozen-lockfile"
+    "cd studio && pnpm install --frozen-lockfile",
 ]
 
 [phases.build]
 dependsOn = ["install"]
 cmds = [
     # Build Studio
-    "cd studio && pnpm run build"
+    "cd studio && pnpm run build",
 ]
 
 [start]
@@ -30,5 +30,5 @@ cmd = "python -m agentx.railway_start"
 PYTHONUNBUFFERED = "1"
 NODE_ENV = "production"
 NEXT_TELEMETRY_DISABLED = "1"
-PORT = "8000"
-STUDIO_PORT = "3000"
+PORT = "7770"
+STUDIO_PORT = "7777"

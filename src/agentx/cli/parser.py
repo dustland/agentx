@@ -106,8 +106,8 @@ def _add_start_parser(subparsers) -> None:
     start_parser.add_argument(
         "--port",
         type=int,
-        default=8000,
-        help="Port to run the server on (default: 8000)"
+        default=7770,
+        help="Port to run the server on (default: 7770)"
     )
     start_parser.add_argument(
         "--host",
@@ -131,8 +131,8 @@ def _add_monitor_parser(subparsers) -> None:
     monitor_parser.add_argument(
         "--port",
         type=int,
-        default=8501,
-        help="Port for web interface (default: 8501, only used with --web)"
+        default=7772,
+        help="Port for web interface (default: 7772, only used with --web)"
     )
     monitor_parser.add_argument(
         "--host",
@@ -229,14 +229,14 @@ def _add_studio_parser(subparsers) -> None:
     start_parser.add_argument(
         "--port", "-p",
         type=int,
-        default=3000,
-        help="Port for the studio UI (default: 3000)"
+        default=7777,
+        help="Port for the studio UI (default: 7777)"
     )
     start_parser.add_argument(
         "--api-port",
         type=int,
-        default=8000,
-        help="Port for the API server (default: 8000)"
+        default=7770,
+        help="Port for the API server (default: 7770)"
     )
     start_parser.add_argument(
         "--no-api",
@@ -268,12 +268,12 @@ def _add_studio_parser(subparsers) -> None:
     dev_parser.add_argument(
         "--port", "-p",
         type=int,
-        default=3000,
-        help="Port for the studio UI (default: 3000)"
+        default=7777,
+        help="Port for the studio UI (default: 7777)"
     )
     dev_parser.add_argument(
         "--api-port",
         type=int,
-        default=8000,
-        help="Port for the API server (default: 8000)"
+        default=7770,
+        help="Port for the API server (default: 7770)"
     )

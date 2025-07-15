@@ -47,9 +47,9 @@ The icons are referenced in the `manifest.xml` file:
 
 ```xml
 <bt:Images>
-  <bt:Image id="WordX.tpicon_16x16" DefaultValue="https://localhost:4321/assets/icon-16.png"/>
-<bt:Image id="WordX.tpicon_32x32" DefaultValue="https://localhost:4321/assets/icon-32.png"/>
-<bt:Image id="WordX.tpicon_80x80" DefaultValue="https://localhost:4321/assets/icon-80.png"/>
+  <bt:Image id="WordX.tpicon_16x16" DefaultValue="https://localhost:7778/assets/icon-16.png"/>
+<bt:Image id="WordX.tpicon_32x32" DefaultValue="https://localhost:7778/assets/icon-32.png"/>
+<bt:Image id="WordX.tpicon_80x80" DefaultValue="https://localhost:7778/assets/icon-80.png"/>
 </bt:Images>
 ```
 

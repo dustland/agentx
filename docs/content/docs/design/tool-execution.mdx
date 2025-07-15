@@ -117,12 +117,14 @@ graph TD
 
 ## 4. Security Architecture: The Sandbox
 
-Executing arbitrary, LLM-generated shell commands is a major security risk. AgentX mitigates this by using a sandboxed execution environment.
+Executing arbitrary, LLM-generated shell commands is a major security risk. AgentX mitigates this by using a sandboxed execution environment with user-scoped isolation.
+
+**User-Scoped Execution**: All tool executions are scoped to the user's taskspace directory, preventing access to other users' data. Tools can only read from and write to `taskspace/{user_id}/{task_id}/` directories, ensuring complete data isolation in multi-tenant deployments.
 
 - **Technology**: The default implementation uses **Docker containers**. Each shell tool execution spins up a new, short-lived container.
 - **Isolation**:
   - **Network**: Containers run with networking disabled by default (`--net=none`) to prevent exfiltration of data or attacks on the local network. Tools that explicitly need network access must be granted it.
-  - **Filesystem**: The container is only granted access to the current task's taskspace directory (`/app/taskspace`). It cannot read from or write to any other part of the host filesystem.
+  - **Filesystem**: The container is only granted access to the current task's user-scoped taskspace directory (`/app/taskspace/{user_id}/{task_id}`). It cannot read from or write to any other part of the host filesystem or other users' taskspaces.
   - **Permissions**: The process inside the container runs as a non-root user to limit its privileges even within the sandbox.
 
 ## 5. Extensibility

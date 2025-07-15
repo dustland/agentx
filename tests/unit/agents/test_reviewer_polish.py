@@ -6,10 +6,10 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from pathlib import Path
 
-from agentx.models.agent import Agent
+from agentx.core.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import AgentConfig
-from agentx.core.taskspace import TaskspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 
 
 class TestReviewerPolish:
@@ -78,7 +78,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
     @pytest.mark.asyncio
     async def test_reviewer_identifies_draft_for_polishing(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer correctly identifies draft documents."""
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             
@@ -123,7 +123,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
     @pytest.mark.asyncio
     async def test_reviewer_creates_polished_version(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer creates a polished version of the document."""
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             
@@ -209,7 +209,7 @@ Both databases continue to evolve, with active communities ensuring long-term vi
     @pytest.mark.asyncio  
     async def test_reviewer_identifies_polish_improvements(self, reviewer_config, mock_taskspace_with_draft):
         """Test that reviewer identifies specific issues to polish."""
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             

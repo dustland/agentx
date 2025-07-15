@@ -104,7 +104,7 @@ async function main() {
   log('\nNext steps:', colors.bright);
   log('  1. Update .env.local with your AgentX API URL', colors.reset);
   log('  2. Run "pnpm dev" to start the development server', colors.reset);
-  log('  3. Open http://localhost:3000 in your browser', colors.reset);
+  log('  3. Open http://localhost:7777 in your browser', colors.reset);
   log('');
 }
 

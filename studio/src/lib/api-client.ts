@@ -1,48 +1,63 @@
-export interface TaskRequest {
-  config_path: string;
-  task_description: string;
-  context?: Record<string, any>;
-}
-
-export interface TaskResponse {
-  task_id: string;
-  status: "pending" | "running" | "completed" | "failed";
-  result?: Record<string, any>;
-  error?: string;
-  created_at: string;
-  completed_at?: string;
-}
-
-export interface TaskListResponse {
-  tasks: TaskResponse[];
-  total: number;
-}
-
-export interface MemoryContent {
-  content: string;
-  metadata?: Record<string, any>;
-}
-
-export interface MemorySearchRequest {
-  query: string;
-  limit?: number;
-}
-
-export interface MemorySearchResult {
-  content: string;
-  score: number;
-  metadata?: Record<string, any>;
-}
+import type {
+  CreateTaskRequest,
+  Task as TaskResponse,
+  TaskListResponse,
+  MemoryContent,
+  MemorySearchRequest,
+  MemorySearchResult,
+  Message,
+  MessagesResponse,
+  SendMessageRequest,
+  StreamEvent,
+  Artifact,
+  ArtifactContent,
+  LogsResponse,
+} from "@/types/agentx";
 
 export class AgentXAPIClient {
   private baseURL: string;
+  private userId: string | null = null;
+  private userPromise: Promise<void> | null = null;
 
   constructor(baseURL?: string) {
     this.baseURL =
       baseURL ||
       process.env.NEXT_PUBLIC_AGENTX_API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:8000";
+      "http://localhost:7770";
+  }
+
+  async init() {
+    // If we already have a user or are in the process of getting one, don't call again
+    if (this.userId !== null || this.userPromise) {
+      if (this.userPromise) {
+        await this.userPromise;
+      }
+      return;
+    }
+
+    // Cache the promise to prevent multiple concurrent calls
+    this.userPromise = this.fetchUser();
+    await this.userPromise;
+    this.userPromise = null;
+  }
+
+  private async fetchUser() {
+    try {
+      // Import getCurrentUser dynamically to avoid circular dependencies
+      const { getCurrentUser } = await import("./auth");
+      const user = await getCurrentUser();
+      this.userId = user?.id || null;
+    } catch (error) {
+      console.error("Failed to get current user:", error);
+      this.userId = null;
+    }
+  }
+
+  // Method to clear cached user (useful for logout)
+  clearUser() {
+    this.userId = null;
+    this.userPromise = null;
   }
 
   private async request<T>(
@@ -51,12 +66,20 @@ export class AgentXAPIClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
+    // Build headers with authentication
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
+
+    // Add user ID to headers if available
+    if (this.userId) {
+      (headers as any)["X-User-ID"] = this.userId;
+    }
+
     const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
       ...options,
+      headers,
     });
 
     if (!response.ok) {
@@ -68,24 +91,28 @@ export class AgentXAPIClient {
   }
 
   // Task Management
-  async createTask(taskRequest: TaskRequest): Promise<TaskResponse> {
+  async createTask(taskRequest: CreateTaskRequest): Promise<TaskResponse> {
+    await this.init();
     return this.request<TaskResponse>("/tasks", {
       method: "POST",
       body: JSON.stringify(taskRequest),
     });
   }
 
-  async getTasks(userId?: string): Promise<TaskListResponse> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
-    return this.request<TaskListResponse>(`/tasks${params}`);
+  async getTasks(): Promise<TaskListResponse> {
+    await this.init();
+    const tasks = await this.request<TaskResponse[]>("/tasks");
+    // Backend returns array directly, wrap it for compatibility
+    return { tasks, total: tasks.length };
   }
 
-  async getTask(taskId: string, userId?: string): Promise<TaskResponse> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
-    return this.request<TaskResponse>(`/tasks/${taskId}${params}`);
+  async getTask(taskId: string): Promise<TaskResponse> {
+    await this.init();
+    return this.request<TaskResponse>(`/tasks/${taskId}`);
   }
 
   async deleteTask(taskId: string): Promise<void> {
+    await this.init();
     await this.request(`/tasks/${taskId}`, {
       method: "DELETE",
     });
@@ -93,6 +120,7 @@ export class AgentXAPIClient {
 
   // Memory Management
   async addMemory(taskId: string, content: MemoryContent): Promise<void> {
+    await this.init();
     await this.request(`/tasks/${taskId}/memory`, {
       method: "POST",
       body: JSON.stringify(content),
@@ -103,6 +131,7 @@ export class AgentXAPIClient {
     taskId: string,
     searchRequest: MemorySearchRequest
   ): Promise<MemorySearchResult[]> {
+    await this.init();
     return this.request<MemorySearchResult[]>(
       `/tasks/${taskId}/memory?${new URLSearchParams({
         query: searchRequest.query,
@@ -112,6 +141,7 @@ export class AgentXAPIClient {
   }
 
   async clearMemory(taskId: string): Promise<void> {
+    await this.init();
     await this.request(`/tasks/${taskId}/memory`, {
       method: "DELETE",
     });
@@ -127,56 +157,42 @@ export class AgentXAPIClient {
   }
 
   // Artifacts
-  async getTaskArtifacts(
-    taskId: string,
-    userId?: string
-  ): Promise<{ artifacts: any[] }> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
-    return this.request<{ artifacts: any[] }>(
-      `/tasks/${taskId}/artifacts${params}`
+  async getTaskArtifacts(taskId: string): Promise<{ artifacts: Artifact[] }> {
+    await this.init();
+    return this.request<{ artifacts: Artifact[] }>(
+      `/tasks/${taskId}/artifacts`
     );
   }
 
   async getArtifactContent(
     taskId: string,
     filePath: string
-  ): Promise<{
-    path: string;
-    content: string | null;
-    is_binary?: boolean;
-    size: number;
-  }> {
-    return this.request(
+  ): Promise<ArtifactContent> {
+    await this.init();
+    return this.request<ArtifactContent>(
       `/tasks/${taskId}/artifacts/${encodeURIComponent(filePath)}`
     );
   }
 
   // Logs
-  async getTaskLogs(
-    taskId: string,
-    tail?: number,
-    userId?: string
-  ): Promise<{
-    task_id: string;
-    logs: string[];
-    total_lines: number;
-  }> {
-    const params = new URLSearchParams();
-    if (tail) params.append("tail", tail.toString());
-    if (userId) params.append("user_id", userId);
-    const queryString = params.toString();
-    return this.request(
-      `/tasks/${taskId}/logs${queryString ? `?${queryString}` : ""}`
-    );
+  async getTaskLogs(taskId: string, tail?: number): Promise<LogsResponse> {
+    await this.init();
+    const params = tail ? `?tail=${tail}` : "";
+    return this.request<LogsResponse>(`/tasks/${taskId}/logs${params}`);
   }
 
   // Real-time updates using Server-Sent Events
   subscribeToTaskUpdates(
     taskId: string,
-    onUpdate: (data: any) => void
+    onUpdate: (event: StreamEvent) => void
   ): () => void {
+    // Note: SSE doesn't support custom headers, so we need to pass user_id in URL for now
+    // TODO: Consider using JWT tokens in the future for better security
+    const params = this.userId
+      ? `?user_id=${encodeURIComponent(this.userId)}`
+      : "";
     const eventSource = new EventSource(
-      `${this.baseURL}/tasks/${taskId}/stream`
+      `${this.baseURL}/tasks/${taskId}/stream${params}`
     );
 
     eventSource.onmessage = (event) => {
@@ -196,6 +212,27 @@ export class AgentXAPIClient {
     return () => {
       eventSource.close();
     };
+  }
+
+  // Messages
+  async getMessages(taskId: string): Promise<MessagesResponse> {
+    await this.init();
+    return this.request<MessagesResponse>(`/tasks/${taskId}/messages`);
+  }
+
+  // Send message to task
+  async sendMessage(
+    taskId: string,
+    message: string | SendMessageRequest
+  ): Promise<void> {
+    await this.init();
+    const payload =
+      typeof message === "string" ? { content: message } : message;
+
+    await this.request(`/tasks/${taskId}/chat`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
   }
 
   // Poll for task updates (fallback for when SSE is not available)
@@ -240,10 +277,10 @@ export class AgentXAPIClient {
   }
 }
 
-// Export a default instance
+// Export a singleton instance
 export const apiClient = new AgentXAPIClient();
 
-// Hook for React components
-export function useAgentXAPI(baseURL?: string) {
-  return new AgentXAPIClient(baseURL);
+// Hook for React components - returns the singleton instance
+export function useAgentXAPI() {
+  return apiClient;
 }

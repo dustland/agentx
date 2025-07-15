@@ -6,10 +6,10 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch, call
 from pathlib import Path
 
-from agentx.models.agent import Agent
+from agentx.core.agent import Agent
 from agentx.core.brain import Brain
 from agentx.core.config import AgentConfig
-from agentx.core.taskspace import TaskspaceStorage
+from agentx.storage.taskspace import TaskspaceStorage
 
 
 class TestWriterMerge:
@@ -58,7 +58,7 @@ class TestWriterMerge:
     @pytest.mark.asyncio
     async def test_writer_discovers_section_files(self, writer_config, mock_taskspace):
         """Test that writer can discover section files using list_files."""
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             
@@ -107,7 +107,7 @@ class TestWriterMerge:
     @pytest.mark.asyncio
     async def test_writer_merges_sections_in_order(self, writer_config, mock_taskspace):
         """Test that writer reads and merges sections in correct order."""
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             
@@ -177,7 +177,7 @@ class TestWriterMerge:
         (mock_taskspace.artifacts_path / "notes.txt").write_text("Notes")
         (mock_taskspace.artifacts_path / "research_data.md").write_text("Research")
         
-        with patch('agentx.models.agent.Brain') as MockBrain:
+        with patch('agentx.core.agent.Brain') as MockBrain:
             mock_brain = Mock(spec=Brain)
             MockBrain.return_value = mock_brain
             

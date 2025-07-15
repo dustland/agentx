@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Simple HTTPS server for WordX Office Add-in
- * Uses port 3456 to avoid conflicts
+ * Uses port 7778 to avoid conflicts
  */
 
 const https = require('https');
@@ -10,7 +10,7 @@ const path = require('path');
 const os = require('os');
 
 // Configuration
-const PORT = process.env.WORDX_ADDON_PORT || 3456;
+const PORT = process.env.WORDX_ADDON_PORT || 7778;
 const HOST = '0.0.0.0';
 
 // Certificate paths for Office Add-in development

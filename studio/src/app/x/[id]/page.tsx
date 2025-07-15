@@ -12,17 +12,35 @@ import {
 } from "@/components/ui/resizable";
 import { useAgentXAPI } from "@/lib/api-client";
 import { ChatMessage, TaskStatus } from "@/types/chat";
+import {
+  Message,
+  TaskStatus as AgentXTaskStatus,
+  StreamEvent,
+  AgentMessageEvent,
+  ToolCallStartEvent,
+  ToolCallResultEvent,
+  TaskUpdateEvent,
+  getMessageText,
+} from "@/types/agentx";
 import { nanoid } from "nanoid";
+import { useTaskStore } from "@/lib/stores/task-store";
+import { useUser } from "@/contexts/user-context";
+import { useMessages } from "@/hooks/use-messages";
 
 export default function TaskPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { id } = use(params);
-  const { description } = use(searchParams);
+  const {
+    consumeInitialMessage,
+    getTask,
+    setTaskMessages,
+    addTaskMessage,
+    setTaskStatus: updateTaskStatus,
+  } = useTaskStore();
+  const { user } = useUser();
   const apiClient = useAgentXAPI();
 
   const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
@@ -33,40 +51,132 @@ export default function TaskPage({
     return true;
   });
   const [selectedToolCall, setSelectedToolCall] = useState<any>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [taskStatus, setTaskStatus] = useState<TaskStatus>("pending");
+
+  // Initialize from task store if available
+  const cachedTask = getTask(id);
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    cachedTask?.messages || []
+  );
+  const [taskStatus, setTaskStatus] = useState<TaskStatus>(
+    cachedTask?.status || "pending"
+  );
   const [taskInfo, setTaskInfo] = useState<any>(null);
+
+  // Sync messages to store when they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTaskMessages(id, messages);
+    }
+  }, [messages, id, setTaskMessages]);
+
+  // Sync status to store when it changes
+  useEffect(() => {
+    updateTaskStatus(id, taskStatus);
+  }, [taskStatus, id, updateTaskStatus]);
 
   // Load task info and set up streaming
   useEffect(() => {
     const loadTask = async () => {
       try {
+        // Load task info
         const task = await apiClient.getTask(id);
         setTaskInfo(task);
         setTaskStatus(task.status || "pending");
 
-        // Set up streaming for task updates
-        const cleanup = apiClient.subscribeToTaskUpdates(id, (data) => {
-          console.log("Task update:", data);
-
-          if (data.event === "agent_message") {
-            const message: ChatMessage = {
-              id: nanoid(),
-              role: data.data.agent_id === "user" ? "user" : "assistant",
-              content: data.data.message,
-              timestamp: new Date(),
-              status: "complete",
-              metadata: data.data.metadata,
-            };
-            setMessages((prev) => [...prev, message]);
-          } else if (data.event === "agent_status") {
-            setTaskStatus(
-              data.data.status === "working" ? "running" : "pending"
-            );
-          } else if (data.event === "task_update") {
-            setTaskStatus(data.data.status);
+        // Load existing messages
+        try {
+          const messagesResponse = await apiClient.getMessages(id);
+          if (
+            messagesResponse.messages &&
+            messagesResponse.messages.length > 0
+          ) {
+            const formattedMessages = messagesResponse.messages
+              .filter((msg) => msg.role !== "tool") // Filter out tool messages
+              .map((msg) => ({
+                id: msg.id,
+                role: msg.role as "user" | "assistant" | "system",
+                content: getMessageText(msg),
+                timestamp: new Date(msg.timestamp),
+                status: "complete" as const,
+                metadata: msg.metadata,
+              }));
+            setMessages(formattedMessages);
           }
-        });
+        } catch (error) {
+          console.log(
+            "No existing messages or messages endpoint not available"
+          );
+        }
+
+        // Set up streaming for new updates
+        const cleanup = apiClient.subscribeToTaskUpdates(
+          id,
+          (event: StreamEvent) => {
+            console.log("Task update:", event);
+
+            switch (event.event) {
+              case "agent_message": {
+                const data = event.data as AgentMessageEvent;
+                const message: ChatMessage = {
+                  id: nanoid(),
+                  role: data.agent_id === "user" ? "user" : "assistant",
+                  content: data.message,
+                  timestamp: new Date(),
+                  status: "complete",
+                  metadata: {
+                    agentId: data.agent_id,
+                    ...data.metadata,
+                  },
+                };
+                setMessages((prev) => [...prev, message]);
+                addTaskMessage(id, message); // Also add to store
+                break;
+              }
+
+              case "tool_call_start": {
+                const data = event.data as ToolCallStartEvent;
+                // Could update UI to show tool is running
+                console.log("Tool call started:", data);
+                break;
+              }
+
+              case "tool_call_result": {
+                const data = event.data as ToolCallResultEvent;
+                // Could update UI to show tool result
+                console.log("Tool call result:", data);
+                break;
+              }
+
+              case "agent_status": {
+                const data = event.data;
+                setTaskStatus(
+                  data.status === "working" ? "running" : "pending"
+                );
+                break;
+              }
+
+              case "task_update": {
+                const data = event.data as TaskUpdateEvent;
+                setTaskStatus(data.status);
+                break;
+              }
+
+              case "log_entry": {
+                // Handled in taskspace panel
+                break;
+              }
+
+              case "artifact_created":
+              case "artifact_updated": {
+                // Handled in taskspace panel
+                break;
+              }
+
+              default:
+                console.log("Unhandled event type:", event.event);
+            }
+          }
+        );
 
         return cleanup;
       } catch (error) {
@@ -81,20 +191,37 @@ export default function TaskPage({
     };
   }, [id]);
 
-  const handleSendMessage = (message: string) => {
-    // Add user message
-    const userMessage: ChatMessage = {
-      id: nanoid(),
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-      status: "complete",
-    };
-    setMessages((prev) => [...prev, userMessage]);
+  const handleSendMessage = useCallback(
+    async (message: string) => {
+      // Add user message optimistically
+      const userMessage: ChatMessage = {
+        id: nanoid(),
+        role: "user",
+        content: message,
+        timestamp: new Date(),
+        status: "complete",
+      };
+      setMessages((prev) => [...prev, userMessage]);
 
-    // TODO: Send to backend and handle streaming response
-    setTaskStatus("running");
-  };
+      try {
+        // Send message to backend
+        await apiClient.sendMessage(id, message);
+        setTaskStatus("running");
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        // You might want to show an error toast here
+      }
+    },
+    [id, apiClient]
+  );
+
+  // Send initial message if provided (consume from store)
+  useEffect(() => {
+    const initialMessage = consumeInitialMessage();
+    if (initialMessage && messages.length === 0) {
+      handleSendMessage(initialMessage);
+    }
+  }, [messages.length, consumeInitialMessage, handleSendMessage]);
 
   const handlePauseResume = () => {
     setTaskStatus((prev) => (prev === "running" ? "pending" : "running"));

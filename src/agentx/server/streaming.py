@@ -41,20 +41,21 @@ class TaskEventStream:
             await stream.put(event)
             logger.debug(f"Sent {event_type} event for task {task_id}")
             
-    async def stream_events(self, task_id: str) -> AsyncGenerator[str, None]:
-        """Stream events for a task as SSE format"""
+    async def stream_events(self, task_id: str) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream events for a task as dictionaries for EventSourceResponse"""
         stream = self.create_stream(task_id)
         
         try:
             while True:
                 event = await stream.get()
                 
-                # Format as SSE
-                sse_data = f"id: {event['id']}\n"
-                sse_data += f"event: {event['event']}\n"
-                sse_data += f"data: {json.dumps(event['data'])}\n\n"
-                
-                yield sse_data
+                # Yield the event as a dictionary
+                # EventSourceResponse will format it properly
+                yield {
+                    "id": event['id'],
+                    "event": event['event'],
+                    "data": json.dumps(event['data'])  # Data needs to be JSON string
+                }
                 
         except asyncio.CancelledError:
             logger.info(f"Stream cancelled for task {task_id}")

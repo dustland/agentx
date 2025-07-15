@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { User, getCurrentUser, loginUser, logoutUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { authApiClient } from "@/lib/api-client-with-auth";
+import { apiClient } from "@/lib/api-client";
 
 interface UserContextType {
   user: User | null;
@@ -60,7 +60,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       await logoutUser();
       setUser(null);
       router.push("/");
-      authApiClient.clearUser();
+      apiClient.clearUser();
     } catch (error) {
       console.error("Failed to logout:", error);
     }

@@ -257,7 +257,7 @@ def update_addon_config():
 
     # Get backend port from environment
     backend_host = os.getenv("WORDX_BACKEND_HOST", "localhost")
-    backend_port = os.getenv("WORDX_BACKEND_PORT", "8765")
+    backend_port = os.getenv("WORDX_BACKEND_PORT", "7779")
     backend_url = f"http://{backend_host}:{backend_port}"
 
     # Update config.js
@@ -422,8 +422,8 @@ def show_usage_instructions():
     print()
     print("📚 Documentation:")
     print("   - README.md - Complete setup and usage guide")
-    print("   - Backend API: http://localhost:8000/docs")
-    print("   - Add-in UI: https://localhost:3000")
+    print("   - Backend API: http://localhost:7779/docs")
+    print("   - Add-in UI: https://localhost:7778")
     print()
     print("🎉 Happy document processing with WordX!")
 

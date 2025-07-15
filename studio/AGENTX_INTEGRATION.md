@@ -8,7 +8,7 @@ This document explains how the AgentX Studio frontend integrates with the AgentX
 ┌─────────────────┐    HTTP API    ┌─────────────────┐
 │   Studio UI     │ ──────────────▶ │   AgentX API    │
 │  (Next.js 15)   │                │   (FastAPI)     │
-│   Port 3333     │ ◀────────────── │   Port 8000     │
+│   Port 7777     │ ◀────────────── │   Port 7770     │
 └─────────────────┘                └─────────────────┘
 ```
 
@@ -17,18 +17,20 @@ This document explains how the AgentX Studio frontend integrates with the AgentX
 ### 1. Start Both Services
 
 **Option A: Start both together**
+
 ```bash
 cd studio
 pnpm run dev:full
 ```
 
 **Option B: Start separately**
+
 ```bash
 # Terminal 1: Start AgentX backend
 cd studio
 pnpm run backend
 
-# Terminal 2: Start Studio frontend  
+# Terminal 2: Start Studio frontend
 cd studio
 pnpm run dev
 ```
@@ -36,13 +38,15 @@ pnpm run dev
 ### 2. Environment Configuration
 
 Copy `.env.example` to `.env.local`:
+
 ```bash
 cp .env.example .env.local
 ```
 
 Adjust the API URL if needed:
+
 ```env
-NEXT_PUBLIC_AGENTX_API_URL=http://localhost:8000
+NEXT_PUBLIC_AGENTX_API_URL=http://localhost:7770
 NEXT_PUBLIC_DEFAULT_TEAM_CONFIG=examples/auto_writer/config/team.yaml
 ```
 
@@ -69,20 +73,20 @@ The studio uses a comprehensive API client (`src/lib/api-client.ts`) that provid
 ```typescript
 // Create a task
 const task = await apiClient.createTask({
-  config_path: 'examples/auto_writer/config/team.yaml',
-  task_description: 'Create a market research report',
-  context: {}
+  config_path: "examples/auto_writer/config/team.yaml",
+  task_description: "Create a market research report",
+  context: {},
 });
 
 // Monitor task progress
 const stopPolling = apiClient.pollTaskStatus(taskId, (updatedTask) => {
-  console.log('Task status:', updatedTask.status);
+  console.log("Task status:", updatedTask.status);
 });
 
 // Add context to task memory
 await apiClient.addMemory(taskId, {
-  content: 'Additional context or instructions',
-  metadata: { type: 'user_input' }
+  content: "Additional context or instructions",
+  metadata: { type: "user_input" },
 });
 ```
 
@@ -108,14 +112,14 @@ await apiClient.addMemory(taskId, {
 
 The AgentX backend must be running with:
 
-1. **FastAPI server** on port 8000
+1. **FastAPI server** on port 7770
 2. **Team configurations** in `examples/auto_writer/config/`
 3. **Python environment** with AgentX dependencies
 
 ### Expected API Endpoints
 
 - `POST /tasks` - Create and start task
-- `GET /tasks/{task_id}` - Get task status and results  
+- `GET /tasks/{task_id}` - Get task status and results
 - `GET /tasks` - List all tasks
 - `DELETE /tasks/{task_id}` - Delete task
 - `POST /tasks/{task_id}/memory` - Add memory content
@@ -133,6 +137,7 @@ The AgentX backend must be running with:
 ### Customizing API Client
 
 The API client supports:
+
 - Custom base URLs
 - Authentication headers
 - Request/response interceptors
@@ -141,6 +146,7 @@ The API client supports:
 ### Real-time Updates
 
 Currently uses polling every 2 seconds. Can be enhanced with:
+
 - Server-Sent Events (SSE)
 - WebSocket connections
 - Push notifications
@@ -149,21 +155,22 @@ Currently uses polling every 2 seconds. Can be enhanced with:
 
 ### Common Issues
 
-1. **Connection refused**: Backend not running on port 8000
-2. **CORS errors**: Backend CORS configuration issues  
+1. **Connection refused**: Backend not running on port 7770
+2. **CORS errors**: Backend CORS configuration issues
 3. **Task creation fails**: Invalid team config path
 4. **Polling stops**: Network disconnection or backend crash
 
 ### Debug Mode
 
 Enable debug logging in browser console:
+
 ```javascript
-localStorage.setItem('agentx:debug', 'true');
+localStorage.setItem("agentx:debug", "true");
 ```
 
 ### Health Check
 
-Visit `http://localhost:8000/health` to verify backend is running.
+Visit `http://localhost:7770/health` to verify backend is running.
 
 ## Deployment
 

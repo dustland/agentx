@@ -1,11 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAgentXAPI, TaskResponse, TaskRequest } from '@/lib/api-client';
+import { useState, useEffect, useCallback } from "react";
+import { useAgentXAPI } from "@/lib/api-client";
+import {
+  Task as TaskResponse,
+  CreateTaskRequest as TaskRequest,
+} from "@/types/agentx";
 
 export interface TaskAgent {
   id: string;
   name: string;
   role: string;
-  status: 'idle' | 'working' | 'completed' | 'error';
+  status: "idle" | "working" | "completed" | "error";
   progress: number;
   lastAction: string;
 }
@@ -13,7 +17,7 @@ export interface TaskAgent {
 export interface TaskMessage {
   id: string;
   agentId?: string;
-  type: 'user' | 'agent' | 'system';
+  type: "user" | "agent" | "system";
   content: string;
   timestamp: Date;
 }
@@ -35,28 +39,28 @@ export function useTask(taskId: string, options: UseTaskOptions = {}) {
   // Default agents structure (will be replaced by actual agent data)
   const defaultAgents: TaskAgent[] = [
     {
-      id: 'researcher',
-      name: 'Research Agent',
-      role: 'Data Collection & Analysis',
-      status: 'idle',
+      id: "researcher",
+      name: "Research Agent",
+      role: "Data Collection & Analysis",
+      status: "idle",
       progress: 0,
-      lastAction: 'Ready to start',
+      lastAction: "Ready to start",
     },
     {
-      id: 'writer',
-      name: 'Content Agent',
-      role: 'Content Generation',
-      status: 'idle',
+      id: "writer",
+      name: "Content Agent",
+      role: "Content Generation",
+      status: "idle",
       progress: 0,
-      lastAction: 'Waiting for research',
+      lastAction: "Waiting for research",
     },
     {
-      id: 'reviewer',
-      name: 'Quality Agent',
-      role: 'Review & Optimization',
-      status: 'idle',
+      id: "reviewer",
+      name: "Quality Agent",
+      role: "Review & Optimization",
+      status: "idle",
       progress: 0,
-      lastAction: 'Standby',
+      lastAction: "Standby",
     },
   ];
 
@@ -67,83 +71,92 @@ export function useTask(taskId: string, options: UseTaskOptions = {}) {
       setError(null);
       const taskData = await apiClient.getTask(taskId);
       setTask(taskData);
-      
+
       // Initialize agents if not already done
       if (agents.length === 0) {
         setAgents(defaultAgents);
       }
-      
+
       // Add system message for task creation
       if (messages.length === 0) {
-        setMessages([{
-          id: '1',
-          type: 'system',
-          content: `Task ${taskId} loaded with status: ${taskData.status}`,
-          timestamp: new Date(),
-        }]);
+        setMessages([
+          {
+            id: "1",
+            type: "system",
+            content: `Task ${taskId} loaded with status: ${taskData.status}`,
+            timestamp: new Date(),
+          },
+        ]);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load task');
+      setError(err instanceof Error ? err.message : "Failed to load task");
     } finally {
       setLoading(false);
     }
   }, [taskId, apiClient, agents.length, messages.length]);
 
   // Create a new task
-  const createTask = useCallback(async (description: string, context?: Record<string, any>) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const taskRequest: TaskRequest = {
-        config_path: options.configPath || 'examples/auto_writer/config/team.yaml',
-        task_description: description,
-        context,
-      };
-      
-      const newTask = await apiClient.createTask(taskRequest);
-      setTask(newTask);
-      setAgents(defaultAgents);
-      
-      setMessages([{
-        id: '1',
-        type: 'system',
-        content: `Task created: ${description}`,
-        timestamp: new Date(),
-      }]);
-      
-      return newTask;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create task');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [apiClient, options.configPath]);
+  const createTask = useCallback(
+    async (description: string, context?: Record<string, any>) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const taskRequest: TaskRequest = {
+          config_path:
+            options.configPath || "examples/auto_writer/config/team.yaml",
+          task_description: description,
+          context,
+        };
+
+        const newTask = await apiClient.createTask(taskRequest);
+        setTask(newTask);
+        setAgents(defaultAgents);
+
+        setMessages([
+          {
+            id: "1",
+            type: "system",
+            content: `Task created: ${description}`,
+            timestamp: new Date(),
+          },
+        ]);
+
+        return newTask;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to create task");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiClient, options.configPath]
+  );
 
   // Update agent status based on task status
   const updateAgentsFromTask = useCallback((taskData: TaskResponse) => {
-    setAgents(prev => {
+    setAgents((prev) => {
       switch (taskData.status) {
-        case 'running':
+        case "running":
           return prev.map((agent, index) => ({
             ...agent,
-            status: index === 0 ? 'working' : 'idle',
-            lastAction: index === 0 ? 'Processing task...' : 'Waiting for previous step',
+            status: index === 0 ? "working" : "idle",
+            lastAction:
+              index === 0 ? "Processing task..." : "Waiting for previous step",
             progress: index === 0 ? 25 : 0,
           }));
-        case 'completed':
-          return prev.map(agent => ({
+        case "completed":
+          return prev.map((agent) => ({
             ...agent,
-            status: 'completed',
-            lastAction: 'Task completed',
+            status: "completed",
+            lastAction: "Task completed",
             progress: 100,
           }));
-        case 'failed':
-          return prev.map(agent => ({
+        case "failed":
+          return prev.map((agent) => ({
             ...agent,
-            status: 'error',
-            lastAction: 'Task failed',
+            status: "error",
+            lastAction: "Task failed",
             progress: 0,
           }));
         default:
@@ -153,26 +166,36 @@ export function useTask(taskId: string, options: UseTaskOptions = {}) {
   }, []);
 
   // Handle task updates
-  const handleTaskUpdate = useCallback((updatedTask: TaskResponse) => {
-    setTask(updatedTask);
-    updateAgentsFromTask(updatedTask);
-    
-    // Add status update message
-    setMessages(prev => [...prev, {
-      id: Date.now().toString(),
-      type: 'system',
-      content: `Task status updated: ${updatedTask.status}`,
-      timestamp: new Date(),
-    }]);
-  }, [updateAgentsFromTask]);
+  const handleTaskUpdate = useCallback(
+    (updatedTask: TaskResponse) => {
+      setTask(updatedTask);
+      updateAgentsFromTask(updatedTask);
+
+      // Add status update message
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          type: "system",
+          content: `Task status updated: ${updatedTask.status}`,
+          timestamp: new Date(),
+        },
+      ]);
+    },
+    [updateAgentsFromTask]
+  );
 
   // Start polling for updates
   useEffect(() => {
     if (!task || !taskId) return;
 
-    const stopPolling = apiClient.pollTaskStatus(taskId, handleTaskUpdate, options.pollingInterval);
+    const stopPolling = apiClient.pollTaskStatus(
+      taskId,
+      handleTaskUpdate,
+      options.pollingInterval
+    );
     return () => {
-      if (stopPolling && typeof stopPolling === 'function') {
+      if (stopPolling && typeof stopPolling === "function") {
         stopPolling();
       }
     };
@@ -186,29 +209,40 @@ export function useTask(taskId: string, options: UseTaskOptions = {}) {
   }, [taskId, loadTask]);
 
   // Add memory to task
-  const addMemory = useCallback(async (content: string, metadata?: Record<string, any>) => {
-    try {
-      await apiClient.addMemory(taskId, { content, metadata });
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        type: 'system',
-        content: `Added content to task memory`,
-        timestamp: new Date(),
-      }]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add memory');
-    }
-  }, [taskId, apiClient]);
+  const addMemory = useCallback(
+    async (content: string, metadata?: Record<string, any>) => {
+      try {
+        await apiClient.addMemory(taskId, { content, metadata });
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            type: "system",
+            content: `Added content to task memory`,
+            timestamp: new Date(),
+          },
+        ]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to add memory");
+      }
+    },
+    [taskId, apiClient]
+  );
 
   // Search task memory
-  const searchMemory = useCallback(async (query: string, limit?: number) => {
-    try {
-      return await apiClient.searchMemory(taskId, { query, limit });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to search memory');
-      return [];
-    }
-  }, [taskId, apiClient]);
+  const searchMemory = useCallback(
+    async (query: string, limit?: number) => {
+      try {
+        return await apiClient.searchMemory(taskId, { query, limit });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to search memory"
+        );
+        return [];
+      }
+    },
+    [taskId, apiClient]
+  );
 
   // Delete task
   const deleteTask = useCallback(async () => {
@@ -218,7 +252,7 @@ export function useTask(taskId: string, options: UseTaskOptions = {}) {
       setAgents([]);
       setMessages([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete task');
+      setError(err instanceof Error ? err.message : "Failed to delete task");
     }
   }, [taskId, apiClient]);
 

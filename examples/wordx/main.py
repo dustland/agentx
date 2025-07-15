@@ -184,8 +184,8 @@ def start_backend_server():
     """Start the WordX backend server"""
     print("🚀 Starting WordX Backend Server")
     print("="*50)
-    print("🌐 Backend will be available at: http://localhost:8000")
-    print("📚 API documentation: http://localhost:8000/docs")
+    print("🌐 Backend will be available at: http://localhost:7779")
+    print("📚 API documentation: http://localhost:7779/docs")
     print("🔧 Use with Office.js add-in for complete WordX experience")
     print("="*50)
 
@@ -197,7 +197,7 @@ def start_backend_server():
         uvicorn.run(
             app,
             host="0.0.0.0",
-            port=8000,
+            port=7779,
             log_level="info"
         )
     except ImportError:

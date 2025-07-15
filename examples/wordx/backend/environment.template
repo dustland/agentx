@@ -67,10 +67,10 @@ AGENTX_WORKSPACE_DIR=./taskspace
 
 # Backend server settings
 WORDX_BACKEND_HOST=0.0.0.0
-WORDX_BACKEND_PORT=8000
+WORDX_BACKEND_PORT=7779
 
 # Office.js Add-in server port (managed by office-addin-debugging)
-WORDX_ADDON_PORT=3000
+WORDX_ADDON_PORT=7778
 
 # Task processing timeout (seconds)
 WORDX_TIMEOUT=300
@@ -82,7 +82,7 @@ WORDX_MAX_CONCURRENT_TASKS=5
 WORDX_ENABLE_CORS=true
 
 # Allowed origins for CORS
-WORDX_CORS_ORIGINS=["https://localhost:3000", "http://localhost:3000", "https://localhost:8080"]
+WORDX_CORS_ORIGINS=["https://localhost:7778", "http://localhost:7778", "https://localhost:8080"]
 
 # =============================================================================
 # Development Settings

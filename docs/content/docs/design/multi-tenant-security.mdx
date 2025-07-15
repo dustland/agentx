@@ -1,17 +1,23 @@
-# Multi-Tenant Security Architecture
+# Multi-Tenant Architecture
 
-AgentX provides built-in multi-tenant support through taskspace isolation and user-scoped API access. This design ensures that different users can securely share the same AgentX instance while maintaining complete data isolation.
+> **⚠️ IMPORTANT SECURITY NOTICE**
+>
+> This multi-tenant implementation provides **organizational isolation only**, not true security isolation. Users can pass any `user_id` parameter to access other users' taskspaces and data. This design is suitable for trusted environments and development scenarios, but **requires external authentication and authorization layers** for production security. See the [Authentication Integration](#authentication-integration) section for secure deployment patterns.
+
+AgentX provides built-in multi-tenant support through taskspace isolation and user-scoped API access. This design ensures that different users can logically separate their work when sharing the same AgentX instance, but relies on external security measures for true access control.
 
 ## Overview
 
-Multi-tenancy in AgentX is implemented as a lightweight extension to the taskspace system, providing user isolation without requiring complex authentication infrastructure. This approach maintains backward compatibility while enabling secure multi-user deployments.
+Multi-tenancy in AgentX is implemented through the taskspace system, providing user isolation without requiring complex authentication infrastructure. All tasks require a user_id for proper isolation and security.
 
 ### Key Security Principles
 
-- **User Isolation**: Each user's tasks and data are completely isolated
-- **Taskspace Segregation**: File system isolation prevents cross-user access
-- **API Filtering**: All endpoints filter results by user_id
-- **Backward Compatibility**: Single-tenant deployments continue to work unchanged
+- **User Isolation**: Each user's tasks and data are completely isolated at the application level
+- **Taskspace Segregation**: File system isolation prevents accidental cross-user access
+- **API Filtering**: All endpoints filter results by user_id parameter
+- **Mandatory User Context**: All operations require a valid user_id
+
+> **Note**: These principles provide organizational separation but do not prevent malicious users from accessing other users' data by manipulating the `user_id` parameter. Production deployments must implement proper authentication and authorization.
 
 ## Taskspace Isolation Design
 
@@ -30,22 +36,13 @@ taskspace/
     └── {task_id}/
 ```
 
-### Legacy Compatibility
-
-For backward compatibility, tasks without a `user_id` are stored in the legacy format:
-
-```
-taskspace/
-├── {task_id}/                 # Legacy single-tenant format
-└── {user_id}/                 # New multi-tenant format
-    └── {task_id}/
-```
+All tasks are stored in the user-scoped format with mandatory user_id association.
 
 ## API Security Model
 
 ### User-Scoped Endpoints
 
-All task-related endpoints support optional `user_id` filtering:
+All task-related endpoints require `user_id` for proper isolation:
 
 ```http
 # Create user-scoped task
@@ -59,9 +56,9 @@ POST /tasks
 # List user's tasks only
 GET /tasks?user_id=alice
 
-# Access user's task data
-GET /tasks/{task_id}?user_id=alice
-GET /tasks/{task_id}/artifacts?user_id=alice
+# Access user's task data (user_id passed via header or auth context)
+GET /tasks/{task_id}
+GET /tasks/{task_id}/artifacts
 ```
 
 ### Permission Enforcement
@@ -71,6 +68,8 @@ GET /tasks/{task_id}/artifacts?user_id=alice
 - **Task Access**: 404 returned for tasks not owned by requesting user
 - **Artifact Access**: File system access limited to user's taskspace
 
+> **Security Limitation**: The current implementation trusts the provided `user_id` parameter without validation. Any user can access another user's data by providing their `user_id`. This requires external authentication middleware to validate user identity and enforce proper access controls.
+
 ## Implementation Details
 
 ### Core Components
@@ -79,21 +78,17 @@ GET /tasks/{task_id}/artifacts?user_id=alice
 
 ```python
 class TaskspaceStorage:
-    def __init__(self, base_path, task_id, user_id=None):
-        if user_id:
-            # Multi-tenant: taskspace/{user_id}/{task_id}
-            self.taskspace_path = Path(base_path) / user_id / task_id
-        else:
-            # Single-tenant: taskspace/{task_id}
-            self.taskspace_path = Path(base_path) / task_id
+    def __init__(self, base_path, task_id, user_id):
+        # All tasks use multi-tenant structure: taskspace/{user_id}/{task_id}
+        self.taskspace_path = Path(base_path) / user_id / task_id
 ```
 
 #### XAgent Integration
 
 ```python
 class XAgent:
-    def __init__(self, team_config, user_id=None):
-        self.user_id = user_id
+    def __init__(self, team_config, user_id):
+        self.user_id = user_id  # Required for all tasks
         self.taskspace = StorageFactory.create_taskspace_storage(
             base_path=Path("./taskspace"),
             task_id=self.task_id,
@@ -103,18 +98,18 @@ class XAgent:
 
 ### API Models
 
-Task-related models include optional `user_id` fields:
+Task-related models require `user_id` fields:
 
 ```python
 class TaskRequest(BaseModel):
     config_path: str
     task_description: str
-    user_id: Optional[str] = None  # Multi-tenant identifier
+    user_id: str  # Required multi-tenant identifier
 
 class TaskResponse(BaseModel):
     task_id: str
     status: TaskStatus
-    user_id: Optional[str] = None  # Returned for verification
+    user_id: str  # Always returned for verification
 ```
 
 ## Security Considerations
@@ -125,6 +120,8 @@ class TaskResponse(BaseModel):
 - **Memory**: Task storage scoped to prevent cross-user access
 - **Artifacts**: Git versioning isolated per user taskspace
 - **Logs**: Execution logs stored in user-specific directories
+
+> **Critical**: These isolation mechanisms only work when the correct `user_id` is provided. Without proper authentication, users can bypass all isolation by using other users' IDs.
 
 ### Path Traversal Protection
 
@@ -138,10 +135,14 @@ taskspace.get_artifact("file.txt")
 # by Path.resolve() and taskspace boundary checks
 ```
 
+> **Note**: Path traversal protection only works within the specified user's taskspace. Users can still access other users' taskspaces by providing different `user_id` values.
+
 ### Resource Limits
 
 While basic isolation is provided, production deployments should implement:
 
+- **Authentication**: Validate user identity before accepting `user_id` parameter
+- **Authorization**: Ensure users can only access their own resources
 - **Disk quotas** per user
 - **Rate limiting** on API endpoints
 - **Memory limits** for task execution
@@ -149,29 +150,23 @@ While basic isolation is provided, production deployments should implement:
 
 ## Deployment Patterns
 
-### Single-User Mode (Default)
-
-```bash
-# Start AgentX without user isolation
-agentx start
-
-# All tasks use legacy taskspace structure
-POST /tasks {"config_path": "config.yaml", "task_description": "..."}
-```
-
-### Multi-User Mode
+### Multi-Tenant Mode (Default)
 
 ```bash
 # Start AgentX with multi-tenant support
 agentx start
 
-# Tasks created with user_id use isolated taskspaces
+# All tasks require user_id for isolated taskspaces
 POST /tasks {"user_id": "alice", "config_path": "config.yaml", "task_description": "..."}
 ```
 
+> **⚠️ SECURITY WARNING**: The above example shows the API structure but is NOT secure. In production, the `user_id` must be derived from authenticated sessions, not passed as a parameter. Direct API access without authentication allows any user to access any other user's data.
+
 ### Authentication Integration
 
-AgentX's multi-tenancy is designed to integrate with external authentication systems:
+AgentX's multi-tenancy requires integration with authentication systems:
+
+> **REQUIRED FOR SECURITY**: The examples below show how to implement proper authentication and authorization. Without this middleware, the multi-tenant system provides no security protection.
 
 ```python
 # Example: JWT-based user identification
@@ -179,25 +174,32 @@ from jwt import decode
 
 async def get_current_user(authorization: str = Header(None)):
     if not authorization:
-        return None
+        raise HTTPException(401, "Authentication required")
 
     token = authorization.replace("Bearer ", "")
     payload = decode(token, SECRET_KEY, algorithms=["HS256"])
-    return payload.get("user_id")
+    user_id = payload.get("user_id")
+
+    if not user_id:
+        raise HTTPException(401, "Invalid token")
+
+    return user_id
 
 @app.post("/tasks")
 async def create_task(request: TaskRequest, user_id: str = Depends(get_current_user)):
-    request.user_id = user_id  # Override with authenticated user
+    request.user_id = user_id  # Set authenticated user
     # ... create task
 ```
 
+> **Security Note**: The `user_id` must come from the authenticated session, never from user input. Any endpoint that accepts `user_id` as a parameter without authentication is a security vulnerability.
+
 ## Migration Guide
 
-### Enabling Multi-Tenancy
+### Upgrading to Multi-Tenant Architecture
 
-1. **Update API calls** to include `user_id` parameter
-2. **Configure authentication** middleware (optional)
-3. **Migrate existing taskspaces** if needed:
+1. **Update API calls** to include required `user_id` parameter
+2. **Configure authentication** middleware (required)
+3. **Migrate existing taskspaces** from legacy format:
 
 ```bash
 # Migrate legacy taskspaces to user-scoped structure
@@ -207,6 +209,7 @@ for task_dir in taskspace/*/; do
         continue  # Skip if already user-scoped
     fi
 
+    # Move to default user or specify actual user
     mkdir -p "taskspace/default/$task_id"
     mv "$task_dir"/* "taskspace/default/$task_id/"
     rmdir "$task_dir"
@@ -216,17 +219,17 @@ done
 ### API Client Updates
 
 ```typescript
-// Before: Single-tenant
+// Before: Legacy single-tenant
 const task = await api.createTask({
   config_path: "config.yaml",
   task_description: "Build website",
 });
 
-// After: Multi-tenant
+// After: Multi-tenant (user_id required)
 const task = await api.createTask({
   config_path: "config.yaml",
   task_description: "Build website",
-  user_id: getCurrentUser().id,
+  user_id: getCurrentUser().id, // Required field
 });
 ```
 
@@ -234,7 +237,7 @@ const task = await api.createTask({
 
 ### Security
 
-1. **Always specify user_id** in multi-tenant deployments
+1. **Ensure user_id is always provided** from authenticated context
 2. **Validate user permissions** at the application layer
 3. **Use HTTPS** for API communication
 4. **Implement rate limiting** to prevent abuse
@@ -259,13 +262,13 @@ const task = await api.createTask({
 ### Complete Multi-Tenant Setup
 
 ```python
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Header
 from agentx.server.api import create_app
 from agentx.server.models import TaskRequest
 
 app = create_app()
 
-# Simple API key based authentication
+# API key based authentication (required)
 async def get_current_user(api_key: str = Header(None)):
     if not api_key:
         raise HTTPException(401, "API key required")
@@ -277,18 +280,18 @@ async def get_current_user(api_key: str = Header(None)):
 
     return user_id
 
-@app.post("/secure/tasks")
-async def create_secure_task(
+@app.post("/tasks")
+async def create_task(
     request: TaskRequest,
     user_id: str = Depends(get_current_user)
 ):
-    # Force user_id from authentication
+    # Ensure user_id from authentication
     request.user_id = user_id
     return await create_task_endpoint(request)
 
-@app.get("/secure/tasks")
-async def list_secure_tasks(user_id: str = Depends(get_current_user)):
+@app.get("/tasks")
+async def list_tasks(user_id: str = Depends(get_current_user)):
     return await list_tasks(user_id=user_id)
 ```
 
-This multi-tenant security architecture ensures that AgentX can be safely deployed in shared environments while maintaining the simplicity and flexibility that makes AgentX easy to use and deploy.
+This multi-tenant architecture provides organizational separation that enables AgentX to be deployed in shared environments with proper external authentication. The framework itself does not provide security isolation - it relies on external authentication systems to validate user identity and enforce access controls. When properly secured with authentication middleware, this design maintains the simplicity and flexibility that makes AgentX easy to use and deploy.

@@ -14,7 +14,7 @@ let retryDelay = 1000; // Start with 1 second
 // Use configured backend URL or default
 const API_BASE_URL = (window.WORDX_CONFIG && window.WORDX_CONFIG.BACKEND_URL)
     ? `${window.WORDX_CONFIG.BACKEND_URL}/api`
-    : 'http://localhost:8765/api';
+    : 'http://localhost:7779/api';
 
 // Office.js initialization
 Office.onReady((info) => {

@@ -334,6 +334,8 @@ AgentX is designed around the core principle that agents should operate on a ric
 
 The **Taskspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the taskspace, AgentX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
 
+**Multi-Tenant Architecture**: All taskspaces are user-scoped with the structure `taskspace/{user_id}/{task_id}/` to provide organizational separation between users. See the [Multi-Tenant Architecture](/design/multi-tenant-security) documentation for details on user isolation patterns and required authentication for secure deployments.
+
 Every taskspace contains:
 
 - A complete, append-only log of the conversation history (`history.jsonl`).
@@ -345,6 +347,8 @@ This robust state management is what enables developers to treat tasks not as ep
 ### 6.2 Memory: Intelligent Context Retrieval
 
 The **Memory** acts as the intelligent, unified gateway for retrieving contextual data from the Taskspace. It is more than a simple wrapper around a vector database; it is the sole entry point for agents to perform intelligent data fetching, ensuring they have the most relevant information without exceeding token limits.
+
+**User Isolation**: Memory storage is scoped to prevent cross-user access, ensuring that agents can only retrieve contextual information from their own user's taskspaces and memory stores.
 
 Its responsibilities are twofold:
 

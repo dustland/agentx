@@ -89,67 +89,122 @@ export function TaskSpacePanel({
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
 
-  // Load artifacts
+  // Set up SSE for real-time updates
   useEffect(() => {
     if (!taskId) return;
 
-    const loadArtifacts = async () => {
-      setLoadingArtifacts(true);
-      try {
-        const response = await apiClient.getTaskArtifacts(taskId);
+    const cleanup = apiClient.subscribeToTaskUpdates(taskId, (data) => {
+      // Handle log updates
+      if (data.event === "log_entry") {
+        setLogs((prev) => [...prev, data.data.message]);
+      }
+      // Handle artifact updates
+      else if (
+        data.event === "artifact_created" ||
+        data.event === "artifact_updated"
+      ) {
+        // Reload artifacts when new ones are created
+        loadArtifacts();
+      }
+      // Handle memory updates
+      else if (data.event === "memory_updated") {
+        if (activeTab === "memory") {
+          loadMemories();
+        }
+      }
+    });
 
-        // Filter artifacts to only show those in the artifacts/ folder and exclude .git
-        const filteredArtifacts = response.artifacts
-          .filter((artifact: Artifact) => {
-            // Only include items that start with 'artifacts/'
-            if (!artifact.path.startsWith("artifacts/")) return false;
+    return cleanup;
+  }, [taskId, activeTab]);
 
-            // Exclude .git directories and files
-            if (
-              artifact.path.includes("/.git/") ||
-              artifact.path.endsWith("/.git")
-            )
-              return false;
+  // Helper function to load artifacts
+  const loadArtifacts = async () => {
+    setLoadingArtifacts(true);
+    try {
+      const response = await apiClient.getTaskArtifacts(taskId);
 
-            return true;
-          })
-          .map((artifact: Artifact) => ({
-            ...artifact,
-            // Remove the 'artifacts/' prefix from the path for display
-            displayPath: artifact.path.replace(/^artifacts\//, ""),
-          }));
+      // Filter artifacts to only show those in the artifacts/ folder and exclude .git
+      const filteredArtifacts = response.artifacts
+        .filter((artifact: Artifact) => {
+          // Only include items that start with 'artifacts/'
+          if (!artifact.path.startsWith("artifacts/")) return false;
 
-        setArtifacts(filteredArtifacts);
+          // Exclude .git directories and files
+          if (
+            artifact.path.includes("/.git/") ||
+            artifact.path.endsWith("/.git")
+          )
+            return false;
 
-        // Check for plan.json in root directory and load it if found
-        const planArtifact = response.artifacts.find(
-          (artifact: Artifact) =>
-            artifact.path === "plan.json" && artifact.type === "file"
-        );
+          return true;
+        })
+        .map((artifact: Artifact) => ({
+          ...artifact,
+          // Remove the 'artifacts/' prefix from the path for display
+          displayPath: artifact.path.replace(/^artifacts\//, ""),
+        }));
 
-        setHasPlan(!!planArtifact);
+      setArtifacts(filteredArtifacts);
 
-        // Only show plan tab if plan.json exists, but don't try to load it
-        // to avoid 404 errors in console
-        if (planArtifact) {
-          setLoadingPlan(false);
-          // We know the plan exists but won't load it until user clicks the tab
-          // This avoids unnecessary 404 errors for files that may not be accessible
-        } else {
+      // Check for plan.json in root directory and load it if found
+      const planArtifact = response.artifacts.find(
+        (artifact: Artifact) =>
+          artifact.path === "plan.json" && artifact.type === "file"
+      );
+
+      setHasPlan(!!planArtifact);
+
+      if (planArtifact) {
+        // Load plan content inline to avoid 404 errors
+        setLoadingPlan(true);
+        try {
+          const planResponse = await apiClient.getArtifactContent(
+            taskId,
+            "plan.json"
+          );
+          setPlanContent(planResponse.content);
+        } catch (error) {
+          // Silently handle error - plan might have been deleted
           setPlanContent(null);
+        } finally {
           setLoadingPlan(false);
         }
-      } catch (error) {
-        console.error("Failed to load artifacts:", error);
-      } finally {
-        setLoadingArtifacts(false);
+      } else {
+        setPlanContent(null);
+        setLoadingPlan(false);
       }
-    };
+    } catch (error) {
+      console.error("Failed to load artifacts:", error);
+    } finally {
+      setLoadingArtifacts(false);
+    }
+  };
 
+  // Helper function to load memories
+  const loadMemories = async () => {
+    setLoadingMemories(true);
+    try {
+      // For now, using search with empty query to get all memories
+      const memoryResults = await apiClient.searchMemory(taskId, {
+        query: "",
+        limit: 100,
+      });
+      setMemories(memoryResults);
+    } catch (error) {
+      console.error("Failed to load memories:", error);
+      setMemories([]);
+    } finally {
+      setLoadingMemories(false);
+    }
+  };
+
+  // Load artifacts on mount
+  useEffect(() => {
+    if (!taskId) return;
     loadArtifacts();
-  }, [taskId, apiClient]);
+  }, [taskId]);
 
-  // Load logs
+  // Load logs initially
   useEffect(() => {
     if (!taskId || activeTab !== "logs") return;
 
@@ -157,7 +212,7 @@ export function TaskSpacePanel({
       setLoadingLogs(true);
       try {
         const response = await apiClient.getTaskLogs(taskId);
-        setLogs(response.logs);
+        setLogs(response.logs || []);
       } catch (error) {
         console.error("Failed to load logs:", error);
       } finally {
@@ -166,35 +221,13 @@ export function TaskSpacePanel({
     };
 
     loadLogs();
-
-    // Refresh logs every 2 seconds when tab is active
-    const interval = setInterval(loadLogs, 2000);
-    return () => clearInterval(interval);
-  }, [taskId, activeTab, apiClient]);
+  }, [taskId, activeTab]);
 
   // Load memories
   useEffect(() => {
     if (!taskId || activeTab !== "memory") return;
-
-    const loadMemories = async () => {
-      setLoadingMemories(true);
-      try {
-        const response = await apiClient.searchMemory(taskId, {
-          query: "",
-          limit: 100,
-        });
-        setMemories(response);
-      } catch (error) {
-        console.error("Failed to load memories:", error);
-        // For now, show mock data if API fails
-        setMemories([]);
-      } finally {
-        setLoadingMemories(false);
-      }
-    };
-
     loadMemories();
-  }, [taskId, activeTab, apiClient]);
+  }, [taskId, activeTab]);
 
   // Load plan content function
   const loadPlan = async () => {

@@ -58,12 +58,14 @@ graph TD
 
 XAgent is the single point of contact that users interact with to manage complex multi-agent tasks. It combines the execution context management of the former TaskExecutor with the strategic coordination capabilities of the former Orchestrator into one conversational interface.
 
+**User Context**: XAgent operates within a user-scoped context, ensuring all taskspace operations, memory access, and tool executions are isolated to the authenticated user's data. This provides secure multi-tenant operation while maintaining the seamless conversational experience.
+
 **Key Capabilities:**
 
 - **Rich Message Handling**: Supports text, attachments, images, and other multimedia content
 - **LLM-Driven Plan Adjustment**: Intelligently determines which tasks need regeneration while preserving completed work
 - **Conversational Task Management**: Users can chat naturally to request changes, ask questions, or provide guidance
-- **Automatic Taskspace Management**: Handles file storage, artifact management, and taskspace organization
+- **Automatic Taskspace Management**: Handles file storage, artifact management, and taskspace organization within user-scoped directories
 
 **Core Conversation Loop:**
 

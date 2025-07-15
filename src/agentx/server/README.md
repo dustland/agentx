@@ -16,7 +16,7 @@ The AgentX server provides a straightforward RESTful interface for:
 from agentx.server import run_server
 
 # Start the server
-run_server(host="0.0.0.0", port=8000)
+run_server(host="0.0.0.0", port=7770)
 ```
 
 ## API Endpoints
@@ -213,7 +213,7 @@ Response:
 import requests
 
 # Create a task
-response = requests.post("http://localhost:8000/tasks", json={
+response = requests.post("http://localhost:7770/tasks", json={
     "config_path": "config/team.yaml",
     "task_description": "Analyze market trends",
     "context": {"market": "technology"}
@@ -221,11 +221,11 @@ response = requests.post("http://localhost:8000/tasks", json={
 task_id = response.json()["task_id"]
 
 # Check task status
-status = requests.get(f"http://localhost:8000/tasks/{task_id}")
+status = requests.get(f"http://localhost:7770/tasks/{task_id}")
 print(status.json())
 
 # Search task memory
-memory = requests.get(f"http://localhost:8000/tasks/{task_id}/memory?query=trends")
+memory = requests.get(f"http://localhost:7770/tasks/{task_id}/memory?query=trends")
 print(memory.json())
 ```
 
@@ -233,7 +233,7 @@ print(memory.json())
 
 ```bash
 # Create task
-curl -X POST "http://localhost:8000/tasks" \
+curl -X POST "http://localhost:7770/tasks" \
   -H "Content-Type: application/json" \
   -d '{
     "config_path": "config/team.yaml",
@@ -242,10 +242,10 @@ curl -X POST "http://localhost:8000/tasks" \
   }'
 
 # Get task status
-curl "http://localhost:8000/tasks/task_123"
+curl "http://localhost:7770/tasks/task_123"
 
 # Add memory
-curl -X POST "http://localhost:8000/tasks/task_123/memory" \
+curl -X POST "http://localhost:7770/tasks/task_123/memory" \
   -H "Content-Type: application/json" \
   -d '{
     "task_id": "task_123",
@@ -254,7 +254,7 @@ curl -X POST "http://localhost:8000/tasks/task_123/memory" \
   }'
 
 # Search memory
-curl "http://localhost:8000/tasks/task_123/memory?query=trends&agent_id=writer"
+curl "http://localhost:7770/tasks/task_123/memory?query=trends&agent_id=writer"
 ```
 
 ## Configuration
@@ -266,7 +266,7 @@ from agentx.server import run_server
 
 run_server(
     host="0.0.0.0",      # Host to bind to
-    port=8000,           # Port to bind to
+    port=7770,           # Port to bind to
     reload=True,         # Enable auto-reload for development
     log_level="info"     # Logging level
 )

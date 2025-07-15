@@ -16,8 +16,8 @@ class WordXConfig(BaseSettings):
     
     # Server settings
     backend_host: str = "0.0.0.0"
-    backend_port: int = 8765  # Unique port for WordX backend
-    addon_port: int = 3456    # Unique port for WordX addon
+    backend_port: int = 7779  # Unique port for WordX backend
+    addon_port: int = 7778    # Unique port for WordX addon
     
     # Development vs Production
     environment: str = "development"

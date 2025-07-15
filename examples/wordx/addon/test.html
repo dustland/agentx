@@ -59,7 +59,7 @@
         }
         
         // Test 3: Check backend connectivity
-        fetch('http://localhost:8765/')
+        fetch('http://localhost:7779/')
             .then(res => res.json())
             .then(data => {
                 addResult('Backend Connection', 'success', data);
@@ -100,8 +100,8 @@
         // Show current configuration
         addResult('Current Configuration', 'info', {
             addonUrl: location.href,
-            expectedBackend: 'http://localhost:8765',
-            expectedAddon: 'https://localhost:3456'
+            expectedBackend: 'http://localhost:7779',
+            expectedAddon: 'https://localhost:7778'
         });
     </script>
 </body>

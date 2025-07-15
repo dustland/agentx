@@ -28,11 +28,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
             isSystem && "bg-muted"
           )}
         >
-          {isUser ? (
-            <User className="h-4 w-4" />
-          ) : (
-            <Bot className="h-4 w-4" />
-          )}
+          {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
         </AvatarFallback>
       </Avatar>
 
@@ -69,22 +65,25 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
         </div>
 
         {/* Tool Calls */}
-        {message.metadata?.toolCalls && message.metadata.toolCalls.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
-            {message.metadata.toolCalls.map((tool, idx) => (
-              <Badge
-                key={idx}
-                variant={tool.status === "error" ? "destructive" : "secondary"}
-                className="text-xs"
-              >
-                {tool.name}
-                {tool.status === "running" && (
-                  <Loader2 className="ml-1 h-2 w-2 animate-spin" />
-                )}
-              </Badge>
-            ))}
-          </div>
-        )}
+        {message.metadata?.toolCalls &&
+          message.metadata.toolCalls.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {message.metadata.toolCalls.map((tool, idx) => (
+                <Badge
+                  key={idx}
+                  variant={
+                    tool.status === "failed" ? "destructive" : "secondary"
+                  }
+                  className="text-xs"
+                >
+                  {tool.name}
+                  {tool.status === "running" && (
+                    <Loader2 className="ml-1 h-2 w-2 animate-spin" />
+                  )}
+                </Badge>
+              ))}
+            </div>
+          )}
       </div>
     </div>
   );

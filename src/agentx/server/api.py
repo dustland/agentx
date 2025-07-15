@@ -12,7 +12,7 @@ from pathlib import Path
 from ..utils.logger import get_logger
 import json
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Header
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
@@ -25,6 +25,7 @@ from .models import (
     MemoryRequest, MemoryResponse,
     HealthResponse
 )
+from ..core.session import get_task_session_store, initialize_task_session_store
 
 logger = get_logger(__name__)
 
@@ -80,6 +81,17 @@ def create_app(
 
     # Add routes
     add_routes(app)
+    
+    # Add startup event to initialize coordinator
+    @app.on_event("startup")
+    async def startup_event():
+        await initialize_task_session_store()
+    
+    # Add shutdown event to cleanup coordinator
+    @app.on_event("shutdown")
+    async def shutdown_event():
+        store = get_task_session_store()
+        await store.disconnect()
 
     return app
 
@@ -105,26 +117,45 @@ def add_routes(app: FastAPI):
     @app.post("/tasks", response_model=TaskResponse)
     async def create_task_endpoint(
         request: TaskRequest,
-        background_tasks: BackgroundTasks
+        background_tasks: BackgroundTasks,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Create and start a new task"""
         try:
-            # Create the task with user_id from request
-            task = create_task(request.config_path, request.user_id)
+            # Use user_id from header if provided, otherwise from request body
+            user_id = x_user_id or request.user_id
+            # Create the task with user_id
+            task = create_task(request.config_path, user_id)
             active_tasks[task.task_id] = task
-
-            # Start task execution in background
-            background_tasks.add_task(
-                _execute_task,
-                task,
-                request.task_description,
-                request.context
+            
+            # Store task status in Redis for cross-worker coordination
+            store = get_task_session_store()
+            status = TaskStatus.RUNNING if request.task_description else TaskStatus.PENDING
+            
+            await store.set_task_status(
+                task_id=task.task_id,
+                status=status,
+                user_id=user_id,
+                metadata={
+                    "config_path": request.config_path,
+                    "task_description": request.task_description,
+                    "context": request.context
+                }
             )
+
+            # Only start task execution if there's a task description
+            if request.task_description and request.task_description.strip():
+                background_tasks.add_task(
+                    _execute_task,
+                    task,
+                    request.task_description,
+                    request.context
+                )
 
             return TaskResponse(
                 task_id=task.task_id,
-                status=TaskStatus.PENDING,
-                user_id=request.user_id
+                status=status,
+                user_id=user_id
             )
 
         except Exception as e:
@@ -135,23 +166,99 @@ def add_routes(app: FastAPI):
     async def list_tasks(user_id: Optional[str] = None):
         """List all tasks, optionally filtered by user_id"""
         try:
+            # Get tasks from Redis coordination system
+            store = get_task_session_store()
+            redis_tasks = await coordinator.list_tasks(user_id)
+            
             task_infos = []
+            seen_task_ids = set()
+            
+            # Add tasks from Redis
+            for task_data in redis_tasks:
+                task_infos.append(TaskInfo(
+                    task_id=task_data["task_id"],
+                    status=TaskStatus(task_data["status"]),
+                    config_path=task_data.get("metadata", {}).get("config_path", ""),
+                    task_description=task_data.get("metadata", {}).get("task_description", ""),
+                    context=task_data.get("metadata", {}).get("context"),
+                    created_at=datetime.fromisoformat(task_data["created_at"]) if task_data["created_at"] else datetime.now(),
+                    completed_at=None,
+                    user_id=task_data.get("user_id")
+                ))
+                seen_task_ids.add(task_data["task_id"])
+            
+            # Add any active tasks from memory that might not be in Redis yet
             for task in active_tasks.values():
                 # Filter by user_id if provided
                 if user_id is not None and getattr(task, 'user_id', None) != user_id:
                     continue
+                
+                if task.task_id not in seen_task_ids:
+                    task_infos.append(TaskInfo(
+                        task_id=task.task_id,
+                        status=TaskStatus.RUNNING,  # Active tasks are running
+                        config_path=getattr(task, 'config_path', ''),
+                        task_description="",
+                        context=None,
+                        created_at=datetime.now(),
+                        completed_at=None,
+                        user_id=getattr(task, 'user_id', None)
+                    ))
+                    seen_task_ids.add(task.task_id)
+            
+            # Then scan filesystem for all tasks
+            taskspace_root = Path("taskspace")
+            if taskspace_root.exists():
+                for item in taskspace_root.iterdir():
+                    if not item.is_dir() or item.name.startswith("."):
+                        continue
                     
-                # Get task info from task object
-                task_infos.append(TaskInfo(
-                    task_id=task.task_id,
-                    status=TaskStatus.PENDING,  # Simplified for now
-                    config_path=getattr(task, 'config_path', ''),
-                    task_description="",
-                    context=None,
-                    created_at=datetime.now(),
-                    completed_at=None,
-                    user_id=getattr(task, 'user_id', None)
-                ))
+                    # Check if this is a user directory or task directory
+                    if user_id and item.name == user_id:
+                        # User-scoped directory
+                        for task_dir in item.iterdir():
+                            if task_dir.is_dir() and not task_dir.name.startswith("."):
+                                task_id = task_dir.name
+                                if task_id not in seen_task_ids:
+                                    # Determine status from filesystem
+                                    status = TaskStatus.COMPLETED
+                                    if (task_dir / "error.log").exists():
+                                        status = TaskStatus.FAILED
+                                    elif not any(task_dir.glob("artifacts/*")):
+                                        status = TaskStatus.PENDING
+                                    
+                                    task_infos.append(TaskInfo(
+                                        task_id=task_id,
+                                        status=status,
+                                        config_path="",
+                                        task_description="",
+                                        context=None,
+                                        created_at=datetime.fromtimestamp(task_dir.stat().st_ctime),
+                                        completed_at=None,
+                                        user_id=user_id
+                                    ))
+                    elif not user_id:
+                        # Legacy task directory (no user scoping)
+                        task_id = item.name
+                        if task_id not in seen_task_ids and len(task_id) == 8:  # Typical task ID length
+                            # Determine status from filesystem
+                            status = TaskStatus.COMPLETED
+                            if (item / "error.log").exists():
+                                status = TaskStatus.FAILED
+                            elif not any(item.glob("artifacts/*")):
+                                status = TaskStatus.PENDING
+                            
+                            task_infos.append(TaskInfo(
+                                task_id=task_id,
+                                status=status,
+                                config_path="",
+                                task_description="",
+                                context=None,
+                                created_at=datetime.fromtimestamp(item.stat().st_ctime),
+                                completed_at=None,
+                                user_id=None
+                            ))
+            
             return task_infos
 
         except Exception as e:
@@ -162,22 +269,79 @@ def add_routes(app: FastAPI):
     async def get_task(task_id: str, user_id: Optional[str] = None):
         """Get task status and result"""
         try:
-            task = active_tasks.get(task_id)
-            if not task:
-                raise HTTPException(status_code=404, detail="Task not found")
+            # First check Redis for task status
+            store = get_task_session_store()
+            task_data = await coordinator.get_task_status(task_id, user_id)
             
-            # Check user permissions
-            if user_id is not None and getattr(task, 'user_id', None) != user_id:
-                raise HTTPException(status_code=404, detail="Task not found")
+            if task_data:
+                # Task found in Redis
+                return TaskResponse(
+                    task_id=task_id,
+                    status=TaskStatus(task_data["status"]),
+                    result=task_data.get("metadata", {}).get("result"),
+                    error=task_data.get("metadata", {}).get("error"),
+                    created_at=datetime.fromisoformat(task_data["created_at"]) if task_data["created_at"] else datetime.now(),
+                    completed_at=None,
+                    user_id=task_data.get("user_id")
+                )
+            
+            # Check if task exists in active memory
+            task = active_tasks.get(task_id)
+            if task:
+                # Check user permissions
+                if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                    raise HTTPException(status_code=404, detail="Task not found")
 
+                return TaskResponse(
+                    task_id=task_id,
+                    status=TaskStatus.RUNNING,  # Active tasks are running
+                    result=None,
+                    error=None,
+                    created_at=datetime.now(),
+                    completed_at=None,
+                    user_id=getattr(task, 'user_id', None)
+                )
+            
+            # Fallback: Check filesystem directly
+            
+            # Fallback: Check if task exists in taskspace directory
+            taskspace_path = None
+            if user_id:
+                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+            else:
+                taskspace_path = Path(f"taskspace/{task_id}")
+            
+            if not taskspace_path.exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = Path(f"taskspace/{task_id}")
+                    if legacy_path.exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
+            
+            # Determine task status from filesystem
+            status = TaskStatus.COMPLETED
+            if (taskspace_path / "error.log").exists():
+                status = TaskStatus.FAILED
+            elif not any(taskspace_path.glob("artifacts/*")):
+                # Check if task has logs to determine if it's running
+                logs_path = taskspace_path / "logs"
+                if logs_path.exists() and any(logs_path.glob("*.log")):
+                    status = TaskStatus.RUNNING
+                else:
+                    status = TaskStatus.PENDING
+            
             return TaskResponse(
                 task_id=task_id,
-                status=TaskStatus.PENDING,  # Simplified for now
+                status=status,
                 result=None,
                 error=None,
                 created_at=datetime.now(),
                 completed_at=None,
-                user_id=getattr(task, 'user_id', None)
+                user_id=user_id
             )
 
         except HTTPException:
@@ -187,15 +351,25 @@ def add_routes(app: FastAPI):
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.delete("/tasks/{task_id}")
-    async def delete_task(task_id: str):
+    async def delete_task(task_id: str, user_id: Optional[str] = None):
         """Delete a task and its memory"""
         try:
+            store = get_task_session_store()
+            
+            # Check if task exists in active tasks
             task = active_tasks.get(task_id)
-            if not task:
+            if task:
+                # Check user permissions
+                if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                    raise HTTPException(status_code=404, detail="Task not found")
+                
+                # Remove from active tasks
+                del active_tasks[task_id]
+            
+            # Delete from Redis coordination system
+            success = await coordinator.delete_task(task_id, user_id)
+            if not success:
                 raise HTTPException(status_code=404, detail="Task not found")
-
-            # Remove from active tasks
-            del active_tasks[task_id]
 
             return {"message": "Task deleted successfully"}
 
@@ -269,13 +443,17 @@ def add_routes(app: FastAPI):
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/tasks/{task_id}/stream")
-    async def stream_task_events(task_id: str):
+    async def stream_task_events(task_id: str, user_id: Optional[str] = None):
         """Stream real-time events for a task using SSE"""
         task = active_tasks.get(task_id)
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         
-        logger.info(f"Starting event stream for task {task_id}")
+        # Check user permissions
+        if user_id is not None and getattr(task, 'user_id', None) != user_id:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        logger.info(f"Starting event stream for task {task_id} (user: {user_id})")
         
         async def event_generator():
             async for event in event_stream_manager.stream_events(task_id):
@@ -748,9 +926,9 @@ def add_routes(app: FastAPI):
                 <h3>Access the Dashboard</h3>
                 <p>To access the full Streamlit dashboard, run:</p>
                 <div class="code">
-                    streamlit run src/agentx/observability/web.py --server.port=8502
+                                          streamlit run src/agentx/observability/web.py --server.port=7772
                 </div>
-                <p><em>Note: Using port 8502 to avoid conflicts with the API server on 8000</em></p>
+                <p><em>Note: Using port 7772 to avoid conflicts with the API server on 7770</em></p>
 
                 <h3>API Endpoints</h3>
                 <ul>
@@ -774,6 +952,18 @@ async def _execute_task(task: XAgent, task_description: str, context: Optional[D
         # Send initial task update
         await send_task_update(task.task_id, "running")
         
+        # Update status in coordination system to running
+        coordinator = get_task_coordinator()
+        await coordinator.set_task_status(
+            task_id=task.task_id,
+            status=TaskStatus.RUNNING,
+            user_id=getattr(task, 'user_id', None),
+            metadata={
+                "task_description": task_description,
+                "context": context
+            }
+        )
+        
         # Start the task - this creates the plan
         response = await task.start(task_description)
         
@@ -795,6 +985,13 @@ async def _execute_task(task: XAgent, task_description: str, context: Optional[D
             
             # Send agent status update
             await send_agent_status(task.task_id, current_agent, "working", min(step_count * 10, 90))
+            
+            # Update task progress in coordination system
+            await store.update_task_progress(
+                task.task_id, 
+                f"Step {step_count}: {current_agent}", 
+                min(step_count * 10, 90)
+            )
             
             # Execute next step
             try:
@@ -850,16 +1047,34 @@ async def _execute_task(task: XAgent, task_description: str, context: Optional[D
         
         # Task completed
         await send_task_update(task.task_id, "completed", {"steps_executed": step_count})
+        
+        # Update status in coordination system
+        await coordinator.set_task_status(
+            task_id=task.task_id,
+            status=TaskStatus.COMPLETED,
+            user_id=getattr(task, 'user_id', None),
+            metadata={"steps_executed": step_count}
+        )
+        
         logger.info(f"Task {task.task_id} completed successfully")
 
     except Exception as e:
         logger.error(f"Task {task.task_id} failed: {e}")
         await send_task_update(task.task_id, "failed", {"error": str(e)})
+        
+        # Update status in coordination system
+        coordinator = get_task_coordinator()
+        await coordinator.set_task_status(
+            task_id=task.task_id,
+            status=TaskStatus.FAILED,
+            user_id=getattr(task, 'user_id', None),
+            metadata={"error": str(e)}
+        )
 
 
 def run_server(
     host: str = "0.0.0.0",
-    port: int = 8000,
+    port: int = 7770,
     reload: bool = False,
     log_level: str = "info"
 ):
@@ -880,7 +1095,7 @@ def run_server(
         monitor = get_monitor()
         monitor.start()
         logger.info("✅ Observability monitor started in integrated mode")
-        logger.info("📊 Dashboard available at: http://localhost:8000/monitor")
+        logger.info("📊 Dashboard available at: http://localhost:7770/monitor")
     except Exception as e:
         logger.warning(f"⚠️  Could not start observability monitor: {e}")
 

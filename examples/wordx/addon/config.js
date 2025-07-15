@@ -3,7 +3,7 @@
 
 window.WORDX_CONFIG = {
     // Backend API URL - will be updated by setup script
-    BACKEND_URL: 'http://localhost:8765',
+    BACKEND_URL: 'http://localhost:7779',
 
     // Add-in version
     VERSION: '1.0.0'

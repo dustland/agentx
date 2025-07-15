@@ -38,8 +38,8 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { TaskResponse } from "@/lib/api-client";
-import { authApiClient } from "@/lib/api-client-with-auth";
+import { useAgentXAPI } from "@/lib/api-client";
+import { Task as TaskResponse } from "@/types/agentx";
 import { useUser } from "@/contexts/user-context";
 import { User as UserIcon, LogOut } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -102,6 +102,7 @@ export function TaskSidebar({
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const { user, logout } = useUser();
+  const apiClient = useAgentXAPI();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
   const [tasks, setTasks] = useState<TaskResponse[]>([]);
@@ -130,7 +131,7 @@ export function TaskSidebar({
       try {
         setIsLoading(true);
         console.log("Loading tasks from API...");
-        const response = await authApiClient.getTasks();
+        const response = await apiClient.getTasks();
         console.log("Tasks response:", response);
         setTasks(response.tasks || []);
       } catch (error) {
@@ -354,9 +355,9 @@ export function TaskSidebar({
                             onClick={async (e) => {
                               e.stopPropagation();
                               try {
-                                await authApiClient.deleteTask(task.task_id);
+                                await apiClient.deleteTask(task.task_id);
                                 // Refresh tasks
-                                const response = await authApiClient.getTasks();
+                                const response = await apiClient.getTasks();
                                 setTasks(response.tasks || []);
                               } catch (error) {
                                 console.error("Failed to delete task:", error);
