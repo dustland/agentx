@@ -641,37 +641,81 @@ def add_routes(app: FastAPI):
             raise HTTPException(status_code=500, detail="Failed to clear chat history")
 
     @app.get("/tasks/{task_id}/logs")
-    async def get_task_logs(task_id: str, tail: Optional[int] = None):
+    async def get_task_logs(task_id: str, tail: Optional[int] = None, user_id: Optional[str] = None):
         """Get the execution logs for a task"""
         from pathlib import Path
         
-        # Look for log file in taskspace/{task_id}/logs/{task_id}.log
-        log_file = Path(f"taskspace/{task_id}/logs/{task_id}.log")
+        # Check if task exists in active tasks and get user permissions
+        task = active_tasks.get(task_id)
+        if task:
+            # Task is active - check user permissions
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                raise HTTPException(status_code=404, detail="Task not found")
+            # Use the task's actual taskspace path
+            taskspace_path = Path(task.taskspace.taskspace_path)
+        else:
+            # Task not active - check if taskspace exists
+            # Try both user-scoped and legacy paths
+            if user_id:
+                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+            else:
+                taskspace_path = Path(f"taskspace/{task_id}")
+            
+            if not taskspace_path.exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = Path(f"taskspace/{task_id}")
+                    if legacy_path.exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
         
-        if not log_file.exists():
-            # Try alternative location
-            log_file = Path(f"taskspace/{task_id}/logs/execution.log")
+        # Look for log files in the taskspace logs directory
+        logs_dir = taskspace_path / "logs"
+        log_files = []
+        
+        if logs_dir.exists():
+            # Try multiple log file patterns
+            potential_files = [
+                logs_dir / f"{task_id}.log",
+                logs_dir / "execution.log",
+                logs_dir / "task.log"
+            ]
+            
+            for log_file in potential_files:
+                if log_file.exists():
+                    log_files.append(log_file)
         
         logs = []
         
-        if log_file.exists():
+        if log_files:
             try:
-                content = log_file.read_text(encoding='utf-8')
-                lines = content.splitlines()
+                # Read all log files and combine them
+                all_lines = []
+                for log_file in log_files:
+                    content = log_file.read_text(encoding='utf-8')
+                    lines = content.splitlines()
+                    # Add file identifier for multiple files
+                    if len(log_files) > 1:
+                        all_lines.append(f"=== {log_file.name} ===")
+                    all_lines.extend(lines)
+                
                 if tail and tail > 0:
-                    lines = lines[-tail:]
-                logs = lines
+                    all_lines = all_lines[-tail:]
+                logs = all_lines
             except Exception as e:
-                logger.error(f"Failed to read log file: {e}")
-                raise HTTPException(status_code=500, detail=f"Failed to read log file: {str(e)}")
+                logger.error(f"Failed to read log files: {e}")
+                raise HTTPException(status_code=500, detail=f"Failed to read log files: {str(e)}")
         else:
-            logger.warning(f"Log file not found at {log_file}")
+            logger.warning(f"No log files found in {logs_dir}")
         
         return {
             "task_id": task_id,
             "logs": logs,
             "total_lines": len(logs),
-            "log_path": str(log_file)
+            "log_files": [str(f) for f in log_files]
         }
 
     # Simple observability route

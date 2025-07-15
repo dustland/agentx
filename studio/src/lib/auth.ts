@@ -102,6 +102,7 @@ export function getUserDisplayName(user: User): string {
  * Demo user credentials for easy testing
  */
 export const DEMO_USERS = [
+  { username: 'guest', password: 'GuestDemo$2024!' },
   { username: 'alice', password: 'alice123' },
   { username: 'bob', password: 'bob123' },
 ];

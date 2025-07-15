@@ -1,14 +1,14 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useCallback } from "react";
 import { TaskSidebar } from "@/components/layout/task-sidebar";
 import { TaskSpacePanel } from "@/components/taskspace/taskspace-panel";
 import { ChatLayout } from "@/components/chat";
 import { cn } from "@/lib/utils";
-import { 
-  ResizablePanelGroup, 
-  ResizablePanel, 
-  ResizableHandle 
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
 } from "@/components/ui/resizable";
 import { useAgentXAPI } from "@/lib/api-client";
 import { ChatMessage, TaskStatus } from "@/types/chat";
@@ -24,11 +24,17 @@ export default function TaskPage({
   const { id } = use(params);
   const { description } = use(searchParams);
   const apiClient = useAgentXAPI();
-  
-  const [isSidebarPinned, setIsSidebarPinned] = useState(true);
+
+  const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sidebar-pinned");
+      return stored !== null ? stored === "true" : true;
+    }
+    return true;
+  });
   const [selectedToolCall, setSelectedToolCall] = useState<any>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [taskStatus, setTaskStatus] = useState<TaskStatus>("idle");
+  const [taskStatus, setTaskStatus] = useState<TaskStatus>("pending");
   const [taskInfo, setTaskInfo] = useState<any>(null);
 
   // Load task info and set up streaming
@@ -37,12 +43,12 @@ export default function TaskPage({
       try {
         const task = await apiClient.getTask(id);
         setTaskInfo(task);
-        setTaskStatus(task.status || "idle");
-        
+        setTaskStatus(task.status || "pending");
+
         // Set up streaming for task updates
         const cleanup = apiClient.subscribeToTaskUpdates(id, (data) => {
           console.log("Task update:", data);
-          
+
           if (data.event === "agent_message") {
             const message: ChatMessage = {
               id: nanoid(),
@@ -52,24 +58,26 @@ export default function TaskPage({
               status: "complete",
               metadata: data.data.metadata,
             };
-            setMessages(prev => [...prev, message]);
+            setMessages((prev) => [...prev, message]);
           } else if (data.event === "agent_status") {
-            setTaskStatus(data.data.status === "working" ? "running" : "idle");
+            setTaskStatus(
+              data.data.status === "working" ? "running" : "pending"
+            );
           } else if (data.event === "task_update") {
             setTaskStatus(data.data.status);
           }
         });
-        
+
         return cleanup;
       } catch (error) {
         console.error("Failed to load task:", error);
       }
     };
-    
+
     const cleanupPromise = loadTask();
-    
+
     return () => {
-      cleanupPromise.then(cleanup => cleanup && cleanup());
+      cleanupPromise.then((cleanup) => cleanup && cleanup());
     };
   }, [id]);
 
@@ -82,14 +90,14 @@ export default function TaskPage({
       timestamp: new Date(),
       status: "complete",
     };
-    setMessages(prev => [...prev, userMessage]);
-    
+    setMessages((prev) => [...prev, userMessage]);
+
     // TODO: Send to backend and handle streaming response
     setTaskStatus("running");
   };
 
   const handlePauseResume = () => {
-    setTaskStatus(prev => prev === "running" ? "paused" : "running");
+    setTaskStatus((prev) => (prev === "running" ? "pending" : "running"));
   };
 
   const handleShare = () => {
@@ -105,62 +113,74 @@ export default function TaskPage({
   // Check if sidebar is floating based on viewport or user preference
   const isSidebarFloating = !isSidebarPinned;
 
+  const handleFloatingChange = useCallback((floating: boolean) => {
+    // Only update if the state actually needs to change
+    setIsSidebarPinned((prev) => {
+      const newValue = !floating;
+      if (prev !== newValue) {
+        localStorage.setItem("sidebar-pinned", newValue.toString());
+        return newValue;
+      }
+      return prev;
+    });
+  }, []);
+
   return (
     <>
       {/* Main Layout Container */}
-      <div className="h-screen flex bg-muted/30">
+      <div className="h-screen flex bg-muted/50">
         {/* Sidebar - only renders when pinned */}
         {isSidebarPinned && (
-          <TaskSidebar 
+          <TaskSidebar
             className="flex-shrink-0"
             isFloating={false}
-            onFloatingChange={setIsSidebarPinned}
+            onFloatingChange={handleFloatingChange}
           />
         )}
-        
+
         {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden relative">
           {/* Floating Sidebar */}
           {isSidebarFloating && (
-            <TaskSidebar 
+            <TaskSidebar
               isFloating={true}
-              onFloatingChange={setIsSidebarPinned}
+              onFloatingChange={handleFloatingChange}
             />
           )}
-          
+
           {/* Task Execution Area */}
           <ResizablePanelGroup direction="horizontal" className="flex-1">
-              {/* Left Panel - Chat Interface */}
-              <ResizablePanel defaultSize={60} minSize={40} maxSize={80}>
-                <ChatLayout
-                  taskId={id}
-                  taskName={taskInfo?.title || `Task ${id}`}
-                  taskStatus={taskStatus}
-                  messages={messages}
-                  onSendMessage={handleSendMessage}
-                  onPauseResume={handlePauseResume}
-                  onShare={handleShare}
-                  onMoreActions={handleMoreActions}
-                />
-              </ResizablePanel>
+            {/* Left Panel - Chat Interface */}
+            <ResizablePanel defaultSize={40} minSize={40} maxSize={80}>
+              <ChatLayout
+                taskId={id}
+                taskName={taskInfo?.title || `Task ${id}`}
+                taskStatus={taskStatus}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                onPauseResume={handlePauseResume}
+                onShare={handleShare}
+                onMoreActions={handleMoreActions}
+              />
+            </ResizablePanel>
 
-              {/* Resize Handle */}
-              <ResizableHandle className="!bg-transparent hover:!bg-border/50 transition-colors" />
+            {/* Resize Handle */}
+            <ResizableHandle className="!bg-transparent hover:!bg-border/50 transition-colors" />
 
-              {/* Right Panel - TaskSpace */}
-              <ResizablePanel defaultSize={40} minSize={20}>
-                <TaskSpacePanel 
-                  taskId={id}
-                  onToolCallSelect={(handler) => {
-                    // When a tool call is clicked in chat, pass it to taskspace
-                    if (selectedToolCall && typeof handler === 'function') {
-                      handler(selectedToolCall);
-                      setSelectedToolCall(null);
-                    }
-                  }}
-                />
-              </ResizablePanel>
-            </ResizablePanelGroup>
+            {/* Right Panel - TaskSpace */}
+            <ResizablePanel defaultSize={60} minSize={20}>
+              <TaskSpacePanel
+                taskId={id}
+                onToolCallSelect={(handler) => {
+                  // When a tool call is clicked in chat, pass it to taskspace
+                  if (selectedToolCall && typeof handler === "function") {
+                    handler(selectedToolCall);
+                    setSelectedToolCall(null);
+                  }
+                }}
+              />
+            </ResizablePanel>
+          </ResizablePanelGroup>
         </div>
       </div>
     </>

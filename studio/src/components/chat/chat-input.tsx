@@ -53,7 +53,6 @@ export function ChatInput({
   };
 
   const getStatusMessage = () => {
-    if (isLoading) return "Sending...";
     if (taskStatus === "running") return "AI is processing...";
     if (taskStatus === "paused") return "Task paused";
     if (taskStatus === "completed") return "Task completed";

@@ -5,26 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import {
-  Pause,
-  Play,
-  Share2,
-  MoreHorizontal,
-  Loader2,
-} from "lucide-react";
+import { Pause, Play, Share2, MoreHorizontal, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatInput } from "./chat-input";
 
 interface ChatLayoutProps {
   taskId: string;
   taskName: string;
-  taskStatus: "idle" | "running" | "paused" | "completed" | "error";
+  taskStatus: "pending" | "running" | "completed" | "failed";
   messages: Array<{
     id: string;
     role: "user" | "assistant" | "system";
     content: string;
     timestamp: Date;
-    status?: "streaming" | "complete" | "error";
+    status?: "streaming" | "complete" | "failed";
   }>;
   onSendMessage: (message: string) => void;
   onPauseResume: () => void;
@@ -59,11 +53,9 @@ export function ChatLayout({
     switch (taskStatus) {
       case "running":
         return "bg-blue-500";
-      case "paused":
-        return "bg-yellow-500";
       case "completed":
         return "bg-green-500";
-      case "error":
+      case "failed":
         return "bg-red-500";
       default:
         return "bg-gray-500";
@@ -71,7 +63,7 @@ export function ChatLayout({
   };
 
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
@@ -84,27 +76,29 @@ export function ChatLayout({
           </Badge>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={onPauseResume}
-            disabled={taskStatus !== "running" && taskStatus !== "paused"}
-          >
-            {taskStatus === "running" ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </Button>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={onPauseResume}
+              disabled={taskStatus !== "running" && taskStatus !== "pending"}
+            >
+              {taskStatus === "running" ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+            </Button>
 
-          <Button size="icon" variant="ghost" onClick={onShare}>
-            <Share2 className="h-4 w-4" />
-          </Button>
+            <Button size="icon" variant="ghost" onClick={onShare}>
+              <Share2 className="h-4 w-4" />
+            </Button>
 
-          <Button size="icon" variant="ghost" onClick={onMoreActions}>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+            <Button size="icon" variant="ghost" onClick={onMoreActions}>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -126,7 +120,7 @@ export function ChatLayout({
                     message.status === "streaming" &&
                       "border border-primary/20 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-gradient",
                     message.status === "complete" && "border border-border",
-                    message.status === "error" &&
+                    message.status === "failed" &&
                       "border border-destructive/50 bg-destructive/5",
                   ]
                 )}
@@ -166,7 +160,7 @@ export function ChatLayout({
       <ChatInput
         onSendMessage={handleSubmit}
         isLoading={taskStatus === "running"}
-        disabled={taskStatus === "completed" || taskStatus === "error"}
+        disabled={taskStatus === "completed" || taskStatus === "failed"}
         taskStatus={taskStatus}
       />
     </div>

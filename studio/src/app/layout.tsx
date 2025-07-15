@@ -5,6 +5,8 @@ import { Providers } from '@/components/common/providers'
 import { ThemeProvider } from '@/components/common/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from 'sonner'
+import { UserProvider } from '@/contexts/user-context'
+import { AuthWrapper } from '@/components/auth/auth-wrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -60,10 +62,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TooltipProvider>
-            <Providers>{children}</Providers>
-          </TooltipProvider>
-          <Toaster position="bottom-right" />
+          <UserProvider>
+            <TooltipProvider>
+              <Providers>
+                <AuthWrapper>
+                  {children}
+                </AuthWrapper>
+              </Providers>
+            </TooltipProvider>
+            <Toaster position="bottom-right" />
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>

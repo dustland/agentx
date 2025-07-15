@@ -115,10 +115,26 @@ export async function updateLastLogin(userId: string): Promise<void> {
 export async function initializeDemoUsers(): Promise<void> {
   const db = await readDB();
   
-  if (db.users.length === 0) {
-    // Create demo users
-    await createUser('alice', 'alice123', 'alice@example.com');
-    await createUser('bob', 'bob123', 'bob@example.com');
+  // Check if each demo user exists and create if not
+  const demoUsers = [
+    { username: 'guest', password: 'GuestDemo$2024!', email: 'guest@example.com' },
+    { username: 'alice', password: 'alice123', email: 'alice@example.com' },
+    { username: 'bob', password: 'bob123', email: 'bob@example.com' }
+  ];
+  
+  let usersAdded = false;
+  for (const demoUser of demoUsers) {
+    if (!db.users.find(u => u.username === demoUser.username)) {
+      try {
+        await createUser(demoUser.username, demoUser.password, demoUser.email);
+        usersAdded = true;
+      } catch (error) {
+        console.error(`Failed to create demo user ${demoUser.username}:`, error);
+      }
+    }
+  }
+  
+  if (usersAdded) {
     console.log('Demo users initialized');
   }
 }

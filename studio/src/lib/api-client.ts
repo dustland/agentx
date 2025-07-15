@@ -6,7 +6,7 @@ export interface TaskRequest {
 
 export interface TaskResponse {
   task_id: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   result?: Record<string, any>;
   error?: string;
   created_at: string;
@@ -38,7 +38,11 @@ export class AgentXAPIClient {
   private baseURL: string;
 
   constructor(baseURL?: string) {
-    this.baseURL = baseURL || process.env.NEXT_PUBLIC_AGENTX_API_URL || 'http://localhost:8000';
+    this.baseURL =
+      baseURL ||
+      process.env.NEXT_PUBLIC_AGENTX_API_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "http://localhost:8000";
   }
 
   private async request<T>(
@@ -46,10 +50,10 @@ export class AgentXAPIClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
       ...options,
@@ -65,32 +69,32 @@ export class AgentXAPIClient {
 
   // Task Management
   async createTask(taskRequest: TaskRequest): Promise<TaskResponse> {
-    return this.request<TaskResponse>('/tasks', {
-      method: 'POST',
+    return this.request<TaskResponse>("/tasks", {
+      method: "POST",
       body: JSON.stringify(taskRequest),
     });
   }
 
   async getTasks(userId?: string): Promise<TaskListResponse> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
     return this.request<TaskListResponse>(`/tasks${params}`);
   }
 
   async getTask(taskId: string, userId?: string): Promise<TaskResponse> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
+    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
     return this.request<TaskResponse>(`/tasks/${taskId}${params}`);
   }
 
   async deleteTask(taskId: string): Promise<void> {
     await this.request(`/tasks/${taskId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
   // Memory Management
   async addMemory(taskId: string, content: MemoryContent): Promise<void> {
     await this.request(`/tasks/${taskId}/memory`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(content),
     });
   }
@@ -109,59 +113,83 @@ export class AgentXAPIClient {
 
   async clearMemory(taskId: string): Promise<void> {
     await this.request(`/tasks/${taskId}/memory`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
   // Health & Monitoring
   async healthCheck(): Promise<{ status: string }> {
-    return this.request<{ status: string }>('/health');
+    return this.request<{ status: string }>("/health");
   }
 
   async getMonitoringData(): Promise<any> {
-    return this.request('/monitor');
+    return this.request("/monitor");
   }
 
   // Artifacts
-  async getTaskArtifacts(taskId: string, userId?: string): Promise<{ artifacts: any[] }> {
-    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : '';
-    return this.request<{ artifacts: any[] }>(`/tasks/${taskId}/artifacts${params}`);
+  async getTaskArtifacts(
+    taskId: string,
+    userId?: string
+  ): Promise<{ artifacts: any[] }> {
+    const params = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+    return this.request<{ artifacts: any[] }>(
+      `/tasks/${taskId}/artifacts${params}`
+    );
   }
 
-  async getArtifactContent(taskId: string, filePath: string): Promise<{
+  async getArtifactContent(
+    taskId: string,
+    filePath: string
+  ): Promise<{
     path: string;
     content: string | null;
     is_binary?: boolean;
     size: number;
   }> {
-    return this.request(`/tasks/${taskId}/artifacts/${encodeURIComponent(filePath)}`);
+    return this.request(
+      `/tasks/${taskId}/artifacts/${encodeURIComponent(filePath)}`
+    );
   }
 
   // Logs
-  async getTaskLogs(taskId: string, tail?: number): Promise<{
+  async getTaskLogs(
+    taskId: string,
+    tail?: number,
+    userId?: string
+  ): Promise<{
     task_id: string;
     logs: string[];
     total_lines: number;
   }> {
-    const params = tail ? `?tail=${tail}` : '';
-    return this.request(`/tasks/${taskId}/logs${params}`);
+    const params = new URLSearchParams();
+    if (tail) params.append("tail", tail.toString());
+    if (userId) params.append("user_id", userId);
+    const queryString = params.toString();
+    return this.request(
+      `/tasks/${taskId}/logs${queryString ? `?${queryString}` : ""}`
+    );
   }
 
   // Real-time updates using Server-Sent Events
-  subscribeToTaskUpdates(taskId: string, onUpdate: (data: any) => void): () => void {
-    const eventSource = new EventSource(`${this.baseURL}/tasks/${taskId}/stream`);
-    
+  subscribeToTaskUpdates(
+    taskId: string,
+    onUpdate: (data: any) => void
+  ): () => void {
+    const eventSource = new EventSource(
+      `${this.baseURL}/tasks/${taskId}/stream`
+    );
+
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         onUpdate(data);
       } catch (error) {
-        console.error('Error parsing SSE data:', error);
+        console.error("Error parsing SSE data:", error);
       }
     };
 
     eventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
+      console.error("SSE connection error:", error);
     };
 
     // Return cleanup function
@@ -181,12 +209,12 @@ export class AgentXAPIClient {
     const poll = async () => {
       try {
         if (!isPolling) return;
-        
+
         const task = await this.getTask(taskId);
         onUpdate(task);
 
         // Stop polling if task is complete
-        if (task.status === 'completed' || task.status === 'failed') {
+        if (task.status === "completed" || task.status === "failed") {
           isPolling = false;
           return;
         }
@@ -194,7 +222,7 @@ export class AgentXAPIClient {
         // Schedule next poll
         setTimeout(poll, interval);
       } catch (error) {
-        console.error('Error polling task status:', error);
+        console.error("Error polling task status:", error);
         // Continue polling even on error
         if (isPolling) {
           setTimeout(poll, interval * 2); // Backoff on error
