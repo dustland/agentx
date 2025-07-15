@@ -8,5 +8,6 @@ export default {
   'orchestration': 'Orchestration System',
   'tool-execution': 'Tool Execution',
   'communication': 'Agent Communication',
-  'multi-tenant-security': 'Multi-Tenant Security'
+  'multi-tenant-security': 'Multi-Tenant Security',
+  'memory-system': 'Memory System'
 }
