@@ -9,7 +9,7 @@ import { generateId } from "@/lib/utils";
 import { useAgentXAPI } from "@/lib/api-client";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
-import { useTaskStore } from "@/stores/task";
+import { useTaskStore } from "@/store/task";
 
 export default function HomePage() {
   const router = useRouter();

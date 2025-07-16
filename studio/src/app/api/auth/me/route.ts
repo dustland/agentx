@@ -1,34 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findUserById } from '@/lib/auth-db';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'agentx-studio-secret-change-in-production';
+import { getCurrentUser } from '@/lib/auth-server';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get token from cookie
-    const token = request.cookies.get('auth-token')?.value;
+    // Get current user from token
+    const currentUser = await getCurrentUser();
     
-    if (!token) {
+    if (!currentUser) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    // Verify token
-    let decoded: any;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 401 }
-      );
-    }
-
-    // Get user from database
-    const user = await findUserById(decoded.userId);
+    // Get full user from database
+    const user = await findUserById(currentUser.id);
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },

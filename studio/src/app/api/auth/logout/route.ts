@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { clearAuthCookie } from '@/lib/auth-server';
 
 export async function POST(request: NextRequest) {
   // Clear the auth cookie

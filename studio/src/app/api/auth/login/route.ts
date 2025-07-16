@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findUserByUsername, verifyPassword, updateLastLogin, initializeDemoUsers } from '@/lib/auth-db';
-import jwt from 'jsonwebtoken';
-import { env } from '@/lib/env';
+import { authenticateUser, generateAuthToken, setAuthCookie } from '@/lib/auth-server';
+import { initializeDemoUsers } from '@/lib/auth-db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,40 +9,11 @@ export async function POST(request: NextRequest) {
     
     const { username, password } = await request.json();
 
-    // Validate input
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: 'Username and password are required' },
-        { status: 400 }
-      );
-    }
-
-    // Find user
-    const user = await findUserByUsername(username);
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      );
-    }
-
-    // Verify password
-    if (!verifyPassword(password, user.passwordHash)) {
-      return NextResponse.json(
-        { error: 'Invalid username or password' },
-        { status: 401 }
-      );
-    }
-
-    // Update last login
-    await updateLastLogin(user.id);
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Authenticate user
+    const user = await authenticateUser(username, password);
+    
+    // Generate token
+    const token = generateAuthToken(user.id, user.username);
 
     // Return response with token
     const response = NextResponse.json({
@@ -67,8 +37,24 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Login error:', error);
+    
+    // Return specific error message if it's a known error
+    if (error.message === 'Username and password are required') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 }
+      );
+    }
+    
+    if (error.message === 'Invalid username or password') {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

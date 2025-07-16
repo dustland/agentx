@@ -4,7 +4,6 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   // Check if user is authenticated by looking for auth token in cookies
   const authToken = request.cookies.get("auth-token");
-  const user = request.cookies.get("user");
 
   // Public routes that don't require authentication
   const publicRoutes = ["/auth/login", "/auth/register"];
@@ -18,7 +17,7 @@ export function middleware(request: NextRequest) {
   }
 
   // If not authenticated and trying to access protected route, redirect to login
-  if (!authToken || !user) {
+  if (!authToken) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);

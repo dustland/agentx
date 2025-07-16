@@ -18,7 +18,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { useAuthStore } from "@/stores/auth";
+import { useAuthStore } from "@/store/auth";
 import { Loader2, AlertCircle, HelpCircle } from "lucide-react";
 
 export default function LoginPage() {

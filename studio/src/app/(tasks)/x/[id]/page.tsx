@@ -21,7 +21,7 @@ import {
   getMessageText,
 } from "@/types/agentx";
 import { nanoid } from "nanoid";
-import { useTaskStore } from "@/stores/task";
+import { useTaskStore } from "@/store/task";
 import { useMessages } from "@/hooks/use-messages";
 import { useRouter } from "next/navigation";
 
