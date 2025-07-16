@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findUserByUsername, verifyPassword, updateLastLogin, initializeDemoUsers } from '@/lib/auth-db';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'agentx-studio-secret-change-in-production';
+import { env } from '@/lib/env';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, username: user.username },
-      JWT_SECRET,
+      env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 

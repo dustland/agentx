@@ -115,11 +115,16 @@ export async function updateLastLogin(userId: string): Promise<void> {
 export async function initializeDemoUsers(): Promise<void> {
   const db = await readDB();
   
+  // Only initialize demo users if explicitly enabled
+  if (process.env.ENABLE_DEMO_USERS !== 'true') {
+    return;
+  }
+  
   // Check if each demo user exists and create if not
   const demoUsers = [
-    { username: 'guest', password: 'GuestDemo$2024!', email: 'guest@example.com' },
-    { username: 'alice', password: 'alice123', email: 'alice@example.com' },
-    { username: 'bob', password: 'bob123', email: 'bob@example.com' }
+    { username: 'guest', password: process.env.DEMO_USER_PASSWORD || 'ChangeMe!2024', email: 'guest@example.com' },
+    { username: 'alice', password: process.env.DEMO_USER_PASSWORD || 'ChangeMe!2024', email: 'alice@example.com' },
+    { username: 'bob', password: process.env.DEMO_USER_PASSWORD || 'ChangeMe!2024', email: 'bob@example.com' }
   ];
   
   let usersAdded = false;

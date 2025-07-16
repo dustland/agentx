@@ -2,8 +2,10 @@
 
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/common/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
+import { UserProvider } from "@/contexts/user-context";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,11 +18,20 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        {children}
-        <Toaster position="bottom-right" />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <UserProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </QueryClientProvider>
+      </UserProvider>
+      <Toaster position="bottom-right" />
+    </ThemeProvider>
   );
 }

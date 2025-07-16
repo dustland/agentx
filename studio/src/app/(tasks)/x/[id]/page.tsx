@@ -22,7 +22,6 @@ import {
 } from "@/types/agentx";
 import { nanoid } from "nanoid";
 import { useTaskStore } from "@/stores/task";
-import { useAuthStore } from "@/stores/auth";
 import { useMessages } from "@/hooks/use-messages";
 import { useRouter } from "next/navigation";
 
@@ -40,7 +39,6 @@ export default function TaskPage({
     addTaskMessage,
     setTaskStatus: updateTaskStatus,
   } = useTaskStore();
-  const { user, isLoading: userLoading, isAuthenticated } = useAuthStore();
   const apiClient = useAgentXAPI();
   const router = useRouter();
 
@@ -117,8 +115,6 @@ export default function TaskPage({
   // Load task info and set up streaming
   useEffect(() => {
     if (isInitialized) return; // Prevent multiple initializations
-    if (userLoading) return; // Wait for user loading to complete
-    if (!user) return; // Wait for authentication to complete
 
     const loadTask = async () => {
       try {
@@ -285,7 +281,6 @@ export default function TaskPage({
         console.error("Error details:", {
           message: error instanceof Error ? error.message : String(error),
           taskId: id,
-          user: user?.username,
         });
 
         setIsLoading(false);
@@ -328,7 +323,7 @@ export default function TaskPage({
     return () => {
       cleanupPromise.then((cleanup) => cleanup && cleanup());
     };
-  }, [id, isInitialized, user, userLoading]); // Wait for user authentication to complete
+  }, [id, isInitialized]); // Removed user, userLoading from dependencies
 
   const handleSendMessage = useCallback(
     async (message: string) => {

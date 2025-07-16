@@ -25,6 +25,12 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           const user = await loginUser(username, password);
+
+          // Set user data in cookie for middleware
+          document.cookie = `user=${JSON.stringify(user)}; path=/; max-age=${
+            60 * 60 * 24 * 7
+          }; samesite=lax`;
+
           set({
             user,
             isAuthenticated: true,
@@ -42,6 +48,10 @@ export const useAuthStore = create<AuthState>()(
         } catch (error) {
           console.error("Logout error:", error);
         } finally {
+          // Clear user cookie
+          document.cookie =
+            "user=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
           set({
             user: null,
             isAuthenticated: false,
