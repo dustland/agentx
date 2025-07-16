@@ -275,7 +275,7 @@ export function TaskSidebar({
         </div>
 
         {/* Task List */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -307,11 +307,15 @@ export function TaskSidebar({
                         <div className="flex items-center gap-2 mb-1">
                           {getStatusIcon(task.status)}
                           <span className="text-xs font-medium truncate">
-                            Task {task.task_id}
+                            {task.task_description || `Task ${task.task_id}`}
                           </span>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
-                          {task.status === "completed"
+                          {task.config_path
+                            ? task.config_path
+                                .replace(/^.*\//, "")
+                                .replace(/\.(yaml|yml)$/, "")
+                            : task.status === "completed"
                             ? "Task completed"
                             : task.status === "failed"
                             ? "Task failed"

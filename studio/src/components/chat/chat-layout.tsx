@@ -24,6 +24,7 @@ interface ChatLayoutProps {
   onPauseResume: () => void;
   onShare: () => void;
   onMoreActions: () => void;
+  isLoading?: boolean;
 }
 
 export function ChatLayout({
@@ -35,6 +36,7 @@ export function ChatLayout({
   onPauseResume,
   onShare,
   onMoreActions,
+  isLoading,
 }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -105,53 +107,62 @@ export function ChatLayout({
       {/* Message List */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-3">
-          {messages.map((message) => (
-            <div key={message.id} className="group">
-              <div
-                className={cn(
-                  "rounded-lg p-4 transition-all",
-                  // User messages have a subtle left border
-                  message.role === "user" && "border-l-2 border-primary ml-2",
-                  // System messages have muted background
-                  message.role === "system" &&
-                    "bg-muted/50 text-muted-foreground",
-                  // Assistant messages have different styles based on status
-                  message.role === "assistant" && [
-                    message.status === "streaming" &&
-                      "border border-primary/20 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-gradient",
-                    message.status === "complete" && "border border-border",
-                    message.status === "failed" &&
-                      "border border-destructive/50 bg-destructive/5",
-                  ]
-                )}
-              >
-                {/* Message header for assistant messages */}
-                {message.role === "assistant" && (
-                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                    <span className="font-medium">Assistant</span>
-                    {message.status === "streaming" && (
-                      <span className="text-primary animate-pulse">
-                        • Thinking...
-                      </span>
-                    )}
-                  </div>
-                )}
-
-                {/* Message content */}
-                <div
-                  className={cn(
-                    "text-sm whitespace-pre-wrap",
-                    message.status === "streaming" && "text-foreground/80"
-                  )}
-                >
-                  {message.content}
-                  {message.status === "streaming" && (
-                    <span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse rounded-sm" />
-                  )}
-                </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">Loading task...</span>
               </div>
             </div>
-          ))}
+          ) : (
+            messages.map((message) => (
+              <div key={message.id} className="group">
+                <div
+                  className={cn(
+                    "rounded-lg p-4 transition-all",
+                    // User messages have a subtle left border
+                    message.role === "user" && "border-l-2 border-primary ml-2",
+                    // System messages have muted background
+                    message.role === "system" &&
+                      "bg-muted/50 text-muted-foreground",
+                    // Assistant messages have different styles based on status
+                    message.role === "assistant" && [
+                      message.status === "streaming" &&
+                        "border border-primary/20 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-gradient",
+                      message.status === "complete" && "border border-border",
+                      message.status === "failed" &&
+                        "border border-destructive/50 bg-destructive/5",
+                    ]
+                  )}
+                >
+                  {/* Message header for assistant messages */}
+                  {message.role === "assistant" && (
+                    <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                      <span className="font-medium">Assistant</span>
+                      {message.status === "streaming" && (
+                        <span className="text-primary animate-pulse">
+                          • Thinking...
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Message content */}
+                  <div
+                    className={cn(
+                      "text-sm whitespace-pre-wrap",
+                      message.status === "streaming" && "text-foreground/80"
+                    )}
+                  >
+                    {message.content}
+                    {message.status === "streaming" && (
+                      <span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse rounded-sm" />
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
