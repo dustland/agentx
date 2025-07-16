@@ -4,7 +4,7 @@
   "description": "AgentX Studio - Unified interface for task execution and observability",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 7777",
+    "dev": "next dev --port 7777 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -81,6 +81,7 @@
     "eslint-config-next": "15.4.1",
     "eventsource": "^4.0.0",
     "postcss": "^8.5.6",
+    "sharp": "^0.34.3",
     "tailwindcss": "^4.1.11",
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.5",

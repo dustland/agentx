@@ -69,7 +69,7 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         prompts_dir.mkdir()
 
         # Create taskspace directory
-        taskspace_dir = project_path / "taskspace"
+        taskspace_dir = project_path / "task_data"
         taskspace_dir.mkdir()
 
         # Generate team configuration

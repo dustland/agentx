@@ -3,43 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Plus,
-  Paperclip,
-  FileText,
-  BarChart3,
-  Code,
-  Users,
-  Image,
-  Video,
-  Globe,
-  Presentation,
-  RefreshCw,
-  ArrowUp,
-} from "lucide-react";
+import { ChatInput } from "@/components/chat/chat-input";
 import { generateId } from "@/lib/utils";
-import NextImage from "next/image";
 import { useAgentXAPI } from "@/lib/api-client";
 import { useUser } from "@/contexts/user-context";
-import { UserAvatar } from "@/components/ui/user-avatar";
 import { useCallback } from "react";
-import { useTaskStore } from "@/lib/stores/task-store";
+import { useTaskStore } from "@/stores/task";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const apiClient = useAgentXAPI();
   const { setInitialMessage } = useTaskStore();
-  const [taskInput, setTaskInput] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample tasks with team-based configurations
@@ -49,48 +25,36 @@ export default function HomePage() {
       title: "Market Research Report",
       description: "Analyze market trends and create comprehensive report",
       config: "auto_writer",
-      icon: BarChart3,
-      color: "bg-blue-500",
     },
     {
       id: 2,
       title: "Code Review & Documentation",
       description: "Review codebase and generate technical documentation",
       config: "simple_team",
-      icon: Code,
-      color: "bg-green-500",
     },
     {
       id: 3,
       title: "Content Strategy Planning",
       description: "Develop content strategy and editorial calendar",
       config: "handoff_demo",
-      icon: FileText,
-      color: "bg-purple-500",
     },
     {
       id: 4,
       title: "Competitive Analysis",
       description: "Research competitors and identify market opportunities",
       config: "extractor",
-      icon: Users,
-      color: "bg-orange-500",
     },
     {
       id: 5,
       title: "Product Launch Plan",
       description: "Create comprehensive product launch strategy",
       config: "auto_writer",
-      icon: Presentation,
-      color: "bg-pink-500",
     },
     {
       id: 6,
       title: "Website Content Audit",
       description: "Analyze website content and suggest improvements",
       config: "simple_team",
-      icon: Globe,
-      color: "bg-cyan-500",
     },
   ];
 
@@ -100,13 +64,21 @@ export default function HomePage() {
 
       setIsCreating(true);
       try {
+        console.log("Creating task with prompt:", prompt);
+
         // Create task with empty description - the prompt becomes the first message
         const response = await apiClient.createTask({
           task_description: "",
           config_path: "examples/simple_chat/config/team.yaml",
           context: { source: "studio_homepage" },
         });
+
+        console.log("Task created successfully:", response);
         const taskId = response.task_id;
+
+        if (!taskId) {
+          throw new Error("No task ID returned from API");
+        }
 
         // Store the initial message to be sent when the task page loads
         setInitialMessage(prompt);
@@ -115,17 +87,28 @@ export default function HomePage() {
         router.push(`/x/${taskId}`);
       } catch (error) {
         console.error("Failed to create task:", error);
+
+        // Check if it's a backend error
+        if (
+          error instanceof Error &&
+          error.message.includes("name 'os' is not defined")
+        ) {
+          alert(
+            "Backend service is currently experiencing issues. The task creation feature is temporarily disabled."
+          );
+        } else if (error instanceof Error && error.message.includes("404")) {
+          alert(
+            "Task service not found. Please check if the backend is running."
+          );
+        } else {
+          alert("Failed to create task. Please try again.");
+        }
       } finally {
         setIsCreating(false);
       }
     },
     [apiClient, router, setInitialMessage]
   );
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createTask(taskInput);
-  };
 
   const handleSampleTaskClick = (task: any) => {
     const prompt = `${task.title}: ${task.description}`;
@@ -134,136 +117,66 @@ export default function HomePage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b bg-card">
-        <div className="flex items-center gap-3">
-          <NextImage
-            src="/logo.png"
-            alt="AgentX"
-            width={32}
-            height={32}
-            className="object-contain"
-          />
-          <div>
-            <h1 className="text-2xl font-bold">
-              Agent<span className="text-primary">X</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Multi-Agent AI Platform
-            </p>
-          </div>
-        </div>
-        {user && (
-          <div className="flex items-center gap-3">
-            <UserAvatar username={user.username} size="lg" />
-            <div>
-              <p className="text-sm font-medium">{user.username}</p>
-              <p className="text-xs text-muted-foreground">
-                {user.email || "No email"}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto p-6 space-y-8">
-          {/* Welcome Section */}
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl font-bold">
-              What would you like to work on today?
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Describe your task and let our AI agents collaborate to get it
-              done efficiently.
-            </p>
+        <div className="max-w-4xl mx-auto px-6">
+          {/* Hero Section */}
+          <div className="flex flex-col items-center justify-center min-h-[50vh] py-12">
+            <div className="text-center space-y-4 mb-8">
+              <h1 className="text-3xl font-medium text-foreground">
+                Hello {user?.username || "there"}
+              </h1>
+              <p className="text-base text-muted-foreground">
+                What can I do for you?
+              </p>
+            </div>
+
+            {/* Simple Task Input */}
+            <ChatInput
+              onSendMessage={createTask}
+              isLoading={isCreating}
+              placeholder="Ask me anything..."
+            />
           </div>
 
-          {/* Task Input */}
-          <Card className="bg-background border-2">
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="relative">
-                  <Input
-                    placeholder="Describe your task... (e.g., 'Research the latest AI trends and write a comprehensive report')"
-                    value={taskInput}
-                    onChange={(e) => setTaskInput(e.target.value)}
-                    className="pr-12 h-12 text-base"
-                    disabled={isCreating}
-                  />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      disabled={isCreating}
-                    >
-                      <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="submit"
-                      size="sm"
-                      className="h-8 w-8 p-0 rounded-full"
-                      disabled={!taskInput.trim() || isCreating}
-                    >
-                      {isCreating ? (
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <ArrowUp className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+          {/* Sample Tasks Section */}
+          <div className="pb-12">
+            <div className="mb-6">
+              <h2 className="text-lg font-medium mb-6">Recommended</h2>
+            </div>
 
-          {/* Sample Tasks */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Sample Tasks</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {sampleTasks.map((task) => {
-                const Icon = task.icon;
                 return (
-                  <Card
+                  <div
                     key={task.id}
-                    className="cursor-pointer transition-all duration-200 hover:border-primary group bg-background"
+                    className="group cursor-pointer border border-border rounded-2xl p-4 hover:border-foreground/30 transition-all duration-200 relative"
                     onClick={() => handleSampleTaskClick(task)}
                   >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div
-                          className={`p-2 rounded-lg ${task.color} text-white`}
-                        >
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-mono"
-                        >
-                          {task.config}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex-1">
-                        <CardTitle className="text-base mb-2 group-hover:text-primary transition-colors">
-                          {task.title}
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                          {task.description}
-                        </CardDescription>
-                      </div>
-                      <div className="pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="sm" variant="outline" className="w-full">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Start Task
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    <div className="space-y-2">
+                      <h3 className="font-medium text-sm text-foreground">
+                        {task.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {task.description}
+                      </p>
+                    </div>
+
+                    {/* Start Button - appears on hover */}
+                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-3 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSampleTaskClick(task);
+                        }}
+                      >
+                        Start
+                      </Button>
+                    </div>
+                  </div>
                 );
               })}
             </div>

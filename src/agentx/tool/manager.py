@@ -52,10 +52,10 @@ class ToolManager:
         from ..builtin_tools.context import ContextTool
         from ..builtin_tools.document import DocumentTool
         from ..builtin_tools.research import ResearchTool
-        from ..storage.factory import StorageFactory
+        from ..storage.factory import TaskspaceFactory
 
         # Create taskspace storage for tools that need it
-        taskspace_storage = StorageFactory.create_taskspace_storage(taskspace_path)
+        taskspace_storage = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
 
         # Create file tool with correct taskspace
         file_tool = create_file_tool(taskspace_path=taskspace_path)

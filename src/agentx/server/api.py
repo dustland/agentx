@@ -321,7 +321,7 @@ def add_routes(app: FastAPI):
                     seen_task_ids.add(task.task_id)
             
             # Then scan filesystem for all tasks
-            taskspace_root = Path("taskspace")
+            taskspace_root = Path("task_data")
             if taskspace_root.exists():
                 for item in taskspace_root.iterdir():
                     if not item.is_dir() or item.name.startswith("."):
@@ -646,14 +646,14 @@ def add_routes(app: FastAPI):
             # Task not active - check if taskspace exists
             # Try both user-scoped and legacy paths
             if user_id:
-                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+                taskspace_path = Path(f"task_data/{user_id}/{task_id}")
             else:
-                taskspace_path = Path(f"taskspace/{task_id}")
+                taskspace_path = Path(f"task_data/{task_id}")
             
             if not taskspace_path.exists():
                 # Try legacy path if user-scoped path doesn't exist
                 if user_id:
-                    legacy_path = Path(f"taskspace/{task_id}")
+                    legacy_path = Path(f"task_data/{task_id}")
                     if legacy_path.exists():
                         taskspace_path = legacy_path
                     else:
@@ -729,14 +729,14 @@ def add_routes(app: FastAPI):
             # Task not active - check if taskspace exists
             # Try both user-scoped and legacy paths
             if user_id:
-                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+                taskspace_path = Path(f"task_data/{user_id}/{task_id}")
             else:
-                taskspace_path = Path(f"taskspace/{task_id}")
+                taskspace_path = Path(f"task_data/{task_id}")
             
             if not taskspace_path.exists():
                 # Try legacy path if user-scoped path doesn't exist
                 if user_id:
-                    legacy_path = Path(f"taskspace/{task_id}")
+                    legacy_path = Path(f"task_data/{task_id}")
                     if legacy_path.exists():
                         taskspace_path = legacy_path
                     else:
@@ -811,14 +811,14 @@ def add_routes(app: FastAPI):
             # Task not active - check if taskspace exists
             # Try both user-scoped and legacy paths
             if user_id:
-                taskspace_path = f"taskspace/{user_id}/{task_id}"
+                taskspace_path = f"task_data/{user_id}/{task_id}"
             else:
-                taskspace_path = f"taskspace/{task_id}"
+                taskspace_path = f"task_data/{task_id}"
             
             if not Path(taskspace_path).exists():
                 # Try legacy path if user-scoped path doesn't exist
                 if user_id:
-                    legacy_path = f"taskspace/{task_id}"
+                    legacy_path = f"task_data/{task_id}"
                     if Path(legacy_path).exists():
                         taskspace_path = legacy_path
                     else:
@@ -938,14 +938,14 @@ def add_routes(app: FastAPI):
         else:
             # Task not active - check if taskspace exists
             if user_id:
-                taskspace_path = f"taskspace/{user_id}/{task_id}"
+                taskspace_path = f"task_data/{user_id}/{task_id}"
             else:
-                taskspace_path = f"taskspace/{task_id}"
+                taskspace_path = f"task_data/{task_id}"
             
             if not Path(taskspace_path).exists():
                 # Try legacy path
                 if user_id:
-                    legacy_path = f"taskspace/{task_id}"
+                    legacy_path = f"task_data/{task_id}"
                     if Path(legacy_path).exists():
                         taskspace_path = legacy_path
                     else:
@@ -965,30 +965,38 @@ def add_routes(app: FastAPI):
             raise HTTPException(status_code=500, detail="Failed to clear chat history")
 
     @app.get("/tasks/{task_id}/logs")
-    async def get_task_logs(task_id: str, tail: Optional[int] = None, user_id: Optional[str] = None):
+    async def get_task_logs(
+        task_id: str, 
+        tail: Optional[int] = None, 
+        user_id: Optional[str] = None,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
+    ):
         """Get the execution logs for a task"""
         from pathlib import Path
+        
+        # Use user_id from header if provided, otherwise from query parameter
+        effective_user_id = x_user_id or user_id
         
         # Check if task exists in active tasks and get user permissions
         task = active_tasks.get(task_id)
         if task:
             # Task is active - check user permissions
-            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+            if effective_user_id is not None and getattr(task, 'user_id', None) != effective_user_id:
                 raise HTTPException(status_code=404, detail="Task not found")
             # Use the task's actual taskspace path
             taskspace_path = Path(task.taskspace.taskspace_path)
         else:
             # Task not active - check if taskspace exists
             # Try both user-scoped and legacy paths
-            if user_id:
-                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
+            if effective_user_id:
+                taskspace_path = Path(f"task_data/{effective_user_id}/{task_id}")
             else:
-                taskspace_path = Path(f"taskspace/{task_id}")
+                taskspace_path = Path(f"task_data/{task_id}")
             
             if not taskspace_path.exists():
                 # Try legacy path if user-scoped path doesn't exist
-                if user_id:
-                    legacy_path = Path(f"taskspace/{task_id}")
+                if effective_user_id:
+                    legacy_path = Path(f"task_data/{task_id}")
                     if legacy_path.exists():
                         taskspace_path = legacy_path
                     else:

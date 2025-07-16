@@ -136,10 +136,10 @@ uv sync
 
 ## SDK Integration
 
-For Python applications, use the [AgentX Python SDK](/api) instead of calling the REST API directly. The SDK provides a more convenient and type-safe interface.
+For Python applications, use the [AgentX SDK](/sdk) instead of calling the REST API directly. The SDK provides a more convenient and type-safe interface.
 
 ## Further Reading
 
-- [Python SDK Reference](/api) - For programmatic access from Python
+- [SDK Reference](/api) - For programmatic access from Python
 - [Server Architecture](/docs/design/system-architecture) - Understanding the server design
 - [Getting Started](/docs/getting-started) - Quick start guide

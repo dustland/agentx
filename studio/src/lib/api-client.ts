@@ -25,6 +25,8 @@ export class AgentXAPIClient {
       process.env.NEXT_PUBLIC_AGENTX_API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:7770";
+
+    console.log("AgentX API client initialized with baseURL:", this.baseURL);
   }
 
   async init() {
@@ -48,6 +50,7 @@ export class AgentXAPIClient {
       const { getCurrentUser } = await import("./auth");
       const user = await getCurrentUser();
       this.userId = user?.id || null;
+      console.log("API client initialized with user:", this.userId);
     } catch (error) {
       console.error("Failed to get current user:", error);
       this.userId = null;
@@ -188,12 +191,30 @@ export class AgentXAPIClient {
   ): () => void {
     // Note: SSE doesn't support custom headers, so we need to pass user_id in URL for now
     // TODO: Consider using JWT tokens in the future for better security
-    const params = this.userId
-      ? `?user_id=${encodeURIComponent(this.userId)}`
-      : "";
-    const eventSource = new EventSource(
-      `${this.baseURL}/tasks/${taskId}/stream${params}`
-    );
+
+    // Temporarily disable user_id parameter to test
+    // const params = this.userId
+    //   ? `?user_id=${encodeURIComponent(this.userId)}`
+    //   : "";
+    const params = "";
+
+    let eventSource: EventSource;
+    let isConnected = false;
+
+    try {
+      eventSource = new EventSource(
+        `${this.baseURL}/tasks/${taskId}/stream${params}`
+      );
+    } catch (error) {
+      console.error("Failed to create EventSource:", error);
+      // Return a no-op cleanup function
+      return () => {};
+    }
+
+    eventSource.onopen = () => {
+      isConnected = true;
+      console.log("SSE connection established");
+    };
 
     eventSource.onmessage = (event) => {
       try {
@@ -205,12 +226,22 @@ export class AgentXAPIClient {
     };
 
     eventSource.onerror = (error) => {
-      console.error("SSE connection error:", error);
+      console.warn("SSE connection error:", error);
+      isConnected = false;
+
+      // If the connection fails immediately, it might be a network issue
+      // or the endpoint doesn't exist. Close the connection to prevent
+      // infinite retry attempts.
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log("SSE connection closed by server");
+      }
     };
 
     // Return cleanup function
     return () => {
-      eventSource.close();
+      if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+        eventSource.close();
+      }
     };
   }
 

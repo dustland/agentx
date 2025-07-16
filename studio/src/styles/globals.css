@@ -15,9 +15,9 @@
   /* Semantic colors - Light mode */
   --color-background: oklch(1 0 0);
   --color-foreground: oklch(0.129 0.042 264.695);
-  --color-primary: oklch(0.7 0.25 130);
-  --color-primary-foreground: oklch(0.129 0.042 264.695);
-  --color-secondary: oklch(0.7 0.3 230);
+  --color-primary: oklch(0.65 0.25 260);
+  --color-primary-foreground: oklch(0.984 0.003 247.858);
+  --color-secondary: oklch(0.55 0.2 260);
   --color-secondary-foreground: oklch(0.984 0.003 247.858);
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.984 0.003 247.858);
@@ -31,9 +31,9 @@
   --color-popover-foreground: oklch(0.129 0.042 264.695);
   --color-border: oklch(0.929 0.013 255.508);
   --color-input: oklch(0.929 0.013 255.508);
-  --color-ring: oklch(0.7 0.25 130);
-  --color-brand: oklch(0.7 0.25 130);
-  --color-brand-foreground: oklch(0.129 0.042 264.695);
+  --color-ring: oklch(0.65 0.25 260);
+  --color-brand: oklch(0.65 0.25 260);
+  --color-brand-foreground: oklch(0.984 0.003 247.858);
 
   /* Success, Warning, Info colors */
   --color-success: oklch(0.6 0.15 145);
@@ -79,9 +79,9 @@
 .dark {
   --color-background: oklch(0.129 0.042 264.695);
   --color-foreground: oklch(0.984 0.003 247.858);
-  --color-primary: oklch(0.75 0.28 130);
-  --color-primary-foreground: oklch(0.129 0.042 264.695);
-  --color-secondary: oklch(0.6 0.25 230);
+  --color-primary: oklch(0.7 0.28 260);
+  --color-primary-foreground: oklch(0.984 0.003 247.858);
+  --color-secondary: oklch(0.6 0.22 260);
   --color-secondary-foreground: oklch(0.984 0.003 247.858);
   --color-destructive: oklch(0.704 0.191 22.216);
   --color-destructive-foreground: oklch(0.984 0.003 247.858);
@@ -95,9 +95,9 @@
   --color-popover-foreground: oklch(0.984 0.003 247.858);
   --color-border: oklch(1 0 0 / 10%);
   --color-input: oklch(1 0 0 / 15%);
-  --color-ring: oklch(0.75 0.28 130);
-  --color-brand: oklch(0.75 0.28 130);
-  --color-brand-foreground: oklch(0.129 0.042 264.695);
+  --color-ring: oklch(0.7 0.28 260);
+  --color-brand: oklch(0.7 0.28 260);
+  --color-brand-foreground: oklch(0.984 0.003 247.858);
 
   /* Success, Warning, Info colors for dark mode */
   --color-success: oklch(0.6 0.15 145);

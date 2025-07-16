@@ -36,11 +36,11 @@ async def run_benchmarks():
     """Run performance benchmarks comparing cached vs uncached operations"""
     
     # Find a real task to benchmark
-    taskspace_root = Path("taskspace")
+    taskspace_root = Path("task_data")
     task_id = None
     
     for item in taskspace_root.rglob("plan.json"):
-        if item.parent.name != "taskspace":  # Skip the root itself
+        if item.parent.name != "task_data":  # Skip the root itself
             task_id = item.parent.name
             print(f"Using task: {task_id}")
             break

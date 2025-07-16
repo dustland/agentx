@@ -1,133 +1,456 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  Bot,
-  Workflow,
-  Library,
-  Monitor,
-  MessageSquare,
-  Settings,
+  Home,
   Plus,
-  Activity,
+  Monitor,
+  Search,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  MoreHorizontal,
+  Trash2,
+  Archive,
+  Star,
+  Pin,
+  PinOff,
+  Moon,
+  Sun,
+  Loader2,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useTheme } from "next-themes";
+import { useAgentXAPI } from "@/lib/api-client";
+import { Task as TaskResponse } from "@/types/agentx";
+import { useUser } from "@/contexts/user-context";
+import { User as UserIcon, LogOut } from "lucide-react";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface SidebarProps {
-  activeView: string;
-  onViewChange: (view: string) => void;
+  className?: string;
+  isFloating?: boolean;
+  onFloatingChange?: (floating: boolean) => void;
 }
 
-const navigationItems = [
-  {
-    id: "taskspace",
-    label: "Agent Taskspace",
-    icon: Bot,
-    description: "Manage and interact with your AI agents",
-    badge: null,
-  },
-  {
-    id: "orchestrator",
-    label: "Task Orchestrator",
-    icon: Workflow,
-    description: "Plan and execute multi-agent tasks",
-    badge: null,
-  },
-  {
-    id: "conversations",
-    label: "Conversations",
-    icon: MessageSquare,
-    description: "Chat history and agent interactions",
-    badge: "3",
-  },
-  {
-    id: "library",
-    label: "Agent Library",
-    icon: Library,
-    description: "Browse and install agent templates",
-    badge: null,
-  },
-  {
-    id: "monitor",
-    label: "System Monitor",
-    icon: Monitor,
-    description: "Performance metrics and system health",
-    badge: null,
-  },
-];
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case "running":
+      return <AlertCircle className="h-3 w-3 text-blue-500" />;
+    case "completed":
+      return <CheckCircle className="h-3 w-3 text-green-500" />;
+    case "failed":
+      return <XCircle className="h-3 w-3 text-red-500" />;
+    case "pending":
+      return <Clock className="h-3 w-3 text-yellow-500" />;
+    default:
+      return <Clock className="h-3 w-3 text-gray-500" />;
+  }
+};
 
-export function Sidebar({ activeView, onViewChange }: SidebarProps) {
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "running":
+      return "border-l-blue-500";
+    case "completed":
+      return "border-l-green-500";
+    case "failed":
+      return "border-l-red-500";
+    case "pending":
+      return "border-l-yellow-500";
+    default:
+      return "border-l-gray-500";
+  }
+};
+
+const formatTimeAgo = (date: Date) => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  } else {
+    return `${diffHours}h ago`;
+  }
+};
+
+export function Sidebar({
+  className,
+  isFloating = false,
+  onFloatingChange,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const { user, logout } = useUser();
+  const apiClient = useAgentXAPI();
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isHovered, setIsHovered] = useState(false);
+  const [tasks, setTasks] = useState<TaskResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPinned, setIsPinned] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sidebar-pinned");
+      return stored !== null ? stored === "true" : !isFloating;
+    }
+    return !isFloating;
+  });
+
+  // Sync isPinned with isFloating prop only on initial mount
+  useEffect(() => {
+    // Only sync if the internal state differs from the prop
+    if (isPinned === isFloating) {
+      setIsPinned(!isFloating);
+    }
+  }, [isFloating]);
+
+  const currentTaskId = pathname.match(/\/x\/([^\/]+)/)?.[1];
+
+  // Load tasks from API
+  useEffect(() => {
+    const loadTasks = async () => {
+      try {
+        setIsLoading(true);
+        console.log("Loading tasks from API...");
+        const response = await apiClient.getTasks();
+        console.log("Tasks response:", response);
+        setTasks(response.tasks || []);
+      } catch (error) {
+        console.error("Failed to load tasks:", error);
+        setTasks([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+
+    // Refresh tasks every 10 seconds
+    const interval = setInterval(loadTasks, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredTasks = tasks.filter((task) => {
+    if (statusFilter === "all") return true;
+    return task.status === statusFilter;
+  });
+
+  // Count tasks by status
+  const statusCounts = {
+    all: tasks.length,
+    running: tasks.filter((t) => t.status === "running").length,
+    completed: tasks.filter((t) => t.status === "completed").length,
+    failed: tasks.filter((t) => t.status === "failed").length,
+  };
+
+  // Only notify parent when user manually changes the pin state
+  const handlePinToggle = () => {
+    const newPinnedState = !isPinned;
+    setIsPinned(newPinnedState);
+    if (onFloatingChange) {
+      onFloatingChange(!newPinnedState);
+    }
+    localStorage.setItem("sidebar-pinned", newPinnedState.toString());
+  };
+
+  const sidebarWidth = "w-72";
+  const shouldShow = isPinned || isHovered;
+
   return (
-    <div className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
+    <>
+      {/* Hover trigger area when unpinned */}
+      {!isPinned && (
+        <div
+          className="fixed left-0 top-0 w-4 h-full z-40"
+          onMouseEnter={() => setIsHovered(true)}
+        />
+      )}
+
+      <div
+        className={cn(
+          "bg-card flex flex-col transition-all duration-300",
+          sidebarWidth,
+          isPinned
+            ? "relative h-full border-r"
+            : "fixed left-2 top-2 bottom-2 z-50 shadow-xl rounded-lg border h-[calc(100vh-1rem)]",
+          !isPinned && !isHovered
+            ? "-translate-x-[calc(100%+1rem)]"
+            : "translate-x-0",
+          className
+        )}
+        onMouseLeave={() => !isPinned && setIsHovered(false)}
+      >
+        {/* Header */}
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-3">
+            <Link href="/" className="flex items-center gap-2">
+              <Image
+                src="/logo.png"
+                alt="AgentX"
+                width={20}
+                height={20}
+                className="object-contain"
+              />
+              <span className="font-semibold text-sm">
+                Agent<span className="text-primary">X</span>
+              </span>
+            </Link>
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={handlePinToggle}
+                title={isPinned ? "Float sidebar" : "Pin sidebar"}
+              >
+                {isPinned ? (
+                  <PinOff className="h-3 w-3" />
+                ) : (
+                  <Pin className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
           </div>
-          <div>
-            <h1 className="font-semibold text-slate-900 dark:text-slate-100">
-              AgentX Studio
-            </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Multi-Agent Platform
-            </p>
-          </div>
+
+          <Button
+            className="w-full gap-2"
+            size="sm"
+            variant="outline"
+            onClick={() => router.push("/")}
+          >
+            <Plus className="h-4 w-4" />
+            New Task
+          </Button>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-        <Button className="w-full justify-start gap-2" size="sm">
-          <Plus className="w-4 h-4" />
-          New Task
-        </Button>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-1">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeView === item.id;
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
-                "hover:bg-slate-100 dark:hover:bg-slate-800",
-                isActive &&
-                  "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
-              )}
+        {/* Status Filters */}
+        <div className="px-3 pb-3">
+          <ToggleGroup
+            type="single"
+            value={statusFilter}
+            onValueChange={setStatusFilter}
+            className="w-full"
+          >
+            <ToggleGroupItem value="all" className="flex-1 h-7 text-xs px-2">
+              All ({statusCounts.all})
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="running"
+              className="flex-1 h-7 text-xs px-1"
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm truncate">{item.label}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                  {item.description}
-                </div>
-              </div>
-              {item.badge && (
-                <Badge variant="secondary" className="text-xs">
-                  {item.badge}
-                </Badge>
-              )}
-            </button>
-          );
-        })}
-      </nav>
+              <AlertCircle className="h-3 w-3 mr-0.5" />
+              {statusCounts.running}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="completed"
+              className="flex-1 h-7 text-xs px-1"
+            >
+              <CheckCircle className="h-3 w-3 mr-0.5" />
+              {statusCounts.completed}
+            </ToggleGroupItem>
+            <ToggleGroupItem value="failed" className="flex-1 h-7 text-xs px-1">
+              <XCircle className="h-3 w-3 mr-0.5" />
+              {statusCounts.failed}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
 
-      {/* System Status */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-          <Activity className="w-4 h-4 text-green-500" />
-          <span>System Online</span>
-          <div className="ml-auto w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+        {/* Task List */}
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-2 space-y-1">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            ) : filteredTasks.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-xs">No tasks found</p>
+              </div>
+            ) : (
+              filteredTasks.map((task) => {
+                const isActive = currentTaskId === task.task_id;
+                const createdAt = new Date(task.created_at);
+
+                return (
+                  <div
+                    key={task.task_id}
+                    className={cn(
+                      "group relative p-2 rounded-lg cursor-pointer transition-colors border-l-2",
+                      getStatusColor(task.status),
+                      isActive
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-accent/50"
+                    )}
+                    onClick={() => router.push(`/x/${task.task_id}`)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {getStatusIcon(task.status)}
+                          <span className="text-xs font-medium truncate">
+                            {task.task_description || "Untitled Task"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
+                          {task.config_path
+                            ? task.config_path
+                                .replace(/^.*\//, "")
+                                .replace(/\.(yaml|yml)$/, "")
+                            : task.status === "completed"
+                            ? "Task completed"
+                            : task.status === "failed"
+                            ? "Task failed"
+                            : task.status === "running"
+                            ? "Task in progress"
+                            : "Task pending"}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            {formatTimeAgo(createdAt)}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {task.task_id}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-3 w-3" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40">
+                          <DropdownMenuItem>
+                            <Star className="h-3 w-3 mr-2" />
+                            Favorite
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Archive className="h-3 w-3 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await apiClient.deleteTask(task.task_id);
+                                // Refresh tasks
+                                const response = await apiClient.getTasks();
+                                setTasks(response.tasks || []);
+                              } catch (error) {
+                                console.error("Failed to delete task:", error);
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Footer */}
+        <div className="p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-9 p-0"
+                      title="User menu"
+                    >
+                      <UserAvatar username={user.username} size="md" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-medium">{user.username}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email || "No email"}
+                      </p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="text-destructive"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {filteredTasks.length} tasks
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Link href="/observability">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  title="Monitor"
+                >
+                  <Monitor className="h-3 w-3" />
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                title={
+                  theme === "dark"
+                    ? "Switch to light theme"
+                    : "Switch to dark theme"
+                }
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-3 w-3" />
+                ) : (
+                  <Moon className="h-3 w-3" />
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,12 +1,13 @@
-# Python SDK Reference
+# SDK Reference
 
-Complete Python SDK reference for the AgentX framework.
+Complete SDK reference for the AgentX framework.
 
 This section contains the auto-generated documentation for all Python classes, functions, and modules in the AgentX SDK (`agentx-py`). For REST API endpoints and HTTP interface documentation, see the [REST API Explorer](/api-explorer).
 
 ## Core Modules
 
 ### [Core](/api/core)
+
 Core framework components including agents, orchestration, and task management.
 
 - **Agent** - Autonomous agent with conversation management
@@ -15,6 +16,7 @@ Core framework components including agents, orchestration, and task management.
 - **Task** - Task management and execution flow
 
 ### [Builtin Tools](/api/builtin_tools)
+
 Built-in tools for file operations, web search, memory management, and more.
 
 - **File Operations** - Taskspace file management with versioning
@@ -23,6 +25,7 @@ Built-in tools for file operations, web search, memory management, and more.
 - **Web Scraping** - Content extraction from web pages
 
 ### [CLI](/api/cli)
+
 Command-line interface and project bootstrapping tools.
 
 - **Project Bootstrap** - `agentx init` command and project templates
@@ -30,6 +33,7 @@ Command-line interface and project bootstrapping tools.
 - **Debug Commands** - Development and debugging utilities
 
 ### [Configuration](/api/config)
+
 Configuration loading and management utilities.
 
 - **Agent Configuration** - Agent setup and prompt loading
@@ -37,6 +41,7 @@ Configuration loading and management utilities.
 - **Prompt Management** - Template and prompt handling
 
 ### [Events](/api/event)
+
 Event system for inter-agent communication and middleware.
 
 - **Event Bus** - Publish/subscribe event system
@@ -44,6 +49,7 @@ Event system for inter-agent communication and middleware.
 - **Middleware** - Event processing and filtering
 
 ### [Memory](/api/memory)
+
 Memory management and persistence systems.
 
 - **Memory Backend** - Abstract memory storage interface
@@ -52,6 +58,7 @@ Memory management and persistence systems.
 - **Mem0 Integration** - Mem0 backend implementation
 
 ### [Search](/api/search)
+
 Search capabilities and backend integrations.
 
 - **Search Manager** - Search coordination and management
@@ -59,6 +66,7 @@ Search capabilities and backend integrations.
 - **Search Interfaces** - Abstract search contracts
 
 ### [Storage](/api/storage)
+
 File storage and taskspace management.
 
 - **Taskspace Management** - Project taskspace handling
@@ -66,6 +74,7 @@ File storage and taskspace management.
 - **Storage Backends** - File storage abstractions
 
 ### [Tools](/api/tool)
+
 Tool execution and registry management.
 
 - **Tool Registry** - Tool discovery and registration
@@ -73,6 +82,7 @@ Tool execution and registry management.
 - **Tool Manager** - Tool lifecycle management
 
 ### [Utils](/api/utils)
+
 Utility functions and helpers.
 
 - **ID Utilities** - Unique identifier generation

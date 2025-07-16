@@ -1,49 +1,71 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import '@/styles/globals.css'
-import { Providers } from '@/components/common/providers'
-import { ThemeProvider } from '@/components/common/theme-provider'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import { Toaster } from 'sonner'
-import { UserProvider } from '@/contexts/user-context'
-import { AuthWrapper } from '@/components/auth/auth-wrapper'
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "@/styles/globals.css";
+import { Providers } from "@/components/common/providers";
+import { ThemeProvider } from "@/components/common/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
+import { UserProvider } from "@/contexts/user-context";
+import { AuthWrapper } from "@/components/auth/auth-wrapper";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: 'AgentX Studio',
-    template: '%s | AgentX Studio',
+    default: "AgentX Studio",
+    template: "%s | AgentX Studio",
   },
-  description: 'Unified interface for AgentX task execution and observability',
+  description: "Unified interface for AgentX task execution and observability",
   keywords: [
-    'AI',
-    'agents',
-    'automation',
-    'task execution',
-    'observability',
-    'multi-agent',
-    'orchestration'
+    "AI",
+    "agents",
+    "automation",
+    "task execution",
+    "observability",
+    "multi-agent",
+    "orchestration",
   ],
-  authors: [{ name: 'AgentX Team' }],
-  creator: 'AgentX Studio',
-  publisher: 'AgentX Studio',
+  authors: [{ name: "AgentX Team" }],
+  creator: "AgentX Studio",
+  publisher: "AgentX Studio",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/favicon-32x32.png',
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+    other: [
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "32x32",
+        url: "/favicon-32x32.png",
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        sizes: "16x16",
+        url: "/favicon-16x16.png",
+      },
+      {
+        rel: "manifest",
+        url: "/site.webmanifest",
+      },
+    ],
   },
-}
+};
+
+export const viewport = {
+  themeColor: "#3b82f6",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -65,9 +87,7 @@ export default function RootLayout({
           <UserProvider>
             <TooltipProvider>
               <Providers>
-                <AuthWrapper>
-                  {children}
-                </AuthWrapper>
+                <AuthWrapper>{children}</AuthWrapper>
               </Providers>
             </TooltipProvider>
             <Toaster position="bottom-right" />
@@ -75,5 +95,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

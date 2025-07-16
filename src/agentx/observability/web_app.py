@@ -285,7 +285,7 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
                 new_project_path = Path.cwd() / new_project_path
 
             # Check if it's a valid project directory
-            taskspace_dir = new_project_path / "taskspace"
+            taskspace_dir = new_project_path / "task_data"
             config_dir = new_project_path / "config"
 
             if not new_project_path.exists():

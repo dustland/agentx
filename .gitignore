@@ -188,20 +188,18 @@ config.toml
 # browser-use
 user_data/
 
-# Taskspace files (generated artifacts)
-taskspace/
-**/taskspace/
-!taskspace/.gitkeep
+# Task data files (generated artifacts)
+task_data/
+**/task_data/
+!task_data/.gitkeep
 
 # Legacy taskspace references
-taskspace/
-!taskspace/.gitkeep
 roboco_taskspace/
 
-# Test taskspaces (generated during test runs)
-tests/test_taskspaces/
-!tests/test_taskspaces/.gitkeep
-!tests/test_taskspaces/sample_team/
+# Test task data (generated during test runs)
+tests/test_task_data/
+!tests/test_task_data/.gitkeep
+!tests/test_task_data/sample_team/
 
 # User data
 user_data/

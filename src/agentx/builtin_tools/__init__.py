@@ -16,10 +16,10 @@ from .research import ResearchTool
 def register_builtin_tools(registry, taskspace_path=None, memory_system=None):
     """Register all builtin tools with the registry."""
     if taskspace_path:
-        from ..storage.factory import StorageFactory
+        from ..storage.factory import TaskspaceFactory
         
         # Create taskspace storage for tools that need it
-        taskspace_storage = StorageFactory.create_taskspace_storage(taskspace_path)
+        taskspace_storage = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
         
         # Register tools with taskspace support
         file_tool = create_file_tool(taskspace_path=taskspace_path)

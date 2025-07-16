@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { MoonIcon, SunIcon, GithubIcon } from "lucide-react";
-import { useTheme } from "@/lib/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import Image from "next/image";
 
 export function Header() {

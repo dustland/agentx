@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { TaskSidebar } from "@/components/layout/task-sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 
 export default function TasksLayout({
   children,
@@ -33,7 +33,7 @@ export default function TasksLayout({
     <div className="h-screen flex bg-muted/50">
       {/* Sidebar - conditionally render based on pinned state */}
       {isSidebarPinned && (
-        <TaskSidebar
+        <Sidebar
           className="flex-shrink-0"
           isFloating={false}
           onFloatingChange={handleFloatingChange}
@@ -44,10 +44,7 @@ export default function TasksLayout({
       <div className="flex-1 flex overflow-hidden relative">
         {/* Floating Sidebar */}
         {!isSidebarPinned && (
-          <TaskSidebar
-            isFloating={true}
-            onFloatingChange={handleFloatingChange}
-          />
+          <Sidebar isFloating={true} onFloatingChange={handleFloatingChange} />
         )}
 
         {/* Page Content */}

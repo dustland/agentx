@@ -1,14 +1,14 @@
 export default {
   docs: {
-    title: "Documentation",
+    title: "Docs",
     type: "page"
   },
   sdk: {
-    title: "Python SDK",
+    title: "SDK",
     type: "page"
   },
   api: {
-    title: "REST API",
+    title: "API",
     type: "page"
   }
 }

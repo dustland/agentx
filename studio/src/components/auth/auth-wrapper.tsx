@@ -1,28 +1,36 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useUser } from '@/contexts/user-context';
-import { LoginModal } from './login-modal';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect } from "react";
+import { useAuthStore } from "@/stores/auth";
+import { useRouter, usePathname } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
 }
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
-  const { user, isLoading } = useUser();
-  const [showLogin, setShowLogin] = useState(false);
+  const { user, isLoading, isAuthenticated, checkAuth } = useAuthStore();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Check authentication on mount
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
-    // Show login modal if not authenticated after loading
-    if (!isLoading && !user) {
-      setShowLogin(true);
+    // Don't redirect if we're already on the login page or still loading
+    if (isLoading || pathname === "/auth/login") {
+      return;
     }
-    // Hide login modal when user is authenticated
-    if (user) {
-      setShowLogin(false);
+
+    // Redirect to login if not authenticated
+    if (!isAuthenticated) {
+      const redirectUrl = encodeURIComponent(pathname);
+      router.push(`/auth/login?redirect=${redirectUrl}`);
     }
-  }, [isLoading, user]);
+  }, [isLoading, isAuthenticated, router, pathname]);
 
   if (isLoading) {
     return (
@@ -35,10 +43,15 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     );
   }
 
-  return (
-    <>
-      {children}
-      <LoginModal open={showLogin && !user} onOpenChange={setShowLogin} />
-    </>
-  );
+  // Show login page content if we're on the login route
+  if (pathname === "/auth/login") {
+    return <>{children}</>;
+  }
+
+  // Don't render protected content if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  return <>{children}</>;
 }

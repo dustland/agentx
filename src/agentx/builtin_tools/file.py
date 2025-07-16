@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Annotated, Optional, Dict, Any
 from agentx.core.tool import tool, Tool, ToolResult
 from agentx.storage.taskspace import TaskspaceStorage
-from agentx.storage.factory import StorageFactory
+from agentx.storage.factory import TaskspaceFactory
 from agentx.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -577,7 +577,7 @@ def create_file_tool(taskspace_path: str) -> FileTool:
     Returns:
         FileTool instance that properly uses taskspace abstraction
     """
-    taskspace = StorageFactory.create_taskspace_storage(taskspace_path)
+    taskspace = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
     file_tool = FileTool(taskspace)
 
     logger.info(f"Created file tool for taskspace: {taskspace_path}")
