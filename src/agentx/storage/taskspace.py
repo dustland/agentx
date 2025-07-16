@@ -11,7 +11,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any, Union
 
-from .interfaces import FileStorage, StorageResult
+from .interfaces import FileStorage, StorageResult, CacheBackend
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -32,7 +32,8 @@ class TaskspaceStorage:
         use_git_artifacts: bool = True,
         base_path: Union[str, Path] = None,
         task_id: str = None,
-        user_id: str = None
+        user_id: str = None,
+        cache_backend: Optional[CacheBackend] = None
     ):
         # Support both old API (taskspace_path) and new API (base_path + task_id + optional user_id)
         if taskspace_path is not None:
@@ -53,11 +54,28 @@ class TaskspaceStorage:
 
         self.file_storage = file_storage
         self.use_git_artifacts = use_git_artifacts
+        self._cache = cache_backend
+        
+        # Ensure task_id is set for both APIs
+        if task_id is not None:
+            self.task_id = task_id
+        else:
+            # For old API, extract task_id from path if needed
+            self.task_id = getattr(self, 'task_id', None)
+            
+        self.user_id = user_id
 
         # Initialize artifact storage
         self._init_artifact_storage()
 
-        logger.info(f"TaskspaceStorage initialized: {self.taskspace_path} (Git artifacts: {use_git_artifacts})")
+        logger.info(f"TaskspaceStorage initialized: {self.taskspace_path} (Git artifacts: {use_git_artifacts}, Cache: {'enabled' if cache_backend else 'disabled'})")
+    
+    def _cache_key(self, operation: str, *args) -> str:
+        """Generate cache key for operation."""
+        task_id = self.task_id or str(self.taskspace_path).replace('/', '_')
+        key_parts = [f"taskspace:{task_id}:{operation}"]
+        key_parts.extend(str(arg) for arg in args if arg)
+        return ":".join(key_parts)
 
     def _init_artifact_storage(self):
         """Initialize artifact storage (Git-based or simple file-based)."""
@@ -74,7 +92,7 @@ class TaskspaceStorage:
                 from .git_storage import GitArtifactStorage
 
                 # Use new API if task_id is available, otherwise fall back to old API
-                if hasattr(self, 'task_id'):
+                if self.task_id is not None:
                     # New API: use task_id for taskspace isolation
                     base_path = self.taskspace_path.parent
                     self.artifact_storage = GitArtifactStorage(base_path=base_path, task_id=self.task_id)
@@ -109,28 +127,71 @@ class TaskspaceStorage:
         commit_message: Optional[str] = None
     ) -> StorageResult:
         """Store an artifact with versioning."""
+        # Store the artifact
         if self.use_git_artifacts and self.artifact_storage:
             # Use Git-based storage
-            return await self.artifact_storage.store_artifact(
+            result = await self.artifact_storage.store_artifact(
                 name, content, content_type, metadata, commit_message
             )
         else:
             # Fall back to simple file-based versioning
-            return await self._store_artifact_simple(name, content, content_type, metadata)
+            result = await self._store_artifact_simple(name, content, content_type, metadata)
+        
+        # Invalidate artifacts list cache if store succeeded
+        if result.success and self._cache:
+            cache_key = self._cache_key("artifacts_list")
+            await self._cache.delete(cache_key)
+            # Also invalidate the specific artifact cache
+            cache_key = self._cache_key("artifact", name, "latest")
+            await self._cache.delete(cache_key)
+            
+        return result
 
     async def get_artifact(self, name: str, version: Optional[str] = None) -> Optional[str]:
-        """Get artifact content."""
+        """Get artifact content with caching."""
+        # Check cache first
+        if self._cache:
+            cache_key = self._cache_key("artifact", name, version or "latest")
+            cached = await self._cache.get(cache_key)
+            if cached is not None:
+                logger.debug(f"Cache hit for artifact: {name} v{version}")
+                return cached
+        
+        # Cache miss - get from storage
         if self.use_git_artifacts and self.artifact_storage:
-            return await self.artifact_storage.get_artifact(name, version)
+            content = await self.artifact_storage.get_artifact(name, version)
         else:
-            return await self._get_artifact_simple(name, version)
+            content = await self._get_artifact_simple(name, version)
+        
+        # Update cache if found
+        if self._cache and content is not None:
+            cache_key = self._cache_key("artifact", name, version or "latest")
+            await self._cache.set(cache_key, content)
+        
+        return content
 
     async def list_artifacts(self) -> List[Dict[str, Any]]:
-        """List all artifacts."""
+        """List all artifacts with caching."""
+        # Check cache first
+        if self._cache:
+            cache_key = self._cache_key("artifacts_list")
+            cached = await self._cache.get(cache_key)
+            if cached is not None:
+                logger.debug("Cache hit for artifacts list")
+                return cached
+        
+        # Cache miss - get from storage
         if self.use_git_artifacts and self.artifact_storage:
-            return await self.artifact_storage.list_artifacts()
+            artifacts = await self.artifact_storage.list_artifacts()
         else:
-            return await self._list_artifacts_simple()
+            artifacts = await self._list_artifacts_simple()
+        
+        # Update cache
+        if self._cache and artifacts is not None:
+            cache_key = self._cache_key("artifacts_list")
+            await self._cache.set(cache_key, artifacts)
+        
+        return artifacts
 
     async def get_artifact_versions(self, name: str) -> List[str]:
         """Get all versions of an artifact."""
@@ -141,10 +202,29 @@ class TaskspaceStorage:
 
     async def delete_artifact(self, name: str, version: Optional[str] = None) -> StorageResult:
         """Delete an artifact or specific version."""
+        # Delete the artifact
         if self.use_git_artifacts and self.artifact_storage:
-            return await self.artifact_storage.delete_artifact(name, version)
+            result = await self.artifact_storage.delete_artifact(name, version)
         else:
-            return await self._delete_artifact_simple(name, version)
+            result = await self._delete_artifact_simple(name, version)
+        
+        # Invalidate relevant caches if delete succeeded
+        if result.success and self._cache:
+            # Invalidate artifacts list
+            cache_key = self._cache_key("artifacts_list")
+            await self._cache.delete(cache_key)
+            
+            # Invalidate specific artifact cache
+            if version:
+                cache_key = self._cache_key("artifact", name, version)
+                await self._cache.delete(cache_key)
+            else:
+                # If no version specified, clear all versions from cache
+                # For simplicity, just clear the latest version
+                cache_key = self._cache_key("artifact", name, "latest")
+                await self._cache.delete(cache_key)
+                
+        return result
 
     async def get_artifact_diff(self, name: str, version1: str, version2: str) -> Optional[str]:
         """Get diff between two versions of an artifact (Git only)."""
@@ -338,6 +418,11 @@ class TaskspaceStorage:
                 message_path,
                 json.dumps(message_data, indent=2)
             )
+            
+            # Invalidate conversation history cache if store succeeded
+            if result.success and self._cache:
+                cache_key = self._cache_key("conversation", conversation_id)
+                await self._cache.delete(cache_key)
 
             return result
 
@@ -346,8 +431,17 @@ class TaskspaceStorage:
             return StorageResult(success=False, error=str(e))
 
     async def get_conversation_history(self, conversation_id: str = "default") -> List[Dict[str, Any]]:
-        """Get conversation history."""
+        """Get conversation history with caching."""
         try:
+            # Check cache first
+            if self._cache:
+                cache_key = self._cache_key("conversation", conversation_id)
+                cached = await self._cache.get(cache_key)
+                if cached is not None:
+                    logger.debug(f"Cache hit for conversation: {conversation_id}")
+                    return cached
+            
+            # Cache miss - read from storage
             await self._ensure_directory("messages")
 
             files = await self.file_storage.list_directory("messages")
@@ -367,6 +461,13 @@ class TaskspaceStorage:
 
             # Sort by timestamp
             messages.sort(key=lambda x: x.get("timestamp", ""))
+            
+            # Update cache
+            if self._cache and messages is not None:
+                cache_key = self._cache_key("conversation", conversation_id)
+                # Cache conversation history with shorter TTL since it changes frequently
+                await self._cache.set(cache_key, messages)
+            
             return messages
 
         except Exception as e:
@@ -375,12 +476,19 @@ class TaskspaceStorage:
 
     # Plan Management
     async def store_plan(self, plan: Dict[str, Any]) -> StorageResult:
-        """Store the taskspace plan as plan.json."""
+        """Store the taskspace plan as plan.json with write-through caching."""
         try:
+            # Write to storage first
             result = await self.file_storage.write_text(
                 "plan.json",
                 json.dumps(plan, indent=2)
             )
+            
+            # Update cache if write succeeded
+            if result.success and self._cache:
+                cache_key = self._cache_key("plan")
+                await self._cache.set(cache_key, plan)
+                
             return result
 
         except Exception as e:
@@ -388,13 +496,29 @@ class TaskspaceStorage:
             return StorageResult(success=False, error=str(e))
 
     async def get_plan(self) -> Optional[Dict[str, Any]]:
-        """Get the taskspace plan from plan.json."""
+        """Get the taskspace plan from plan.json with caching."""
         try:
+            # Check cache first
+            if self._cache:
+                cache_key = self._cache_key("plan")
+                cached = await self._cache.get(cache_key)
+                if cached is not None:
+                    logger.debug(f"Cache hit for plan")
+                    return cached
+            
+            # Cache miss - read from storage
             if not await self.file_storage.exists("plan.json"):
                 return None
 
             content = await self.file_storage.read_text("plan.json")
-            return json.loads(content)
+            plan = json.loads(content)
+            
+            # Update cache
+            if self._cache and plan is not None:
+                cache_key = self._cache_key("plan")
+                await self._cache.set(cache_key, plan)
+            
+            return plan
 
         except Exception as e:
             logger.error(f"Failed to get plan: {e}")
@@ -435,8 +559,17 @@ class TaskspaceStorage:
 
     # Taskspace Summary
     async def get_taskspace_summary(self) -> Dict[str, Any]:
-        """Get a summary of taskspace contents."""
+        """Get a summary of taskspace contents with caching."""
         try:
+            # Check cache first
+            if self._cache:
+                cache_key = self._cache_key("summary")
+                cached = await self._cache.get(cache_key)
+                if cached is not None:
+                    logger.debug("Cache hit for taskspace summary")
+                    return cached
+            
+            # Cache miss - compute summary
             files = await self.file_storage.list_directory()
             artifacts = await self.list_artifacts()
 
@@ -444,7 +577,7 @@ class TaskspaceStorage:
             total_size = sum(f.size for f in files)
             total_artifacts = len(artifacts)
 
-            return {
+            summary = {
                 "taskspace_path": str(self.taskspace_path),
                 "total_files": total_files,
                 "total_size_bytes": total_size,
@@ -453,6 +586,13 @@ class TaskspaceStorage:
                 "files": [{"path": f.path, "size": f.size} for f in files[:10]],
                 "artifacts": [{"name": a["name"], "version": a["version"]} for a in artifacts[:10]]
             }
+            
+            # Update cache
+            if self._cache:
+                cache_key = self._cache_key("summary")
+                await self._cache.set(cache_key, summary)
+            
+            return summary
 
         except Exception as e:
             logger.error(f"Failed to get taskspace summary: {e}")

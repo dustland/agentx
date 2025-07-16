@@ -18,6 +18,7 @@ API Design:
 
 from __future__ import annotations
 import asyncio
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional, AsyncGenerator, Union, List
@@ -114,17 +115,29 @@ class XAgent(Agent):
             raise TypeError(f"team_config must be a TeamConfig object, got {type(team_config)}")
         self.team_config = team_config
 
-        # Initialize taskspace storage
-        from agentx.storage.factory import StorageFactory
+        # Initialize taskspace storage with appropriate caching
+        from agentx.storage import TaskspaceFactory
+        
+        # Determine cache provider based on environment
+        cache_provider = None
+        if os.getenv("ENABLE_REDIS_CACHE", "false").lower() == "true":
+            cache_provider = "redis"
+        elif os.getenv("ENABLE_MEMORY_CACHE", "false").lower() == "true":
+            cache_provider = "memory"
+        
         if taskspace_dir:
             # Use explicit taskspace directory
-            self.taskspace = StorageFactory.create_taskspace_storage(taskspace_path=taskspace_dir)
+            self.taskspace = TaskspaceFactory.create_storage(
+                taskspace_path=taskspace_dir,
+                cache_provider=cache_provider
+            )
         else:
             # Use user-scoped taskspace: taskspace/{user_id}/{task_id} or taskspace/{task_id}
-            self.taskspace = StorageFactory.create_taskspace_storage(
+            self.taskspace = TaskspaceFactory.create_taskspace(
                 base_path=Path("./taskspace"),
                 task_id=self.task_id,
-                user_id=self.user_id
+                user_id=self.user_id,
+                cache_provider=cache_provider
             )
         self._setup_task_logging()
 

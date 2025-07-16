@@ -132,3 +132,66 @@ class ArtifactStorage(StorageBackend):
     async def delete_artifact(self, name: str, version: Optional[str] = None) -> StorageResult:
         """Delete an artifact or specific version."""
         pass
+
+
+class StorageProvider(ABC):
+    """
+    Abstract interface for storage provider implementations.
+    
+    This is a simpler interface than FileStorage, focused on basic operations
+    that can be implemented by different backends (file, S3, Azure, etc.).
+    """
+    
+    @abstractmethod
+    async def read(self, path: str) -> bytes:
+        """Read binary content from storage"""
+        pass
+    
+    @abstractmethod
+    async def write(self, path: str, data: bytes) -> None:
+        """Write binary content to storage"""
+        pass
+    
+    @abstractmethod
+    async def exists(self, path: str) -> bool:
+        """Check if path exists in storage"""
+        pass
+    
+    @abstractmethod
+    async def delete(self, path: str) -> None:
+        """Delete from storage"""
+        pass
+    
+    @abstractmethod
+    async def list(self, prefix: str = "") -> List[str]:
+        """List all paths with given prefix"""
+        pass
+    
+    @abstractmethod
+    async def makedirs(self, path: str) -> None:
+        """Create directory structure"""
+        pass
+
+
+class CacheBackend(ABC):
+    """Abstract interface for cache implementations"""
+    
+    @abstractmethod
+    async def get(self, key: str) -> Optional[Any]:
+        """Get value from cache"""
+        pass
+    
+    @abstractmethod
+    async def set(self, key: str, value: Any, ttl: int = 300) -> None:
+        """Set value in cache with TTL in seconds"""
+        pass
+    
+    @abstractmethod
+    async def delete(self, key: str) -> None:
+        """Delete value from cache"""
+        pass
+    
+    @abstractmethod
+    async def clear(self) -> None:
+        """Clear all cache entries"""
+        pass

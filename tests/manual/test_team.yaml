@@ -1,0 +1,8 @@
+name: "test-team"
+agents:
+  - name: test_agent
+    role: "A test agent for multi-worker API testing"
+    model: "openai/gpt-4o-mini"
+    tools:
+      - write_file
+      - read_file

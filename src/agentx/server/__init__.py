@@ -10,6 +10,7 @@ from .models import (
     MemoryRequest, MemoryResponse,
     HealthResponse
 )
+from .redis_cache import RedisCacheBackend
 
 __all__ = [
     "create_app",
@@ -20,5 +21,6 @@ __all__ = [
     "TaskStatus",
     "MemoryRequest",
     "MemoryResponse",
-    "HealthResponse"
+    "HealthResponse",
+    "RedisCacheBackend"
 ]

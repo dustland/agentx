@@ -6,6 +6,7 @@ Provides endpoints for creating and managing tasks, and accessing task memory.
 """
 
 import asyncio
+import os
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from pathlib import Path
@@ -25,13 +26,35 @@ from .models import (
     MemoryRequest, MemoryResponse,
     HealthResponse
 )
-from ..core.session import get_task_session_store, initialize_task_session_store
+# Session module removed - using caching layer instead
+
+# Import storage factory for taskspace creation
+from ..storage import TaskspaceFactory
 
 logger = get_logger(__name__)
 
 # In-memory task storage (in production, use a proper database)
 active_tasks: Dict[str, XAgent] = {}
 server_start_time = datetime.now()
+
+# In-memory task metadata storage for coordination
+task_metadata: Dict[str, Dict[str, Any]] = {}
+
+def get_cache_provider():
+    """Determine cache provider based on environment variables"""
+    
+    if os.getenv("ENABLE_REDIS_CACHE", "false").lower() == "true":
+        logger.info("Using Redis cache provider for multi-worker mode")
+        return "redis"
+    elif os.getenv("ENABLE_MEMORY_CACHE", "false").lower() == "true":
+        logger.info("Using memory cache provider (single-worker mode)")
+        return "memory"
+    else:
+        logger.info("Caching disabled")
+        return None
+
+# Cache provider is determined at runtime when creating taskspaces
+# No need for module-level initialization with the new factory pattern
 
 
 def create_task(config_path: str, user_id: str = None) -> XAgent:
@@ -42,7 +65,98 @@ def create_task(config_path: str, user_id: str = None) -> XAgent:
     team_config = load_team_config(config_path)
     
     # Create XAgent with the loaded config and user_id
-    return XAgent(team_config=team_config, user_id=user_id)
+    # Storage will automatically use caching if configured
+    xagent = XAgent(team_config=team_config, user_id=user_id)
+    
+    return xagent
+
+
+# Simple in-memory implementations for missing session/coordination functions
+class InMemoryTaskStore:
+    """Simple in-memory task store for development/single-worker mode"""
+    
+    async def set_task_status(self, task_id: str, status: TaskStatus, user_id: Optional[str] = None, metadata: Optional[Dict] = None):
+        """Store task status in memory"""
+        if task_id not in task_metadata:
+            task_metadata[task_id] = {}
+        
+        task_metadata[task_id].update({
+            "task_id": task_id,
+            "status": status.value,
+            "user_id": user_id,
+            "created_at": task_metadata[task_id].get("created_at", datetime.now().isoformat()),
+            "updated_at": datetime.now().isoformat(),
+            "metadata": metadata or {}
+        })
+    
+    async def update_task_progress(self, task_id: str, message: str, progress: int):
+        """Update task progress"""
+        if task_id in task_metadata:
+            task_metadata[task_id]["progress"] = progress
+            task_metadata[task_id]["progress_message"] = message
+            task_metadata[task_id]["updated_at"] = datetime.now().isoformat()
+
+
+class InMemoryTaskCoordinator:
+    """Simple in-memory task coordinator for development/single-worker mode"""
+    
+    async def list_tasks(self, user_id: Optional[str] = None) -> List[Dict]:
+        """List all tasks, optionally filtered by user_id"""
+        tasks = []
+        for task_id, data in task_metadata.items():
+            if user_id is None or data.get("user_id") == user_id:
+                tasks.append(data)
+        return tasks
+    
+    async def get_task_status(self, task_id: str, user_id: Optional[str] = None) -> Optional[Dict]:
+        """Get task status from memory"""
+        data = task_metadata.get(task_id)
+        if data and (user_id is None or data.get("user_id") == user_id):
+            return data
+        return None
+    
+    async def delete_task(self, task_id: str, user_id: Optional[str] = None) -> bool:
+        """Delete task from memory"""
+        if task_id in task_metadata:
+            data = task_metadata[task_id]
+            if user_id is None or data.get("user_id") == user_id:
+                del task_metadata[task_id]
+                return True
+        return False
+    
+    async def set_task_status(self, task_id: str, status: TaskStatus, user_id: Optional[str] = None, metadata: Optional[Dict] = None):
+        """Set task status in memory"""
+        store = get_task_session_store()
+        await store.set_task_status(task_id, status, user_id, metadata)
+
+
+# Global instances
+_task_store = InMemoryTaskStore()
+_task_coordinator = InMemoryTaskCoordinator()
+
+
+def get_task_session_store() -> InMemoryTaskStore:
+    """Get the task session store"""
+    return _task_store
+
+
+def get_task_coordinator() -> InMemoryTaskCoordinator:
+    """Get the task coordinator"""
+    return _task_coordinator
+
+
+def get_taskspace(task_id: str, user_id: Optional[str] = None):
+    """Get a taskspace storage for reading task data"""
+    # Determine cache provider based on environment
+    cache_provider = get_cache_provider()
+    
+    # Create taskspace storage with appropriate caching
+    return TaskspaceFactory.create_taskspace(
+        base_path=Path("./taskspace"),
+        task_id=task_id,
+        user_id=user_id,
+        cache_provider=cache_provider
+    )
 
 
 def create_app(
@@ -82,16 +196,16 @@ def create_app(
     # Add routes
     add_routes(app)
     
-    # Add startup event to initialize coordinator
+    # Add startup event
     @app.on_event("startup")
     async def startup_event():
-        await initialize_task_session_store()
+        cache_provider = get_cache_provider()
+        logger.info(f"AgentX API server started with {cache_provider or 'no'} caching")
     
-    # Add shutdown event to cleanup coordinator
+    # Add shutdown event
     @app.on_event("shutdown")
     async def shutdown_event():
-        store = get_task_session_store()
-        await store.disconnect()
+        logger.info("AgentX API server shutting down")
 
     return app
 
@@ -128,7 +242,7 @@ def add_routes(app: FastAPI):
             task = create_task(request.config_path, user_id)
             active_tasks[task.task_id] = task
             
-            # Store task status in Redis for cross-worker coordination
+            # Store task status in memory for coordination
             store = get_task_session_store()
             status = TaskStatus.RUNNING if request.task_description else TaskStatus.PENDING
             
@@ -166,15 +280,15 @@ def add_routes(app: FastAPI):
     async def list_tasks(user_id: Optional[str] = None):
         """List all tasks, optionally filtered by user_id"""
         try:
-            # Get tasks from Redis coordination system
-            store = get_task_session_store()
-            redis_tasks = await coordinator.list_tasks(user_id)
+            # Get tasks from in-memory coordination system
+            coordinator = get_task_coordinator()
+            memory_tasks = await coordinator.list_tasks(user_id)
             
             task_infos = []
             seen_task_ids = set()
             
-            # Add tasks from Redis
-            for task_data in redis_tasks:
+            # Add tasks from memory store
+            for task_data in memory_tasks:
                 task_infos.append(TaskInfo(
                     task_id=task_data["task_id"],
                     status=TaskStatus(task_data["status"]),
@@ -269,12 +383,12 @@ def add_routes(app: FastAPI):
     async def get_task(task_id: str, user_id: Optional[str] = None):
         """Get task status and result"""
         try:
-            # First check Redis for task status
-            store = get_task_session_store()
+            # First check memory store for task status
+            coordinator = get_task_coordinator()
             task_data = await coordinator.get_task_status(task_id, user_id)
             
             if task_data:
-                # Task found in Redis
+                # Task found in memory store
                 return TaskResponse(
                     task_id=task_id,
                     status=TaskStatus(task_data["status"]),
@@ -302,47 +416,80 @@ def add_routes(app: FastAPI):
                     user_id=getattr(task, 'user_id', None)
                 )
             
-            # Fallback: Check filesystem directly
+            # Fallback: Check filesystem directly using cached taskspace
             
-            # Fallback: Check if task exists in taskspace directory
-            taskspace_path = None
-            if user_id:
-                taskspace_path = Path(f"taskspace/{user_id}/{task_id}")
-            else:
-                taskspace_path = Path(f"taskspace/{task_id}")
-            
-            if not taskspace_path.exists():
-                # Try legacy path if user-scoped path doesn't exist
-                if user_id:
-                    legacy_path = Path(f"taskspace/{task_id}")
-                    if legacy_path.exists():
-                        taskspace_path = legacy_path
+            # Try to get task info using cached taskspace
+            try:
+                # Get cached taskspace for the task
+                taskspace = get_taskspace(task_id, user_id)
+                
+                # Check if taskspace exists
+                if not taskspace.taskspace_path.exists():
+                    # Try legacy path if user-scoped path doesn't exist
+                    if user_id:
+                        taskspace = get_taskspace(task_id, None)
+                        if not taskspace.taskspace_path.exists():
+                            raise HTTPException(status_code=404, detail="Task not found")
                     else:
                         raise HTTPException(status_code=404, detail="Task not found")
+                
+                # Try to get plan which contains task status
+                plan_result = await taskspace.get_plan()
+                if plan_result.success and plan_result.data:
+                    plan = plan_result.data
+                    # Get overall task status from plan
+                    tasks = plan.get("tasks", [])
+                    if not tasks:
+                        status = TaskStatus.PENDING
+                    else:
+                        # Determine overall status based on task statuses
+                        statuses = [t.get("status", "pending") for t in tasks]
+                        if all(s == "completed" for s in statuses):
+                            status = TaskStatus.COMPLETED
+                        elif any(s == "failed" for s in statuses):
+                            status = TaskStatus.FAILED
+                        elif any(s in ["in_progress", "running"] for s in statuses):
+                            status = TaskStatus.RUNNING
+                        else:
+                            status = TaskStatus.PENDING
+                    
+                    return TaskResponse(
+                        task_id=task_id,
+                        status=status,
+                        result={"goal": plan.get("goal"), "tasks_completed": sum(1 for t in tasks if t.get("status") == "completed"), "total_tasks": len(tasks)},
+                        error=None,
+                        created_at=datetime.now(),
+                        completed_at=None,
+                        user_id=user_id
+                    )
                 else:
-                    raise HTTPException(status_code=404, detail="Task not found")
-            
-            # Determine task status from filesystem
-            status = TaskStatus.COMPLETED
-            if (taskspace_path / "error.log").exists():
-                status = TaskStatus.FAILED
-            elif not any(taskspace_path.glob("artifacts/*")):
-                # Check if task has logs to determine if it's running
-                logs_path = taskspace_path / "logs"
-                if logs_path.exists() and any(logs_path.glob("*.log")):
-                    status = TaskStatus.RUNNING
-                else:
-                    status = TaskStatus.PENDING
-            
-            return TaskResponse(
-                task_id=task_id,
-                status=status,
-                result=None,
-                error=None,
-                created_at=datetime.now(),
-                completed_at=None,
-                user_id=user_id
-            )
+                    # Fallback to filesystem checks
+                    taskspace_path = taskspace.taskspace_path
+                    status = TaskStatus.COMPLETED
+                    if (taskspace_path / "error.log").exists():
+                        status = TaskStatus.FAILED
+                    elif not any(taskspace_path.glob("artifacts/*")):
+                        # Check if task has logs to determine if it's running
+                        logs_path = taskspace_path / "logs"
+                        if logs_path.exists() and any(logs_path.glob("*.log")):
+                            status = TaskStatus.RUNNING
+                        else:
+                            status = TaskStatus.PENDING
+                    
+                    return TaskResponse(
+                        task_id=task_id,
+                        status=status,
+                        result=None,
+                        error=None,
+                        created_at=datetime.now(),
+                        completed_at=None,
+                        user_id=user_id
+                    )
+            except HTTPException:
+                raise
+            except Exception as e:
+                logger.warning(f"Failed to use cached taskspace for task {task_id}: {e}")
+                raise HTTPException(status_code=404, detail="Task not found")
 
         except HTTPException:
             raise
@@ -354,8 +501,6 @@ def add_routes(app: FastAPI):
     async def delete_task(task_id: str, user_id: Optional[str] = None):
         """Delete a task and its memory"""
         try:
-            store = get_task_session_store()
-            
             # Check if task exists in active tasks
             task = active_tasks.get(task_id)
             if task:
@@ -366,9 +511,10 @@ def add_routes(app: FastAPI):
                 # Remove from active tasks
                 del active_tasks[task_id]
             
-            # Delete from Redis coordination system
+            # Delete from in-memory coordination system
+            coordinator = get_task_coordinator()
             success = await coordinator.delete_task(task_id, user_id)
-            if not success:
+            if not success and task_id not in active_tasks:
                 raise HTTPException(status_code=404, detail="Task not found")
 
             return {"message": "Task deleted successfully"}
@@ -987,6 +1133,7 @@ async def _execute_task(task: XAgent, task_description: str, context: Optional[D
             await send_agent_status(task.task_id, current_agent, "working", min(step_count * 10, 90))
             
             # Update task progress in coordination system
+            store = get_task_session_store()
             await store.update_task_progress(
                 task.task_id, 
                 f"Step {step_count}: {current_agent}", 

@@ -9,5 +9,6 @@ export default {
   'tool-execution': 'Tool Execution',
   'communication': 'Agent Communication',
   'multi-tenant-security': 'Multi-Tenant Security',
-  'memory-system': 'Memory System'
+  'memory-system': 'Memory System',
+  'taskspace': 'Taskspace System'
 }
