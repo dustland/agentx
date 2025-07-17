@@ -1,63 +1,75 @@
-# AgentX Memory System Design
+# Memory System
 
 ## Overview
 
-The AgentX memory system provides persistent storage and retrieval of various types of information across the distributed agent framework. It serves multiple purposes from task context management to agent learning and cross-worker state sharing.
+The memory system provides persistent storage and retrieval of various types of information across the distributed agent framework. It serves multiple purposes from task context management to agent learning and cross-worker state sharing.
 
 ## Memory Categories
 
 ### 1. Task Context Memory
+
 **Purpose**: Store and retrieve task-related information across workers and execution sessions
 
 **Types**:
+
 - **Task Status**: Current state of task execution (pending, running, completed, failed)
 - **Task Metadata**: Configuration, description, user ownership, timestamps
 - **Execution Context**: Variables, intermediate results, decision history
 - **Inter-agent Communication**: Messages between agents within a task
 
 **Requirements**:
+
 - Must be accessible across multiple workers
 - Real-time updates for status changes
 - Persistence across server restarts
 - User-scoped access control
 
 ### 2. Agent Memory
+
 **Purpose**: Individual agent's knowledge and learning
 
 **Types**:
+
 - **Short-term Memory**: Current conversation context, recent interactions
 - **Long-term Memory**: Learned patterns, user preferences, domain knowledge
 - **Skill Memory**: Successful strategies, code snippets, tool usage patterns
 
 **Requirements**:
+
 - Agent-scoped isolation
 - Semantic search capabilities
 - Importance-based retention
 - Periodic consolidation
 
 ### 3. Conversation Memory
+
 **Purpose**: Store chat histories and message streams
 
 **Types**:
+
 - **Message History**: User messages, agent responses
 - **Streaming Buffers**: Partial messages during generation
 - **Interaction Metadata**: Timestamps, token counts, model used
 
 **Requirements**:
+
 - Sequential ordering
 - Efficient append operations
 - Support for streaming updates
 - Conversation replay capability
 
 ### 4. Artifact Memory
+
 **Purpose**: Store generated content and files
 
 **Types**:
+
 - **Generated Files**: Code, documents, data files
 - **Execution Logs**: Command outputs, error logs
 - **Temporary Artifacts**: Intermediate processing results
 
 **Requirements**:
+
 - File-based storage (already in taskspace)
 - Version tracking
 - Cleanup policies
@@ -66,6 +78,7 @@ The AgentX memory system provides persistent storage and retrieval of various ty
 ## Memory Operations
 
 ### Core Operations
+
 1. **Store**: Add new memory with type, metadata, and optional TTL
 2. **Retrieve**: Get memory by ID, type, or semantic search
 3. **Update**: Modify existing memory (with versioning)
@@ -74,6 +87,7 @@ The AgentX memory system provides persistent storage and retrieval of various ty
 6. **List**: Enumerate memories with filtering and pagination
 
 ### Advanced Operations
+
 1. **Consolidate**: Merge related memories to reduce redundancy
 2. **Summarize**: Create compressed versions of memory sets
 3. **Export/Import**: Transfer memories between systems
@@ -82,6 +96,7 @@ The AgentX memory system provides persistent storage and retrieval of various ty
 ## Implementation Strategy with Mem0
 
 ### Why Mem0?
+
 - **Built-in Persistence**: Handles storage automatically
 - **Semantic Search**: Vector embeddings for intelligent retrieval
 - **Scalability**: Designed for production use
@@ -90,6 +105,7 @@ The AgentX memory system provides persistent storage and retrieval of various ty
 ### Configuration Approach
 
 #### Simple Mode (Task Status, Basic Storage)
+
 ```python
 # Minimal configuration - no LLM/embedder needed
 config = {
@@ -102,6 +118,7 @@ config = {
 ```
 
 #### Advanced Mode (Semantic Search, AI Memory)
+
 ```python
 # Full configuration with LLM and embeddings
 config = {
@@ -114,7 +131,7 @@ config = {
         "config": {"model": "gpt-4o-mini"}
     },
     "embedder": {
-        "provider": "openai", 
+        "provider": "openai",
         "config": {"model": "text-embedding-3-small"}
     }
 }
@@ -122,23 +139,25 @@ config = {
 
 ### Memory Type Mapping
 
-| AgentX Memory Type | Mem0 Implementation | Storage Strategy |
-|-------------------|---------------------|------------------|
-| Task Status | Simple key-value with task_id as user_id | ChromaDB + SQLite |
-| Task Metadata | JSON documents with task_id namespace | ChromaDB + SQLite |
-| Agent Memory | Semantic search with agent_id as user_id | Vector store + LLM |
-| Conversation | Sequential messages with conversation_id | SQLite with ordering |
-| Streaming Buffers | Temporary in-memory + periodic flush | Memory + SQLite |
-| Artifacts | Reference only, actual files in taskspace | Metadata in Mem0 |
+| AgentX Memory Type | Mem0 Implementation                       | Storage Strategy     |
+| ------------------ | ----------------------------------------- | -------------------- |
+| Task Status        | Simple key-value with task_id as user_id  | ChromaDB + SQLite    |
+| Task Metadata      | JSON documents with task_id namespace     | ChromaDB + SQLite    |
+| Agent Memory       | Semantic search with agent_id as user_id  | Vector store + LLM   |
+| Conversation       | Sequential messages with conversation_id  | SQLite with ordering |
+| Streaming Buffers  | Temporary in-memory + periodic flush      | Memory + SQLite      |
+| Artifacts          | Reference only, actual files in taskspace | Metadata in Mem0     |
 
 ### Cross-Worker Synchronization
 
 1. **Write Path**:
+
    - Worker writes to Mem0 (atomic operation)
    - Mem0 persists to ChromaDB/SQLite
    - Other workers read latest state
 
 2. **Read Path**:
+
    - Check local cache (with TTL)
    - Query Mem0 if cache miss
    - Update local cache
@@ -151,11 +170,13 @@ config = {
 ### Performance Optimizations
 
 1. **Caching Strategy**:
+
    - In-memory LRU cache per worker
    - Cache invalidation on writes
    - Configurable TTL per memory type
 
 2. **Batch Operations**:
+
    - Group writes for efficiency
    - Bulk retrieval APIs
    - Async processing where possible
@@ -168,16 +189,19 @@ config = {
 ## Migration Path
 
 ### Phase 1: Task Status (Current Need)
+
 - Implement simple Mem0 storage for task status
 - No LLM/embedder required
 - Focus on cross-worker synchronization
 
 ### Phase 2: Agent Memory
+
 - Add semantic search capabilities
 - Integrate LLM for memory consolidation
 - Implement importance scoring
 
 ### Phase 3: Advanced Features
+
 - Real-time synchronization
 - Memory analytics
 - Cross-task learning
@@ -185,6 +209,7 @@ config = {
 ## API Design
 
 ### For Task Status (Immediate Need)
+
 ```python
 class TaskMemoryManager:
     async def set_task_status(task_id: str, status: TaskStatus, metadata: dict = None)
@@ -195,6 +220,7 @@ class TaskMemoryManager:
 ```
 
 ### For General Memory (Future)
+
 ```python
 class MemoryManager:
     async def store(content: Any, memory_type: MemoryType, **kwargs) -> str
@@ -207,11 +233,13 @@ class MemoryManager:
 ## Security Considerations
 
 1. **Access Control**:
+
    - User-scoped task access
    - Agent-scoped memory isolation
    - Admin override capabilities
 
 2. **Data Privacy**:
+
    - Encryption at rest
    - Secure key management
    - PII detection and handling
@@ -224,11 +252,13 @@ class MemoryManager:
 ## Monitoring and Metrics
 
 1. **Performance Metrics**:
+
    - Memory operation latency
    - Cache hit rates
    - Storage growth rate
 
 2. **Health Indicators**:
+
    - Mem0 backend status
    - Synchronization lag
    - Error rates
@@ -241,6 +271,7 @@ class MemoryManager:
 ## Conclusion
 
 The memory system is designed to be:
+
 - **Simple to start**: Basic task status with minimal configuration
 - **Powerful when needed**: Full semantic search and AI capabilities
 - **Scalable**: Handles growth from single worker to distributed system

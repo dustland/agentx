@@ -567,18 +567,3 @@ class FileTool(Tool):
             return 'text/plain'
 
 
-def create_file_tool(taskspace_path: str) -> FileTool:
-    """
-    Create a file tool for taskspace operations.
-
-    Args:
-        taskspace_path: Path to the taskspace directory
-
-    Returns:
-        FileTool instance that properly uses taskspace abstraction
-    """
-    taskspace = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
-    file_tool = FileTool(taskspace)
-
-    logger.info(f"Created file tool for taskspace: {taskspace_path}")
-    return file_tool

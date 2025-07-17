@@ -65,6 +65,10 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
           )
             return false;
 
+          // Exclude the artifacts/ directory itself - only show its contents
+          if (artifact.path === "artifacts" || artifact.path === "artifacts/")
+            return false;
+
           return true;
         })
         .map((artifact: Artifact) => ({
@@ -131,7 +135,9 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
     const tree: any = {};
 
     artifacts.forEach((artifact) => {
-      const parts = (artifact.displayPath || artifact.path).split("/");
+      const parts = (artifact.displayPath || artifact.path)
+        .split("/")
+        .filter((part) => part.length > 0);
       let current = tree;
 
       parts.forEach((part, index) => {
@@ -253,7 +259,10 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
         ) : artifacts.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
             <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>No artifacts found</p>
+            <p>No artifacts created yet</p>
+            <p className="text-xs mt-1">
+              Files will appear here when agents create them
+            </p>
           </div>
         ) : (
           <div className="p-4">{renderTree(tree)}</div>

@@ -95,8 +95,17 @@ def suggest(agent_name, description):
 def _register_builtin_tools(with_taskspace: bool = True):
     """Register built-in tools for CLI commands."""
     registry = ToolRegistry()
-    taskspace_path = "./task_data" if with_taskspace else None
-    register_builtin_tools(registry, taskspace_path=taskspace_path, memory_system=None)
+    if with_taskspace:
+        from ..storage.factory import TaskspaceFactory
+        from pathlib import Path
+        # For CLI, create a default taskspace
+        taskspace_storage = TaskspaceFactory.create_taskspace(
+            base_path=Path("./task_data"),
+            task_id="cli_default"
+        )
+        register_builtin_tools(registry, taskspace_storage=taskspace_storage, memory_system=None)
+    else:
+        register_builtin_tools(registry, taskspace_storage=None, memory_system=None)
 
 
 if __name__ == "__main__":

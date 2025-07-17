@@ -132,9 +132,9 @@ class XAgent(Agent):
                 cache_provider=cache_provider
             )
         else:
-            # Use user-scoped taskspace: taskspace/{user_id}/{task_id} or taskspace/{task_id}
+            # Use user-scoped taskspace: task_data/{user_id}/{task_id} or task_data/{task_id}
             self.taskspace = TaskspaceFactory.create_taskspace(
-                base_path=Path("./taskspace"),
+                base_path=Path("./task_data"),
                 task_id=self.task_id,
                 user_id=self.user_id,
                 cache_provider=cache_provider

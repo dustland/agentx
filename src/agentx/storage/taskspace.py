@@ -27,43 +27,27 @@ class TaskspaceStorage:
 
     def __init__(
         self,
-        taskspace_path: Union[str, Path] = None,
+        base_path: Union[str, Path],
+        task_id: str,
+        user_id: str = None,
         file_storage: FileStorage = None,
         use_git_artifacts: bool = True,
-        base_path: Union[str, Path] = None,
-        task_id: str = None,
-        user_id: str = None,
         cache_backend: Optional[CacheBackend] = None
     ):
-        # Support both old API (taskspace_path) and new API (base_path + task_id + optional user_id)
-        if taskspace_path is not None:
-            # Old API: taskspace_path directly
-            self.taskspace_path = Path(taskspace_path)
-        elif base_path is not None and task_id is not None:
-            # New API: base_path + optional user_id + task_id for taskspace isolation
-            if user_id is not None:
-                # Multi-tenant: taskspace/{user_id}/{task_id}
-                self.taskspace_path = Path(base_path) / user_id / task_id
-                self.user_id = user_id
-            else:
-                # Single-tenant (backward compatibility): taskspace/{task_id}
-                self.taskspace_path = Path(base_path) / task_id
-            self.task_id = task_id
+        # Single API: base_path + task_id + optional user_id for taskspace isolation
+        self.task_id = task_id
+        self.user_id = user_id
+        
+        if user_id is not None:
+            # Multi-tenant: base_path/{user_id}/{task_id}
+            self.taskspace_path = Path(base_path) / user_id / task_id
         else:
-            raise ValueError("Either taskspace_path or (base_path + task_id) must be provided")
+            # Single-tenant: base_path/{task_id}
+            self.taskspace_path = Path(base_path) / task_id
 
         self.file_storage = file_storage
         self.use_git_artifacts = use_git_artifacts
         self._cache = cache_backend
-        
-        # Ensure task_id is set for both APIs
-        if task_id is not None:
-            self.task_id = task_id
-        else:
-            # For old API, extract task_id from path if needed
-            self.task_id = getattr(self, 'task_id', None)
-            
-        self.user_id = user_id
 
         # Initialize artifact storage
         self._init_artifact_storage()
@@ -91,14 +75,9 @@ class TaskspaceStorage:
             try:
                 from .git_storage import GitArtifactStorage
 
-                # Use new API if task_id is available, otherwise fall back to old API
-                if self.task_id is not None:
-                    # New API: use task_id for taskspace isolation
-                    base_path = self.taskspace_path.parent
-                    self.artifact_storage = GitArtifactStorage(base_path=base_path, task_id=self.task_id)
-                else:
-                    # Old API: use taskspace_path directly
-                    self.artifact_storage = GitArtifactStorage(taskspace_path=self.taskspace_path)
+                # Use single API: base_path + task_id for taskspace isolation
+                base_path = self.taskspace_path.parent
+                self.artifact_storage = GitArtifactStorage(base_path=base_path, task_id=self.task_id)
 
                 logger.info("Using Git-based artifact storage")
             except ImportError:

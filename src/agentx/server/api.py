@@ -152,7 +152,7 @@ def get_taskspace(task_id: str, user_id: Optional[str] = None):
     
     # Create taskspace storage with appropriate caching
     return TaskspaceFactory.create_taskspace(
-        base_path=Path("./taskspace"),
+        base_path=Path("./task_data"),
         task_id=task_id,
         user_id=user_id,
         cache_provider=cache_provider
@@ -434,9 +434,8 @@ def add_routes(app: FastAPI):
                         raise HTTPException(status_code=404, detail="Task not found")
                 
                 # Try to get plan which contains task status
-                plan_result = await taskspace.get_plan()
-                if plan_result.success and plan_result.data:
-                    plan = plan_result.data
+                plan = await taskspace.get_plan()
+                if plan:
                     # Get overall task status from plan
                     tasks = plan.get("tasks", [])
                     if not tasks:
@@ -880,14 +879,33 @@ def add_routes(app: FastAPI):
         user_id: Optional[str] = None
     ):
         """Send a new message to a task's chat"""
-        # Check if task exists and is active
+        # Check if task exists in active tasks first
         task = active_tasks.get(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Task not found or not active")
+        taskspace_path = None
         
-        # Check user permissions
-        if user_id is not None and getattr(task, 'user_id', None) != user_id:
-            raise HTTPException(status_code=404, detail="Task not found")
+        if task:
+            # Task is active - check user permissions and use task's taskspace path
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                raise HTTPException(status_code=404, detail="Task not found")
+            taskspace_path = task.taskspace.taskspace_path
+        else:
+            # Task not active - check if taskspace exists (for completed tasks)
+            # Try both user-scoped and legacy paths
+            if user_id:
+                taskspace_path = f"task_data/{user_id}/{task_id}"
+            else:
+                taskspace_path = f"task_data/{task_id}"
+            
+            if not Path(taskspace_path).exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = f"task_data/{task_id}"
+                    if Path(legacy_path).exists():
+                        taskspace_path = legacy_path
+                    else:
+                        raise HTTPException(status_code=404, detail="Task not found")
+                else:
+                    raise HTTPException(status_code=404, detail="Task not found")
         
         try:
             from ..core.message import Message
@@ -898,10 +916,14 @@ def add_routes(app: FastAPI):
             )
             
             # Add to task's history and persist
-            task.history.add_message(user_message)
+            if task:
+                # Task is active - add to in-memory history
+                task.history.add_message(user_message)
+            
+            # Always persist to storage
             await chat_history_manager.save_message(
                 task_id, 
-                task.taskspace.taskspace_path, 
+                taskspace_path, 
                 user_message
             )
             
@@ -909,7 +931,7 @@ def add_routes(app: FastAPI):
             from .streaming import send_complete_message
             await send_complete_message(
                 task_id,
-                task.taskspace.taskspace_path,
+                taskspace_path,
                 user_message
             )
             
@@ -963,6 +985,71 @@ def add_routes(app: FastAPI):
         except Exception as e:
             logger.error(f"Failed to clear chat history for task {task_id}: {e}")
             raise HTTPException(status_code=500, detail="Failed to clear chat history")
+
+    @app.get("/tasks/{task_id}/messages")
+    async def get_task_messages(task_id: str, user_id: Optional[str] = None):
+        """Get messages for a task - returns empty array instead of 404 for missing tasks"""
+        # Check if task exists in active tasks first
+        task = active_tasks.get(task_id)
+        taskspace_path = None
+        
+        if task:
+            # Task is active - check user permissions and use task's taskspace path
+            if user_id is not None and getattr(task, 'user_id', None) != user_id:
+                return []  # Return empty array instead of 404 for permission issues
+            taskspace_path = task.taskspace.taskspace_path
+        else:
+            # Task not active - check if taskspace exists
+            # Try both user-scoped and legacy paths
+            if user_id:
+                taskspace_path = f"task_data/{user_id}/{task_id}"
+            else:
+                taskspace_path = f"task_data/{task_id}"
+            
+            if not Path(taskspace_path).exists():
+                # Try legacy path if user-scoped path doesn't exist
+                if user_id:
+                    legacy_path = f"task_data/{task_id}"
+                    if Path(legacy_path).exists():
+                        taskspace_path = legacy_path
+                    else:
+                        return []  # Return empty array instead of 404 for missing tasks
+                else:
+                    return []  # Return empty array instead of 404 for missing tasks
+        
+        try:
+            # Load chat history from persistent storage
+            history = await chat_history_manager.load_history(task_id, taskspace_path)
+            
+            # Convert to simple message format (array of messages)
+            messages = []
+            for msg in history.messages:
+                message_data = {
+                    "id": msg.id,
+                    "role": msg.role,
+                    "content": msg.content,
+                    "timestamp": msg.timestamp.isoformat()
+                }
+                
+                # Add agent name if this is from a TaskStep (assistant message with step_id format)
+                if msg.role == "assistant" and msg.id.startswith("step_"):
+                    # Extract agent name from parts if available
+                    for part in msg.parts:
+                        if hasattr(part, 'agent_name'):
+                            message_data["agent_name"] = part.agent_name
+                            break
+                
+                messages.append(message_data)
+            
+            # Sort messages by timestamp
+            messages.sort(key=lambda x: x["timestamp"])
+            
+            return messages
+            
+        except Exception as e:
+            logger.error(f"Failed to get messages for task {task_id}: {e}")
+            # Return empty array instead of 500 error
+            return []
 
     @app.get("/tasks/{task_id}/logs")
     async def get_task_logs(

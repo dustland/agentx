@@ -134,13 +134,12 @@ class TaskspaceFactory:
         return storage
 
     @classmethod
-    def create_storage(
+    def create_taskspace(
         cls,
-        taskspace_path: Union[str, Path] = None,
-        use_git_artifacts: bool = True,
-        base_path: Union[str, Path] = None,
-        task_id: str = None,
+        base_path: Union[str, Path],
+        task_id: str,
         user_id: str = None,
+        use_git_artifacts: bool = True,
         storage_provider: str = "file",
         cache_provider: Optional[str] = None
     ) -> TaskspaceStorage:
@@ -151,96 +150,42 @@ class TaskspaceFactory:
         using configurable storage and cache providers.
 
         Args:
-            taskspace_path: Path to the taskspace directory (old API)
+            base_path: Base path for taskspaces
+            task_id: Task ID for taskspace isolation
+            user_id: User ID for multi-tenant isolation (optional)
             use_git_artifacts: Whether to use Git for artifact versioning
-            base_path: Base path for multi-tenant taskspaces (new API)
-            task_id: Task ID for taskspace isolation (new API)
-            user_id: User ID for multi-tenant isolation (new API)
             storage_provider: Name of storage provider to use (default: "file")
             cache_provider: Name of cache provider to use (default: None for no caching)
 
         Returns:
             TaskspaceStorage instance with specified storage and cache providers
         """
-        if taskspace_path is not None:
-            # Old API: direct taskspace path
-            taskspace_path = Path(taskspace_path)
-            taskspace_path.mkdir(parents=True, exist_ok=True)
-
-            # Create the filesystem abstraction with specified provider
-            file_storage = cls.create_file_storage(taskspace_path, provider=storage_provider)
-            
-            # Get cache backend if specified
-            cache_backend = cls.get_cache_provider(cache_provider)
-
-            # Create the taskspace with business logic and optional caching
-            taskspace = TaskspaceStorage(
-                taskspace_path=taskspace_path, 
-                file_storage=file_storage, 
-                use_git_artifacts=use_git_artifacts,
-                cache_backend=cache_backend
-            )
-            logger.info(f"Created taskspace storage: {taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
-            
-            return taskspace
+        # Get cache backend if specified
+        cache_backend = cls.get_cache_provider(cache_provider)
+        
+        # Create taskspace storage with computed path
+        if user_id is not None:
+            taskspace_path = Path(base_path) / user_id / task_id
         else:
-            # New API: base_path + task_id + optional user_id
-            if base_path is None or task_id is None:
-                raise ValueError("base_path and task_id are required when taskspace_path is not provided")
-            
-            # Get cache backend if specified
-            cache_backend = cls.get_cache_provider(cache_provider)
-            
-            # Create taskspace using new API
-            taskspace = TaskspaceStorage(
-                taskspace_path=None,
-                file_storage=None,
-                use_git_artifacts=use_git_artifacts,
-                base_path=base_path,
-                task_id=task_id,
-                user_id=user_id,
-                cache_backend=cache_backend
-            )
-            
-            # Create the filesystem abstraction for the computed taskspace path
-            file_storage = cls.create_file_storage(taskspace.taskspace_path, provider=storage_provider)
-            taskspace.file_storage = file_storage
-            
-            logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, User: {user_id}, Git: {use_git_artifacts})")
-            
-            return taskspace
-    
-    @classmethod
-    def create_taskspace(
-        cls,
-        base_path: Union[str, Path],
-        task_id: str,
-        user_id: Optional[str] = None,
-        use_git_artifacts: bool = True,
-        storage_provider: str = "file",
-        cache_provider: Optional[str] = None
-    ) -> TaskspaceStorage:
-        """
-        Create a taskspace - the top-level API for creating taskspace storage.
+            taskspace_path = Path(base_path) / task_id
         
-        This is the primary method that should be used for creating new taskspaces.
+        # Create the filesystem abstraction for the computed taskspace path
+        file_storage = cls.create_file_storage(taskspace_path, provider=storage_provider)
         
-        Args:
-            base_path: Base path for taskspaces
-            task_id: Task ID for taskspace isolation
-            user_id: Optional user ID for multi-tenant isolation
-            use_git_artifacts: Whether to use Git for artifact versioning (default: True)
-            storage_provider: Name of storage provider to use (default: "file")
-            cache_provider: Name of cache provider to use (default: None for no caching)
-            
-        Returns:
-            TaskspaceStorage instance configured with the specified providers
-        """
-        return cls.create_storage(
+        # Create the final taskspace with proper file_storage
+        taskspace = TaskspaceStorage(
             base_path=base_path,
             task_id=task_id,
             user_id=user_id,
+            file_storage=file_storage,
             use_git_artifacts=use_git_artifacts,
-            storage_provider=storage_provider,
-            cache_provider=cache_provider
+            cache_backend=cache_backend
         )
+        
+        logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, User: {user_id}, Git: {use_git_artifacts})")
+        
+        return taskspace
+
+
+
+

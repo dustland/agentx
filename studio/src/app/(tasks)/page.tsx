@@ -163,17 +163,17 @@ export default function HomePage() {
                     </div>
 
                     {/* Start Button - appears on hover */}
-                    <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         className="h-7 px-3 text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSampleTaskClick(task);
                         }}
                       >
-                        Start
+                        Start Task
                       </Button>
                     </div>
                   </div>

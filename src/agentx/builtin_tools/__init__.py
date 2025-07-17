@@ -6,23 +6,28 @@ registers all the builtin tools with the core ToolRegistry.
 """
 
 from .context import ContextTool
-from .file import FileTool, create_file_tool
+from .file import FileTool
 from .memory import MemoryTool
 from .search import SearchTool
 from .web import WebTool
 from .document import DocumentTool
 from .research import ResearchTool
+from typing import Optional, Any
+from agentx.tool.registry import ToolRegistry
+from ..storage.factory import TaskspaceFactory
 
-def register_builtin_tools(registry, taskspace_path=None, memory_system=None):
-    """Register all builtin tools with the registry."""
-    if taskspace_path:
-        from ..storage.factory import TaskspaceFactory
-        
-        # Create taskspace storage for tools that need it
-        taskspace_storage = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
-        
-        # Register tools with taskspace support
-        file_tool = create_file_tool(taskspace_path=taskspace_path)
+def register_builtin_tools(registry: ToolRegistry, taskspace_storage: Optional[Any] = None, memory_system: Optional[Any] = None):
+    """Register all built-in tools with the tool registry.
+    
+    Args:
+        registry: The tool registry to register tools with
+        taskspace_storage: Optional TaskspaceStorage instance to use for tools
+        memory_system: Optional memory system for memory tools
+    """
+    
+    # Register tools with taskspace support
+    if taskspace_storage:
+        file_tool = FileTool(taskspace_storage)
         registry.register_tool(file_tool)
         
         search_tool = SearchTool(taskspace_storage=taskspace_storage)
@@ -31,11 +36,11 @@ def register_builtin_tools(registry, taskspace_path=None, memory_system=None):
         web_tool = WebTool(taskspace_storage=taskspace_storage)
         registry.register_tool(web_tool)
         
-        context_tool = ContextTool(taskspace_path=taskspace_path)
-        registry.register_tool(context_tool)
-        
         document_tool = DocumentTool(taskspace_storage=taskspace_storage)
         registry.register_tool(document_tool)
+        
+        context_tool = ContextTool(taskspace_path=str(taskspace_storage.taskspace_path))
+        registry.register_tool(context_tool)
         
         research_tool = ResearchTool(taskspace_storage=taskspace_storage)
         registry.register_tool(research_tool)

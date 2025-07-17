@@ -21,6 +21,7 @@ import {
   Sun,
   Loader2,
   Filter,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ import { Task as TaskResponse } from "@/types/agentx";
 import { useUser } from "@/contexts/user-context";
 import { User as UserIcon, LogOut } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { ThemeSwitcher } from "../common/theme-switcher";
 
 interface SidebarProps {
   className?: string;
@@ -430,23 +432,21 @@ export function Sidebar({
                   <Monitor className="h-3 w-3" />
                 </Button>
               </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                title={
-                  theme === "dark"
-                    ? "Switch to light theme"
-                    : "Switch to dark theme"
-                }
+              <Link
+                href="https://dustland.github.io/agentx/docs"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {theme === "dark" ? (
-                  <Sun className="h-3 w-3" />
-                ) : (
-                  <Moon className="h-3 w-3" />
-                )}
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  title="Documentation"
+                >
+                  <BookOpen className="h-3 w-3" />
+                </Button>
+              </Link>
+              <ThemeSwitcher />
             </div>
           </div>
         </div>

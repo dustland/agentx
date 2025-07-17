@@ -61,45 +61,6 @@ export default function TaskPage({
   // Only show loading if we don't have cached data
   const [isLoading, setIsLoading] = useState(!cachedTask);
 
-  // Show error state if task not found
-  if (taskNotFound) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold text-muted-foreground">
-            Task Not Found
-          </h2>
-          <p className="text-muted-foreground max-w-md">
-            The task "{id}" doesn't exist or may have been deleted. This can
-            happen if:
-          </p>
-          <ul className="text-sm text-muted-foreground space-y-1 max-w-md">
-            <li>• The task was created in a previous session</li>
-            <li>• The backend was restarted and lost task data</li>
-            <li>• The task ID in the URL is invalid</li>
-          </ul>
-          <div className="flex gap-2 justify-center mt-6">
-            <button
-              onClick={() => router.push("/")}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Go to Homepage
-            </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 border border-border rounded-md hover:bg-muted"
-            >
-              Retry
-            </button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-4">
-            Redirecting to homepage in a few seconds...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // Sync messages to store when they change
   useEffect(() => {
     if (messages.length > 0) {
@@ -308,12 +269,6 @@ export default function TaskPage({
           } catch (debugError) {
             console.log("Could not fetch available tasks:", debugError);
           }
-
-          // Try to redirect to home page after showing error briefly
-          setTimeout(() => {
-            console.log("Redirecting to home page due to task not found");
-            router.push("/");
-          }, 3000);
         }
       }
     };
@@ -375,6 +330,42 @@ export default function TaskPage({
     // TODO: Implement more actions menu
     console.log("More actions");
   };
+
+  // Show error state if task not found (after useEffect hooks have run)
+  if (taskNotFound) {
+    return (
+      <div className="flex-1 flex items-center justify-center w-full h-full">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-muted-foreground">
+            Task Not Found
+          </h2>
+          <p className="text-muted-foreground max-w-md">
+            The task "{id}" doesn't exist or may have been deleted. This can
+            happen if:
+          </p>
+          <ul className="text-sm text-muted-foreground space-y-1 max-w-md">
+            <li>• The task was created in a previous session</li>
+            <li>• The backend was restarted and lost task data</li>
+            <li>• The task ID in the URL is invalid</li>
+          </ul>
+          <div className="flex gap-2 justify-center mt-6">
+            <button
+              onClick={() => router.push("/")}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Go to Homepage
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 border border-border rounded-md hover:bg-muted"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ResizablePanelGroup direction="horizontal" className="flex-1">

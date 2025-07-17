@@ -171,7 +171,6 @@ export function ChatLayout({
       <ChatInput
         onSendMessage={handleSubmit}
         isLoading={taskStatus === "running"}
-        disabled={taskStatus === "completed" || taskStatus === "failed"}
         taskStatus={taskStatus}
       />
     </div>

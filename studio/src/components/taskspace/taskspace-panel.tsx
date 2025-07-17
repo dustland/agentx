@@ -126,9 +126,6 @@ export function TaskSpacePanel({
         >
           <CardHeader className="pb-2 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Task Space</CardTitle>
-            </div>
-            <div className="flex items-center justify-between">
               <TabsList className="grid w-full grid-cols-5 h-7 text-xs">
                 <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
                   <FileText className="h-3 w-3" />

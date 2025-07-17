@@ -46,37 +46,23 @@ class ToolManager:
 
     def _register_builtin_tools(self, taskspace_path: str):
         """Register builtin tools with correct taskspace path."""
-        from ..builtin_tools.file import create_file_tool
-        from ..builtin_tools.search import SearchTool
-        from ..builtin_tools.web import WebTool
-        from ..builtin_tools.context import ContextTool
-        from ..builtin_tools.document import DocumentTool
-        from ..builtin_tools.research import ResearchTool
+        from ..builtin_tools import register_builtin_tools
         from ..storage.factory import TaskspaceFactory
+        from pathlib import Path
 
-        # Create taskspace storage for tools that need it
-        taskspace_storage = TaskspaceFactory.create_storage(taskspace_path=taskspace_path)
+        # Extract task_id from taskspace_path (assuming format: base_path/task_id)
+        path = Path(taskspace_path)
+        task_id = path.name
+        base_path = path.parent
 
-        # Create file tool with correct taskspace
-        file_tool = create_file_tool(taskspace_path=taskspace_path)
-        self.registry.register_tool(file_tool)
+        # Create single taskspace storage instance for all tools using preferred method
+        taskspace_storage = TaskspaceFactory.create_taskspace(
+            base_path=base_path,
+            task_id=task_id
+        )
 
-        # Register other builtin tools with taskspace storage
-        search_tool = SearchTool(taskspace_storage=taskspace_storage)
-        self.registry.register_tool(search_tool)
-
-        web_tool = WebTool(taskspace_storage=taskspace_storage)
-        self.registry.register_tool(web_tool)
-
-        context_tool = ContextTool(taskspace_path=taskspace_path)
-        self.registry.register_tool(context_tool)
-
-        # Document tool replaces both summarize and polish tools
-        document_tool = DocumentTool(taskspace_storage=taskspace_storage)
-        self.registry.register_tool(document_tool)
-
-        research_tool = ResearchTool(taskspace_storage=taskspace_storage)
-        self.registry.register_tool(research_tool)
+        # Register all builtin tools using the centralized function
+        register_builtin_tools(self.registry, taskspace_storage=taskspace_storage)
 
         logger.info(f"Registered builtin tools for taskspace: {taskspace_path}")
 
