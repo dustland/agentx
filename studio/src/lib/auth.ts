@@ -80,14 +80,22 @@ export async function getCurrentUser(): Promise<User | null> {
     const response = await fetch('/api/auth/me');
     
     if (!response.ok) {
-      return null;
+      // If we get a 401, it means the user is not authenticated
+      if (response.status === 401) {
+        // Return null to indicate no authenticated user
+        // The api-client will handle the redirect
+        return null;
+      }
+      // For other errors, throw to be caught by the caller
+      throw new Error(`Failed to get current user: ${response.status}`);
     }
 
     const data = await response.json();
     return data.user;
   } catch (error) {
     console.error('Error fetching current user:', error);
-    return null;
+    // Re-throw the error to be handled by the caller
+    throw error;
   }
 }
 

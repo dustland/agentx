@@ -104,11 +104,9 @@ class XAgent(Agent):
         task_id: Optional[str] = None,
         taskspace_dir: Optional[Path] = None,
         initial_prompt: Optional[str] = None,
-        user_id: Optional[str] = None,
     ):
         # Generate unique task ID
         self.task_id = task_id or generate_short_id()
-        self.user_id = user_id
 
         # Accept only TeamConfig objects
         if not isinstance(team_config, TeamConfig):
@@ -127,16 +125,24 @@ class XAgent(Agent):
         
         if taskspace_dir:
             # Use explicit taskspace directory
-            self.taskspace = TaskspaceFactory.create_storage(
-                taskspace_path=taskspace_dir,
-                cache_provider=cache_provider
+            # Note: When taskspace_dir is provided, we use it directly
+            # This is for resuming existing tasks
+            from ..storage.taskspace import TaskspaceStorage
+            from ..storage.backends import LocalFileStorage
+            storage = LocalFileStorage(taskspace_dir)
+            cache_backend = TaskspaceFactory.get_cache_provider(cache_provider)
+            self.taskspace = TaskspaceStorage(
+                base_path=taskspace_dir.parent if isinstance(taskspace_dir, Path) else Path(taskspace_dir).parent,
+                task_id=self.task_id,
+                file_storage=storage,
+                use_git_artifacts=True,
+                cache_backend=cache_backend
             )
         else:
-            # Use user-scoped taskspace: task_data/{user_id}/{task_id} or task_data/{task_id}
+            # Use standard taskspace: task_data/{task_id}
             self.taskspace = TaskspaceFactory.create_taskspace(
                 base_path=Path("./task_data"),
                 task_id=self.task_id,
-                user_id=self.user_id,
                 cache_provider=cache_provider
             )
         self._setup_task_logging()
@@ -151,7 +157,7 @@ class XAgent(Agent):
         
         # Initialize chat history storage
         from ..storage.chat_history import chat_history_manager
-        self.chat_storage = chat_history_manager.get_storage(self.taskspace.taskspace_path)
+        self.chat_storage = chat_history_manager.get_storage(str(self.taskspace.taskspace_path))
 
         # Initialize XAgent's own brain for orchestration decisions
         orchestrator_brain_config = self._get_orchestrator_brain_config()
@@ -340,7 +346,6 @@ class XAgent(Agent):
                 text=f"I encountered an error processing your message: {str(e)}",
                 metadata={"error": str(e)}
             )
-
 
 
     async def _analyze_message_impact(self, message: Message) -> Dict[str, Any]:

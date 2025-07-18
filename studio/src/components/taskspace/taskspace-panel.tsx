@@ -118,13 +118,13 @@ export function TaskSpacePanel({
 
   return (
     <div className="h-full flex flex-col px-2 py-3">
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col rounded-xl">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="h-full flex flex-col"
         >
-          <CardHeader className="pb-2 flex-shrink-0">
+          <CardHeader className="p-2 flex-shrink-0">
             <div className="flex items-center justify-between">
               <TabsList className="grid w-full grid-cols-5 h-7 text-xs">
                 <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">

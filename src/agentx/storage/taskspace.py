@@ -29,21 +29,16 @@ class TaskspaceStorage:
         self,
         base_path: Union[str, Path],
         task_id: str,
-        user_id: str = None,
         file_storage: FileStorage = None,
         use_git_artifacts: bool = True,
         cache_backend: Optional[CacheBackend] = None
     ):
-        # Single API: base_path + task_id + optional user_id for taskspace isolation
+        # Single API: base_path + task_id for taskspace isolation
+        # User mapping is handled by the service layer, not storage
         self.task_id = task_id
-        self.user_id = user_id
         
-        if user_id is not None:
-            # Multi-tenant: base_path/{user_id}/{task_id}
-            self.taskspace_path = Path(base_path) / user_id / task_id
-        else:
-            # Single-tenant: base_path/{task_id}
-            self.taskspace_path = Path(base_path) / task_id
+        # Always use simple task_id path
+        self.taskspace_path = Path(base_path) / task_id
 
         self.file_storage = file_storage
         self.use_git_artifacts = use_git_artifacts

@@ -30,7 +30,7 @@ export default function TasksLayout({
   }, []);
 
   return (
-    <div className="h-screen flex bg-muted/50">
+    <div className="h-screen flex">
       {/* Sidebar - conditionally render based on pinned state */}
       {isSidebarPinned && (
         <Sidebar

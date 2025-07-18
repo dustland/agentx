@@ -39,7 +39,11 @@ class TaskEventStream:
                 "timestamp": datetime.now().isoformat()
             }
             await stream.put(event)
-            logger.debug(f"Sent {event_type} event for task {task_id}")
+            logger.info(f"Sent {event_type} event for task {task_id} to stream (queue size: {stream.qsize()})")
+        else:
+            logger.warning(f"No stream found for task {task_id}, creating one")
+            self.create_stream(task_id)
+            await self.send_event(task_id, event_type, data)
             
     async def stream_events(self, task_id: str) -> AsyncGenerator[Dict[str, Any], None]:
         """Stream events for a task as dictionaries for EventSourceResponse"""
@@ -75,6 +79,7 @@ event_stream_manager = TaskEventStream()
 
 async def send_agent_message(task_id: str, agent_id: str, message: str, metadata: Optional[Dict] = None):
     """Send an agent message event"""
+    logger.info(f"Sending agent message for task {task_id}: {message[:100]}...")
     await event_stream_manager.send_event(
         task_id,
         "agent_message",
@@ -84,6 +89,7 @@ async def send_agent_message(task_id: str, agent_id: str, message: str, metadata
             "metadata": metadata or {}
         }
     )
+    logger.info(f"Agent message sent successfully for task {task_id}")
 
 async def send_agent_status(task_id: str, agent_id: str, status: str, progress: int = 0):
     """Send an agent status update"""

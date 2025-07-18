@@ -4,18 +4,38 @@
 >
 > This multi-tenant implementation provides **organizational isolation only**, not true security isolation. Users can pass any `user_id` parameter to access other users' taskspaces and data. This design is suitable for trusted environments and development scenarios, but **requires external authentication and authorization layers** for production security. See the [Authentication Integration](#authentication-integration) section for secure deployment patterns.
 
-AgentX provides built-in multi-tenant support through taskspace isolation and user-scoped API access. This design ensures that different users can logically separate their work when sharing the same AgentX instance, but relies on external security measures for true access control.
+AgentX provides multi-tenant support through a clean layered architecture that separates user management from the core task execution framework. This design ensures that different users can logically separate their work when sharing the same AgentX instance, while keeping the framework pure and reusable.
 
 ## Overview
 
-Multi-tenancy in AgentX is implemented through the taskspace system, providing user isolation without requiring complex authentication infrastructure. All tasks require a user_id for proper isolation and security.
+Multi-tenancy in AgentX is implemented through a clean three-layer architecture that separates concerns:
+
+1. **API Layer**: Thin HTTP wrapper handling authentication and user context
+2. **Service Layer**: Business logic managing user-task relationships and permissions
+3. **Framework Layer**: Pure task execution engine (user-agnostic)
+
+### Architectural Decision: User-Agnostic Framework
+
+After careful consideration, we decided to keep the core framework (XAgent, Task, Storage) completely user-agnostic. This decision was made for several important reasons:
+
+#### Why the Framework Should NOT Know About Users
+
+1. **Clean Architecture**: Separating user concerns from task execution creates a cleaner, more maintainable architecture with clear boundaries between layers.
+
+2. **Framework Reusability**: A user-agnostic framework can be easily reused in different contexts - single-user CLI tools, embedded systems, or multi-tenant servers - without modification.
+
+3. **Simplified Testing**: Testing the framework becomes much simpler when it doesn't need to mock user contexts or authentication systems.
+
+4. **Security Through Separation**: By handling user authentication and authorization entirely in the service layer, we avoid accidentally exposing user data through the framework APIs.
+
+5. **Flexibility**: Different deployment scenarios can implement their own user management strategies without modifying the core framework.
 
 ### Key Security Principles
 
-- **User Isolation**: Each user's tasks and data are completely isolated at the application level
-- **Taskspace Segregation**: File system isolation prevents accidental cross-user access
-- **API Filtering**: All endpoints filter results by user_id parameter
-- **Mandatory User Context**: All operations require a valid user_id
+- **User Isolation**: User-task relationships managed entirely by the service layer
+- **Clean Boundaries**: Framework has no knowledge of users, only tasks
+- **Service Layer Security**: All user validation and permission checks in one place
+- **API Authentication**: User context derived from authenticated sessions
 
 > **Note**: These principles provide organizational separation but do not prevent malicious users from accessing other users' data by manipulating the `user_id` parameter. Production deployments must implement proper authentication and authorization.
 
@@ -23,20 +43,28 @@ Multi-tenancy in AgentX is implemented through the taskspace system, providing u
 
 ### Directory Structure
 
+With our user-agnostic framework design, the storage structure is simplified:
+
 ```
-taskspace/
-├── {user_id}/
-│   ├── {task_id}/
-│   │   ├── artifacts/          # User's task files
-│   │   ├── logs/              # Execution logs
-│   │   ├── messages/          # Conversation history
-│   │   └── plan.json         # Task execution plan
-│   └── {another_task_id}/
-└── {another_user_id}/
-    └── {task_id}/
+task_data/
+├── {task_id}/
+│   ├── artifacts/          # Task files
+│   ├── logs/              # Execution logs
+│   ├── messages/          # Conversation history
+│   └── plan.json          # Task execution plan
+└── {another_task_id}/
+    └── ...
 ```
 
-All tasks are stored in the user-scoped format with mandatory user_id association.
+User-task relationships are maintained separately by the service layer:
+
+```
+user_index/
+├── {user_id}.json         # List of task IDs owned by user
+└── _task_index.json       # Reverse mapping: task_id → user_id
+```
+
+This separation ensures the framework remains pure while the service layer handles all user-related concerns.
 
 ## API Security Model
 
@@ -74,26 +102,52 @@ GET /tasks/{task_id}/artifacts
 
 ### Core Components
 
-#### TaskspaceStorage
+#### Clean Layer Architecture
 
 ```python
-class TaskspaceStorage:
-    def __init__(self, base_path, task_id, user_id):
-        # All tasks use multi-tenant structure: taskspace/{user_id}/{task_id}
-        self.taskspace_path = Path(base_path) / user_id / task_id
-```
-
-#### XAgent Integration
-
-```python
+# Framework Layer - User-agnostic
 class XAgent:
-    def __init__(self, team_config, user_id):
-        self.user_id = user_id  # Required for all tasks
-        self.taskspace = StorageFactory.create_taskspace_storage(
-            base_path=Path("./taskspace"),
-            task_id=self.task_id,
-            user_id=self.user_id
+    def __init__(self, team_config, task_id=None):
+        # No user_id - framework doesn't know about users
+        self.task_id = task_id or generate_short_id()
+        self.taskspace = TaskspaceFactory.create_taskspace(
+            base_path=Path("./task_data"),
+            task_id=self.task_id
         )
+
+# Service Layer - Manages user-task relationships
+class TaskService:
+    def __init__(self):
+        self.user_index = get_user_task_index()  # File or Redis backend
+    
+    async def create_task(self, user_id: str, prompt: str, config_path: str):
+        # Create task without user context
+        task = await start_task(prompt=prompt, config_path=config_path)
+        
+        # Map task to user in service layer
+        await self.user_index.add_task(user_id, task.task_id)
+        return task
+    
+    async def get_task(self, user_id: str, task_id: str):
+        # Verify ownership before returning task
+        if not await self.user_index.user_owns_task(user_id, task_id):
+            raise PermissionError("Access denied")
+        
+        # Resume task without user context
+        return await resume_task(task_id)
+
+# API Layer - Thin HTTP wrapper
+@app.post("/tasks")
+async def create_task(request: TaskRequest, x_user_id: str = Header(None)):
+    if not x_user_id:
+        raise HTTPException(401, "User ID required")
+    
+    # Delegate to service layer
+    task_info = await task_service.create_task(
+        user_id=x_user_id,
+        prompt=request.task_description,
+        config_path=request.config_path
+    )
 ```
 
 ### API Models
@@ -193,46 +247,6 @@ async def create_task(request: TaskRequest, user_id: str = Depends(get_current_u
 
 > **Security Note**: The `user_id` must come from the authenticated session, never from user input. Any endpoint that accepts `user_id` as a parameter without authentication is a security vulnerability.
 
-## Migration Guide
-
-### Upgrading to Multi-Tenant Architecture
-
-1. **Update API calls** to include required `user_id` parameter
-2. **Configure authentication** middleware (required)
-3. **Migrate existing taskspaces** from legacy format:
-
-```bash
-# Migrate legacy taskspaces to user-scoped structure
-for task_dir in taskspace/*/; do
-    task_id=$(basename "$task_dir")
-    if [[ ! "$task_id" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-        continue  # Skip if already user-scoped
-    fi
-
-    # Move to default user or specify actual user
-    mkdir -p "taskspace/default/$task_id"
-    mv "$task_dir"/* "taskspace/default/$task_id/"
-    rmdir "$task_dir"
-done
-```
-
-### API Client Updates
-
-```typescript
-// Before: Legacy single-tenant
-const task = await api.createTask({
-  config_path: "config.yaml",
-  task_description: "Build website",
-});
-
-// After: Multi-tenant (user_id required)
-const task = await api.createTask({
-  config_path: "config.yaml",
-  task_description: "Build website",
-  user_id: getCurrentUser().id, // Required field
-});
-```
-
 ## Best Practices
 
 ### Security
@@ -294,4 +308,57 @@ async def list_tasks(user_id: str = Depends(get_current_user)):
     return await list_tasks(user_id=user_id)
 ```
 
-This multi-tenant architecture provides organizational separation that enables AgentX to be deployed in shared environments with proper external authentication. The framework itself does not provide security isolation - it relies on external authentication systems to validate user identity and enforce access controls. When properly secured with authentication middleware, this design maintains the simplicity and flexibility that makes AgentX easy to use and deploy.
+## Benefits of the User-Agnostic Framework Design
+
+Our decision to keep the framework user-agnostic provides several key benefits:
+
+### 1. Deployment Flexibility
+
+The same framework can be used in multiple contexts without modification:
+
+```python
+# CLI usage - no user context needed
+x = await start_task("Build a website", "config.yaml")
+
+# Server usage - service layer adds user context
+task = await task_service.create_task(user_id, "Build a website", "config.yaml")
+
+# Embedded usage - integrate into existing applications
+agent = XAgent(config, task_id="custom-123")
+```
+
+### 2. Simplified Testing
+
+Framework tests don't need to mock user systems:
+
+```python
+# Clean framework tests
+async def test_task_execution():
+    task = await start_task("Test task", test_config)
+    assert task.is_complete
+
+# Service layer tests handle user concerns separately
+async def test_user_task_ownership():
+    task = await service.create_task("user1", "Task", config)
+    assert await service.user_owns_task("user1", task.task_id)
+    assert not await service.user_owns_task("user2", task.task_id)
+```
+
+### 3. Clear Security Boundaries
+
+All user-related security is handled in one place (service layer), making it easier to audit and maintain:
+
+- Authentication: API layer
+- Authorization: Service layer  
+- Execution: Framework layer (no user knowledge)
+
+### 4. Future Extensibility
+
+New deployment patterns can be added without modifying the core:
+
+- Team-based access control
+- Role-based permissions
+- External identity providers
+- Custom authorization rules
+
+This multi-tenant architecture provides organizational separation that enables AgentX to be deployed in shared environments with proper external authentication. By keeping the framework user-agnostic, we maintain maximum flexibility while ensuring clean separation of concerns. The framework itself does not provide security isolation - it relies on external authentication systems to validate user identity and enforce access controls through the service layer. When properly secured with authentication middleware, this design maintains the simplicity and flexibility that makes AgentX easy to use and deploy.

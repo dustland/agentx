@@ -51,9 +51,27 @@ export class AgentXAPIClient {
       const user = await getCurrentUser();
       this.userId = user?.id || null;
       console.log("API client initialized with user:", this.userId);
+      
+      // If no user is found, redirect to login
+      if (!user && typeof window !== "undefined") {
+        const currentPath = window.location.pathname;
+        // Only redirect if we're not already on the auth pages
+        if (!currentPath.startsWith("/auth/")) {
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+        }
+      }
     } catch (error) {
       console.error("Failed to get current user:", error);
       this.userId = null;
+      
+      // Redirect to login on authentication error
+      if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname;
+        // Only redirect if we're not already on the auth pages
+        if (!currentPath.startsWith("/auth/")) {
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+        }
+      }
     }
   }
 
@@ -86,6 +104,17 @@ export class AgentXAPIClient {
     });
 
     if (!response.ok) {
+      // Handle 401 Unauthorized specifically
+      if (response.status === 401 && typeof window !== "undefined") {
+        const currentPath = window.location.pathname;
+        // Only redirect if we're not already on the auth pages
+        if (!currentPath.startsWith("/auth/")) {
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+          // Throw error to stop further processing
+          throw new Error("Unauthorized - redirecting to login");
+        }
+      }
+      
       const error = await response.text();
       throw new Error(`API Error ${response.status}: ${error}`);
     }
@@ -202,9 +231,13 @@ export class AgentXAPIClient {
     let isConnected = false;
 
     try {
-      eventSource = new EventSource(
-        `${this.baseURL}/tasks/${taskId}/stream${params}`
-      );
+      // For streaming, we need to connect directly to the backend, not through Next.js proxy
+      // because EventSource doesn't work through Next.js rewrites
+      const directBackendURL =
+        process.env.NEXT_PUBLIC_AGENTX_BACKEND_URL || "http://localhost:7770";
+      const streamUrl = `${directBackendURL}/tasks/${taskId}/stream${params}`;
+      console.log("Creating EventSource for URL:", streamUrl);
+      eventSource = new EventSource(streamUrl);
     } catch (error) {
       console.error("Failed to create EventSource:", error);
       // Return a no-op cleanup function
@@ -213,15 +246,17 @@ export class AgentXAPIClient {
 
     eventSource.onopen = () => {
       isConnected = true;
-      console.log("SSE connection established");
+      console.log("SSE connection established for task:", taskId);
     };
 
     eventSource.onmessage = (event) => {
       try {
+        console.log("Raw SSE event received:", event);
         const data = JSON.parse(event.data);
+        console.log("Parsed SSE data:", data);
         onUpdate(data);
       } catch (error) {
-        console.error("Error parsing SSE data:", error);
+        console.error("Error parsing SSE data:", error, "Raw event:", event);
       }
     };
 

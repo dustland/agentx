@@ -138,7 +138,6 @@ class TaskspaceFactory:
         cls,
         base_path: Union[str, Path],
         task_id: str,
-        user_id: str = None,
         use_git_artifacts: bool = True,
         storage_provider: str = "file",
         cache_provider: Optional[str] = None
@@ -152,7 +151,6 @@ class TaskspaceFactory:
         Args:
             base_path: Base path for taskspaces
             task_id: Task ID for taskspace isolation
-            user_id: User ID for multi-tenant isolation (optional)
             use_git_artifacts: Whether to use Git for artifact versioning
             storage_provider: Name of storage provider to use (default: "file")
             cache_provider: Name of cache provider to use (default: None for no caching)
@@ -164,10 +162,8 @@ class TaskspaceFactory:
         cache_backend = cls.get_cache_provider(cache_provider)
         
         # Create taskspace storage with computed path
-        if user_id is not None:
-            taskspace_path = Path(base_path) / user_id / task_id
-        else:
-            taskspace_path = Path(base_path) / task_id
+        # Always use simple task_id path - user mapping handled by service layer
+        taskspace_path = Path(base_path) / task_id
         
         # Create the filesystem abstraction for the computed taskspace path
         file_storage = cls.create_file_storage(taskspace_path, provider=storage_provider)
@@ -176,13 +172,12 @@ class TaskspaceFactory:
         taskspace = TaskspaceStorage(
             base_path=base_path,
             task_id=task_id,
-            user_id=user_id,
             file_storage=file_storage,
             use_git_artifacts=use_git_artifacts,
             cache_backend=cache_backend
         )
         
-        logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, User: {user_id}, Git: {use_git_artifacts})")
+        logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
         
         return taskspace
 

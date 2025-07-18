@@ -240,3 +240,70 @@ async def start_task(
     )
 
     return x
+
+
+async def resume_task(
+    task_id: str,
+    config_path: Optional[Union[str, Path]] = None
+) -> XAgent:
+    """
+    Resume an existing task from its saved state.
+    
+    This function loads an existing XAgent task from the filesystem,
+    allowing you to continue working with a previously created task.
+    
+    Args:
+        task_id: The ID of the task to resume
+        config_path: Optional config path override (will use task's original config if not provided)
+    
+    Returns:
+        XAgent: The loaded XAgent instance ready for interaction
+        
+    Raises:
+        ValueError: If the task does not exist or is corrupted
+        
+    Example:
+        ```python
+        # Resume a previous task
+        x = await resume_task("abc12345")
+        
+        # Continue chatting
+        response = await x.chat("What's the current status?")
+        print(response.text)
+        ```
+    """
+    from pathlib import Path
+    import json
+    from agentx.config.team_loader import load_team_config
+    
+    # Determine taskspace path - always use simple task_id path
+    taskspace_path = Path(f"task_data/{task_id}")
+    
+    # Check if taskspace exists
+    if not taskspace_path.exists():
+        raise ValueError(f"Task {task_id} not found")
+    
+    # Load task metadata to get original config
+    task_info_path = taskspace_path / "task_info.json"
+    if not task_info_path.exists():
+        raise ValueError(f"Task {task_id} metadata not found - corrupted task")
+    
+    # Read task metadata
+    with open(task_info_path, 'r') as f:
+        task_info = json.load(f)
+    
+    # Use provided config or fall back to task's original config
+    if config_path:
+        team_config = load_team_config(str(config_path))
+    else:
+        original_config = task_info.get('config_path', 'examples/simple_chat/config/team.yaml')
+        team_config = load_team_config(original_config)
+    
+    # Create XAgent instance pointing to existing taskspace
+    x = XAgent(
+        team_config=team_config,
+        task_id=task_id,
+        taskspace_dir=taskspace_path  # This tells XAgent to use the existing directory
+    )
+    
+    return x

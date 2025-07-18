@@ -400,11 +400,14 @@ export function Sidebar({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-56">
-                    <div className="px-2 py-1.5">
-                      <p className="text-sm font-medium">{user.username}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email || "No email"}
-                      </p>
+                    <div className="px-2 py-1.5 flex items-center gap-2">
+                      <UserAvatar username={user.username} size="sm" />
+                      <div>
+                        <p className="text-sm font-medium">{user.username}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email || "No email"}
+                        </p>
+                      </div>
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
