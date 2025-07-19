@@ -32,6 +32,12 @@ interface TaskState {
   // Tasks data cache
   tasks: Record<string, TaskData>;
 
+  // Task list management
+  tasksList: TaskData[];
+  tasksListLoading: boolean;
+  tasksListError: string | null;
+  lastTasksListFetch: Date | null;
+
   // Actions
   setInitialMessage: (message: string) => void;
   clearInitialMessage: () => void;
@@ -44,6 +50,13 @@ interface TaskState {
   addTaskMessage: (taskId: string, message: ChatMessage) => void;
   setTaskStatus: (taskId: string, status: TaskData["status"]) => void;
   clearTask: (taskId: string) => void;
+  
+  // Task list management
+  setTasksList: (tasks: TaskData[]) => void;
+  setTasksListLoading: (loading: boolean) => void;
+  setTasksListError: (error: string | null) => void;
+  updateTaskInList: (taskId: string, updates: Partial<TaskData>) => void;
+  removeTaskFromList: (taskId: string) => void;
 }
 
 export const useTaskStore = create<TaskState>()(
@@ -51,6 +64,10 @@ export const useTaskStore = create<TaskState>()(
     (set, get) => ({
       initialMessage: null,
       tasks: {},
+      tasksList: [],
+      tasksListLoading: false,
+      tasksListError: null,
+      lastTasksListFetch: null,
 
       setInitialMessage: (message: string) => {
         set({ initialMessage: message });
@@ -147,6 +164,36 @@ export const useTaskStore = create<TaskState>()(
           const { [taskId]: _, ...rest } = state.tasks;
           return { tasks: rest };
         });
+      },
+
+      // Task list management methods
+      setTasksList: (tasks: TaskData[]) => {
+        set({ 
+          tasksList: tasks,
+          lastTasksListFetch: new Date()
+        });
+      },
+
+      setTasksListLoading: (loading: boolean) => {
+        set({ tasksListLoading: loading });
+      },
+
+      setTasksListError: (error: string | null) => {
+        set({ tasksListError: error });
+      },
+
+      updateTaskInList: (taskId: string, updates: Partial<TaskData>) => {
+        set((state) => ({
+          tasksList: state.tasksList.map(task => 
+            task.id === taskId ? { ...task, ...updates } : task
+          )
+        }));
+      },
+
+      removeTaskFromList: (taskId: string) => {
+        set((state) => ({
+          tasksList: state.tasksList.filter(task => task.id !== taskId)
+        }));
       },
     }),
     {

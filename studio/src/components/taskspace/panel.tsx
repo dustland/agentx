@@ -4,13 +4,12 @@ import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Activity, Brain, ListIcon, Eye, Target } from "lucide-react";
+import { FileText, Activity, Brain, ListIcon, Eye, Target, Folder, Monitor } from "lucide-react";
 import { useAgentXAPI } from "@/lib/api-client";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
-import { Viewer } from "./viewer";
-import { Terminal } from "./terminal";
+import { Inspector } from "./inspector";
 import { Logs } from "./logs";
 import { Memory } from "./memory";
 import { Plan } from "./plan";
@@ -59,19 +58,19 @@ export function TaskSpacePanel({
     if (onToolCallSelect) {
       onToolCallSelect((toolCall: ToolCall) => {
         setSelectedToolCall(toolCall);
-        setActiveTab("viewer");
+        setActiveTab("inspector");
       });
     }
   }, [onToolCallSelect]);
 
   const handleArtifactSelect = (artifact: Artifact) => {
     setSelectedArtifact(artifact);
-    setActiveTab("viewer");
+    setActiveTab("inspector");
   };
 
   // Set up SSE for real-time updates
   useEffect(() => {
-    const eventSource = new EventSource(`/api/tasks/${taskId}/events`);
+    const eventSource = new EventSource(`/api/tasks/${taskId}/stream`);
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -126,38 +125,41 @@ export function TaskSpacePanel({
         >
           <CardHeader className="p-2 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <TabsList className="grid w-full grid-cols-5 h-7 text-xs">
-                <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
-                  <FileText className="h-3 w-3" />
-                  Artifacts
-                </TabsTrigger>
-                <TabsTrigger value="viewer" className="text-xs gap-1 py-1">
-                  <Eye className="h-3 w-3" />
-                  Viewer
-                </TabsTrigger>
-                <TabsTrigger value="memory" className="text-xs gap-1 py-1">
-                  <Brain className="h-3 w-3" />
-                  Memory
-                </TabsTrigger>
-                <TabsTrigger value="logs" className="text-xs gap-1 py-1">
-                  <Activity className="h-3 w-3" />
-                  Logs
-                </TabsTrigger>
-                <TabsTrigger value="terminal" className="text-xs gap-1 py-1">
-                  <Target className="h-3 w-3" />
-                  Terminal
-                </TabsTrigger>
-              </TabsList>
-              {hasPlan && (
-                <TabsList className="ml-2 h-7">
+              <TabsList className="h-7 text-xs">
+                {hasPlan && (
                   <TabsTrigger value="plan" className="text-xs gap-1 py-1">
-                    <ListIcon className="h-3 w-3" />
+                    <ListIcon className="h-3 w-3 mr-1" />
                     Plan
                   </TabsTrigger>
-                </TabsList>
-              )}
+                )}
+                <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
+                  <Folder className="h-3 w-3 mr-1" />
+                  Files
+                </TabsTrigger>
+                <TabsTrigger value="inspector" className="text-xs gap-1 py-1">
+                  <Monitor className="h-3 w-3 mr-1" />
+                  Inspector
+                </TabsTrigger>
+                {/* <TabsTrigger value="memory" className="text-xs gap-1 py-1">
+                  <Brain className="h-3 w-3" />
+                  Memory
+                </TabsTrigger> */}
+                <TabsTrigger value="logs" className="text-xs gap-1 py-1">
+                  <Activity className="h-3 w-3 mr-1" />
+                  Logs
+                </TabsTrigger>
+              </TabsList>
+
             </div>
           </CardHeader>
+
+          {/* Plan Tab */}
+          {hasPlan && (
+            <TabsContent value="plan" className="flex-1 m-0 min-h-0">
+              <Plan taskId={taskId} />
+            </TabsContent>
+          )}
+
 
           {/* Artifacts Tab */}
           <TabsContent value="artifacts" className="flex-1 m-0 min-h-0">
@@ -167,16 +169,9 @@ export function TaskSpacePanel({
             />
           </TabsContent>
 
-          {/* Plan Tab */}
-          {hasPlan && (
-            <TabsContent value="plan" className="flex-1 m-0 min-h-0">
-              <Plan taskId={taskId} />
-            </TabsContent>
-          )}
-
           {/* Viewer Tab */}
-          <TabsContent value="viewer" className="flex-1 m-0 min-h-0">
-            <Viewer
+          <TabsContent value="inspector" className="flex-1 m-0 min-h-0">
+            <Inspector
               selectedArtifact={selectedArtifact}
               selectedToolCall={selectedToolCall}
               taskId={taskId}
@@ -191,11 +186,6 @@ export function TaskSpacePanel({
           {/* Logs Tab */}
           <TabsContent value="logs" className="flex-1 m-0 min-h-0">
             <Logs taskId={taskId} />
-          </TabsContent>
-
-          {/* Terminal Tab */}
-          <TabsContent value="terminal" className="flex-1 m-0 min-h-0">
-            <Terminal taskId={taskId} />
           </TabsContent>
         </Tabs>
       </Card>

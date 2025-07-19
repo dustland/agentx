@@ -244,7 +244,7 @@ async def start_task(
 
 async def resume_task(
     task_id: str,
-    config_path: Optional[Union[str, Path]] = None
+    config_path: Union[str, Path]
 ) -> XAgent:
     """
     Resume an existing task from its saved state.
@@ -254,18 +254,18 @@ async def resume_task(
     
     Args:
         task_id: The ID of the task to resume
-        config_path: Optional config path override (will use task's original config if not provided)
+        config_path: Path to the team configuration file (required)
     
     Returns:
         XAgent: The loaded XAgent instance ready for interaction
         
     Raises:
-        ValueError: If the task does not exist or is corrupted
+        ValueError: If the task does not exist
         
     Example:
         ```python
         # Resume a previous task
-        x = await resume_task("abc12345")
+        x = await resume_task("abc12345", "config/team.yaml")
         
         # Continue chatting
         response = await x.chat("What's the current status?")
@@ -273,7 +273,6 @@ async def resume_task(
         ```
     """
     from pathlib import Path
-    import json
     from agentx.config.team_loader import load_team_config
     
     # Determine taskspace path - always use simple task_id path
@@ -283,21 +282,8 @@ async def resume_task(
     if not taskspace_path.exists():
         raise ValueError(f"Task {task_id} not found")
     
-    # Load task metadata to get original config
-    task_info_path = taskspace_path / "task_info.json"
-    if not task_info_path.exists():
-        raise ValueError(f"Task {task_id} metadata not found - corrupted task")
-    
-    # Read task metadata
-    with open(task_info_path, 'r') as f:
-        task_info = json.load(f)
-    
-    # Use provided config or fall back to task's original config
-    if config_path:
-        team_config = load_team_config(str(config_path))
-    else:
-        original_config = task_info.get('config_path', 'examples/simple_chat/config/team.yaml')
-        team_config = load_team_config(original_config)
+    # Load the team configuration
+    team_config = load_team_config(str(config_path))
     
     # Create XAgent instance pointing to existing taskspace
     x = XAgent(

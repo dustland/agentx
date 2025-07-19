@@ -58,8 +58,8 @@ class TaskService:
                 config_path=config_path
             )
             
-            # Map user to task
-            await self.user_index.add_task(user_id, task.task_id)
+            # Map user to task with config_path
+            await self.user_index.add_task(user_id, task.task_id, config_path)
             
             logger.info(f"Created task {task.task_id} for user {user_id}")
             
@@ -93,8 +93,15 @@ class TaskService:
             logger.warning(f"User {user_id} attempted to access task {task_id} without permission")
             raise PermissionError("Access denied")
         
-        # Load task
-        return await resume_task(task_id)
+        # Get task info including config_path
+        task_info = await self.user_index.get_task_info(task_id)
+        if not task_info:
+            raise ValueError(f"Task {task_id} not found in index")
+        
+        config_path = task_info.get('config_path', 'examples/simple_chat/config/team.yaml')
+        
+        # Load task with config_path
+        return await resume_task(task_id, config_path)
     
     async def list_user_tasks(self, user_id: str) -> List[Dict[str, Any]]:
         """

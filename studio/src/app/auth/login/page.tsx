@@ -61,18 +61,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (username: string, password: string) => {
-    setError("");
-    setLoading(true);
-    try {
-      await login(username, password);
-      router.push(redirectTo);
-    } catch (err: any) {
-      setError(err.message || "Demo login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center">

@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 class UserTaskIndex:
     """Abstract base class for user-task indexing"""
     
-    async def add_task(self, user_id: str, task_id: str) -> None:
+    async def add_task(self, user_id: str, task_id: str, config_path: Optional[str] = None) -> None:
         """Add a task to a user's index"""
         raise NotImplementedError
     
@@ -48,6 +48,10 @@ class UserTaskIndex:
     
     async def get_task_owner(self, task_id: str) -> Optional[str]:
         """Get the owner of a task"""
+        raise NotImplementedError
+    
+    async def get_task_info(self, task_id: str) -> Optional[dict]:
+        """Get task information including config_path"""
         raise NotImplementedError
 
 
@@ -93,7 +97,7 @@ class FileUserTaskIndex(UserTaskIndex):
             logger.error(f"Failed to write user data for {user_id}: {e}")
             raise
     
-    async def _update_task_index(self, task_id: str, user_id: Optional[str]) -> None:
+    async def _update_task_index(self, task_id: str, user_id: Optional[str], config_path: Optional[str] = None) -> None:
         """Update the reverse task index"""
         index_file = self._get_task_index_file()
         
@@ -106,7 +110,11 @@ class FileUserTaskIndex(UserTaskIndex):
                 index = {}
             
             if user_id:
-                index[task_id] = {"user_id": user_id, "created_at": datetime.now().isoformat()}
+                index[task_id] = {
+                    "user_id": user_id, 
+                    "created_at": datetime.now().isoformat(),
+                    "config_path": config_path
+                }
             else:
                 index.pop(task_id, None)
             
@@ -115,7 +123,7 @@ class FileUserTaskIndex(UserTaskIndex):
         except Exception as e:
             logger.error(f"Failed to update task index: {e}")
     
-    async def add_task(self, user_id: str, task_id: str) -> None:
+    async def add_task(self, user_id: str, task_id: str, config_path: Optional[str] = None) -> None:
         """Add a task to a user's index"""
         async with self._lock:
             data = await self._read_user_data(user_id)
@@ -123,7 +131,7 @@ class FileUserTaskIndex(UserTaskIndex):
             if task_id not in data["tasks"]:
                 data["tasks"].append(task_id)
                 await self._write_user_data(user_id, data)
-                await self._update_task_index(task_id, user_id)
+                await self._update_task_index(task_id, user_id, config_path)
                 logger.info(f"Added task {task_id} to user {user_id}")
     
     async def remove_task(self, user_id: str, task_id: str) -> None:
@@ -163,6 +171,22 @@ class FileUserTaskIndex(UserTaskIndex):
         except Exception as e:
             logger.error(f"Failed to get task owner: {e}")
             return None
+    
+    async def get_task_info(self, task_id: str) -> Optional[dict]:
+        """Get task information including config_path"""
+        index_file = self._get_task_index_file()
+        
+        if not index_file.exists():
+            return None
+        
+        try:
+            async with aiofiles.open(index_file, 'r') as f:
+                content = await f.read()
+                index = json.loads(content)
+                return index.get(task_id)
+        except Exception as e:
+            logger.error(f"Failed to get task info: {e}")
+            return None
 
 
 class RedisUserTaskIndex(UserTaskIndex):
@@ -180,7 +204,7 @@ class RedisUserTaskIndex(UserTaskIndex):
             self._redis = await redis.from_url(self.redis_url)  # type: ignore
         return self._redis
     
-    async def add_task(self, user_id: str, task_id: str) -> None:
+    async def add_task(self, user_id: str, task_id: str, config_path: Optional[str] = None) -> None:
         """Add a task to a user's index"""
         r = await self._get_redis()
         
@@ -192,6 +216,10 @@ class RedisUserTaskIndex(UserTaskIndex):
         
         # Track creation time
         await r.set(f"task:{task_id}:created_at", datetime.now().isoformat())
+        
+        # Store config path if provided
+        if config_path:
+            await r.set(f"task:{task_id}:config_path", config_path)
         
         logger.info(f"Added task {task_id} to user {user_id} in Redis")
     
@@ -205,6 +233,7 @@ class RedisUserTaskIndex(UserTaskIndex):
         # Remove reverse mapping
         await r.delete(f"task:{task_id}:owner")
         await r.delete(f"task:{task_id}:created_at")
+        await r.delete(f"task:{task_id}:config_path")
         
         logger.info(f"Removed task {task_id} from user {user_id} in Redis")
     
@@ -224,6 +253,23 @@ class RedisUserTaskIndex(UserTaskIndex):
         r = await self._get_redis()
         owner = await r.get(f"task:{task_id}:owner")
         return owner.decode() if owner else None
+    
+    async def get_task_info(self, task_id: str) -> Optional[dict]:
+        """Get task information including config_path"""
+        r = await self._get_redis()
+        
+        owner = await r.get(f"task:{task_id}:owner")
+        if not owner:
+            return None
+            
+        created_at = await r.get(f"task:{task_id}:created_at")
+        config_path = await r.get(f"task:{task_id}:config_path")
+        
+        return {
+            "user_id": owner.decode(),
+            "created_at": created_at.decode() if created_at else None,
+            "config_path": config_path.decode() if config_path else None
+        }
     
     async def close(self):
         """Close Redis connection"""

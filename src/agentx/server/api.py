@@ -283,6 +283,49 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to get artifact: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    @app.get("/tasks/{task_id}/logs")
+    async def get_task_logs(
+        task_id: str,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
+        limit: int = 1000,
+        offset: int = 0
+    ):
+        """Get task execution logs."""
+        if not x_user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+        
+        try:
+            # Verify ownership first
+            await task_service.get_task(x_user_id, task_id)
+            
+            # Read logs from the task's log file
+            from pathlib import Path
+            log_file = Path(f"task_data/{task_id}/task.log")
+            
+            if not log_file.exists():
+                return {"logs": [], "total": 0}
+            
+            # Read all lines
+            with open(log_file, 'r', encoding='utf-8') as f:
+                all_logs = f.readlines()
+            
+            # Apply pagination
+            total = len(all_logs)
+            logs = all_logs[offset:offset + limit]
+            
+            return {
+                "logs": [log.rstrip() for log in logs],
+                "total": total,
+                "offset": offset,
+                "limit": limit
+            }
+            
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Access denied")
+        except Exception as e:
+            logger.error(f"Failed to get logs: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     return app
 
 

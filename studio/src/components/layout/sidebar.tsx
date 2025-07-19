@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home,
+  Github,
   Plus,
   Monitor,
-  Search,
   Clock,
   CheckCircle,
   XCircle,
@@ -17,10 +16,7 @@ import {
   Star,
   Pin,
   PinOff,
-  Moon,
-  Sun,
   Loader2,
-  Filter,
   BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,12 +35,12 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { useAgentXAPI } from "@/lib/api-client";
 import { Task as TaskResponse } from "@/types/agentx";
 import { useUser } from "@/contexts/user-context";
-import { User as UserIcon, LogOut } from "lucide-react";
+import { User as UserIcon, LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeSwitcher } from "../common/theme-switcher";
+import { useTasks } from "@/hooks/use-tasks";
 
 interface SidebarProps {
   className?: string;
@@ -102,13 +98,10 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, setTheme } = useTheme();
   const { user, logout } = useUser();
-  const apiClient = useAgentXAPI();
+  const { tasks, loading: isLoading, deleteTask, refetch } = useTasks();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
-  const [tasks, setTasks] = useState<TaskResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isPinned, setIsPinned] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("sidebar-pinned");
@@ -126,30 +119,6 @@ export function Sidebar({
   }, [isFloating]);
 
   const currentTaskId = pathname.match(/\/x\/([^\/]+)/)?.[1];
-
-  // Load tasks from API
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        setIsLoading(true);
-        console.log("Loading tasks from API...");
-        const response = await apiClient.getTasks();
-        console.log("Tasks response:", response);
-        setTasks(response.tasks || []);
-      } catch (error) {
-        console.error("Failed to load tasks:", error);
-        setTasks([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTasks();
-
-    // Refresh tasks every 10 seconds
-    const interval = setInterval(loadTasks, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   const filteredTasks = tasks.filter((task) => {
     if (statusFilter === "all") return true;
@@ -280,7 +249,7 @@ export function Sidebar({
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
+              <div className="flex items-center justify-center py-8 h-full">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               </div>
             ) : filteredTasks.length === 0 ? (
@@ -289,12 +258,12 @@ export function Sidebar({
               </div>
             ) : (
               filteredTasks.map((task) => {
-                const isActive = currentTaskId === task.task_id;
-                const createdAt = new Date(task.created_at);
+                const isActive = currentTaskId === task.id;
+                const createdAt = new Date(task.created_at || task.lastUpdated);
 
                 return (
                   <div
-                    key={task.task_id}
+                    key={task.id}
                     className={cn(
                       "group relative p-2 rounded-lg cursor-pointer transition-colors border-l-2",
                       getStatusColor(task.status),
@@ -302,10 +271,10 @@ export function Sidebar({
                         ? "bg-accent text-accent-foreground"
                         : "hover:bg-accent/50"
                     )}
-                    onClick={() => router.push(`/x/${task.task_id}`)}
+                    onClick={() => router.push(`/x/${task.id}`)}
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between w-full">
+                      <div className="flex-1 min-w-0 w-full">
                         <div className="flex items-center gap-2 mb-1">
                           {getStatusIcon(task.status)}
                           <span className="text-xs font-medium truncate">
@@ -325,12 +294,12 @@ export function Sidebar({
                             ? "Task in progress"
                             : "Task pending"}
                         </p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between w-full">
                           <span className="text-xs text-muted-foreground">
                             {formatTimeAgo(createdAt)}
                           </span>
                           <Badge variant="outline" className="text-xs">
-                            {task.task_id}
+                            {task.id}
                           </Badge>
                         </div>
                       </div>
@@ -360,13 +329,9 @@ export function Sidebar({
                             className="text-destructive"
                             onClick={async (e) => {
                               e.stopPropagation();
-                              try {
-                                await apiClient.deleteTask(task.task_id);
-                                // Refresh tasks
-                                const response = await apiClient.getTasks();
-                                setTasks(response.tasks || []);
-                              } catch (error) {
-                                console.error("Failed to delete task:", error);
+                              const success = await deleteTask(task.id);
+                              if (!success) {
+                                console.error("Failed to delete task");
                               }
                             }}
                           >
@@ -392,8 +357,8 @@ export function Sidebar({
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0"
+                      size="icon"
+                      className="rounded-full outline-none focus:outline-none focus:ring-0 focus:ring-offset-0"
                       title="User menu"
                     >
                       <UserAvatar username={user.username} size="md" />
@@ -409,6 +374,62 @@ export function Sidebar({
                         </p>
                       </div>
                     </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        href="https://dustland.github.io/agentx/docs" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Documentation
+                        <ExternalLink className="h-3 w-3 ml-auto" />
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        href="https://github.com/dustland/agentx" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                      >
+                        <Github className="h-4 w-4 mr-2" />
+                        GitHub
+                        <ExternalLink className="h-3 w-3 ml-auto" />
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        href="/observability"
+                        className="flex items-center"
+                      >
+                        <Monitor className="h-4 w-4 mr-2" />
+                        Observability
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        href="/settings"
+                        className="flex items-center"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link 
+                        href="https://github.com/dustland/agentx/issues" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center"
+                      >
+                        <HelpCircle className="h-4 w-4 mr-2" />
+                        Help & Support
+                        <ExternalLink className="h-3 w-3 ml-auto" />
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={logout}

@@ -10,6 +10,7 @@ import { useAgentXAPI } from "@/lib/api-client";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
 import { useTaskStore } from "@/store/task";
+import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
   const router = useRouter();
@@ -118,10 +119,10 @@ export default function HomePage() {
   return (
     <div className="flex-1 flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="max-w-4xl mx-auto px-6">
-          {/* Hero Section */}
-          <div className="flex flex-col items-center justify-center min-h-[50vh] py-12">
+      <div className="flex-1 flex flex-col">
+        {/* Hero Section - Center vertically in viewport */}
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full max-w-4xl">
             <div className="text-center space-y-4 mb-8">
               <h1 className="text-3xl font-medium text-foreground">
                 Hello {user?.username || "there"}
@@ -138,9 +139,11 @@ export default function HomePage() {
               placeholder="Ask me anything..."
             />
           </div>
+        </div>
 
-          {/* Sample Tasks Section */}
-          <div className="pb-12">
+        {/* Sample Tasks Section - Below the fold */}
+        <div className="px-6 pb-12">
+          <div className="max-w-4xl mx-auto">
             <div className="mb-6">
               <h2 className="text-lg font-medium mb-6">Recommended</h2>
             </div>
@@ -148,10 +151,9 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {sampleTasks.map((task) => {
                 return (
-                  <div
+                  <Card
                     key={task.id}
-                    className="group cursor-pointer border border-border rounded-2xl p-4 hover:border-foreground/30 transition-all duration-200 relative"
-                    onClick={() => handleSampleTaskClick(task)}
+                    className="group rounded-2xl p-4 hover:border-foreground/30 transition-all duration-200 relative"
                   >
                     <div className="space-y-2">
                       <h3 className="font-medium text-sm text-foreground">
@@ -176,7 +178,7 @@ export default function HomePage() {
                         Start Task
                       </Button>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>

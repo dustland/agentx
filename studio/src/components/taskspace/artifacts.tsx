@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FileText,
   Download,
@@ -236,38 +235,27 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
   const tree = buildTree(artifacts);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Artifacts</h3>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={loadArtifacts}
-          disabled={loadingArtifacts}
-        >
-          <ChevronRightIcon
-            className={`h-4 w-4 ${loadingArtifacts ? "animate-spin" : ""}`}
-          />
-        </Button>
-      </div>
-      <ScrollArea className="flex-1 min-h-0">
-        {loadingArtifacts ? (
-          <div className="text-center py-6 text-muted-foreground">
+    <ScrollArea className="h-full">
+      {loadingArtifacts ? (
+        <div className="h-full flex items-center justify-center text-muted-foreground">
+          <div className="text-center">
             <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
             <p>Loading artifacts...</p>
           </div>
-        ) : artifacts.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
+        </div>
+      ) : artifacts.length === 0 ? (
+        <div className="h-full flex items-center justify-center text-muted-foreground">
+          <div className="text-center">
             <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
             <p>No artifacts created yet</p>
             <p className="text-xs mt-1">
               Files will appear here when agents create them
             </p>
           </div>
-        ) : (
-          <div className="p-4">{renderTree(tree)}</div>
-        )}
-      </ScrollArea>
-    </div>
+        </div>
+      ) : (
+        <div className="p-4">{renderTree(tree)}</div>
+      )}
+    </ScrollArea>
   );
 }

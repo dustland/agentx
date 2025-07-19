@@ -2,7 +2,6 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { TaskStatus } from './task-status'
@@ -42,7 +41,7 @@ export function RecentTasks() {
         <div className="space-y-4">
           {tasks?.map((task: any) => (
             <div
-              key={task.id}
+              key={task.task_id}
               className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
             >
               <div className="flex-1 space-y-1">

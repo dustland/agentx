@@ -50,34 +50,38 @@ export function Memory({ taskId }: MemoryProps) {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Memory</h3>
+    <div className="h-full relative">
+      <div className="absolute top-2 right-2 z-10">
         <Button
           size="sm"
           variant="ghost"
           onClick={loadMemories}
           disabled={loadingMemories}
+          className="h-7 w-7 p-0"
         >
           <RefreshCw
-            className={`h-4 w-4 ${loadingMemories ? "animate-spin" : ""}`}
+            className={`h-3 w-3 ${loadingMemories ? "animate-spin" : ""}`}
           />
         </Button>
       </div>
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className="h-full">
         {loadingMemories ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>Loading memories...</p>
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
+              <p>Loading memories...</p>
+            </div>
           </div>
         ) : memories.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>No memories stored yet</p>
-            <p className="text-xs mt-2">
-              Memories will appear as agents store information during task
-              execution
-            </p>
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
+              <p>No memories stored yet</p>
+              <p className="text-xs mt-2">
+                Memories will appear as agents store information during task
+                execution
+              </p>
+            </div>
           </div>
         ) : (
           <div className="space-y-2 p-4">

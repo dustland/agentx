@@ -107,7 +107,7 @@ export function TaskList({ onTaskSelect, selectedTaskId }: TaskListProps) {
           <XCircleIcon className="w-8 h-8 mx-auto mb-4 text-red-500" />
           <p className="text-red-500">{error}</p>
           <Button
-            onClick={loadTasks}
+            onClick={() => refetch()}
             variant="outline"
             size="sm"
             className="mt-4"

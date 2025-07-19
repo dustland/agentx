@@ -1,0 +1,11 @@
+{
+  "bcDI1O1N": {
+    "user_id": "test-user",
+    "created_at": "2025-07-19T10:29:02.942561"
+  },
+  "MIjceRwo": {
+    "user_id": "test-user",
+    "created_at": "2025-07-19T10:41:47.853562",
+    "config_path": "examples/simple_chat/config/team.yaml"
+  }
+}

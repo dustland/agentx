@@ -84,41 +84,41 @@ export function Logs({ taskId }: LogsProps) {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Logs</h3>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setAutoScrollLogs(!autoScrollLogs)}
-            className={
-              autoScrollLogs ? "text-primary" : "text-muted-foreground"
-            }
-          >
-            <Activity className="h-4 w-4" />
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={loadLogs}
-            disabled={loadingLogs}
-          >
-            <RefreshCwIcon
-              className={`h-4 w-4 ${loadingLogs ? "animate-spin" : ""}`}
-            />
-          </Button>
-        </div>
+    <div className="h-full relative">
+      <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setAutoScrollLogs(!autoScrollLogs)}
+          className={
+            autoScrollLogs ? "text-primary h-7 w-7 p-0" : "text-muted-foreground h-7 w-7 p-0"
+          }
+        >
+          <Activity className="h-3 w-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={loadLogs}
+          disabled={loadingLogs}
+          className="h-7 w-7 p-0"
+        >
+          <RefreshCwIcon
+            className={`h-3 w-3 ${loadingLogs ? "animate-spin" : ""}`}
+          />
+        </Button>
       </div>
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="p-4 space-y-1">
-          {logs.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
+      <ScrollArea className="h-full">
+        {logs.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
               <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
               <p>No logs available</p>
             </div>
-          ) : (
-            logs.map((log, idx) => {
+          </div>
+        ) : (
+          <div className="p-4 space-y-1">
+            {logs.map((log, idx) => {
               const parsed = parseLogEntry(log);
               const isError = parsed.level === "ERROR";
               const isWarning =
@@ -176,9 +176,9 @@ export function Logs({ taskId }: LogsProps) {
                   </span>
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </ScrollArea>
     </div>
   );

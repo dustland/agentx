@@ -34,7 +34,7 @@ interface ViewerProps {
   taskId: string;
 }
 
-export function Viewer({
+export function Inspector({
   selectedArtifact,
   selectedToolCall,
   taskId,
@@ -107,12 +107,8 @@ export function Viewer({
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Viewer</h3>
-      </div>
-      <ScrollArea className="flex-1 min-h-0">
-        {selectedToolCall ? (
+    <ScrollArea className="h-full">
+      {selectedToolCall ? (
           <div className="space-y-4 p-4">
             <div>
               <h4 className="text-sm font-medium mb-2">Agent</h4>
@@ -178,13 +174,14 @@ export function Viewer({
               </div>
             )}
           </div>
-        ) : (
-          <div className="text-center py-6 text-muted-foreground">
+      ) : (
+        <div className="h-full flex items-center justify-center text-muted-foreground">
+          <div className="text-center">
             <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
             <p>Select an artifact or tool call to view details</p>
           </div>
-        )}
-      </ScrollArea>
-    </div>
+        </div>
+      )}
+    </ScrollArea>
   );
 }

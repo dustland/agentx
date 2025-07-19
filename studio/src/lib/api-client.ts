@@ -133,9 +133,9 @@ export class AgentXAPIClient {
 
   async getTasks(): Promise<TaskListResponse> {
     await this.init();
-    const tasks = await this.request<TaskResponse[]>("/tasks");
-    // Backend returns array directly, wrap it for compatibility
-    return { tasks, total: tasks.length };
+    const response = await this.request<{ tasks: TaskResponse[] }>("/tasks");
+    // Backend returns { tasks: [...] }
+    return { tasks: response.tasks || [], total: (response.tasks || []).length };
   }
 
   async getTask(taskId: string): Promise<TaskResponse> {

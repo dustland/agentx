@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useEffect, useCallback } from "react";
-import { TaskSpacePanel } from "@/components/taskspace/taskspace-panel";
+import { TaskSpacePanel } from "@/components/taskspace/panel";
 import { ChatLayout } from "@/components/chat";
 import {
   ResizablePanelGroup,

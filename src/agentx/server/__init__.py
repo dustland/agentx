@@ -4,21 +4,20 @@ AgentX Server
 Simple REST API for task execution and memory management.
 """
 
-from .api import create_app, run_server
+from .api import create_app, app
 from .models import (
-    TaskRequest, TaskResponse, TaskInfo, TaskStatus,
-    MemoryRequest, MemoryResponse,
-    HealthResponse
+    TaskRequest, TaskResponse, TaskStatus, TaskInfo,
+    MemoryRequest, MemoryResponse, HealthResponse
 )
 from .redis_cache import RedisCacheBackend
 
 __all__ = [
     "create_app",
-    "run_server",
+    "app",
     "TaskRequest",
     "TaskResponse",
-    "TaskInfo",
     "TaskStatus",
+    "TaskInfo",
     "MemoryRequest",
     "MemoryResponse",
     "HealthResponse",
