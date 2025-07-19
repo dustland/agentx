@@ -70,7 +70,7 @@ export function TaskSpacePanel({
 
   // Set up SSE for real-time updates
   useEffect(() => {
-    const eventSource = new EventSource(`/api/tasks/${taskId}/stream`);
+    const eventSource = new EventSource(`/api/agentx/tasks/${taskId}/stream`);
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);

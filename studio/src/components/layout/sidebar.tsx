@@ -330,7 +330,12 @@ export function Sidebar({
                             onClick={async (e) => {
                               e.stopPropagation();
                               const success = await deleteTask(task.id);
-                              if (!success) {
+                              if (success) {
+                                // If we deleted the current task, redirect to homepage
+                                if (currentTaskId === task.id) {
+                                  router.push("/");
+                                }
+                              } else {
                                 console.error("Failed to delete task");
                               }
                             }}
