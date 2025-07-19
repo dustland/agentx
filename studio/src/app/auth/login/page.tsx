@@ -1,31 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { useAuthStore } from "@/store/auth";
-import { Loader2, AlertCircle, HelpCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginUsername, setLoginUsername] = useState("guest");
+  const [loginPassword, setLoginPassword] = useState("GuestDemo$2024!");
+  const [registerUsername, setRegisterUsername] = useState("");
+  const [registerPassword, setRegisterPassword] = useState("");
+  const [registerEmail, setRegisterEmail] = useState("");
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuthStore();
   const router = useRouter();
@@ -34,127 +28,161 @@ export default function LoginPage() {
   // Get the redirect URL from query params, default to home
   const redirectTo = searchParams.get("redirect") || "/";
 
-  const fillGuestCredentials = () => {
-    setUsername("guest");
-    setPassword("GuestDemo$2024!");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      await login(username, password);
-      // Redirect to the intended page after successful login
+      await login(loginUsername, loginPassword);
       router.push(redirectTo);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Login failed");
+    } catch (err: any) {
+      setError(err.message || "Login failed");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      // For now, registration just creates a local user
+      const { registerUser } = await import("@/lib/auth");
+      await registerUser(registerUsername, registerPassword, registerEmail);
+      await login(registerUsername, registerPassword);
+      router.push(redirectTo);
+    } catch (err: any) {
+      setError(err.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (username: string, password: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      await login(username, password);
+      router.push(redirectTo);
+    } catch (err: any) {
+      setError(err.message || "Demo login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="w-full max-w-md rounded-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            Login to AgentX Studio
-          </CardTitle>
-          <CardDescription>Enter your credentials to continue</CardDescription>
+          <div className="flex flex-col items-center justify-center gap-3 mb-2">
+            <Image
+              src="/logo.png"
+              alt="AgentX"
+              width={64}
+              height={64}
+              priority
+              className="my-4"
+            />
+            <h1 className="text-lg font-semibold">Welcome to AgentX</h1>
+          </div>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="username">Username</Label>
-                <HoverCard>
-                  <HoverCardTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-5 w-5 rounded-full p-0"
-                    >
-                      <HelpCircle className="h-3.5 w-3.5" />
-                    </Button>
-                  </HoverCardTrigger>
-                  <HoverCardContent className="w-80" align="start">
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm font-semibold">Quick Start</p>
-                        <p className="text-sm text-muted-foreground">
-                          Use one of these demo accounts to get started:
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <code className="text-xs bg-muted px-2 py-1 rounded">
-                            guest / GuestDemo$2024!
-                          </code>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={fillGuestCredentials}
-                          >
-                            Fill in
-                          </Button>
-                        </div>
-                        <code className="block text-xs bg-muted px-2 py-1 rounded">
-                          alice / alice123
-                        </code>
-                        <code className="block text-xs bg-muted px-2 py-1 rounded">
-                          bob / bob123
-                        </code>
-                      </div>
-                    </div>
-                  </HoverCardContent>
-                </HoverCard>
-              </div>
-              <Input
-                id="username"
-                type="text"
-                placeholder="Enter username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={isLoading}
-                autoFocus
-              />
-            </div>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Sign In</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter your username"
+                    value={loginUsername}
+                    onChange={(e) => setLoginUsername(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+            </TabsContent>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Logging in...
-                </>
-              ) : (
-                "Login"
-              )}
-            </Button>
-          </form>
+            <TabsContent value="register">
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-username">Username</Label>
+                  <Input
+                    id="new-username"
+                    type="text"
+                    placeholder="Choose a username"
+                    value={registerUsername}
+                    onChange={(e) => setRegisterUsername(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Choose a password (min 6 characters)"
+                    value={registerPassword}
+                    onChange={(e) => setRegisterPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email (optional)</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={registerEmail}
+                    onChange={(e) => setRegisterEmail(e.target.value)}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading}
+                >
+                  {loading ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

@@ -6,14 +6,15 @@
       "email": "guest@example.com",
       "passwordHash": "1a0b029adf28eecd2788c090d1cb1f46:aa06ceb3994435aed5901db20417ecf7e7b194fbc4512b7c499251648cce1d67f79aff2cdc6cc6501a0555b8e22f142fd802e4ffaa0dbf3c4b05ca3941659c33",
       "createdAt": "2025-07-15T06:36:36.034Z",
-      "lastLogin": "2025-07-18T15:56:29.575Z"
+      "lastLogin": "2025-07-19T01:37:28.845Z"
     },
     {
       "id": "alice",
       "username": "alice",
       "email": "alice@example.com",
       "passwordHash": "e47f0a07303b2aa08e38474d9ca1de6f:7a5d8d0662eb5a03cb1b3b62bedebb3d2d1fe712a3009b0f2ad0af8152bddbcb29d3ab9786da3f2252e2bcae8cafc797934aef4ef2a7de240f832fc66b645648",
-      "createdAt": "2025-07-15T06:28:21.364Z"
+      "createdAt": "2025-07-15T06:28:21.364Z",
+      "lastLogin": "2025-07-19T01:30:51.039Z"
     },
     {
       "id": "bob",
