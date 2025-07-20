@@ -106,82 +106,92 @@ export function Inspector({
     }
   };
 
+  // Loading state
+  if (selectedArtifact && loadingContent) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
+          <p>Loading content...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!selectedToolCall && !selectedArtifact) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>Select an artifact or tool call to view details</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ScrollArea className="h-full">
       {selectedToolCall ? (
-          <div className="space-y-4 p-4">
+        <div className="space-y-4 p-4">
+          <div>
+            <h4 className="text-sm font-medium mb-2">Agent</h4>
+            <Badge variant="outline">{selectedToolCall.agent_id}</Badge>
+          </div>
+          <div>
+            <h4 className="text-sm font-medium mb-2">Parameters</h4>
+            <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">
+              {JSON.stringify(selectedToolCall.parameters, null, 2)}
+            </pre>
+          </div>
+          {selectedToolCall.result && (
             <div>
-              <h4 className="text-sm font-medium mb-2">Agent</h4>
-              <Badge variant="outline">{selectedToolCall.agent_id}</Badge>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium mb-2">Parameters</h4>
+              <h4 className="text-sm font-medium mb-2">Result</h4>
               <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">
-                {JSON.stringify(selectedToolCall.parameters, null, 2)}
+                {typeof selectedToolCall.result === "string"
+                  ? selectedToolCall.result
+                  : JSON.stringify(selectedToolCall.result, null, 2)}
               </pre>
             </div>
-            {selectedToolCall.result && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Result</h4>
-                <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">
-                  {typeof selectedToolCall.result === "string"
-                    ? selectedToolCall.result
-                    : JSON.stringify(selectedToolCall.result, null, 2)}
-                </pre>
-              </div>
-            )}
-            <div>
-              <h4 className="text-sm font-medium mb-2">Status</h4>
-              <Badge
-                variant={
-                  selectedToolCall.status === "completed"
-                    ? "default"
-                    : selectedToolCall.status === "failed"
-                    ? "destructive"
-                    : "secondary"
-                }
-              >
-                {selectedToolCall.status}
-              </Badge>
-            </div>
-          </div>
-        ) : selectedArtifact && (artifactContent || loadingContent) ? (
-          <div className="p-4">
-            {loadingContent ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                <p>Loading content...</p>
-              </div>
-            ) : (
-              <div className="relative">
-                {selectedArtifact.path.endsWith(".md") ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <pre className="whitespace-pre-wrap">{artifactContent}</pre>
-                  </div>
-                ) : (
-                  <SyntaxHighlighter
-                    language={getFileLanguage(selectedArtifact.path)}
-                    style={vscDarkPlus}
-                    customStyle={{
-                      margin: 0,
-                      fontSize: "0.875rem",
-                      borderRadius: "0.375rem",
-                    }}
-                  >
-                    {artifactContent || ""}
-                  </SyntaxHighlighter>
-                )}
-              </div>
-            )}
-          </div>
-      ) : (
-        <div className="h-full flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>Select an artifact or tool call to view details</p>
+          )}
+          <div>
+            <h4 className="text-sm font-medium mb-2">Status</h4>
+            <Badge
+              variant={
+                selectedToolCall.status === "completed"
+                  ? "default"
+                  : selectedToolCall.status === "failed"
+                  ? "destructive"
+                  : "secondary"
+              }
+            >
+              {selectedToolCall.status}
+            </Badge>
           </div>
         </div>
-      )}
+      ) : selectedArtifact && artifactContent ? (
+        <div className="p-4">
+          <div className="relative">
+            {selectedArtifact.path.endsWith(".md") ? (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <pre className="whitespace-pre-wrap">{artifactContent}</pre>
+              </div>
+            ) : (
+              <SyntaxHighlighter
+                language={getFileLanguage(selectedArtifact.path)}
+                style={vscDarkPlus}
+                customStyle={{
+                  margin: 0,
+                  fontSize: "0.875rem",
+                  borderRadius: "0.375rem",
+                }}
+              >
+                {artifactContent || ""}
+              </SyntaxHighlighter>
+            )}
+          </div>
+        </div>
+      ) : null}
     </ScrollArea>
   );
 }

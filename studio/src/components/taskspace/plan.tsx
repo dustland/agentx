@@ -40,6 +40,28 @@ export function Plan({ taskId }: PlanProps) {
     }
   }, [taskId]);
 
+  if (loadingPlan) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <ListIcon className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
+          <p>Loading plan...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!planContent) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <ListIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>No plan available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
@@ -56,30 +78,19 @@ export function Plan({ taskId }: PlanProps) {
         </Button>
       </div>
       <ScrollArea className="flex-1 min-h-0">
-        {loadingPlan ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          </div>
-        ) : planContent ? (
-          <div className="p-4 space-y-4">
-            <SyntaxHighlighter
-              language="json"
-              style={vscDarkPlus}
-              customStyle={{
-                margin: 0,
-                fontSize: "0.875rem",
-                borderRadius: "0.375rem",
-              }}
-            >
-              {planContent}
-            </SyntaxHighlighter>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <ListIcon className="w-8 h-8 mx-auto mb-2" />
-            <p>No plan available</p>
-          </div>
-        )}
+        <div className="p-4 space-y-4">
+          <SyntaxHighlighter
+            language="json"
+            style={vscDarkPlus}
+            customStyle={{
+              margin: 0,
+              fontSize: "0.875rem",
+              borderRadius: "0.375rem",
+            }}
+          >
+            {planContent}
+          </SyntaxHighlighter>
+        </div>
       </ScrollArea>
     </div>
   );

@@ -50,9 +50,7 @@ export default function TasksLayout({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Floating Sidebar */}
-
+      <div className="flex-1 flex overflow-hidden relative bg-muted">
         {/* Page Content */}
         {children}
       </div>

@@ -206,9 +206,10 @@ export interface LogEntry {
 }
 
 export interface LogsResponse {
-  task_id: string;
   logs: string[];
-  total_lines: number;
+  total: number;
+  offset: number;
+  limit: number;
 }
 
 // Helper functions to work with messages

@@ -300,7 +300,7 @@ def create_app() -> FastAPI:
             
             # Read logs from the task's log file
             from pathlib import Path
-            log_file = Path(f"task_data/{task_id}/task.log")
+            log_file = Path(f"task_data/{task_id}/logs/{task_id}.log")
             
             if not log_file.exists():
                 return {"logs": [], "total": 0}

@@ -49,6 +49,32 @@ export function Memory({ taskId }: MemoryProps) {
     }
   };
 
+  if (loadingMemories) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <Brain className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
+          <p>Loading memories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (memories.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>No memories stored yet</p>
+          <p className="text-xs mt-2">
+            Memories will appear as agents store information during task
+            execution
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full relative">
       <div className="absolute top-2 right-2 z-10">
@@ -65,26 +91,7 @@ export function Memory({ taskId }: MemoryProps) {
         </Button>
       </div>
       <ScrollArea className="h-full">
-        {loadingMemories ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
-              <p>Loading memories...</p>
-            </div>
-          </div>
-        ) : memories.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <Brain className="w-6 h-6 mx-auto mb-2 opacity-50" />
-              <p>No memories stored yet</p>
-              <p className="text-xs mt-2">
-                Memories will appear as agents store information during task
-                execution
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-2 p-4">
+        <div className="space-y-2 p-4">
             {memories.map((memory, idx) => (
               <Card key={idx} className="p-3">
                 <div className="flex items-start justify-between mb-2">
@@ -114,7 +121,6 @@ export function Memory({ taskId }: MemoryProps) {
               </Card>
             ))}
           </div>
-        )}
       </ScrollArea>
     </div>
   );

@@ -77,31 +77,6 @@ export function ChatLayout({
             {taskStatus}
           </Badge>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={onPauseResume}
-              disabled={taskStatus !== "running" && taskStatus !== "pending"}
-            >
-              {taskStatus === "running" ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-            </Button>
-
-            <Button size="icon" variant="ghost" onClick={onShare}>
-              <Share2 className="h-4 w-4" />
-            </Button>
-
-            <Button size="icon" variant="ghost" onClick={onMoreActions}>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Message List */}

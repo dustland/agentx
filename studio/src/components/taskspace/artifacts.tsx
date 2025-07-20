@@ -234,28 +234,34 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const tree = buildTree(artifacts);
 
+  if (loadingArtifacts) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>Loading artifacts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (artifacts.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>No artifacts created yet</p>
+          <p className="text-xs mt-1">
+            Files will appear here when agents create them
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <ScrollArea className="h-full">
-      {loadingArtifacts ? (
-        <div className="h-full flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>Loading artifacts...</p>
-          </div>
-        </div>
-      ) : artifacts.length === 0 ? (
-        <div className="h-full flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p>No artifacts created yet</p>
-            <p className="text-xs mt-1">
-              Files will appear here when agents create them
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="p-4">{renderTree(tree)}</div>
-      )}
+      <div className="p-4">{renderTree(tree)}</div>
     </ScrollArea>
   );
 }

@@ -37,6 +37,11 @@ export function Logs({ taskId }: LogsProps) {
     setLoadingLogs(true);
     try {
       const response = await apiClient.getTaskLogs(taskId);
+      console.log("Raw logs response from backend:", response);
+      console.log("Logs array:", response.logs);
+      console.log("Total logs:", response.total);
+      console.log("Offset:", response.offset);
+      console.log("Limit:", response.limit);
       setLogs(response.logs || []);
     } catch (error) {
       console.error("Failed to load logs:", error);
@@ -83,6 +88,28 @@ export function Logs({ taskId }: LogsProps) {
     };
   };
 
+  if (loadingLogs && logs.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
+          <p>Loading logs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (logs.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <p>No logs available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full relative">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
@@ -109,17 +136,15 @@ export function Logs({ taskId }: LogsProps) {
         </Button>
       </div>
       <ScrollArea className="h-full">
-        {logs.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
-              <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
-              <p>No logs available</p>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 space-y-1">
+        <div className="p-4 space-y-1">
             {logs.map((log, idx) => {
               const parsed = parseLogEntry(log);
+              if (idx < 5) { // Log first 5 entries for inspection
+                console.log(`Log entry ${idx}:`, {
+                  raw: log,
+                  parsed: parsed
+                });
+              }
               const isError = parsed.level === "ERROR";
               const isWarning =
                 parsed.level === "WARNING" || parsed.level === "WARN";
@@ -178,7 +203,6 @@ export function Logs({ taskId }: LogsProps) {
               );
             })}
           </div>
-        )}
       </ScrollArea>
     </div>
   );
