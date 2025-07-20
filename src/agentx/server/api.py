@@ -109,7 +109,7 @@ def create_app() -> FastAPI:
         
         try:
             # Just verify ownership and return basic info
-            await task_service.get_task(x_user_id, task_id)
+            await task_service.verify_task_ownership(x_user_id, task_id)
             
             # Get task info from filesystem (service handles this)
             tasks = await task_service.list_user_tasks(x_user_id)
@@ -206,8 +206,8 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            # Verify ownership
-            await task_service.get_task(x_user_id, task_id)
+            # Verify ownership using lightweight check
+            await task_service.verify_task_ownership(x_user_id, task_id)
             
             # Stream events
             async def event_generator():
@@ -252,8 +252,8 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            # Verify ownership first
-            await task_service.get_task(x_user_id, task_id)
+            # Verify ownership using lightweight check
+            await task_service.verify_task_ownership(x_user_id, task_id)
             
             # Read artifact directly (service could handle this too)
             from pathlib import Path
@@ -287,43 +287,118 @@ def create_app() -> FastAPI:
     async def get_task_logs(
         task_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
-        limit: int = 1000,
-        offset: int = 0
+        limit: int = 100,
+        offset: int = 0,
+        tail: bool = False
     ):
-        """Get task execution logs."""
+        """Get task execution logs with efficient pagination for large files."""
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            # Verify ownership first
-            await task_service.get_task(x_user_id, task_id)
+            # Verify ownership using lightweight check (doesn't create log entries)
+            await task_service.verify_task_ownership(x_user_id, task_id)
             
             # Read logs from the task's log file
             from pathlib import Path
-            log_file = Path(f"task_data/{task_id}/logs/{task_id}.log")
+            import os
+            import glob
             
-            if not log_file.exists():
-                return {"logs": [], "total": 0}
+            log_dir = Path(f"task_data/{task_id}/logs")
+            log_file = log_dir / "task.log"
             
-            # Read all lines
-            with open(log_file, 'r', encoding='utf-8') as f:
-                all_logs = f.readlines()
+            # Check for rotated log files
+            rotated_files = sorted(glob.glob(str(log_dir / "task.log.*")), reverse=True)
+            all_log_files = [log_file] + [Path(f) for f in rotated_files if Path(f).exists()]
             
-            # Apply pagination
-            total = len(all_logs)
-            logs = all_logs[offset:offset + limit]
+            if not any(f.exists() for f in all_log_files):
+                return {"logs": [], "total": 0, "file_size": 0}
             
-            return {
-                "logs": [log.rstrip() for log in logs],
-                "total": total,
-                "offset": offset,
-                "limit": limit
-            }
+            # Calculate total file size including rotated files
+            file_size = sum(os.path.getsize(f) for f in all_log_files if f.exists())
+            
+            # Always use efficient reading to avoid memory issues
+            logs = []
+            
+            if tail:
+                # Tail mode: read last N lines from the current log file
+                if log_file.exists():
+                    with open(log_file, 'rb') as f:
+                        # Seek to end and read backwards
+                        f.seek(0, 2)  # Go to end
+                        file_length = f.tell()
+                        
+                        # Read last chunk (up to 1MB or whole file)
+                        # This ensures we get enough lines without loading too much
+                        chunk_size = min(1024 * 1024, file_length)
+                        f.seek(max(0, file_length - chunk_size))
+                        
+                        # Read and decode
+                        chunk = f.read().decode('utf-8', errors='ignore')
+                        lines = chunk.split('\n')
+                        
+                        # Filter empty lines and take last 'limit' lines
+                        non_empty_lines = [line.rstrip() for line in lines if line.strip()]
+                        logs = non_empty_lines[-limit:] if len(non_empty_lines) > limit else non_empty_lines
+                
+                return {
+                    "logs": logs,
+                    "total": -1,  # Unknown for tail mode
+                    "offset": 0,
+                    "limit": limit,
+                    "file_size": file_size,
+                    "mode": "tail"
+                }
+            else:
+                # Regular pagination mode: read specific chunk
+                # Use a line-based approach to avoid loading entire file
+                lines_read = 0
+                lines_skipped = 0
+                
+                # Read from all log files (current + rotated)
+                for log_file_path in all_log_files:
+                    if not log_file_path.exists():
+                        continue
+                        
+                    with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                        for line in f:
+                            # Skip lines until we reach the offset
+                            if lines_skipped < offset:
+                                lines_skipped += 1
+                                continue
+                            
+                            # Collect lines up to the limit
+                            if lines_read < limit:
+                                line = line.rstrip()
+                                if line:  # Skip empty lines
+                                    logs.append(line)
+                                    lines_read += 1
+                            else:
+                                # We've collected enough lines
+                                break
+                    
+                    # If we've collected enough lines, stop reading files
+                    if lines_read >= limit:
+                        break
+                
+                # For pagination info, we'll estimate if there are more logs
+                has_more = lines_read >= limit
+                
+                return {
+                    "logs": logs,
+                    "total": -1,  # Too expensive to count all lines
+                    "offset": offset,
+                    "limit": limit,
+                    "file_size": file_size,
+                    "mode": "chunked",
+                    "has_more": has_more
+                }
             
         except PermissionError:
             raise HTTPException(status_code=403, detail="Access denied")
         except Exception as e:
-            logger.error(f"Failed to get logs: {e}")
+            # Don't log errors for the logs endpoint to avoid feedback loops
+            # logger.error(f"Failed to get logs: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
     return app

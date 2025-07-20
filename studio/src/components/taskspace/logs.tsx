@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, RefreshCwIcon, ScrollIcon } from "lucide-react";
-import { useAgentXAPI } from "@/lib/api-client";
 import {
-  AlertCircle,
-  Info,
-  AlertTriangle,
-  Search,
+  Activity,
+  RefreshCwIcon,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { useAgentXAPI } from "@/lib/api-client";
+import { AlertCircle, AlertTriangle, Info, Search } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { formatBytes } from "@/lib/utils";
 
 interface LogsProps {
   taskId: string;
@@ -29,37 +29,60 @@ export function Logs({ taskId }: LogsProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [autoScrollLogs, setAutoScrollLogs] = useState(true);
+  const [tailMode, setTailMode] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [fileSize, setFileSize] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const limit = 100;
 
-  // Load logs function
-  const loadLogs = async () => {
+  const loadLogs = async (newOffset?: number, newTailMode?: boolean) => {
     if (!taskId) return;
 
     setLoadingLogs(true);
     try {
-      const response = await apiClient.getTaskLogs(taskId);
-      console.log("Raw logs response from backend:", response);
-      console.log("Logs array:", response.logs);
-      console.log("Total logs:", response.total);
-      console.log("Offset:", response.offset);
-      console.log("Limit:", response.limit);
+      const useTail = newTailMode !== undefined ? newTailMode : tailMode;
+      const useOffset = newOffset !== undefined ? newOffset : offset;
+
+      const response = await apiClient.getTaskLogs(taskId, {
+        limit,
+        offset: useTail ? 0 : useOffset,
+        tail: useTail,
+      });
+
       setLogs(response.logs || []);
+      setFileSize(response.file_size || 0);
+      setHasMore(response.has_more || false);
+
+      if (!useTail) {
+        setOffset(useOffset);
+      }
     } catch (error) {
-      console.error("Failed to load logs:", error);
+      // console.error("Failed to load logs:", error);
     } finally {
       setLoadingLogs(false);
     }
   };
 
-  // Load logs initially and set up refresh interval
+  // Load logs when component mounts or taskId changes
   useEffect(() => {
-    if (!taskId) return;
+    if (taskId) {
+      loadLogs();
+    }
 
-    loadLogs();
+    // Auto-refresh logs every 2 seconds only in tail mode
+    if (tailMode) {
+      const interval = setInterval(() => loadLogs(), 2000);
+      return () => clearInterval(interval);
+    }
+  }, [taskId, tailMode]);
 
-    // Refresh logs every 2 seconds when tab is active
-    const interval = setInterval(loadLogs, 2000);
-    return () => clearInterval(interval);
-  }, [taskId]);
+  // Auto-scroll to bottom when new logs arrive
+  useEffect(() => {
+    if (autoScrollLogs && scrollRef.current && tailMode) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [logs, autoScrollLogs, tailMode]);
 
   const parseLogEntry = (log: string) => {
     // Match pattern: YYYY-MM-DD HH:MM:SS - logger.name - LEVEL - message
@@ -99,7 +122,7 @@ export function Logs({ taskId }: LogsProps) {
     );
   }
 
-  if (logs.length === 0) {
+  if (logs.length === 0 && !loadingLogs) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
@@ -113,12 +136,64 @@ export function Logs({ taskId }: LogsProps) {
   return (
     <div className="h-full relative">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
+        {fileSize > 0 && (
+          <span className="text-xs text-muted-foreground mr-2">
+            {formatBytes(fileSize)}
+          </span>
+        )}
+        <Button
+          size="sm"
+          variant={tailMode ? "default" : "ghost"}
+          onClick={() => {
+            setTailMode(!tailMode);
+            loadLogs(0, !tailMode);
+          }}
+          className="h-7 px-2 text-xs"
+        >
+          {tailMode ? "Tail" : "Page"}
+        </Button>
+        {!tailMode && (
+          <>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                const newOffset = Math.max(0, offset - limit);
+                loadLogs(newOffset, false);
+              }}
+              disabled={offset === 0 || loadingLogs}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronLeft className="h-3 w-3" />
+            </Button>
+            <span className="text-xs text-muted-foreground px-1">
+              {offset + 1}-{offset + logs.length}
+            </span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                const newOffset = offset + limit;
+                loadLogs(newOffset, false);
+              }}
+              disabled={!hasMore || loadingLogs}
+              className="h-7 w-7 p-0"
+            >
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </>
+        )}
         <Button
           size="sm"
           variant="ghost"
           onClick={() => setAutoScrollLogs(!autoScrollLogs)}
           className={
-            autoScrollLogs ? "text-primary h-7 w-7 p-0" : "text-muted-foreground h-7 w-7 p-0"
+            autoScrollLogs
+              ? "text-primary h-7 w-7 p-0"
+              : "text-muted-foreground h-7 w-7 p-0"
+          }
+          title={
+            autoScrollLogs ? "Auto-scroll enabled" : "Auto-scroll disabled"
           }
         >
           <Activity className="h-3 w-3" />
@@ -126,7 +201,7 @@ export function Logs({ taskId }: LogsProps) {
         <Button
           size="sm"
           variant="ghost"
-          onClick={loadLogs}
+          onClick={() => loadLogs()}
           disabled={loadingLogs}
           className="h-7 w-7 p-0"
         >
@@ -135,74 +210,66 @@ export function Logs({ taskId }: LogsProps) {
           />
         </Button>
       </div>
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full" ref={scrollRef}>
         <div className="p-4 space-y-1">
-            {logs.map((log, idx) => {
-              const parsed = parseLogEntry(log);
-              if (idx < 5) { // Log first 5 entries for inspection
-                console.log(`Log entry ${idx}:`, {
-                  raw: log,
-                  parsed: parsed
-                });
-              }
-              const isError = parsed.level === "ERROR";
-              const isWarning =
-                parsed.level === "WARNING" || parsed.level === "WARN";
-              const isInfo = parsed.level === "INFO";
-              const isDebug = parsed.level === "DEBUG";
+          {logs.map((log, idx) => {
+            const parsed = parseLogEntry(log);
+            const isError = parsed.level === "ERROR";
+            const isWarning =
+              parsed.level === "WARNING" || parsed.level === "WARN";
+            const isInfo = parsed.level === "INFO";
+            const isDebug = parsed.level === "DEBUG";
 
-              const getLogIcon = () => {
-                if (isError) return <AlertCircle className="w-4 h-4" />;
-                if (isWarning) return <AlertTriangle className="w-4 h-4" />;
-                if (isInfo) return <Info className="w-4 h-4" />;
-                if (isDebug) return <Search className="w-4 h-4" />;
-                return <FileText className="w-4 h-4" />;
-              };
+            const getLogIcon = () => {
+              if (isError) return <AlertCircle className="w-4 h-4" />;
+              if (isWarning) return <AlertTriangle className="w-4 h-4" />;
+              if (isInfo) return <Info className="w-4 h-4" />;
+              if (isDebug) return <Search className="w-4 h-4" />;
+              return <FileText className="w-4 h-4" />;
+            };
 
-              const getLogColor = () => {
-                if (isError) return "text-red-500";
-                if (isWarning) return "text-amber-600 dark:text-amber-400";
-                if (isInfo) return "text-blue-500";
-                if (isDebug) return "text-gray-500";
-                return "text-foreground";
-              };
+            const getLogColor = () => {
+              if (isError) return "text-red-500";
+              if (isWarning) return "text-amber-600 dark:text-amber-400";
+              if (isInfo) return "text-blue-500";
+              if (isDebug) return "text-gray-500";
+              return "text-foreground";
+            };
 
-              const tooltipContent = [
-                parsed.timestamp && `Time: ${parsed.timestamp}`,
-                parsed.logger && `Logger: ${parsed.logger}`,
-                `Level: ${parsed.level}`,
-              ]
-                .filter(Boolean)
-                .join("\n");
+            const tooltipContent = [
+              parsed.timestamp && `Time: ${parsed.timestamp}`,
+              parsed.logger && `Logger: ${parsed.logger}`,
+              `Level: ${parsed.level}`,
+            ]
+              .filter(Boolean)
+              .join("\n");
 
-              return (
-                <div
-                  key={idx}
-                  className="flex items-start gap-2 text-sm font-mono"
-                >
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={`flex-shrink-0 mt-0.5 ${getLogColor()}`}
-                        >
-                          {getLogIcon()}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <pre className="text-xs whitespace-pre-wrap">
-                          {tooltipContent}
-                        </pre>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <span className={`flex-1 ${getLogColor()}`}>
-                    {parsed.message}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+            return (
+              <div
+                key={idx}
+                className="flex items-start gap-2 text-xs font-mono"
+              >
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className={`flex-shrink-0 mt-0.5 ${getLogColor()}`}>
+                        {getLogIcon()}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <pre className="text-xs whitespace-pre-wrap">
+                        {tooltipContent}
+                      </pre>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <span className={`flex-1 ${getLogColor()}`}>
+                  {parsed.message}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </ScrollArea>
     </div>
   );

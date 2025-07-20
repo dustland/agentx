@@ -73,6 +73,38 @@ class TaskService:
             logger.error(f"Failed to create task for user {user_id}: {e}")
             raise
     
+    async def verify_task_ownership(self, user_id: str, task_id: str) -> bool:
+        """
+        Verify that a user owns a task without loading the full task.
+        
+        This is a lightweight check that doesn't create any log entries
+        or initialize the task, making it safe to use for read-only
+        operations like fetching logs.
+        
+        Args:
+            user_id: The user to check
+            task_id: The task to check
+            
+        Returns:
+            True if user owns the task
+            
+        Raises:
+            PermissionError: If user doesn't own the task
+            ValueError: If task doesn't exist
+        """
+        # Check if task directory exists
+        task_path = Path(f"task_data/{task_id}")
+        if not task_path.exists():
+            raise ValueError(f"Task {task_id} not found")
+        
+        # Verify ownership
+        if not await self.user_index.user_owns_task(user_id, task_id):
+            # Don't log permission failures to avoid feedback loops in logs endpoint
+            # logger.warning(f"User {user_id} attempted to access task {task_id} without permission")
+            raise PermissionError("Access denied")
+        
+        return True
+    
     async def get_task(self, user_id: str, task_id: str) -> XAgent:
         """
         Get a task, verifying user ownership.
@@ -90,7 +122,8 @@ class TaskService:
         """
         # Verify ownership
         if not await self.user_index.user_owns_task(user_id, task_id):
-            logger.warning(f"User {user_id} attempted to access task {task_id} without permission")
+            # Don't log permission failures to avoid feedback loops in logs endpoint
+            # logger.warning(f"User {user_id} attempted to access task {task_id} without permission")
             raise PermissionError("Access denied")
         
         # Get task info including config_path

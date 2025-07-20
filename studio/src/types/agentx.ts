@@ -210,6 +210,9 @@ export interface LogsResponse {
   total: number;
   offset: number;
   limit: number;
+  file_size?: number;
+  mode?: 'full' | 'chunked' | 'tail';
+  has_more?: boolean;
 }
 
 // Helper functions to work with messages

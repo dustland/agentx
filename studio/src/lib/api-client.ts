@@ -26,7 +26,7 @@ export class AgentXAPIClient {
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:7770";
 
-    console.log("AgentX API client initialized with baseURL:", this.baseURL);
+    // console.log("AgentX API client initialized with baseURL:", this.baseURL);
   }
 
   async init() {
@@ -50,7 +50,7 @@ export class AgentXAPIClient {
       const { getCurrentUser } = await import("./auth");
       const user = await getCurrentUser();
       this.userId = user?.id || null;
-      console.log("API client initialized with user:", this.userId);
+      // console.log("API client initialized with user:", this.userId);
       
       // If no user is found, redirect to login
       if (!user && typeof window !== "undefined") {
@@ -207,10 +207,22 @@ export class AgentXAPIClient {
   }
 
   // Logs
-  async getTaskLogs(taskId: string, tail?: number): Promise<LogsResponse> {
+  async getTaskLogs(
+    taskId: string, 
+    options?: { 
+      limit?: number; 
+      offset?: number; 
+      tail?: boolean;
+    }
+  ): Promise<LogsResponse> {
     await this.init();
-    const params = tail ? `?tail=${tail}` : "";
-    return this.request<LogsResponse>(`/tasks/${taskId}/logs${params}`);
+    const params = new URLSearchParams();
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
+    if (options?.tail) params.append('tail', 'true');
+    
+    const queryString = params.toString();
+    return this.request<LogsResponse>(`/tasks/${taskId}/logs${queryString ? `?${queryString}` : ''}`);
   }
 
   // Real-time updates using Server-Sent Events
@@ -236,7 +248,7 @@ export class AgentXAPIClient {
       const directBackendURL =
         process.env.NEXT_PUBLIC_AGENTX_BACKEND_URL || "http://localhost:7770";
       const streamUrl = `${directBackendURL}/tasks/${taskId}/stream${params}`;
-      console.log("Creating EventSource for URL:", streamUrl);
+      // console.log("Creating EventSource for URL:", streamUrl);
       eventSource = new EventSource(streamUrl);
     } catch (error) {
       console.error("Failed to create EventSource:", error);
@@ -246,14 +258,14 @@ export class AgentXAPIClient {
 
     eventSource.onopen = () => {
       isConnected = true;
-      console.log("SSE connection established for task:", taskId);
+      // console.log("SSE connection established for task:", taskId);
     };
 
     eventSource.onmessage = (event) => {
       try {
-        console.log("Raw SSE event received:", event);
+        // console.log("Raw SSE event received:", event);
         const data = JSON.parse(event.data);
-        console.log("Parsed SSE data:", data);
+        // console.log("Parsed SSE data:", data);
         onUpdate(data);
       } catch (error) {
         console.error("Error parsing SSE data:", error, "Raw event:", event);
@@ -268,7 +280,7 @@ export class AgentXAPIClient {
       // or the endpoint doesn't exist. Close the connection to prevent
       // infinite retry attempts.
       if (eventSource.readyState === EventSource.CLOSED) {
-        console.log("SSE connection closed by server");
+        // console.log("SSE connection closed by server");
       }
     };
 

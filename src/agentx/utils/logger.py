@@ -8,6 +8,7 @@ import warnings
 from typing import Optional
 import os
 from pathlib import Path
+from logging.handlers import RotatingFileHandler
 
 # Suppress noisy loggers immediately
 logging.getLogger("browser_use.telemetry.service").setLevel(logging.ERROR)
@@ -71,7 +72,7 @@ def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
 
 def setup_task_file_logging(log_file_path: str) -> None:
     """
-    Set up file logging for a specific task.
+    Set up file logging for a specific task with rotation.
 
     Args:
         log_file_path: Path to the log file
@@ -80,8 +81,15 @@ def setup_task_file_logging(log_file_path: str) -> None:
         log_file = Path(log_file_path)
         log_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # Create file handler
-        file_handler = logging.FileHandler(log_file)
+        # Create rotating file handler
+        # maxBytes: 50MB per file
+        # backupCount: keep 5 backup files (task.log, task.log.1, task.log.2, etc.)
+        file_handler = RotatingFileHandler(
+            log_file,
+            maxBytes=50 * 1024 * 1024,  # 50MB
+            backupCount=5,
+            encoding='utf-8'
+        )
         file_handler.setLevel(logging.INFO)
 
         formatter = logging.Formatter(
@@ -104,9 +112,9 @@ def setup_task_file_logging(log_file_path: str) -> None:
 
         # Test that it works with a sample log
         test_logger = logging.getLogger('agentx.core.task')
-        test_logger.info("Task file logging initialized successfully")
+        test_logger.info("Task file logging initialized successfully with rotation (max 50MB per file, keeping 5 backups)")
 
-        print(f"Task file logging initialized: {log_file}")
+        print(f"Task file logging initialized with rotation: {log_file}")
 
     except Exception as e:
         print(f"Failed to setup task file logging: {e}")

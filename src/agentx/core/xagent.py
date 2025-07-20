@@ -196,7 +196,7 @@ class XAgent(Agent):
         """Sets up file-based logging for the task."""
         log_dir = self.taskspace.get_taskspace_path() / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
-        log_file_path = log_dir / f"{self.task_id}.log"
+        log_file_path = log_dir / "task.log"
         setup_task_file_logging(str(log_file_path))
 
     def _initialize_tools(self) -> ToolManager:
