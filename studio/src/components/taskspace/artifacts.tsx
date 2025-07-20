@@ -11,6 +11,7 @@ import {
   FileIcon,
   FolderIcon,
   ChevronRightIcon,
+  Inbox,
 } from "lucide-react";
 import { useAgentXAPI } from "@/lib/api-client";
 import { formatBytes, formatDate } from "@/lib/utils";
@@ -238,7 +239,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>Loading artifacts...</p>
         </div>
       </div>
@@ -249,7 +250,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>No artifacts created yet</p>
           <p className="text-xs mt-1">
             Files will appear here when agents create them

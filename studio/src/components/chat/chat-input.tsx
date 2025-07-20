@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SendButton } from "./send-button";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
+  onStop?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
@@ -16,6 +16,7 @@ interface ChatInputProps {
 
 export function ChatInput({
   onSendMessage,
+  onStop,
   isLoading = false,
   disabled = false,
   placeholder = "Type a message...",
@@ -78,33 +79,25 @@ export function ChatInput({
             "pl-4 pr-12 py-0",
             "min-h-[52px] max-h-[200px]",
             "placeholder:text-muted-foreground/60",
-            "focus:outline-none focus:!border-border focus-visible:ring-0 focus-visible:ring-offset-0",
-            "transition-colors duration-200",
+            "border-border/50",
+            "hover:border-border/80",
+            "focus:!border-border focus-visible:!border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+            "transition-all duration-200",
             "overflow-hidden",
             disabled && "opacity-50 cursor-not-allowed"
           )}
           rows={1}
         />
 
-        {/* Submit Button */}
-        <Button
-          size="icon"
+        {/* Submit/Stop Button */}
+        <SendButton
+          isLoading={isLoading}
+          disabled={!input.trim() && !isLoading}
           onClick={handleSubmit}
-          disabled={!input.trim() || isLoading || disabled}
-          className={cn(
-            "absolute right-2 bottom-2 h-8 w-8 rounded-full",
-            "transition-all duration-200",
-            input.trim() && !isLoading && !disabled
-              ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-              : "bg-muted text-muted-foreground hover:bg-muted"
-          )}
-        >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <ArrowUp className="h-4 w-4" />
-          )}
-        </Button>
+          onStop={onStop}
+          size="sm"
+          className="absolute right-2 bottom-2"
+        />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import asyncio
 from pathlib import Path
 from agentx.core.xagent import XAgent
+from agentx.config.team_loader import load_team_config
 
 async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
@@ -10,7 +11,8 @@ async def main():
 
     # Initialize XAgent for chat (no initial prompt for pure chat mode)
     print("Initializing X...")
-    x = XAgent(team_config=str(config_path))
+    team_config = load_team_config(str(config_path))
+    x = XAgent(team_config=team_config)
 
     # Start the conversation loop
     while True:

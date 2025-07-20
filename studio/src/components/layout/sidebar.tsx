@@ -351,12 +351,12 @@ export function Sidebar({
                       className="rounded-full outline-none focus:outline-none focus:ring-0 focus:ring-offset-0"
                       title="User menu"
                     >
-                      <UserAvatar username={user.username} size="md" />
+                      <UserAvatar username={user.username} size="sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-56">
                     <div className="px-2 py-1.5 flex items-center gap-2">
-                      <UserAvatar username={user.username} size="sm" />
+                      <UserAvatar username={user.username} size="md" />
                       <div>
                         <p className="text-sm font-medium">{user.username}</p>
                         <p className="text-xs text-muted-foreground">
@@ -425,9 +425,6 @@ export function Sidebar({
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <span className="text-xs text-muted-foreground">
-                {filteredTasks.length} tasks
-              </span>
             </div>
             <div className="flex items-center gap-1">
               <Link href="/observability">

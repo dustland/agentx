@@ -77,10 +77,15 @@ export function Logs({ taskId }: LogsProps) {
     }
   }, [taskId, tailMode]);
 
-  // Auto-scroll to bottom when new logs arrive
+  // Auto-scroll to bottom when new logs arrive or when first loading in tail mode
   useEffect(() => {
     if (autoScrollLogs && scrollRef.current && tailMode) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      // Use setTimeout to ensure the content has been rendered
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 50);
     }
   }, [logs, autoScrollLogs, tailMode]);
 

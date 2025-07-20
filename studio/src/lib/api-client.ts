@@ -233,11 +233,11 @@ export class AgentXAPIClient {
     // Note: SSE doesn't support custom headers, so we need to pass user_id in URL for now
     // TODO: Consider using JWT tokens in the future for better security
 
-    // Temporarily disable user_id parameter to test
-    // const params = this.userId
-    //   ? `?user_id=${encodeURIComponent(this.userId)}`
-    //   : "";
-    const params = "";
+    // SSE doesn't support custom headers, so we pass user_id as query parameter
+    // If userId is not yet initialized, use "guest" as default
+    const effectiveUserId = this.userId || "guest";
+    const params = `?user_id=${encodeURIComponent(effectiveUserId)}`;
+    console.log("SSE connection with user:", effectiveUserId);
 
     let eventSource: EventSource;
     let isConnected = false;
@@ -248,7 +248,7 @@ export class AgentXAPIClient {
       const directBackendURL =
         process.env.NEXT_PUBLIC_AGENTX_BACKEND_URL || "http://localhost:7770";
       const streamUrl = `${directBackendURL}/tasks/${taskId}/stream${params}`;
-      // console.log("Creating EventSource for URL:", streamUrl);
+      console.log("Creating EventSource for URL:", streamUrl);
       eventSource = new EventSource(streamUrl);
     } catch (error) {
       console.error("Failed to create EventSource:", error);
@@ -258,14 +258,14 @@ export class AgentXAPIClient {
 
     eventSource.onopen = () => {
       isConnected = true;
-      // console.log("SSE connection established for task:", taskId);
+      console.log("SSE connection established for task:", taskId);
     };
 
     eventSource.onmessage = (event) => {
       try {
-        // console.log("Raw SSE event received:", event);
+        console.log("Raw SSE event received:", event);
         const data = JSON.parse(event.data);
-        // console.log("Parsed SSE data:", data);
+        console.log("Parsed SSE data:", data);
         onUpdate(data);
       } catch (error) {
         console.error("Error parsing SSE data:", error, "Raw event:", event);
@@ -283,6 +283,63 @@ export class AgentXAPIClient {
         // console.log("SSE connection closed by server");
       }
     };
+
+    // Handle specific event types
+    eventSource.addEventListener("agent_message", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] agent_message event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "agent_message",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling agent_message:", error);
+      }
+    });
+
+    eventSource.addEventListener("task_update", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] task_update event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "task_update",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling task_update:", error);
+      }
+    });
+
+    eventSource.addEventListener("tool_call", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] tool_call event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "tool_call",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling tool_call:", error);
+      }
+    });
+
+    eventSource.addEventListener("agent_status", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] agent_status event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "agent_status",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling agent_status:", error);
+      }
+    });
 
     // Return cleanup function
     return () => {

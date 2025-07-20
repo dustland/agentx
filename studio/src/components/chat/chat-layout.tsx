@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Pause, Play, Share2, MoreHorizontal, Loader2 } from "lucide-react";
+import { Pause, Play, Share2, MoreHorizontal, Loader2, Bot, Sparkles, User, Copy, Check, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatInput } from "./chat-input";
+import { MessageBubble } from "./message-bubble";
 
 interface ChatLayoutProps {
   taskId: string;
@@ -21,6 +22,7 @@ interface ChatLayoutProps {
     status?: "streaming" | "complete" | "failed";
   }>;
   onSendMessage: (message: string) => void;
+  onStop?: () => void;
   onPauseResume: () => void;
   onShare: () => void;
   onMoreActions: () => void;
@@ -33,6 +35,7 @@ export function ChatLayout({
   taskStatus,
   messages,
   onSendMessage,
+  onStop,
   onPauseResume,
   onShare,
   onMoreActions,
@@ -82,7 +85,18 @@ export function ChatLayout({
       {/* Message List */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-3">
-          {isLoading ? (
+          {messages.length === 0 && !isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500/10 to-purple-600/10 flex items-center justify-center mb-4">
+                <Bot className="w-8 h-8 text-violet-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Start a conversation</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Send a message to begin interacting with the AI assistant.
+                I'm here to help with your task.
+              </p>
+            </div>
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -91,51 +105,14 @@ export function ChatLayout({
             </div>
           ) : (
             messages.map((message) => (
-              <div key={message.id} className="group">
-                <div
-                  className={cn(
-                    "rounded-lg p-4 transition-all",
-                    // User messages have a subtle left border
-                    message.role === "user" && "border-l-2 border-primary ml-2",
-                    // System messages have muted background
-                    message.role === "system" &&
-                      "bg-muted/50 text-muted-foreground",
-                    // Assistant messages have different styles based on status
-                    message.role === "assistant" && [
-                      message.status === "streaming" &&
-                        "border border-primary/20 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-gradient",
-                      message.status === "complete" && "border border-border",
-                      message.status === "failed" &&
-                        "border border-destructive/50 bg-destructive/5",
-                    ]
-                  )}
-                >
-                  {/* Message header for assistant messages */}
-                  {message.role === "assistant" && (
-                    <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                      <span className="font-medium">Assistant</span>
-                      {message.status === "streaming" && (
-                        <span className="text-primary animate-pulse">
-                          • Thinking...
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Message content */}
-                  <div
-                    className={cn(
-                      "text-sm whitespace-pre-wrap",
-                      message.status === "streaming" && "text-foreground/80"
-                    )}
-                  >
-                    {message.content}
-                    {message.status === "streaming" && (
-                      <span className="inline-block w-2 h-4 ml-1 bg-primary animate-pulse rounded-sm" />
-                    )}
-                  </div>
-                </div>
-              </div>
+              <MessageBubble 
+                key={message.id} 
+                message={message}
+                onRetry={() => {
+                  // TODO: Implement retry functionality
+                  console.log("Retry message", message.id);
+                }}
+              />
             ))
           )}
           <div ref={scrollRef} />
@@ -145,6 +122,7 @@ export function ChatLayout({
       {/* Chat Input */}
       <ChatInput
         onSendMessage={handleSubmit}
+        onStop={onStop}
         isLoading={taskStatus === "running"}
         taskStatus={taskStatus}
       />

@@ -39,19 +39,25 @@ class TaskEventStream:
                 "timestamp": datetime.now().isoformat()
             }
             await stream.put(event)
-            logger.info(f"Sent {event_type} event for task {task_id} to stream (queue size: {stream.qsize()})")
+            logger.info(f"[SSE] Sent {event_type} event for task {task_id} to stream (queue size: {stream.qsize()})")
+            logger.debug(f"[SSE] Event data: {data}")
         else:
-            logger.warning(f"No stream found for task {task_id}, creating one")
+            logger.warning(f"[SSE] No stream found for task {task_id}, creating one")
             self.create_stream(task_id)
             await self.send_event(task_id, event_type, data)
             
     async def stream_events(self, task_id: str) -> AsyncGenerator[Dict[str, Any], None]:
         """Stream events for a task as dictionaries for EventSourceResponse"""
+        logger.info(f"[SSE] Starting event stream for task {task_id}")
         stream = self.create_stream(task_id)
         
         try:
             while True:
+                logger.debug(f"[SSE] Waiting for events on task {task_id} (queue size: {stream.qsize()})")
                 event = await stream.get()
+                
+                logger.info(f"[SSE] Streaming event for task {task_id}: type={event['event']}, id={event['id']}")
+                logger.debug(f"[SSE] Event content: {event['data']}")
                 
                 # Yield the event as a dictionary
                 # EventSourceResponse will format it properly
@@ -62,12 +68,13 @@ class TaskEventStream:
                 }
                 
         except asyncio.CancelledError:
-            logger.info(f"Stream cancelled for task {task_id}")
+            logger.info(f"[SSE] Stream cancelled for task {task_id}")
             raise
         finally:
             # Clean up stream
             if task_id in self.streams:
                 del self.streams[task_id]
+                logger.info(f"[SSE] Cleaned up stream for task {task_id}")
                 
     def close_stream(self, task_id: str):
         """Close and remove a stream"""
@@ -79,17 +86,21 @@ event_stream_manager = TaskEventStream()
 
 async def send_agent_message(task_id: str, agent_id: str, message: str, metadata: Optional[Dict] = None):
     """Send an agent message event"""
-    logger.info(f"Sending agent message for task {task_id}: {message[:100]}...")
+    logger.info(f"[SSE] Preparing to send agent message for task {task_id}")
+    logger.info(f"[SSE] Agent: {agent_id}, Message: {message[:100]}...")
+    
+    event_data = {
+        "agent_id": agent_id,
+        "message": message,
+        "metadata": metadata or {}
+    }
+    
     await event_stream_manager.send_event(
         task_id,
         "agent_message",
-        {
-            "agent_id": agent_id,
-            "message": message,
-            "metadata": metadata or {}
-        }
+        event_data
     )
-    logger.info(f"Agent message sent successfully for task {task_id}")
+    logger.info(f"[SSE] Agent message sent successfully for task {task_id}")
 
 async def send_agent_status(task_id: str, agent_id: str, status: str, progress: int = 0):
     """Send an agent status update"""

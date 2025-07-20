@@ -7,6 +7,7 @@ All business logic is delegated to the service layer.
 
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+import asyncio
 
 from fastapi import FastAPI, HTTPException, Header, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +49,40 @@ def create_app() -> FastAPI:
             "version": "2.0.0",
             "timestamp": datetime.now().isoformat()
         }
+    
+    @app.get("/test-sse/{task_id}")
+    async def test_sse(task_id: str):
+        """Test SSE endpoint to verify streaming is working"""
+        from .streaming import send_agent_message
+        
+        async def generate_test_events():
+            logger.info(f"[TEST-SSE] Starting test event stream for task {task_id}")
+            
+            # Send a test message
+            await send_agent_message(
+                task_id=task_id,
+                agent_id="system",
+                message="This is a test SSE message",
+                metadata={"test": True}
+            )
+            
+            # Wait a bit
+            await asyncio.sleep(1)
+            
+            # Send another message
+            await send_agent_message(
+                task_id=task_id,
+                agent_id="assistant",
+                message="SSE is working correctly!",
+                metadata={"test": True, "timestamp": datetime.now().isoformat()}
+            )
+            
+            logger.info(f"[TEST-SSE] Test events sent for task {task_id}")
+        
+        # Run in background
+        asyncio.create_task(generate_test_events())
+        
+        return {"message": "Test SSE events triggered", "task_id": task_id}
     
     # ===== Task Management =====
     
@@ -158,22 +193,31 @@ def create_app() -> FastAPI:
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Send a message to a task."""
+        logger.info(f"[API] POST /tasks/{task_id}/chat - User: {x_user_id}")
+        logger.info(f"[API] Message payload: {message}")
+        
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
+            content = message.get("content", "")
+            logger.info(f"[API] Extracted content: {content[:100]}...")
+            
             response = await task_service.send_message(
                 x_user_id,
                 task_id,
-                message.get("content", "")
+                content
             )
+            logger.info(f"[API] Response from task_service: {response}")
             return response
         except PermissionError:
+            logger.warning(f"[API] Permission denied for user {x_user_id} on task {task_id}")
             raise HTTPException(status_code=403, detail="Access denied")
         except ValueError:
+            logger.warning(f"[API] Task {task_id} not found")
             raise HTTPException(status_code=404, detail="Task not found")
         except Exception as e:
-            logger.error(f"Failed to send message: {e}")
+            logger.error(f"[API] Failed to send message: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
     
     @app.get("/tasks/{task_id}/messages")
@@ -199,26 +243,40 @@ def create_app() -> FastAPI:
     @app.get("/tasks/{task_id}/stream")
     async def stream_task_events(
         task_id: str,
+        user_id: str,  # Required query parameter for SSE
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
-        """Stream real-time events for a task."""
-        if not x_user_id:
+        """Stream real-time events for a task.
+        
+        SSE connections cannot send custom headers, so user_id is required as a query parameter.
+        """
+        # Use query param for SSE (header is ignored for EventSource)
+        logger.info(f"[API] GET /tasks/{task_id}/stream - User: {user_id} establishing SSE connection")
+        
+        if not user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
             # Verify ownership using lightweight check
-            await task_service.verify_task_ownership(x_user_id, task_id)
+            await task_service.verify_task_ownership(user_id, task_id)
+            logger.info(f"[API] SSE connection authorized for task {task_id}")
             
             # Stream events
             async def event_generator():
+                logger.info(f"[API] Starting event stream for task {task_id}")
+                event_count = 0
                 async for event in event_stream_manager.stream_events(task_id):
+                    event_count += 1
+                    logger.debug(f"[API] Yielding event #{event_count} for task {task_id}: {event.get('event')}")
                     yield event
             
             return EventSourceResponse(event_generator())
             
         except PermissionError:
+            logger.warning(f"[API] SSE connection denied - permission error for user {user_id} on task {task_id}")
             raise HTTPException(status_code=403, detail="Access denied")
         except ValueError:
+            logger.warning(f"[API] SSE connection denied - task {task_id} not found")
             raise HTTPException(status_code=404, detail="Task not found")
     
     # ===== Artifacts =====
@@ -407,15 +465,55 @@ def create_app() -> FastAPI:
 async def _execute_task_async(user_id: str, task_id: str):
     """Execute a task asynchronously in the background."""
     try:
+        from .streaming import send_task_update, send_agent_message
+        
         task_service = get_task_service()
         task = await task_service.get_task(user_id, task_id)
         
+        # Send task start event
+        await send_task_update(
+            task_id=task_id,
+            status="running",
+            result={"message": "Task execution started"}
+        )
+        
         # Execute until complete
+        step_count = 0
+        while not task.is_complete:
+            step_count += 1
+            logger.info(f"[BACKGROUND] Executing step {step_count} for task {task_id}")
+            
+            result = await task.step()
+            
+            # Send step result as agent message
+            await send_agent_message(
+                task_id=task_id,
+                agent_id="system",
+                message=f"Step {step_count}: {result}",
+                metadata={"step": step_count}
+            )
+            
+            # Small delay to prevent overwhelming the system
+            await asyncio.sleep(0.1)
+            
+    except ImportError:
+        # Streaming not available, just execute without events
+        logger.warning("Streaming not available for background task execution")
+        task_service = get_task_service()
+        task = await task_service.get_task(user_id, task_id)
         while not task.is_complete:
             await task.step()
-            
     except Exception as e:
         logger.error(f"Background task execution failed: {e}")
+        try:
+            from .streaming import send_task_update
+            await send_task_update(
+                task_id=task_id,
+                status="failed",
+                result={"error": str(e)}
+            )
+        except ImportError:
+            pass
 
 
 # Create default app instance

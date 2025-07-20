@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Code } from "lucide-react";
+import { FileText, Code, BookOpenCheck } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAgentXAPI } from "@/lib/api-client";
@@ -123,7 +123,7 @@ export function Inspector({
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <BookOpenCheck className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>Select an artifact or tool call to view details</p>
         </div>
       </div>

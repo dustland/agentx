@@ -628,10 +628,31 @@ Respond with a JSON object following this schema:
             # Update task status
             next_task.status = "completed"
             await self._persist_plan()
+            
+            # Send completion event
+            try:
+                from ..server.streaming import send_task_update
+                await send_task_update(
+                    task_id=self.task_id,
+                    status="completed",
+                    result={"task": next_task.name, "result": result}
+                )
+            except ImportError:
+                # Streaming not available in this context
+                pass
 
             # Check if this was the last task
             if self.plan.is_complete():
                 self.is_complete = True
+                try:
+                    from ..server.streaming import send_task_update
+                    await send_task_update(
+                        task_id=self.task_id,
+                        status="completed",
+                        result={"message": "All tasks completed successfully!"}
+                    )
+                except ImportError:
+                    pass
                 return f"✅ {next_task.name}: {result}\n\n🎉 All tasks completed successfully!"
             else:
                 return f"✅ {next_task.name}: {result}"
@@ -640,6 +661,18 @@ Respond with a JSON object following this schema:
             logger.error(f"Task failed: {next_task.name} - {e}")
             next_task.status = "failed"
             await self._persist_plan()
+            
+            # Send failure event
+            try:
+                from ..server.streaming import send_task_update
+                await send_task_update(
+                    task_id=self.task_id,
+                    status="failed",
+                    result={"error": str(e), "task": next_task.name}
+                )
+            except ImportError:
+                # Streaming not available in this context
+                pass
 
             if next_task.on_failure == "halt":
                 self.is_complete = True
@@ -772,6 +805,27 @@ Respond with a JSON object following this schema:
         if not agent:
             raise ValueError(f"Agent '{task.agent}' not found")
 
+        # Send task start event
+        try:
+            from ..server.streaming import send_agent_status, send_agent_message
+            await send_agent_status(
+                task_id=self.task_id,
+                agent_id=task.agent,
+                status="starting",
+                progress=0
+            )
+            
+            # Send task briefing as agent message
+            await send_agent_message(
+                task_id=self.task_id,
+                agent_id="system",
+                message=f"Starting task: {task.name} - {task.goal}",
+                metadata={"task_id": task.id, "agent": task.agent}
+            )
+        except ImportError:
+            # Streaming not available in this context
+            pass
+
         # Task structure contains implicit document outline
         outline_reference = ""
 
@@ -799,6 +853,19 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         response = await agent.generate_response(
             messages=briefing
         )
+        
+        # Send agent response as message
+        try:
+            from ..server.streaming import send_agent_message
+            await send_agent_message(
+                task_id=self.task_id,
+                agent_id=task.agent,
+                message=response,
+                metadata={"task_id": task.id}
+            )
+        except ImportError:
+            # Streaming not available in this context
+            pass
 
         # Evaluate if handoff should occur
         if self.handoff_evaluator:

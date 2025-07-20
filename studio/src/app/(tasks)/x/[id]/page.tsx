@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback, useRef } from "react";
 import { TaskSpacePanel } from "@/components/taskspace/panel";
 import { ChatLayout } from "@/components/chat";
 import {
@@ -38,6 +38,7 @@ export default function TaskPage({
     setTaskMessages,
     addTaskMessage,
     setTaskStatus: updateTaskStatus,
+    updateTaskInList,
   } = useTaskStore();
   const apiClient = useAgentXAPI();
   const router = useRouter();
@@ -60,6 +61,9 @@ export default function TaskPage({
 
   // Only show loading if we don't have cached data
   const [isLoading, setIsLoading] = useState(!cachedTask);
+  
+  // Store SSE cleanup function
+  const sseCleanupRef = useRef<(() => void) | null>(null);
 
   // Sync messages to store when they change
   useEffect(() => {
@@ -71,7 +75,9 @@ export default function TaskPage({
   // Sync status to store when it changes
   useEffect(() => {
     updateTaskStatus(id, taskStatus);
-  }, [taskStatus, id, updateTaskStatus]);
+    // Also update the task in the list (for sidebar)
+    updateTaskInList(id, { status: taskStatus });
+  }, [taskStatus, id, updateTaskStatus, updateTaskInList]);
 
   // Load task info and set up streaming
   useEffect(() => {
@@ -95,6 +101,13 @@ export default function TaskPage({
         setTaskInfo(task);
         setTaskStatus(task.status || "pending");
         updateTaskInfo(id, task);
+        
+        // Update task in list for sidebar
+        updateTaskInList(id, {
+          status: task.status || "pending",
+          task_description: task.task_description,
+          updated_at: task.updated_at,
+        });
 
         // Only load messages if we don't have cached ones
         if (!cachedTask?.messages || cachedTask.messages.length === 0) {
@@ -133,7 +146,9 @@ export default function TaskPage({
             (event: StreamEvent) => {
               console.log("Task update:", event);
 
-              switch (event.event) {
+              // Handle both old format (event.event) and new format (event.type)
+              const eventType = event.type || event.event;
+              switch (eventType) {
                 case "agent_message": {
                   const data = event.data as AgentMessageEvent;
                   const message: ChatMessage = {
@@ -196,6 +211,9 @@ export default function TaskPage({
               }
             }
           );
+          
+          // Store cleanup function for stop functionality
+          sseCleanupRef.current = cleanup;
 
           return cleanup;
         } catch (error) {
@@ -296,8 +314,22 @@ export default function TaskPage({
         // Send message to backend
         await apiClient.sendMessage(id, message);
         setTaskStatus("running");
+        
+        // Set a timeout to reset status if no update received
+        // This prevents being stuck in running state
+        setTimeout(() => {
+          setTaskStatus((current) => {
+            // Only reset if still running (no update received)
+            if (current === "running") {
+              console.warn("No task status update received, resetting to pending");
+              return "pending";
+            }
+            return current;
+          });
+        }, 30000); // 30 second timeout
       } catch (error) {
         console.error("Failed to send message:", error);
+        setTaskStatus("pending"); // Reset status on error
         // You might want to show an error toast here
       }
     },
@@ -316,6 +348,20 @@ export default function TaskPage({
     handleSendMessage,
     isInitialized,
   ]);
+
+  const handleStop = useCallback(() => {
+    // Close SSE connection
+    if (sseCleanupRef.current) {
+      sseCleanupRef.current();
+      sseCleanupRef.current = null;
+    }
+    
+    // Update status
+    setTaskStatus("pending");
+    
+    // TODO: Call backend API to actually stop the task execution
+    console.log("Stopping task execution");
+  }, []);
 
   const handlePauseResume = () => {
     setTaskStatus((prev) => (prev === "running" ? "pending" : "running"));
@@ -379,6 +425,7 @@ export default function TaskPage({
           taskStatus={taskStatus}
           messages={messages}
           onSendMessage={handleSendMessage}
+          onStop={handleStop}
           onPauseResume={handlePauseResume}
           onShare={handleShare}
           onMoreActions={handleMoreActions}
