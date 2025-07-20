@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 
 export default function TasksLayout({
@@ -8,14 +8,16 @@ export default function TasksLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Initialize sidebar state synchronously to prevent flickering
-  const [isSidebarPinned, setIsSidebarPinned] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("sidebar-pinned");
-      return stored !== null ? stored === "true" : true;
+  // Initialize with default value to avoid hydration mismatch
+  const [isSidebarPinned, setIsSidebarPinned] = useState(true);
+
+  // Load pinned state from localStorage after mount
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar-pinned");
+    if (stored !== null) {
+      setIsSidebarPinned(stored === "true");
     }
-    return true;
-  });
+  }, []);
 
   const handleFloatingChange = useCallback((floating: boolean) => {
     // Only update if the state actually needs to change
@@ -32,10 +34,17 @@ export default function TasksLayout({
   return (
     <div className="h-screen flex">
       {/* Sidebar - conditionally render based on pinned state */}
-      {isSidebarPinned && (
+      {isSidebarPinned ? (
         <Sidebar
+          key="pinned-sidebar"
           className="flex-shrink-0"
           isFloating={false}
+          onFloatingChange={handleFloatingChange}
+        />
+      ) : (
+        <Sidebar
+          key="floating-sidebar"
+          isFloating={true}
           onFloatingChange={handleFloatingChange}
         />
       )}
@@ -43,9 +52,6 @@ export default function TasksLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Floating Sidebar */}
-        {!isSidebarPinned && (
-          <Sidebar isFloating={true} onFloatingChange={handleFloatingChange} />
-        )}
 
         {/* Page Content */}
         {children}

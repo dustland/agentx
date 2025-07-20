@@ -136,7 +136,7 @@ export default function HomePage() {
             <ChatInput
               onSendMessage={createTask}
               isLoading={isCreating}
-              placeholder="Ask me anything..."
+              placeholder="Describe what would you like me to do..."
             />
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function HomePage() {
         <div className="px-6 pb-12">
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
-              <h2 className="text-lg font-medium mb-6">Recommended</h2>
+              <h2 className="text-lg font-medium mb-6">Sample tasks to start with</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

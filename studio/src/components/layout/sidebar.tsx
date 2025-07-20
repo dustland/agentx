@@ -18,10 +18,10 @@ import {
   PinOff,
   Loader2,
   BookOpen,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -34,10 +34,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useTheme } from "next-themes";
-import { Task as TaskResponse } from "@/types/agentx";
 import { useUser } from "@/contexts/user-context";
-import { User as UserIcon, LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
+import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeSwitcher } from "../common/theme-switcher";
 import { useTasks } from "@/hooks/use-tasks";
@@ -78,19 +76,6 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const formatTimeAgo = (date: Date) => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-  if (diffMins < 60) {
-    return `${diffMins}m ago`;
-  } else {
-    return `${diffHours}h ago`;
-  }
-};
-
 export function Sidebar({
   className,
   isFloating = false,
@@ -99,16 +84,18 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useUser();
-  const { tasks, loading: isLoading, deleteTask, refetch } = useTasks();
+  const { tasks, loading: isLoading, deleteTask } = useTasks();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("sidebar-pinned");
-      return stored !== null ? stored === "true" : !isFloating;
+  const [isPinned, setIsPinned] = useState(!isFloating);
+
+  // Load pinned state from localStorage after mount
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar-pinned");
+    if (stored !== null) {
+      setIsPinned(stored === "true");
     }
-    return !isFloating;
-  });
+  }, []);
 
   // Sync isPinned with isFloating prop only on initial mount
   useEffect(() => {
@@ -144,7 +131,6 @@ export function Sidebar({
   };
 
   const sidebarWidth = "w-72";
-  const shouldShow = isPinned || isHovered;
 
   return (
     <>
@@ -219,7 +205,7 @@ export function Sidebar({
             type="single"
             value={statusFilter}
             onValueChange={setStatusFilter}
-            className="w-full"
+            className="w-full border"
           >
             <ToggleGroupItem value="all" className="flex-1 h-7 text-xs px-2">
               All ({statusCounts.all})
@@ -239,7 +225,7 @@ export function Sidebar({
               {statusCounts.completed}
             </ToggleGroupItem>
             <ToggleGroupItem value="failed" className="flex-1 h-7 text-xs px-1">
-              <XCircle className="h-3 w-3 mr-0.5" />
+              <AlertTriangle className="h-3 w-3 mr-0.5" />
               {statusCounts.failed}
             </ToggleGroupItem>
           </ToggleGroup>
@@ -257,13 +243,12 @@ export function Sidebar({
                 <p className="text-xs">No tasks found</p>
               </div>
             ) : (
-              filteredTasks.map((task) => {
+              filteredTasks.map((task, index) => {
                 const isActive = currentTaskId === task.id;
-                const createdAt = new Date(task.created_at || task.lastUpdated);
 
                 return (
                   <div
-                    key={task.id}
+                    key={index}
                     className={cn(
                       "group relative p-2 rounded-lg cursor-pointer transition-colors border-l-2",
                       getStatusColor(task.status),
@@ -295,9 +280,9 @@ export function Sidebar({
                             : "Task pending"}
                         </p>
                         <div className="flex items-center justify-between w-full">
-                          <span className="text-xs text-muted-foreground">
+                          {/* <span className="text-xs text-muted-foreground">
                             {formatTimeAgo(createdAt)}
-                          </span>
+                          </span> */}
                           <Badge variant="outline" className="text-xs">
                             {task.id}
                           </Badge>
@@ -381,9 +366,9 @@ export function Sidebar({
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link 
-                        href="https://dustland.github.io/agentx/docs" 
-                        target="_blank" 
+                      <Link
+                        href="https://dustland.github.io/agentx/docs"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
                       >
@@ -393,9 +378,9 @@ export function Sidebar({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link 
-                        href="https://github.com/dustland/agentx" 
-                        target="_blank" 
+                      <Link
+                        href="https://github.com/dustland/agentx"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
                       >
@@ -405,28 +390,22 @@ export function Sidebar({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link 
-                        href="/observability"
-                        className="flex items-center"
-                      >
+                      <Link href="/observability" className="flex items-center">
                         <Monitor className="h-4 w-4 mr-2" />
                         Observability
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link 
-                        href="/settings"
-                        className="flex items-center"
-                      >
+                      <Link href="/settings" className="flex items-center">
                         <Settings className="h-4 w-4 mr-2" />
                         Settings
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link 
-                        href="https://github.com/dustland/agentx/issues" 
-                        target="_blank" 
+                      <Link
+                        href="https://github.com/dustland/agentx/issues"
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
                       >
