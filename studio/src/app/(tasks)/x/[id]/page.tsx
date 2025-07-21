@@ -59,8 +59,9 @@ export default function TaskPage({
   );
   const [taskInfo, setTaskInfo] = useState<any>(cachedTask || null);
 
-  // Only show loading if we don't have cached data
-  const [isLoading, setIsLoading] = useState(!cachedTask);
+  // Initialize loading to true to prevent hydration mismatch
+  // Will be set to false once data is loaded
+  const [isLoading, setIsLoading] = useState(true);
   
   // Store SSE cleanup function
   const sseCleanupRef = useRef<(() => void) | null>(null);
@@ -71,6 +72,13 @@ export default function TaskPage({
       setTaskMessages(id, messages);
     }
   }, [messages, id, setTaskMessages]);
+
+  // Set loading to false immediately if we have cached data
+  useEffect(() => {
+    if (cachedTask && isLoading) {
+      setIsLoading(false);
+    }
+  }, [cachedTask, isLoading]);
 
   // Sync status to store when it changes
   useEffect(() => {
