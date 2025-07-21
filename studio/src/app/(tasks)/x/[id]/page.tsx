@@ -146,9 +146,7 @@ export default function TaskPage({
             (event: StreamEvent) => {
               console.log("Task update:", event);
 
-              // Handle both old format (event.event) and new format (event.type)
-              const eventType = event.type || event.event;
-              switch (eventType) {
+              switch (event.type) {
                 case "agent_message": {
                   const data = event.data as AgentMessageEvent;
                   const message: ChatMessage = {

@@ -103,13 +103,9 @@ def create_app() -> FastAPI:
                 config_path=request.config_path
             )
             
-            # If there's a prompt, start execution in background
-            if request.task_description:
-                background_tasks.add_task(
-                    _execute_task_async,
-                    x_user_id,
-                    task_info["task_id"]
-                )
+            # Don't automatically start background execution
+            # Tasks should be explicitly started or use chat() for interactive mode
+            logger.info(f"[API] Task created without automatic background execution")
             
             return TaskResponse(
                 task_id=task_info["task_id"],
@@ -479,11 +475,23 @@ async def _execute_task_async(user_id: str, task_id: str):
         
         # Execute until complete
         step_count = 0
-        while not task.is_complete:
+        max_steps = 1000  # Safety limit to prevent infinite loops
+        
+        while not task.is_complete and step_count < max_steps:
             step_count += 1
             logger.info(f"[BACKGROUND] Executing step {step_count} for task {task_id}")
             
             result = await task.step()
+            
+            # Check if task is stuck without a plan
+            if "No plan available" in result:
+                logger.warning(f"[BACKGROUND] Task {task_id} has no plan after {step_count} steps, stopping execution")
+                await send_task_update(
+                    task_id=task_id,
+                    status="pending",
+                    result={"message": "Task requires user input to create a plan"}
+                )
+                break
             
             # Send step result as agent message
             await send_agent_message(
@@ -495,6 +503,14 @@ async def _execute_task_async(user_id: str, task_id: str):
             
             # Small delay to prevent overwhelming the system
             await asyncio.sleep(0.1)
+            
+        if step_count >= max_steps:
+            logger.error(f"[BACKGROUND] Task {task_id} exceeded maximum steps ({max_steps}), stopping execution")
+            await send_task_update(
+                task_id=task_id,
+                status="failed",
+                result={"error": "Task exceeded maximum execution steps"}
+            )
             
     except ImportError:
         # Streaming not available, just execute without events

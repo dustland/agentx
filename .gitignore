@@ -193,6 +193,11 @@ task_data/
 **/task_data/
 !task_data/.gitkeep
 
+# User index files (user task mappings)
+user_index/
+**/user_index/
+!user_index/.gitkeep
+
 # Legacy taskspace references
 roboco_taskspace/
 

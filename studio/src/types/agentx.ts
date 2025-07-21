@@ -122,7 +122,7 @@ export type StreamEventType =
   | "error";
 
 export interface StreamEvent {
-  event: StreamEventType;
+  type: StreamEventType;
   data: any;
   timestamp?: string;
 }

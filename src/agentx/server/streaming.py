@@ -51,20 +51,30 @@ class TaskEventStream:
         logger.info(f"[SSE] Starting event stream for task {task_id}")
         stream = self.create_stream(task_id)
         
+        # Check if there are already events in the queue
+        logger.info(f"[SSE] Stream created/retrieved for task {task_id}, current queue size: {stream.qsize()}")
+        
         try:
             while True:
                 logger.debug(f"[SSE] Waiting for events on task {task_id} (queue size: {stream.qsize()})")
-                event = await stream.get()
+                
+                # Add a small timeout to check queue periodically
+                try:
+                    event = await asyncio.wait_for(stream.get(), timeout=1.0)
+                except asyncio.TimeoutError:
+                    # Check queue size on timeout
+                    logger.debug(f"[SSE] Timeout waiting for events, queue size: {stream.qsize()}")
+                    continue
                 
                 logger.info(f"[SSE] Streaming event for task {task_id}: type={event['event']}, id={event['id']}")
                 logger.debug(f"[SSE] Event content: {event['data']}")
                 
                 # Yield the event as a dictionary
-                # EventSourceResponse will format it properly
+                # EventSourceResponse needs data as JSON string for proper formatting
                 yield {
                     "id": event['id'],
                     "event": event['event'],
-                    "data": json.dumps(event['data'])  # Data needs to be JSON string
+                    "data": json.dumps(event['data'])  # JSON encode the data
                 }
                 
         except asyncio.CancelledError:
