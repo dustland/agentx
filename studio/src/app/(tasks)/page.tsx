@@ -6,17 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ChatInput } from "@/components/chat/chat-input";
 import { generateId } from "@/lib/utils";
-import { useAgentXAPI } from "@/lib/api-client";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
-import { useTaskStore } from "@/store/task";
+import { useTasks } from "@/hooks/use-tasks";
 import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
-  const apiClient = useAgentXAPI();
-  const { setInitialMessage } = useTaskStore();
+  const { setInitialMessage, createTask } = useTasks();
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample tasks with team-based configurations
@@ -59,7 +57,7 @@ export default function HomePage() {
     },
   ];
 
-  const createTask = useCallback(
+  const handleCreateTask = useCallback(
     async (prompt: string) => {
       if (!prompt.trim()) return;
 
@@ -68,7 +66,7 @@ export default function HomePage() {
         console.log("Creating task with prompt:", prompt);
 
         // Create task with empty description - the prompt becomes the first message
-        const response = await apiClient.createTask({
+        const response = await createTask({
           task_description: "",
           config_path: "examples/simple_chat/config/team.yaml",
           context: { source: "studio_homepage" },
@@ -108,12 +106,12 @@ export default function HomePage() {
         setIsCreating(false);
       }
     },
-    [apiClient, router, setInitialMessage]
+    [createTask, router, setInitialMessage]
   );
 
   const handleSampleTaskClick = (task: any) => {
     const prompt = `${task.title}: ${task.description}`;
-    createTask(prompt);
+    handleCreateTask(prompt);
   };
 
   return (
@@ -134,7 +132,7 @@ export default function HomePage() {
 
             {/* Simple Task Input */}
             <ChatInput
-              onSendMessage={createTask}
+              onSendMessage={handleCreateTask}
               isLoading={isCreating}
               placeholder="Describe what would you like me to do..."
             />

@@ -94,23 +94,7 @@ class TaskEventStream:
 # Global event stream manager
 event_stream_manager = TaskEventStream()
 
-async def send_agent_message(task_id: str, agent_id: str, message: str, metadata: Optional[Dict] = None):
-    """Send an agent message event"""
-    logger.info(f"[SSE] Preparing to send agent message for task {task_id}")
-    logger.info(f"[SSE] Agent: {agent_id}, Message: {message[:100]}...")
-    
-    event_data = {
-        "agent_id": agent_id,
-        "message": message,
-        "metadata": metadata or {}
-    }
-    
-    await event_stream_manager.send_event(
-        task_id,
-        "agent_message",
-        event_data
-    )
-    logger.info(f"[SSE] Agent message sent successfully for task {task_id}")
+# send_agent_message removed - use send_message_object instead for consistency
 
 async def send_agent_status(task_id: str, agent_id: str, status: str, progress: int = 0):
     """Send an agent status update"""
@@ -186,3 +170,66 @@ async def send_complete_message(task_id: str, taskspace_path: str, message: Mess
     
     # Persist immediately
     await chat_history_manager.save_message(task_id, taskspace_path, message)
+
+async def send_message_object(task_id: str, message: Message):
+    """Send a Message object directly via SSE without persistence (already handled in core)."""
+    # Convert Message to dict for SSE transmission
+    message_dict = {
+        "id": message.id,
+        "role": message.role,
+        "content": message.content,
+        "parts": [part.model_dump() for part in message.parts],
+        "timestamp": message.timestamp.isoformat(),
+        "metadata": getattr(message, 'metadata', {})
+    }
+    
+    await event_stream_manager.send_event(
+        task_id,
+        "message",  # New event type for complete message objects
+        message_dict
+    )
+
+async def send_stream_chunk(task_id: str, chunk: str, message_id: str, is_final: bool = False, error: Optional[str] = None):
+    """Send a streaming text chunk for real-time UI updates."""
+    chunk_data = {
+        "message_id": message_id,
+        "chunk": chunk,
+        "is_final": is_final,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    if error:
+        chunk_data["error"] = error
+    
+    await event_stream_manager.send_event(
+        task_id,
+        "stream_chunk",
+        chunk_data
+    )
+
+async def send_tool_call_start(task_id: str, tool_call_id: str, tool_name: str, args: Dict[str, Any]):
+    """Send a tool call start event for streaming."""
+    await event_stream_manager.send_event(
+        task_id,
+        "tool_call_start",
+        {
+            "tool_call_id": tool_call_id,
+            "tool_name": tool_name,
+            "args": args,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+async def send_tool_call_result(task_id: str, tool_call_id: str, tool_name: str, result: Any, is_error: bool = False):
+    """Send a tool call result event for streaming."""
+    await event_stream_manager.send_event(
+        task_id,
+        "tool_call_result",
+        {
+            "tool_call_id": tool_call_id,
+            "tool_name": tool_name,
+            "result": result,
+            "is_error": is_error,
+            "timestamp": datetime.now().isoformat()
+        }
+    )

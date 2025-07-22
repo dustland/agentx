@@ -1,0 +1,20 @@
+name: "simple_chat"
+description: "A simple chat example with user, assistant, search, and memory"
+
+# Team agents
+agents:
+  - name: "assistant"
+    description: "Helpful AI assistant"
+    prompt_template: "prompts/assistant.md"
+    # Note: No brain_config specified - will use defaults
+
+# Execution configuration
+execution:
+  mode: "autonomous"
+  initial_agent: "assistant"
+  max_rounds: 10 # Orchestrator will auto-complete single-agent chats
+  timeout_seconds: 300
+
+# Memory configuration
+memory:
+  enabled: false

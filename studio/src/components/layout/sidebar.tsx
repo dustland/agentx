@@ -52,7 +52,7 @@ const getStatusIcon = (status: string) => {
       return <AlertCircle className="h-3 w-3 text-blue-500" />;
     case "completed":
       return <CheckCircle className="h-3 w-3 text-green-500" />;
-    case "failed":
+    case "error":
       return <XCircle className="h-3 w-3 text-red-500" />;
     case "pending":
       return <Clock className="h-3 w-3 text-yellow-500" />;
@@ -67,7 +67,7 @@ const getStatusColor = (status: string) => {
       return "border-l-blue-500";
     case "completed":
       return "border-l-green-500";
-    case "failed":
+    case "error":
       return "border-l-red-500";
     case "pending":
       return "border-l-yellow-500";
@@ -117,7 +117,7 @@ export function Sidebar({
     all: tasks.length,
     running: tasks.filter((t) => t.status === "running").length,
     completed: tasks.filter((t) => t.status === "completed").length,
-    failed: tasks.filter((t) => t.status === "failed").length,
+    failed: tasks.filter((t) => t.status === "error").length,
   };
 
   // Only notify parent when user manually changes the pin state
@@ -200,32 +200,35 @@ export function Sidebar({
         </div>
 
         {/* Status Filters */}
-        <div className="px-3 pb-3">
+        <div className="px-2 pb-2">
           <ToggleGroup
             type="single"
             value={statusFilter}
             onValueChange={setStatusFilter}
-            className="w-full border"
+            className="w-full border rounded-md bg-muted/20"
           >
-            <ToggleGroupItem value="all" className="flex-1 h-7 text-xs px-2">
+            <ToggleGroupItem
+              value="all"
+              className="flex-1 h-7 text-xs px-1.5 font-medium"
+            >
               All ({statusCounts.all})
             </ToggleGroupItem>
             <ToggleGroupItem
               value="running"
               className="flex-1 h-7 text-xs px-1"
             >
-              <AlertCircle className="h-3 w-3 mr-0.5" />
+              <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
               {statusCounts.running}
             </ToggleGroupItem>
             <ToggleGroupItem
               value="completed"
               className="flex-1 h-7 text-xs px-1"
             >
-              <CheckCircle className="h-3 w-3 mr-0.5" />
+              <CheckCircle className="h-2.5 w-2.5 mr-0.5" />
               {statusCounts.completed}
             </ToggleGroupItem>
-            <ToggleGroupItem value="failed" className="flex-1 h-7 text-xs px-1">
-              <AlertTriangle className="h-3 w-3 mr-0.5" />
+            <ToggleGroupItem value="error" className="flex-1 h-7 text-xs px-1">
+              <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
               {statusCounts.failed}
             </ToggleGroupItem>
           </ToggleGroup>
@@ -235,12 +238,21 @@ export function Sidebar({
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8 h-full">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mb-2" />
+                <p className="text-xs text-muted-foreground">
+                  Loading tasks...
+                </p>
               </div>
             ) : filteredTasks.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-xs">No tasks found</p>
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <AlertCircle className="h-5 w-5" />
+                </div>
+                <p className="text-sm font-medium mb-1">No tasks found</p>
+                <p className="text-xs opacity-75">
+                  Create a new task to get started
+                </p>
               </div>
             ) : (
               filteredTasks.map((task, index) => {
@@ -250,86 +262,101 @@ export function Sidebar({
                   <div
                     key={index}
                     className={cn(
-                      "group relative p-2 rounded-lg cursor-pointer transition-colors border-l-2",
-                      getStatusColor(task.status),
-                      isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "hover:bg-accent/50"
+                      "group relative rounded-lg cursor-pointer transition-all duration-150 border border-border/30 hover:border-border/60",
+                      "bg-card/30 hover:bg-card/60",
+                      isActive && "bg-accent/70 border-accent-foreground/30"
                     )}
                     onClick={() => router.push(`/x/${task.id}`)}
                   >
-                    <div className="flex items-start justify-between w-full">
-                      <div className="flex-1 min-w-0 w-full">
-                        <div className="flex items-center gap-2 mb-1">
-                          {getStatusIcon(task.status)}
-                          <span className="text-xs font-medium truncate">
+                    {/* Status indicator bar */}
+                    <div
+                      className={cn(
+                        "absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full",
+                        getStatusColor(task.status).replace("border-l-", "bg-")
+                      )}
+                    />
+
+                    <div className="p-2 pl-3">
+                      {/* Header with status, title and actions */}
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          <div
+                            className={cn(
+                              "flex-shrink-0 w-2 h-2 rounded-full",
+                              task.status === "running" && "bg-blue-500",
+                              task.status === "completed" && "bg-green-500",
+                              task.status === "error" && "bg-red-500",
+                              task.status === "pending" && "bg-yellow-500"
+                            )}
+                          />
+                          <span className="font-medium text-xs truncate text-foreground">
                             {task.task_description || "Untitled Task"}
                           </span>
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-2.5 w-2.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuItem>
+                              <Star className="h-3 w-3 mr-2" />
+                              Favorite
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Archive className="h-3 w-3 mr-2" />
+                              Archive
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const success = await deleteTask(task.id);
+                                if (success) {
+                                  // If we deleted the current task, redirect to homepage
+                                  if (currentTaskId === task.id) {
+                                    router.push("/");
+                                  }
+                                } else {
+                                  console.error("Failed to delete task");
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Footer with config and status */}
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="truncate flex-1 mr-2">
                           {task.config_path
                             ? task.config_path
                                 .replace(/^.*\//, "")
                                 .replace(/\.(yaml|yml)$/, "")
                             : task.status === "completed"
-                            ? "Task completed"
-                            : task.status === "failed"
-                            ? "Task failed"
+                            ? "Completed"
+                            : task.status === "error"
+                            ? "Error"
                             : task.status === "running"
-                            ? "Task in progress"
-                            : "Task pending"}
-                        </p>
-                        <div className="flex items-center justify-between w-full">
-                          {/* <span className="text-xs text-muted-foreground">
-                            {formatTimeAgo(createdAt)}
-                          </span> */}
-                          <Badge variant="outline" className="text-xs">
-                            {task.id}
-                          </Badge>
-                        </div>
-                      </div>
+                            ? "Running"
+                            : "Pending"}
+                        </span>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <MoreHorizontal className="h-3 w-3" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem>
-                            <Star className="h-3 w-3 mr-2" />
-                            Favorite
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Archive className="h-3 w-3 mr-2" />
-                            Archive
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const success = await deleteTask(task.id);
-                              if (success) {
-                                // If we deleted the current task, redirect to homepage
-                                if (currentTaskId === task.id) {
-                                  router.push("/");
-                                }
-                              } else {
-                                console.error("Failed to delete task");
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        <span className="font-mono text-xs opacity-60">
+                          {task.id.slice(-4)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );

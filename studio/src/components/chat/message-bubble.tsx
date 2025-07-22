@@ -11,7 +11,7 @@ interface MessageBubbleProps {
     role: "user" | "assistant" | "system";
     content: string;
     timestamp: Date;
-    status?: "streaming" | "complete" | "failed";
+    status?: "streaming" | "complete" | "error";
     metadata?: any;
   };
   onRetry?: () => void;
@@ -44,7 +44,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
           "transition-all duration-200",
           "hover:shadow-sm",
           isStreaming && "border-primary/20",
-          message.status === "failed" && "border-destructive/20"
+          message.status === "error" && "border-destructive/20"
         )}
       >
         {/* Content */}
@@ -65,29 +65,30 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
         </p>
 
         {/* Tool Usage */}
-        {message.metadata?.toolCalls && message.metadata.toolCalls.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {message.metadata.toolCalls.map((tool: any, idx: number) => (
-              <div
-                key={idx}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs",
-                  "bg-muted text-muted-foreground",
-                  tool.status === "running" && "animate-pulse"
-                )}
-              >
-                {tool.status === "running" ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                ) : tool.status === "completed" ? (
-                  <Check className="w-3 h-3" />
-                ) : (
-                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                )}
-                <span>{tool.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        {message.metadata?.toolCalls &&
+          message.metadata.toolCalls.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {message.metadata.toolCalls.map((tool: any, idx: number) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs",
+                    "bg-muted text-muted-foreground",
+                    tool.status === "running" && "animate-pulse"
+                  )}
+                >
+                  {tool.status === "running" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : tool.status === "completed" ? (
+                    <Check className="w-3 h-3" />
+                  ) : (
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                  )}
+                  <span>{tool.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
         {/* Action buttons */}
         {isAssistant && (
@@ -115,7 +116,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                 </>
               )}
             </Button>
-            {message.status === "failed" && onRetry && (
+            {message.status === "error" && onRetry && (
               <Button
                 variant="ghost"
                 size="sm"

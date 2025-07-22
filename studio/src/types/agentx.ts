@@ -31,7 +31,11 @@ export type ToolResultContent = {
 };
 
 // Union type for all content types
-export type MessageContent = TextContent | ImageContent | ToolCallContent | ToolResultContent;
+export type MessageContent =
+  | TextContent
+  | ImageContent
+  | ToolCallContent
+  | ToolResultContent;
 
 // Message roles
 export type MessageRole = "system" | "user" | "assistant" | "tool";
@@ -84,7 +88,7 @@ export interface Task {
   context?: Record<string, any>;
 }
 
-export type TaskStatus = "pending" | "running" | "completed" | "failed";
+export type TaskStatus = "pending" | "running" | "completed" | "error";
 
 // API request/response types
 export interface CreateTaskRequest {
@@ -109,8 +113,11 @@ export interface SendMessageRequest {
 }
 
 // Streaming event types
-export type StreamEventType = 
-  | "agent_message"
+export type StreamEventType =
+  | "message" // Complete Message object
+  | "stream_chunk" // Streaming text chunks
+  | "agent_message" // Legacy format (deprecated)
+  | "tool_call" // Tool call events
   | "tool_call_start"
   | "tool_call_result"
   | "agent_status"
@@ -131,6 +138,8 @@ export interface StreamEvent {
 export interface AgentMessageEvent {
   agent_id: string;
   message: string;
+  message_id?: string;
+  timestamp?: string;
   content?: MessageContent | MessageContent[];
   metadata?: MessageMetadata;
 }
@@ -160,6 +169,14 @@ export interface TaskUpdateEvent {
   status: TaskStatus;
   message?: string;
   progress?: number;
+}
+
+export interface StreamChunkEvent {
+  message_id: string;
+  chunk: string;
+  is_final: boolean;
+  timestamp: string;
+  error?: string; // Optional error message
 }
 
 // Artifact types
@@ -211,7 +228,7 @@ export interface LogsResponse {
   offset: number;
   limit: number;
   file_size?: number;
-  mode?: 'full' | 'chunked' | 'tail';
+  mode?: "full" | "chunked" | "tail";
   has_more?: boolean;
 }
 
@@ -220,11 +237,15 @@ export function isTextContent(content: MessageContent): content is TextContent {
   return content.type === "text";
 }
 
-export function isToolCallContent(content: MessageContent): content is ToolCallContent {
+export function isToolCallContent(
+  content: MessageContent
+): content is ToolCallContent {
   return content.type === "tool-call";
 }
 
-export function isToolResultContent(content: MessageContent): content is ToolResultContent {
+export function isToolResultContent(
+  content: MessageContent
+): content is ToolResultContent {
   return content.type === "tool-result";
 }
 
@@ -232,18 +253,18 @@ export function getMessageText(message: Message): string {
   if (typeof message.content === "string") {
     return message.content;
   }
-  
+
   if (Array.isArray(message.content)) {
     return message.content
       .filter(isTextContent)
-      .map(c => c.text)
+      .map((c) => c.text)
       .join("\n");
   }
-  
+
   if (isTextContent(message.content)) {
     return message.content.text;
   }
-  
+
   return "";
 }
 
@@ -251,15 +272,15 @@ export function getToolCalls(message: Message): ToolCallContent[] {
   if (!message.content || typeof message.content === "string") {
     return [];
   }
-  
+
   if (Array.isArray(message.content)) {
     return message.content.filter(isToolCallContent);
   }
-  
+
   if (isToolCallContent(message.content)) {
     return [message.content];
   }
-  
+
   return [];
 }
 
@@ -267,14 +288,14 @@ export function getToolResults(message: Message): ToolResultContent[] {
   if (!message.content || typeof message.content === "string") {
     return [];
   }
-  
+
   if (Array.isArray(message.content)) {
     return message.content.filter(isToolResultContent);
   }
-  
+
   if (isToolResultContent(message.content)) {
     return [message.content];
   }
-  
+
   return [];
 }

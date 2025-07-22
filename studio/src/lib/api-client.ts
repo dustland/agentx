@@ -30,6 +30,15 @@ export class AgentXAPIClient {
   }
 
   async init() {
+    // Check if we're on the test page - use test user
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname === "/test/hooks"
+    ) {
+      this.userId = "test-user-streaming";
+      return;
+    }
+
     // If we already have a user or are in the process of getting one, don't call again
     if (this.userId !== null || this.userPromise) {
       if (this.userPromise) {
@@ -51,25 +60,29 @@ export class AgentXAPIClient {
       const user = await getCurrentUser();
       this.userId = user?.id || null;
       // console.log("API client initialized with user:", this.userId);
-      
+
       // If no user is found, redirect to login
       if (!user && typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         // Only redirect if we're not already on the auth pages
         if (!currentPath.startsWith("/auth/")) {
-          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(
+            currentPath
+          )}`;
         }
       }
     } catch (error) {
       console.error("Failed to get current user:", error);
       this.userId = null;
-      
+
       // Redirect to login on authentication error
       if (typeof window !== "undefined") {
         const currentPath = window.location.pathname;
         // Only redirect if we're not already on the auth pages
         if (!currentPath.startsWith("/auth/")) {
-          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(
+            currentPath
+          )}`;
         }
       }
     }
@@ -98,6 +111,14 @@ export class AgentXAPIClient {
       (headers as any)["X-User-ID"] = this.userId;
     }
 
+    // Log request details for debugging
+    console.log("API Request:", {
+      url,
+      method: options.method || "GET",
+      userId: this.userId,
+      headers: headers,
+    });
+
     const response = await fetch(url, {
       ...options,
       headers,
@@ -109,13 +130,22 @@ export class AgentXAPIClient {
         const currentPath = window.location.pathname;
         // Only redirect if we're not already on the auth pages
         if (!currentPath.startsWith("/auth/")) {
-          window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(
+            currentPath
+          )}`;
           // Throw error to stop further processing
           throw new Error("Unauthorized - redirecting to login");
         }
       }
-      
+
       const error = await response.text();
+      console.error("API Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error,
+        url,
+        userId: this.userId,
+      });
       throw new Error(`API Error ${response.status}: ${error}`);
     }
 
@@ -135,7 +165,10 @@ export class AgentXAPIClient {
     await this.init();
     const response = await this.request<{ tasks: TaskResponse[] }>("/tasks");
     // Backend returns { tasks: [...] }
-    return { tasks: response.tasks || [], total: (response.tasks || []).length };
+    return {
+      tasks: response.tasks || [],
+      total: (response.tasks || []).length,
+    };
   }
 
   async getTask(taskId: string): Promise<TaskResponse> {
@@ -208,21 +241,23 @@ export class AgentXAPIClient {
 
   // Logs
   async getTaskLogs(
-    taskId: string, 
-    options?: { 
-      limit?: number; 
-      offset?: number; 
+    taskId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
       tail?: boolean;
     }
   ): Promise<LogsResponse> {
     await this.init();
     const params = new URLSearchParams();
-    if (options?.limit) params.append('limit', options.limit.toString());
-    if (options?.offset) params.append('offset', options.offset.toString());
-    if (options?.tail) params.append('tail', 'true');
-    
+    if (options?.limit) params.append("limit", options.limit.toString());
+    if (options?.offset) params.append("offset", options.offset.toString());
+    if (options?.tail) params.append("tail", "true");
+
     const queryString = params.toString();
-    return this.request<LogsResponse>(`/tasks/${taskId}/logs${queryString ? `?${queryString}` : ''}`);
+    return this.request<LogsResponse>(
+      `/tasks/${taskId}/logs${queryString ? `?${queryString}` : ""}`
+    );
   }
 
   // Real-time updates using Server-Sent Events
@@ -237,7 +272,9 @@ export class AgentXAPIClient {
     // If userId is not yet initialized, use "guest" as default
     const effectiveUserId = this.userId || "guest";
     const params = `?user_id=${encodeURIComponent(effectiveUserId)}`;
-    console.log("SSE connection with user:", effectiveUserId);
+    console.log("[SSE] Creating connection for task:", taskId);
+    console.log("[SSE] Using user ID:", effectiveUserId);
+    console.log("[SSE] Current this.userId:", this.userId);
 
     let eventSource: EventSource;
     let isConnected = false;
@@ -257,8 +294,8 @@ export class AgentXAPIClient {
     }
 
     eventSource.onopen = () => {
+      console.log("SSE connection opened successfully for task:", taskId);
       isConnected = true;
-      console.log("SSE connection established for task:", taskId);
     };
 
     eventSource.onmessage = (event) => {
@@ -284,9 +321,10 @@ export class AgentXAPIClient {
       }
     };
 
-    // Handle specific event types
+    // Handle specific event types (keeping agent_message for backward compatibility)
     eventSource.addEventListener("agent_message", (event: MessageEvent) => {
       try {
+        console.warn("[SSE] Received deprecated agent_message event");
         console.log("[SSE] agent_message event:", event);
         const data = JSON.parse(event.data);
         onUpdate({
@@ -341,6 +379,35 @@ export class AgentXAPIClient {
       }
     });
 
+    // Add listeners for new streaming events
+    eventSource.addEventListener("message", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] message event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "message",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling message:", error);
+      }
+    });
+
+    eventSource.addEventListener("stream_chunk", (event: MessageEvent) => {
+      try {
+        console.log("[SSE] stream_chunk event:", event);
+        const data = JSON.parse(event.data);
+        onUpdate({
+          type: "stream_chunk",
+          data: data,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error("Error handling stream_chunk:", error);
+      }
+    });
+
     // Return cleanup function
     return () => {
       if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
@@ -386,7 +453,7 @@ export class AgentXAPIClient {
         onUpdate(task);
 
         // Stop polling if task is complete
-        if (task.status === "completed" || task.status === "failed") {
+        if (task.status === "completed" || task.status === "error") {
           isPolling = false;
           return;
         }

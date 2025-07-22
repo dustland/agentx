@@ -72,7 +72,7 @@ export function ChatMessage({ message, isStreaming }: ChatMessageProps) {
                 <Badge
                   key={idx}
                   variant={
-                    tool.status === "failed" ? "destructive" : "secondary"
+                    tool.status === "error" ? "destructive" : "secondary"
                   }
                   className="text-xs"
                 >

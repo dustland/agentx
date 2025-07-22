@@ -13,7 +13,7 @@ from ..core.task import start_task, resume_task
 from ..core.xagent import XAgent
 from ..utils.logger import get_logger
 from .user_task_index import get_user_task_index, UserTaskIndex
-from .streaming import send_agent_message, send_task_update
+from .streaming import send_task_update, send_complete_message, send_message_object
 
 logger = get_logger(__name__)
 
@@ -225,31 +225,21 @@ class TaskService:
         task = await self.get_task(user_id, task_id)
         logger.info(f"[CHAT] Task instance retrieved successfully")
         
-        # Send user message event
-        logger.info(f"[CHAT] Sending user message event to SSE stream")
-        await send_agent_message(
-            task_id=task_id,
-            agent_id="user",
-            message=content
-        )
-        logger.info(f"[CHAT] User message event sent successfully")
-        
         # Send message and get response
         logger.info(f"[CHAT] Calling task.chat() to process message")
         response = await task.chat(content)
         logger.info(f"[CHAT] Received response from task.chat()")
         
-        # Send agent response event
-        response_text = response.text if hasattr(response, 'text') else str(response)
-        logger.info(f"[CHAT] Response text extracted: {response_text[:100]}...")
+        # Send the actual Message objects via SSE
+        if hasattr(response, 'user_message') and response.user_message:
+            logger.info(f"[CHAT] Sending user Message object to SSE stream")
+            await send_message_object(task_id, response.user_message)
+            logger.info(f"[CHAT] User Message object sent successfully")
         
-        logger.info(f"[CHAT] Sending assistant message event to SSE stream")
-        await send_agent_message(
-            task_id=task_id,
-            agent_id="assistant",
-            message=response_text
-        )
-        logger.info(f"[CHAT] Assistant message event sent successfully")
+        if hasattr(response, 'assistant_message') and response.assistant_message:
+            logger.info(f"[CHAT] Sending assistant Message object to SSE stream")
+            await send_message_object(task_id, response.assistant_message)
+            logger.info(f"[CHAT] Assistant Message object sent successfully")
         
         # Send task status update to indicate chat is complete
         await send_task_update(
@@ -261,7 +251,7 @@ class TaskService:
         
         result = {
             "message_id": f"msg_{datetime.now().timestamp():.0f}",
-            "response": response_text,
+            "response": response.text if response else "",
             "timestamp": datetime.now().isoformat()
         }
         

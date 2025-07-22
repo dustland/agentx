@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Brain, Database, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { useAgentXAPI } from "@/lib/api-client";
+import { useTask } from "@/hooks/use-task";
 
 interface Memory {
   agent_id?: string;
@@ -20,7 +20,7 @@ interface MemoryProps {
 }
 
 export function Memory({ taskId }: MemoryProps) {
-  const apiClient = useAgentXAPI();
+  const { searchMemory } = useTask(taskId);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loadingMemories, setLoadingMemories] = useState(false);
 
@@ -36,10 +36,7 @@ export function Memory({ taskId }: MemoryProps) {
     setLoadingMemories(true);
     try {
       // For now, using search with empty query to get all memories
-      const memoryResults = await apiClient.searchMemory(taskId, {
-        query: "",
-        limit: 100,
-      });
+      const memoryResults = await searchMemory("", 100);
       setMemories(memoryResults);
     } catch (error) {
       console.error("Failed to load memories:", error);

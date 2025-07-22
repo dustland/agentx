@@ -53,29 +53,22 @@ def create_app() -> FastAPI:
     @app.get("/test-sse/{task_id}")
     async def test_sse(task_id: str):
         """Test SSE endpoint to verify streaming is working"""
-        from .streaming import send_agent_message
+        from .streaming import send_message_object
+        from ..core.message import Message
         
         async def generate_test_events():
             logger.info(f"[TEST-SSE] Starting test event stream for task {task_id}")
             
-            # Send a test message
-            await send_agent_message(
-                task_id=task_id,
-                agent_id="system",
-                message="This is a test SSE message",
-                metadata={"test": True}
-            )
+            # Send a test system message
+            system_message = Message.system_message("This is a test SSE message")
+            await send_message_object(task_id, system_message)
             
             # Wait a bit
             await asyncio.sleep(1)
             
             # Send another message
-            await send_agent_message(
-                task_id=task_id,
-                agent_id="assistant",
-                message="SSE is working correctly!",
-                metadata={"test": True, "timestamp": datetime.now().isoformat()}
-            )
+            assistant_message = Message.assistant_message("SSE is working correctly!")
+            await send_message_object(task_id, assistant_message)
             
             logger.info(f"[TEST-SSE] Test events sent for task {task_id}")
         
@@ -461,7 +454,7 @@ def create_app() -> FastAPI:
 async def _execute_task_async(user_id: str, task_id: str):
     """Execute a task asynchronously in the background."""
     try:
-        from .streaming import send_task_update, send_agent_message
+        from .streaming import send_task_update, send_message_object
         
         task_service = get_task_service()
         task = await task_service.get_task(user_id, task_id)
@@ -493,13 +486,10 @@ async def _execute_task_async(user_id: str, task_id: str):
                 )
                 break
             
-            # Send step result as agent message
-            await send_agent_message(
-                task_id=task_id,
-                agent_id="system",
-                message=f"Step {step_count}: {result}",
-                metadata={"step": step_count}
-            )
+            # Send step result as system message
+            from ..core.message import Message
+            step_message = Message.system_message(f"Step {step_count}: {result}")
+            await send_message_object(task_id, step_message)
             
             # Small delay to prevent overwhelming the system
             await asyncio.sleep(0.1)

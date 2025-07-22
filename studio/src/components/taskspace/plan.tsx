@@ -4,16 +4,16 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ListIcon, RefreshCwIcon } from "lucide-react";
-import { useAgentXAPI } from "@/lib/api-client";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useTask } from "@/hooks/use-task";
 
 interface PlanProps {
   taskId: string;
 }
 
 export function Plan({ taskId }: PlanProps) {
-  const apiClient = useAgentXAPI();
+  const { getArtifactContent } = useTask(taskId);
   const [planContent, setPlanContent] = useState<string | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
 
@@ -23,8 +23,9 @@ export function Plan({ taskId }: PlanProps) {
 
     setLoadingPlan(true);
     try {
-      const response = await apiClient.getArtifactContent(taskId, "plan.json");
-      setPlanContent(response.content);
+      const response = await getArtifactContent("plan.json");
+      const content = response.content || "";
+      setPlanContent(content);
     } catch (error) {
       console.error("Failed to load plan:", error);
       setPlanContent(null);

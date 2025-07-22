@@ -3,20 +3,20 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
-  status?: "streaming" | "complete" | "failed";
+  status?: "streaming" | "complete" | "error";
   metadata?: {
     agentId?: string;
     agentName?: string;
     toolCalls?: Array<{
       name: string;
-      status: "running" | "completed" | "failed";
+      status: "running" | "completed" | "error";
       parameters?: any;
       result?: any;
     }>;
   };
 }
 
-export type TaskStatus = "pending" | "running" | "completed" | "failed";
+export type TaskStatus = "pending" | "running" | "completed" | "error";
 
 export interface StreamEvent {
   type: "message" | "tool_call" | "status_update" | "failed";

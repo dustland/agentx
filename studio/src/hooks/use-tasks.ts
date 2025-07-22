@@ -1,10 +1,15 @@
 import { useEffect, useCallback } from "react";
 import { useAgentXAPI } from "@/lib/api-client";
 import { useTaskStore } from "@/store/task";
-import { Task as TaskResponse } from "@/types/agentx";
+import { Task as TaskResponse, CreateTaskRequest } from "@/types/agentx";
 
+/**
+ * Hook for managing the task list
+ * Encapsulates all task list operations and store access
+ */
 export function useTasks() {
   const apiClient = useAgentXAPI();
+  const store = useTaskStore();
   const {
     tasksList,
     tasksListLoading,
@@ -15,7 +20,8 @@ export function useTasks() {
     setTasksListError,
     updateTaskInList,
     removeTaskFromList,
-  } = useTaskStore();
+    setInitialMessage,
+  } = store;
 
   // Check if we should refresh (cache for 30 seconds)
   const shouldRefresh = useCallback(() => {
@@ -80,6 +86,24 @@ export function useTasks() {
     updateTaskInList(taskId, { status });
   }, [updateTaskInList]);
 
+  // Create a new task
+  const createTask = useCallback(async (request: CreateTaskRequest) => {
+    try {
+      const newTask = await apiClient.createTask(request);
+      // Refresh the task list to include the new task
+      await loadTasks(true);
+      return newTask;
+    } catch (error) {
+      console.error("Failed to create task:", error);
+      throw error;
+    }
+  }, [apiClient, loadTasks]);
+
+  // Set initial message for a new task
+  const setTaskInitialMessage = useCallback((message: string) => {
+    setInitialMessage(message);
+  }, [setInitialMessage]);
+
   // Auto-load tasks on mount
   useEffect(() => {
     loadTasks();
@@ -95,12 +119,17 @@ export function useTasks() {
   }, [loadTasks]);
 
   return {
+    // Data
     tasks: tasksList,
     loading: tasksListLoading,
     error: tasksListError,
+    
+    // Actions
     loadTasks,
     deleteTask,
     updateTaskStatus,
+    createTask,
+    setInitialMessage: setTaskInitialMessage,
     refetch: () => loadTasks(true), // Force refresh
   };
 }

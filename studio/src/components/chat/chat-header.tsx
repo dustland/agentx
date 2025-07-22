@@ -38,7 +38,7 @@ export function ChatHeader({
         return <Loader2 className="h-3 w-3 animate-spin" />;
       case "completed":
         return <CheckCircle2 className="h-3 w-3" />;
-      case "failed":
+      case "error":
         return <XCircle className="h-3 w-3" />;
       default:
         return null;
@@ -53,7 +53,7 @@ export function ChatHeader({
         return "bg-yellow-500";
       case "completed":
         return "bg-green-500";
-      case "failed":
+      case "error":
         return "bg-red-500";
       default:
         return "bg-gray-500";

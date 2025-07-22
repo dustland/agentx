@@ -67,11 +67,8 @@ async function testSSEStreaming() {
       log('✓ SSE connection established', colors.green);
     };
 
-    eventSource.onmessage = (event) => {
-      log(`\n📨 Generic message event:`, colors.yellow);
-      log(`   Data: ${event.data}`, colors.cyan);
-      receivedEvents.push({ type: 'message', data: event.data });
-    };
+    // Note: We're not setting onmessage directly to avoid conflicts
+    // All events will be handled by addEventListener
 
     eventSource.addEventListener('agent_message', (event) => {
       const data = JSON.parse(event.data);
@@ -79,6 +76,24 @@ async function testSSEStreaming() {
       log(`   Agent: ${data.agent_id}`, colors.cyan);
       log(`   Message: ${data.message.substring(0, 100)}...`, colors.cyan);
       receivedEvents.push({ type: 'agent_message', data });
+    });
+
+    eventSource.addEventListener('message', (event) => {
+      const data = JSON.parse(event.data);
+      log(`\n💬 Message event (complete):`, colors.yellow);
+      log(`   ID: ${data.id}`, colors.cyan);
+      log(`   Role: ${data.role}`, colors.cyan);
+      log(`   Content: ${data.content.substring(0, 100)}...`, colors.cyan);
+      receivedEvents.push({ type: 'message', data });
+    });
+
+    eventSource.addEventListener('stream_chunk', (event) => {
+      const data = JSON.parse(event.data);
+      log(`\n✨ Stream chunk event:`, colors.magenta);
+      log(`   Message ID: ${data.message_id}`, colors.cyan);
+      log(`   Chunk: "${data.chunk}"`, colors.cyan);
+      log(`   Is Final: ${data.is_final}`, colors.cyan);
+      receivedEvents.push({ type: 'stream_chunk', data });
     });
 
     eventSource.addEventListener('task_update', (event) => {
@@ -164,13 +179,51 @@ async function testSSEStreaming() {
     if (receivedEvents.length > 0) {
       log('\n✅ SSE streaming is working!', colors.green);
       
+      // Check for streaming chunks
+      const streamChunks = receivedEvents.filter(e => e.type === 'stream_chunk');
+      const completeMessages = receivedEvents.filter(e => e.type === 'message');
+      
+      if (streamChunks.length > 0) {
+        log(`\n🎉 Streaming chunks detected: ${streamChunks.length} chunks`, colors.green);
+        
+        // Reconstruct streamed message
+        const messageChunks = {};
+        streamChunks.forEach(event => {
+          const msgId = event.data.message_id;
+          if (!messageChunks[msgId]) {
+            messageChunks[msgId] = [];
+          }
+          messageChunks[msgId].push(event.data);
+        });
+        
+        Object.entries(messageChunks).forEach(([msgId, chunks]) => {
+          const fullText = chunks.map(c => c.chunk).join('');
+          log(`\n  Streamed message ${msgId}:`, colors.cyan);
+          log(`    Chunks: ${chunks.length}`, colors.cyan);
+          log(`    Text: "${fullText.substring(0, 100)}..."`, colors.cyan);
+        });
+      }
+      
+      if (completeMessages.length > 0) {
+        log(`\n📦 Complete messages received: ${completeMessages.length}`, colors.green);
+        completeMessages.forEach(event => {
+          log(`  Message ID: ${event.data.id}, Role: ${event.data.role}`, colors.cyan);
+        });
+      }
+      
       // Show last few events
-      log('\nLast 3 events:', colors.cyan);
-      receivedEvents.slice(-3).forEach((event, i) => {
+      log('\nLast 5 events:', colors.cyan);
+      receivedEvents.slice(-5).forEach((event, i) => {
         log(`  ${i + 1}. ${event.type}`, colors.yellow);
         if (event.type === 'agent_message') {
           log(`     Agent: ${event.data.agent_id}`, colors.cyan);
           log(`     Message: ${event.data.message.substring(0, 60)}...`, colors.cyan);
+        } else if (event.type === 'stream_chunk') {
+          log(`     Chunk: "${event.data.chunk}"`, colors.cyan);
+          log(`     Final: ${event.data.is_final}`, colors.cyan);
+        } else if (event.type === 'message') {
+          log(`     Role: ${event.data.role}`, colors.cyan);
+          log(`     Content: ${event.data.content.substring(0, 60)}...`, colors.cyan);
         }
       });
     } else {

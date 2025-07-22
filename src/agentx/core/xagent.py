@@ -58,7 +58,10 @@ class XAgentResponse:
         preserved_steps: Optional[List[str]] = None,
         regenerated_steps: Optional[List[str]] = None,
         plan_changes: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
+        user_message: Optional['Message'] = None,
+        assistant_message: Optional['Message'] = None,
+        message_id: Optional[str] = None
     ):
         self.text = text
         self.artifacts = artifacts or []
@@ -66,6 +69,9 @@ class XAgentResponse:
         self.regenerated_steps = regenerated_steps or []
         self.plan_changes = plan_changes or {}
         self.metadata = metadata or {}
+        self.user_message = user_message
+        self.assistant_message = assistant_message
+        self.message_id = message_id
 
 
 class XAgent(Agent):
@@ -317,6 +323,7 @@ class XAgent(Agent):
 
         logger.info(f"XAgent received chat message: {message.content[:100]}...")
 
+        response = None
         try:
             # Ensure plan is initialized if we have an initial prompt
             await self._ensure_plan_initialized()
@@ -326,27 +333,150 @@ class XAgent(Agent):
 
             # If message requires plan adjustment
             if impact_analysis.get("requires_plan_adjustment", False):
-                return await self._handle_plan_adjustment(message, impact_analysis)
+                response = await self._handle_plan_adjustment(message, impact_analysis)
 
             # If message is Q&A or informational
             elif impact_analysis.get("is_informational", False):
-                return await self._handle_informational_query(message)
+                response = await self._handle_informational_query(message)
 
             # If no plan exists and this is a new task request
             elif not self.plan and impact_analysis.get("is_new_task", False):
-                return await self._handle_new_task_request(message)
+                response = await self._handle_new_task_request(message)
 
             # Default: treat as conversational input
             else:
-                return await self._handle_conversational_input(message)
+                response = await self._handle_conversational_input(message)
 
         except Exception as e:
             logger.error(f"Error processing chat message: {e}")
-            return XAgentResponse(
+            response = XAgentResponse(
                 text=f"I encountered an error processing your message: {str(e)}",
                 metadata={"error": str(e)}
             )
+        
+        # Persist assistant response to chat history
+        if response and response.text:
+            assistant_message = Message.assistant_message(response.text)
+            # Use consistent message ID if available from streaming
+            if hasattr(response, 'message_id') and response.message_id:
+                assistant_message.id = response.message_id
+            self.conversation_history.append(assistant_message)
+            self.history.add_message(assistant_message)
+            
+            # Persist to storage
+            if hasattr(self, 'chat_storage'):
+                asyncio.create_task(self.chat_storage.save_message(self.task_id, assistant_message))
+            
+            # Add messages to response
+            response.user_message = message
+            response.assistant_message = assistant_message
+                
+        return response
 
+    async def _stream_full_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None) -> tuple[str, str]:
+        """Stream full response using Brain's streaming capabilities.
+        
+        Returns:
+            tuple: (accumulated_text, message_id) where message_id is used for both streaming and final message
+        """
+        # Generate message ID ONCE and use for both streaming and final message
+        message_id = generate_short_id()
+        accumulated_text = ""
+        
+        logger.info(f"[STREAMING] Starting streaming response for task {self.task_id} with message_id {message_id}")
+        
+        try:
+            # Import streaming function (avoid circular import)
+            from ..server.streaming import send_stream_chunk
+            
+            # Stream directly using Brain's stream_response method
+            async for chunk in self.brain.stream_response(
+                messages=messages,
+                system_prompt=system_prompt
+            ):
+                # Handle different chunk types from Brain
+                chunk_type = chunk.get("type")
+                
+                if chunk_type == "text-delta":
+                    # Handle text content chunks
+                    chunk_text = chunk.get("content", "")
+                    if chunk_text:  # Only process non-empty chunks
+                        accumulated_text += chunk_text
+                        logger.debug(f"[STREAMING] Received text chunk: '{chunk_text[:50]}{'...' if len(chunk_text) > 50 else ''}' (length: {len(chunk_text)})")
+                        
+                        # Send streaming chunk via SSE using consistent message_id
+                        try:
+                            await send_stream_chunk(
+                                task_id=self.task_id,
+                                chunk=chunk_text,
+                                message_id=message_id,
+                                is_final=False
+                            )
+                            logger.debug(f"[STREAMING] Sent text chunk via SSE (message_id: {message_id})")
+                        except Exception as e:
+                            logger.error(f"[STREAMING] Error sending text chunk: {e}")
+                
+                elif chunk_type == "tool_call_start":
+                    # Tool call started - could send tool event here if needed
+                    logger.info(f"[STREAMING] Tool call started: {chunk.get('name', 'unknown')}")
+                
+                elif chunk_type == "tool_call_result":
+                    # Tool call completed - could send tool result here if needed
+                    logger.info(f"[STREAMING] Tool call result: {chunk.get('name', 'unknown')}")
+                
+                elif chunk_type == "error":
+                    # Handle error chunks
+                    error_content = chunk.get("content", "Unknown error")
+                    logger.error(f"[STREAMING] Error chunk received: {error_content}")
+                    accumulated_text += f"\n\nError: {error_content}"
+                    
+                    try:
+                        await send_stream_chunk(
+                            task_id=self.task_id,
+                            chunk="",
+                            message_id=message_id,
+                            is_final=True,
+                            error=error_content
+                        )
+                    except Exception as e:
+                        logger.error(f"[STREAMING] Error sending error chunk: {e}")
+                    break
+            
+            # Send final chunk to indicate streaming is complete
+            try:
+                await send_stream_chunk(
+                    task_id=self.task_id,
+                    chunk="",
+                    message_id=message_id,
+                    is_final=True
+                )
+                logger.info(f"[STREAMING] Sent final chunk for message_id {message_id}")
+            except Exception as e:
+                logger.error(f"[STREAMING] Error sending final chunk: {e}")
+                
+        except Exception as e:
+            logger.error(f"Streaming failed: {e}")
+            # Send error chunk via SSE
+            try:
+                from ..server.streaming import send_stream_chunk
+                await send_stream_chunk(
+                    task_id=self.task_id,
+                    chunk="",
+                    message_id=message_id,
+                    is_final=True,
+                    error=str(e)
+                )
+            except Exception as send_error:
+                logger.error(f"[STREAMING] Error sending error chunk: {send_error}")
+            
+            # Fallback to non-streaming
+            response = await self.brain.generate_response(
+                messages=messages,
+                system_prompt=system_prompt
+            )
+            accumulated_text = response.content or ""
+        
+        return accumulated_text, message_id
 
     async def _analyze_message_impact(self, message: Message) -> Dict[str, Any]:
         """
@@ -465,14 +595,16 @@ AVAILABLE ARTIFACTS:
 Please provide a helpful, informative response based on the current state of the task.
 """
 
-        response = await self.brain.generate_response(
+        # Stream the response
+        response_text, message_id = await self._stream_full_response(
             messages=[{"role": "user", "content": context_prompt}],
             system_prompt=self.build_system_prompt({"task_id": self.task_id})
         )
 
         return XAgentResponse(
-            text=response.content or "",
-            metadata={"query_type": "informational"}
+            text=response_text,
+            metadata={"query_type": "informational"},
+            message_id=message_id
         )
 
     async def _handle_new_task_request(self, message: Message) -> XAgentResponse:
@@ -505,14 +637,16 @@ Please provide a helpful, conversational response. If the user seems to want to 
 suggest they be more specific about what changes they want.
 """
 
-        response = await self.brain.generate_response(
+        # Stream the response
+        response_text, message_id = await self._stream_full_response(
             messages=[{"role": "user", "content": context_prompt}],
             system_prompt=self.build_system_prompt({"task_id": self.task_id})
         )
 
         return XAgentResponse(
-            text=response.content or "",
-            metadata={"query_type": "conversational"}
+            text=response_text,
+            metadata={"query_type": "conversational"},
+            message_id=message_id
         )
 
     async def _generate_plan(self, goal: str) -> Plan:
@@ -807,7 +941,8 @@ Respond with a JSON object following this schema:
 
         # Send task start event
         try:
-            from ..server.streaming import send_agent_status, send_agent_message
+            from ..server.streaming import send_agent_status, send_message_object
+            from ..core.message import Message
             await send_agent_status(
                 task_id=self.task_id,
                 agent_id=task.agent,
@@ -815,13 +950,9 @@ Respond with a JSON object following this schema:
                 progress=0
             )
             
-            # Send task briefing as agent message
-            await send_agent_message(
-                task_id=self.task_id,
-                agent_id="system",
-                message=f"Starting task: {task.name} - {task.goal}",
-                metadata={"task_id": task.id, "agent": task.agent}
-            )
+            # Send task briefing as system message
+            system_message = Message.system_message(f"Starting task: {task.name} - {task.goal}")
+            await send_message_object(self.task_id, system_message)
         except ImportError:
             # Streaming not available in this context
             pass
@@ -856,13 +987,10 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         
         # Send agent response as message
         try:
-            from ..server.streaming import send_agent_message
-            await send_agent_message(
-                task_id=self.task_id,
-                agent_id=task.agent,
-                message=response,
-                metadata={"task_id": task.id}
-            )
+            from ..server.streaming import send_message_object
+            from ..core.message import Message
+            agent_message = Message.assistant_message(response)
+            await send_message_object(self.task_id, agent_message)
         except ImportError:
             # Streaming not available in this context
             pass

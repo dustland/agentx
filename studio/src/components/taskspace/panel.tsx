@@ -4,8 +4,17 @@ import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Activity, Brain, ListIcon, Eye, Target, Folder, Monitor } from "lucide-react";
-import { useAgentXAPI } from "@/lib/api-client";
+import {
+  FileText,
+  Activity,
+  Brain,
+  ListIcon,
+  Eye,
+  Target,
+  Folder,
+  Monitor,
+} from "lucide-react";
+import { useTask } from "@/hooks/use-task";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
@@ -31,7 +40,7 @@ interface ToolCall {
   parameters: any;
   result?: any;
   timestamp: string;
-  status: "pending" | "completed" | "failed";
+  status: "pending" | "completed" | "error";
 }
 
 interface TaskSpacePanelProps {
@@ -43,7 +52,7 @@ export function TaskSpacePanel({
   taskId,
   onToolCallSelect,
 }: TaskSpacePanelProps) {
-  const apiClient = useAgentXAPI();
+  const { subscribe, getArtifacts } = useTask(taskId);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -68,52 +77,30 @@ export function TaskSpacePanel({
     setActiveTab("inspector");
   };
 
-  // Set up SSE for real-time updates
-  useEffect(() => {
-    const eventSource = new EventSource(`/api/agentx/tasks/${taskId}/stream`);
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.event === "artifact_created") {
-        if (activeTab === "artifacts") {
-          // Artifacts component handles its own refresh
-        }
-      }
-      // Handle memory updates
-      else if (data.event === "memory_updated") {
-        if (activeTab === "memory") {
-          // Memory component handles its own refresh
-        }
-      }
-    };
-
-    const cleanup = () => {
-      eventSource.close();
-    };
-
-    // Cleanup on unmount or when taskId changes
-    return cleanup;
-  }, [taskId, activeTab]);
-
-  // Check for plan existence
+  // Subscribe to task events
   useEffect(() => {
     if (!taskId) return;
 
+    const cleanup = subscribe({
+      // We can listen to events here if needed
+      // For now, individual components handle their own data
+    });
+
+    return cleanup;
+  }, [taskId, subscribe]);
+
+  // Check for plan existence
+  useEffect(() => {
     const checkPlan = async () => {
-      try {
-        const response = await apiClient.getTaskArtifacts(taskId);
-        const planExists = response.artifacts.some(
-          (artifact: Artifact) => artifact.path === "plan.json"
-        );
-        setHasPlan(planExists);
-      } catch (error) {
-        console.error("Failed to check plan:", error);
-      }
+      const artifacts = await getArtifacts();
+      const planExists = artifacts.some(
+        (artifact: Artifact) => artifact.path === "plan.json"
+      );
+      setHasPlan(planExists);
     };
 
     checkPlan();
-  }, [taskId]);
+  }, [taskId, getArtifacts]);
 
   return (
     <div className="h-full flex flex-col px-2 py-3">
@@ -124,33 +111,30 @@ export function TaskSpacePanel({
           className="h-full flex flex-col"
         >
           <CardHeader className="p-2 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <TabsList className="h-7 text-xs">
-                {hasPlan && (
-                  <TabsTrigger value="plan" className="text-xs gap-1 py-1">
-                    <ListIcon className="h-3 w-3 mr-1" />
-                    Plan
-                  </TabsTrigger>
-                )}
-                <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
-                  <Folder className="h-3 w-3 mr-1" />
-                  Files
+            <TabsList className="h-7 text-xs">
+              {hasPlan && (
+                <TabsTrigger value="plan" className="text-xs gap-1 py-1">
+                  <ListIcon className="h-3 w-3 mr-1" />
+                  Plan
                 </TabsTrigger>
-                <TabsTrigger value="inspector" className="text-xs gap-1 py-1">
-                  <Monitor className="h-3 w-3 mr-1" />
-                  Inspector
-                </TabsTrigger>
-                {/* <TabsTrigger value="memory" className="text-xs gap-1 py-1">
+              )}
+              <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
+                <Folder className="h-3 w-3 mr-1" />
+                Files
+              </TabsTrigger>
+              <TabsTrigger value="inspector" className="text-xs gap-1 py-1">
+                <Monitor className="h-3 w-3 mr-1" />
+                Inspector
+              </TabsTrigger>
+              {/* <TabsTrigger value="memory" className="text-xs gap-1 py-1">
                   <Brain className="h-3 w-3" />
                   Memory
                 </TabsTrigger> */}
-                <TabsTrigger value="logs" className="text-xs gap-1 py-1">
-                  <Activity className="h-3 w-3 mr-1" />
-                  Logs
-                </TabsTrigger>
-              </TabsList>
-
-            </div>
+              <TabsTrigger value="logs" className="text-xs gap-1 py-1">
+                <Activity className="h-3 w-3 mr-1" />
+                Logs
+              </TabsTrigger>
+            </TabsList>
           </CardHeader>
 
           {/* Plan Tab */}
@@ -159,7 +143,6 @@ export function TaskSpacePanel({
               <Plan taskId={taskId} />
             </TabsContent>
           )}
-
 
           {/* Artifacts Tab */}
           <TabsContent value="artifacts" className="flex-1 m-0 min-h-0">

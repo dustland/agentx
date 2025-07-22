@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Code, BookOpenCheck } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useAgentXAPI } from "@/lib/api-client";
+import { useTask } from "@/hooks/use-task";
 
 interface Artifact {
   path: string;
@@ -25,7 +25,7 @@ interface ToolCall {
   parameters: any;
   result?: any;
   timestamp: string;
-  status: "pending" | "completed" | "failed";
+  status: "pending" | "completed" | "error";
 }
 
 interface ViewerProps {
@@ -39,7 +39,7 @@ export function Inspector({
   selectedToolCall,
   taskId,
 }: ViewerProps) {
-  const apiClient = useAgentXAPI();
+  const { getArtifactContent } = useTask(taskId);
   const [artifactContent, setArtifactContent] = useState<string | null>(null);
   const [loadingContent, setLoadingContent] = useState(false);
 
@@ -57,16 +57,8 @@ export function Inspector({
   const loadArtifactContent = async (artifact: Artifact) => {
     setLoadingContent(true);
     try {
-      const response = await apiClient.getArtifactContent(
-        taskId,
-        artifact.path
-      );
-
-      if (response.is_binary) {
-        setArtifactContent("[Binary file - cannot display content]");
-      } else {
-        setArtifactContent(response.content || "");
-      }
+      const response = await getArtifactContent(artifact.path);
+      setArtifactContent(response.content || "");
     } catch (error) {
       console.error("Failed to load artifact content:", error);
       setArtifactContent("[Error loading content]");
@@ -160,7 +152,7 @@ export function Inspector({
               variant={
                 selectedToolCall.status === "completed"
                   ? "default"
-                  : selectedToolCall.status === "failed"
+                  : selectedToolCall.status === "error"
                   ? "destructive"
                   : "secondary"
               }

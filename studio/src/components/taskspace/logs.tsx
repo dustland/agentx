@@ -9,8 +9,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
-import { useAgentXAPI } from "@/lib/api-client";
 import { AlertCircle, AlertTriangle, Info, Search } from "lucide-react";
 import {
   Tooltip,
@@ -19,13 +19,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatBytes } from "@/lib/utils";
+import { useTask } from "@/hooks/use-task";
 
 interface LogsProps {
   taskId: string;
 }
 
 export function Logs({ taskId }: LogsProps) {
-  const apiClient = useAgentXAPI();
+  const { getLogs } = useTask(taskId);
   const [logs, setLogs] = useState<string[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [autoScrollLogs, setAutoScrollLogs] = useState(true);
@@ -44,7 +45,7 @@ export function Logs({ taskId }: LogsProps) {
       const useTail = newTailMode !== undefined ? newTailMode : tailMode;
       const useOffset = newOffset !== undefined ? newOffset : offset;
 
-      const response = await apiClient.getTaskLogs(taskId, {
+      const response = await getLogs({
         limit,
         offset: useTail ? 0 : useOffset,
         tail: useTail,
@@ -120,7 +121,7 @@ export function Logs({ taskId }: LogsProps) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
+          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50 animate-pulse" />
           <p>Loading logs...</p>
         </div>
       </div>
@@ -131,7 +132,7 @@ export function Logs({ taskId }: LogsProps) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50" />
+          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
           <p>No logs available</p>
         </div>
       </div>

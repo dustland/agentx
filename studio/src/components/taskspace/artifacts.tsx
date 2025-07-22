@@ -13,7 +13,7 @@ import {
   ChevronRightIcon,
   Inbox,
 } from "lucide-react";
-import { useAgentXAPI } from "@/lib/api-client";
+import { useTask } from "@/hooks/use-task";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 interface Artifact {
@@ -32,7 +32,7 @@ interface ArtifactsProps {
 }
 
 export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
-  const apiClient = useAgentXAPI();
+  const { getArtifacts, getArtifactContent } = useTask(taskId);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [loadingArtifacts, setLoadingArtifacts] = useState(false);
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
@@ -50,10 +50,10 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
   const loadArtifacts = async () => {
     setLoadingArtifacts(true);
     try {
-      const response = await apiClient.getTaskArtifacts(taskId);
+      const artifactsList = await getArtifacts();
 
       // Filter artifacts to only show those in the artifacts/ folder and exclude .git
-      const filteredArtifacts = response.artifacts
+      const filteredArtifacts = artifactsList
         .filter((artifact: Artifact) => {
           // Only include items that start with 'artifacts/'
           if (!artifact.path.startsWith("artifacts/")) return false;
@@ -98,10 +98,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const downloadFile = async (artifact: Artifact) => {
     try {
-      const response = await apiClient.getArtifactContent(
-        taskId,
-        artifact.path
-      );
+      const response = await getArtifactContent(artifact.path);
       const content = response.content || "";
       const blob = new Blob([content], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
@@ -119,10 +116,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const copyToClipboard = async (artifact: Artifact) => {
     try {
-      const response = await apiClient.getArtifactContent(
-        taskId,
-        artifact.path
-      );
+      const response = await getArtifactContent(artifact.path);
       const content = response.content || "";
       await navigator.clipboard.writeText(content);
     } catch (error) {
