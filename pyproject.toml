@@ -1,28 +1,75 @@
 [build-system]
-requires = [ "setuptools>=42", "wheel",]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "vibex"
-version = "0.26.0"
+version = "0.27.0"
 description = "VibeX - An Opinionated Multi-Agent Framework"
 readme = "README.md"
 requires-python = ">=3.11"
-classifiers = [ "Programming Language :: Python :: 3.11", "Operating System :: OS Independent",]
+classifiers = [
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: OS Independent",
+]
 license = "Apache-2.0"
-dependencies = [ "fastapi>=0.104.0", "uvicorn>=0.24.0", "pydantic>=2.7.1", "python-dotenv>=1.0.0", "pyyaml>=6.0.1", "rich>=13.6.0", "loguru", "litellm", "openai>=1.0.0", "google-search-results>=2.4.2", "mem0ai>=0.1.106", "mcp>=1.4.1", "firecrawl-py>=0.0.16", "browser-use>=0.1.0", "numpy>=1.24.3", "requests>=2.31.0", "httpx>=0.24.0", "aiohttp>=3.8.0", "beautifulsoup4>=4.12.0", "markdown>=3.4.0", "jinja2>=3.1.6", "sqlmodel>=0.0.8", "sqlalchemy>=2.0.0", "chromadb>=1.0.12", "pyarrow>=19.0.1", "aiofiles>=24.1.0", "gitpython>=3.1.44", "pygithub>=2.6.1", "crawl4ai>=0.7.0", "playwright>=1.52.0", "sse-starlette>=1.6.5",]
+dependencies = [
+  "fastapi>=0.104.0",
+  "uvicorn>=0.24.0",
+  "pydantic>=2.7.1",
+  "python-dotenv>=1.0.0",
+  "pyyaml>=6.0.1",
+  "rich>=13.6.0",
+  "loguru",
+  "litellm",
+  "openai>=1.0.0",
+  "google-search-results>=2.4.2",
+  "mem0ai>=0.1.106",
+  "mcp>=1.4.1",
+  "firecrawl-py>=0.0.16",
+  "browser-use>=0.1.0",
+  "numpy>=1.24.3",
+  "requests>=2.31.0",
+  "httpx>=0.24.0",
+  "aiohttp>=3.8.0",
+  "beautifulsoup4>=4.12.0",
+  "markdown>=3.4.0",
+  "jinja2>=3.1.6",
+  "sqlmodel>=0.0.8",
+  "sqlalchemy>=2.0.0",
+  "chromadb>=1.0.12",
+  "pyarrow>=19.0.1",
+  "aiofiles>=24.1.0",
+  "gitpython>=3.1.44",
+  "pygithub>=2.6.1",
+  "crawl4ai>=0.7.0",
+  "playwright>=1.52.0",
+  "sse-starlette>=1.6.5",
+]
 [[project.authors]]
 name = "Dustland Team"
 email = "hi@dustland.ai"
 
 [dependency-groups]
-dev = [ "pytest>=8.3.5", "pytest-asyncio>=1.0.0", "toml>=0.10.2", "mypy>=1.16.1", "types-pyyaml>=6.0.12.20250516", "types-aiofiles>=24.1.0.20250708",]
+dev = [
+  "pytest>=8.3.5",
+  "pytest-asyncio>=1.0.0",
+  "toml>=0.10.2",
+  "mypy>=1.16.1",
+  "types-pyyaml>=6.0.12.20250516",
+  "types-aiofiles>=24.1.0.20250708",
+]
 
 [project.optional-dependencies]
-dev = [ "pytest", "pytest-cov", "pytest-asyncio", "uv",]
-code-execution = [ "daytona>=0.1.0",]
-web-automation = [ "browser-use>=0.1.0", "playwright>=1.40.0",]
-all = [ "streamlit>=1.32.0", "daytona>=0.1.0", "browser-use>=0.1.0", "playwright>=1.40.0",]
+dev = ["pytest", "pytest-cov", "pytest-asyncio", "uv"]
+code-execution = ["daytona>=0.1.0"]
+web-automation = ["browser-use>=0.1.0", "playwright>=1.40.0"]
+all = [
+  "streamlit>=1.32.0",
+  "daytona>=0.1.0",
+  "browser-use>=0.1.0",
+  "playwright>=1.40.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/dustland/vibex"
@@ -45,7 +92,7 @@ benchmark-quick = "benchmark.main:quick_test"
 
 [tool.black]
 line-length = 88
-target-version = [ "py38",]
+target-version = ["py38"]
 
 [tool.isort]
 profile = "black"
@@ -70,7 +117,34 @@ strict_optional = true
 show_error_codes = true
 show_column_numbers = true
 [[tool.mypy.overrides]]
-module = [ "setuptools.*", "google.*", "langchain.*", "transformers.*", "bs4.*", "requests.*", "feedparser.*", "numpy.*", "PIL.*", "openai.*", "qdrant_client.*", "uvicorn.*", "fastapi.*", "markdown.*", "rich.*", "pymongo.*", "github.*", "arxiv.*", "daytona.*", "firecrawl.*", "browser_use.*", "playwright.*", "crawl4ai.*", "serpapi.*", "mem0.*", "mcp.*",]
+module = [
+  "setuptools.*",
+  "google.*",
+  "langchain.*",
+  "transformers.*",
+  "bs4.*",
+  "requests.*",
+  "feedparser.*",
+  "numpy.*",
+  "PIL.*",
+  "openai.*",
+  "qdrant_client.*",
+  "uvicorn.*",
+  "fastapi.*",
+  "markdown.*",
+  "rich.*",
+  "pymongo.*",
+  "github.*",
+  "arxiv.*",
+  "daytona.*",
+  "firecrawl.*",
+  "browser_use.*",
+  "playwright.*",
+  "crawl4ai.*",
+  "serpapi.*",
+  "mem0.*",
+  "mcp.*",
+]
 ignore_missing_imports = true
 
 [tool.setuptools.package-dir]
@@ -78,23 +152,23 @@ ignore_missing_imports = true
 benchmark = "benchmark"
 
 [tool.setuptools.package-data]
-vibex = [ "py.typed", "**/*.jinja2", "**/*.png",]
+vibex = ["py.typed", "**/*.jinja2", "**/*.png"]
 
 [tool.pytest.ini_options]
-testpaths = [ "tests",]
+testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
 asyncio_mode = "auto"
 
 [tool.uv.workspace]
-members = [ "examples/superwriter",]
+members = ["examples/superwriter"]
 
 [tool.setuptools.packages.find]
-where = [ "src", ".",]
-include = [ "vibex*", "benchmark*",]
+where = ["src", "."]
+include = ["vibex*", "benchmark*"]
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/vibex",]
+packages = ["src/vibex"]
 
 [tool.hatch.build.targets.sdist]
-include = [ "src/vibex", "config", "examples", "tests", "README.md", "LICENSE",]
+include = ["src/vibex", "config", "examples", "tests", "README.md", "LICENSE"]
