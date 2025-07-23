@@ -38,7 +38,12 @@ export function ChatInput({
     }
   }, [input]);
 
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.MouseEvent | React.FormEvent) => {
+    // Prevent default form submission if it's a form event
+    if (e) {
+      e.preventDefault();
+    }
+    
     // Allow sending empty message if there's a plan
     if ((input.trim() || hasPlan) && !isComposing && !isLoading && !disabled) {
       onSendMessage(input.trim() || "", mode);
@@ -127,6 +132,7 @@ export function ChatInput({
           onClick={handleSubmit}
           onStop={onStop}
           size="sm"
+          type="button"
           className="absolute right-2 bottom-2"
         />
       </div>
