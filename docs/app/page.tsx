@@ -71,7 +71,7 @@ import { Button } from "nextra/components";
 
 const basePath =
   process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
-    ? "/agentx"
+    ? "/vibex"
     : "";
 
 // Enhanced bootstrap tabs with example code
@@ -91,14 +91,13 @@ const BootstrapTabs = () => {
       title: "Writing",
       icon: PenTool,
       description: "Research → Draft → Edit workflow",
-      command:
-        "pip install agentx-py\nagentx init my-research --template writing",
+      command: "pip install vibex\nvibex init my-research --template writing",
       agents: ["Researcher", "Writer", "Reviewer", "Web Designer"],
       exampleCode: `import asyncio
-from agentx import start_task
+from vibex import start_task
 
 async def main():
-    # Start XAgent with your research team
+    # Start VibeX with your research team
     x = await start_task(
         "Write a comprehensive report on AI trends in 2025",
         "config/team.yaml"
@@ -131,13 +130,13 @@ if __name__ == "__main__":
       title: "Coding",
       icon: Code,
       description: "Plan → Build → Test workflow",
-      command: "pip install agentx-py\nagentx init my-app --template coding",
+      command: "pip install vibex\nvibex init my-app --template coding",
       agents: ["Planner", "Developer", "Reviewer"],
       exampleCode: `import asyncio
-from agentx import start_task
+from vibex import start_task
 
 async def main():
-    # Start XAgent with your development team
+    # Start VibeX with your development team
     x = await start_task(
         "Build a REST API for a todo application",
         "config/team.yaml"
@@ -170,14 +169,13 @@ if __name__ == "__main__":
       title: "Ops",
       icon: Cog,
       description: "Analyze → Execute → Monitor workflow",
-      command:
-        "pip install agentx-py\nagentx init my-automation --template ops",
+      command: "pip install vibex\nvibex init my-automation --template ops",
       agents: ["Analyst", "Operator", "Monitor"],
       exampleCode: `import asyncio
-from agentx import start_task
+from vibex import start_task
 
 async def main():
-    # Start XAgent with your operations team
+    # Start VibeX with your operations team
     x = await start_task(
         "Automate daily server health monitoring",
         "config/team.yaml"
@@ -576,71 +574,15 @@ export default function HomePage() {
               variants={itemVariants}
               className="text-4xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6"
             >
-              <span className="inline-flex items-center gap-1">
-                Build Vibe-
-                <motion.div
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    delay: 0.5,
-                  }}
-                  className="inline-block"
-                >
-                  <div className="relative w-12 h-12 md:w-16 md:h-16">
-                    <svg viewBox="0 0 100 100" className="w-full h-full">
-                      <path
-                        d="M20 20L80 80M80 20L20 80"
-                        stroke="currentColor"
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                        className="text-blue-600 dark:text-blue-400"
-                      />
-                    </svg>
-                    <motion.div
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.5, 0.8, 0.5],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                      }}
-                      className="absolute inset-0"
-                    >
-                      <svg viewBox="0 0 100 100" className="w-full h-full">
-                        <path
-                          d="M20 20L80 80M80 20L20 80"
-                          stroke="currentColor"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          className="text-blue-400 dark:text-blue-300 blur-sm"
-                        />
-                      </svg>
-                    </motion.div>
-                  </div>
-                </motion.div>
-                Apps
-              </span>
-              <br />
-              <span className="text-2xl md:text-4xl text-slate-600 dark:text-slate-400">
-                With AgentX
-              </span>
+              Vibe-Working with Agentic Teams
             </motion.h1>
 
             <motion.p
               variants={itemVariants}
               className="text-xl text-slate-600 dark:text-slate-400 mb-8 max-w-3xl mx-auto"
             >
-              The framework for human-AI collaboration with{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                3-5x faster execution
-              </span>{" "}
-              through intelligent parallel processing. Transparent workflows,
-              cost-optimized intelligence, and professional results.
+              Build collaborative, production-ready AI agent teams in minutes.
+              Experience the future of work with VibeX.
             </motion.p>
 
             {/* CTA buttons */}
@@ -985,7 +927,7 @@ export default function HomePage() {
               Real-World Applications
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-400">
-              See how AgentX transforms work across industries.
+              See how VibeX transforms work across industries.
             </p>
           </div>
 
@@ -1203,7 +1145,7 @@ export default function HomePage() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </StyledLink>
                 <Link
-                  href="https://github.com/dustland/agentx/tree/main/examples"
+                  href="https://github.com/dustland/vibex/tree/main/examples"
                   target="_blank"
                   style={{ color: "#ffffff" }}
                   className="inline-flex items-center border border-blue-400 font-medium px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 hover:bg-white/10 no-underline"
@@ -1260,7 +1202,7 @@ export default function HomePage() {
                 <div className="relative">
                   <Image
                     src={`${basePath}/logo.png`}
-                    alt="AgentX"
+                    alt="VibeX"
                     className="w-10 h-10"
                     width={40}
                     height={40}
@@ -1268,7 +1210,7 @@ export default function HomePage() {
                   <div className="absolute -inset-1 bg-blue-500/20 rounded-lg blur-sm"></div>
                 </div>
                 <span className="text-xl font-bold text-slate-900 dark:text-white">
-                  AgentX
+                  VibeX
                 </span>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
@@ -1277,7 +1219,7 @@ export default function HomePage() {
               </p>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://github.com/dustland/agentx"
+                  href="https://github.com/dustland/vibex"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors group"
@@ -1354,7 +1296,7 @@ export default function HomePage() {
               <ul className="space-y-3">
                 <li>
                   <a
-                    href="https://github.com/dustland/agentx/discussions"
+                    href="https://github.com/dustland/vibex/discussions"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
@@ -1365,7 +1307,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/dustland/agentx/issues"
+                    href="https://github.com/dustland/vibex/issues"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
@@ -1376,7 +1318,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/dustland/agentx/blob/main/CONTRIBUTING.md"
+                    href="https://github.com/dustland/vibex/blob/main/CONTRIBUTING.md"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1 group"
@@ -1404,7 +1346,7 @@ export default function HomePage() {
               </h3>
               <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-4 mb-4">
                 <code className="text-sm font-mono text-slate-700 dark:text-slate-300">
-                  pip install agentx-py
+                  pip install vibex
                 </code>
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">
@@ -1424,7 +1366,7 @@ export default function HomePage() {
           <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <span>&copy; {new Date().getFullYear()} AgentX.</span>
+                <span>&copy; {new Date().getFullYear()} VibeX.</span>
                 <span className="hidden md:inline">•</span>
                 <span className="hidden md:inline">Built with ❤️ by</span>
                 <a
@@ -1450,7 +1392,7 @@ export default function HomePage() {
                   Terms
                 </Link>
                 <a
-                  href="https://github.com/dustland/agentx/blob/main/LICENSE"
+                  href="https://github.com/dustland/vibex/blob/main/LICENSE"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
