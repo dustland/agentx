@@ -276,14 +276,29 @@ class TaskService:
         if not await self.user_index.user_owns_task(user_id, task_id):
             raise PermissionError("Access denied")
         
-        # Read messages from task storage
-        messages_file = Path(f"task_data/{task_id}/messages.json")
+        # Read messages from task storage (JSONL format)
+        messages_file = Path(f"task_data/{task_id}/history/messages.jsonl")
+        messages = []
+        
         if messages_file.exists():
             import json
             with open(messages_file, 'r') as f:
-                return json.load(f)
+                for line in f:
+                    if line.strip():  # Skip empty lines
+                        try:
+                            message = json.loads(line)
+                            # Convert to API format
+                            messages.append({
+                                "message_id": message.get("id"),
+                                "role": message.get("role"),
+                                "content": message.get("content"),
+                                "timestamp": message.get("timestamp"),
+                                "metadata": {}
+                            })
+                        except json.JSONDecodeError:
+                            logger.warning(f"Failed to parse message line: {line}")
         
-        return []
+        return messages
     
     async def get_task_artifacts(self, user_id: str, task_id: str) -> List[Dict[str, Any]]:
         """
