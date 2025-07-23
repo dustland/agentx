@@ -13,7 +13,7 @@ interface PlanProps {
 }
 
 export function Plan({ taskId }: PlanProps) {
-  const { getArtifactContent } = useTask(taskId);
+  const { getTaskPlan } = useTask(taskId);
   const [planContent, setPlanContent] = useState<string | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
 
@@ -23,7 +23,7 @@ export function Plan({ taskId }: PlanProps) {
 
     setLoadingPlan(true);
     try {
-      const response = await getArtifactContent("plan.json");
+      const response = await getTaskPlan();
       
       // The content might be a string that needs to be parsed
       let content = response.content || "";
@@ -44,8 +44,7 @@ export function Plan({ taskId }: PlanProps) {
       console.error("Failed to load plan:", error);
       console.error("Error details:", {
         message: error.message,
-        taskId,
-        path: "plan.json"
+        taskId
       });
       setPlanContent(null);
     } finally {

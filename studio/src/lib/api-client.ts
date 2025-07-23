@@ -250,6 +250,11 @@ export class AgentXAPIClient {
     );
   }
 
+  async getTaskPlan(taskId: string): Promise<ArtifactContent> {
+    await this.init();
+    return this.request<ArtifactContent>(`/tasks/${taskId}/plan`);
+  }
+
   // Logs
   async getTaskLogs(
     taskId: string,

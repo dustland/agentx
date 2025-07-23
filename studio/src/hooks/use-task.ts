@@ -124,6 +124,13 @@ export function useTask(taskId: string) {
     });
   };
 
+  const getTaskPlan = async () => {
+    return queryClient.fetchQuery({
+      queryKey: [...taskKeys.detail(taskId), "plan"],
+      queryFn: () => apiClient.getTaskPlan(taskId),
+    });
+  };
+
   const searchMemory = async (query: string, limit = 10) => {
     return queryClient.fetchQuery({
       queryKey: taskKeys.memory(taskId, query, limit),
@@ -156,6 +163,7 @@ export function useTask(taskId: string) {
     
     // On-demand functions (rarely used)
     getArtifactContent,
+    getTaskPlan,
     searchMemory,
     
     // Legacy compatibility

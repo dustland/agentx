@@ -332,6 +332,45 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to get artifact: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
+    @app.get("/tasks/{task_id}/plan")
+    async def get_task_plan(
+        task_id: str,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
+    ):
+        """Get the plan.json for a task."""
+        if not x_user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+        
+        try:
+            # Verify ownership using lightweight check
+            await task_service.verify_task_ownership(x_user_id, task_id)
+            
+            # Read plan.json from task workspace root
+            from pathlib import Path
+            plan_path = Path(f"task_data/{task_id}/plan.json")
+            
+            if not plan_path.exists():
+                raise HTTPException(status_code=404, detail="Plan not found")
+            
+            try:
+                content = plan_path.read_text(encoding='utf-8')
+                return {
+                    "path": "plan.json",
+                    "content": content,
+                    "size": plan_path.stat().st_size
+                }
+            except Exception as e:
+                logger.error(f"Failed to read plan.json: {e}")
+                raise HTTPException(status_code=500, detail="Failed to read plan")
+                
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Access denied")
+        except HTTPException:
+            raise  # Re-raise HTTP exceptions as-is
+        except Exception as e:
+            logger.error(f"Failed to get plan: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     @app.get("/tasks/{task_id}/logs")
     async def get_task_logs(
         task_id: str,
