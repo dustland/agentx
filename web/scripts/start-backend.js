@@ -105,7 +105,7 @@ async function main() {
   const serverPath = path.join(vibexRoot, 'src/vibex/server');
 
   if (!fs.existsSync(serverPath)) {
-    console.error('❌ VibeX server not found. Make sure you\'re running this from the studio directory.');
+    console.error('❌ VibeX server not found. Make sure you\'re running this from the web directory.');
     process.exit(1);
   }
 

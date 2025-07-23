@@ -1,4 +1,4 @@
-"""Studio CLI commands for VibeX."""
+"""Web CLI commands for VibeX."""
 
 import os
 import sys
@@ -48,7 +48,7 @@ def ensure_api_running(api_port: int) -> Optional[subprocess.Popen]:
     
     logger.info(f"Starting API server on port {api_port}...")
     api_process = subprocess.Popen(
-        [sys.executable, "-m", "agentx", "start", "--port", str(api_port)],
+        [sys.executable, "-m", "vibex", "start", "--port", str(api_port)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
@@ -64,50 +64,50 @@ def ensure_api_running(api_port: int) -> Optional[subprocess.Popen]:
     raise RuntimeError("Failed to start API server")
 
 
-def get_studio_path() -> Path:
-    """Get the path to the studio directory."""
+def get_web_path() -> Path:
+    """Get the path to the web directory."""
     # Try relative to the package
     package_dir = Path(__file__).parent.parent.parent.parent
-    studio_path = package_dir / "studio"
+    web_path = package_dir / "web"
     
-    if studio_path.exists():
-        return studio_path
+    if web_path.exists():
+        return web_path
     
     # Try relative to current directory
-    studio_path = Path.cwd() / "studio"
-    if studio_path.exists():
-        return studio_path
+    web_path = Path.cwd() / "web"
+    if web_path.exists():
+        return web_path
     
-    raise RuntimeError("Could not find studio directory. Make sure you're in the VibeX project root.")
+    raise RuntimeError("Could not find web directory. Make sure you're in the VibeX project root.")
 
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@click.option('--port', '-p', default=7777, help='Port for the web UI')
 @click.option('--api-port', default=7770, help='Port for the API server')
 @click.option('--no-api', is_flag=True, help='Don\'t start the API server')
-@click.option('--open', '-o', is_flag=True, help='Open studio in browser')
-def studio(ctx, port: int, api_port: int, no_api: bool, open: bool):
-    """VibeX Studio - Unified interface for task execution and observability.
+@click.option('--open', '-o', is_flag=True, help='Open web interface in browser')
+def web(ctx, port: int, api_port: int, no_api: bool, open: bool):
+    """VibeX Web - Unified interface for task execution and observability.
     
-    If no subcommand is given, starts the studio (equivalent to 'start' command).
+    If no subcommand is given, starts the web interface (equivalent to 'start' command).
     """
     if ctx.invoked_subcommand is None:
         # If no subcommand, run start
         ctx.invoke(start, port=port, api_port=api_port, no_api=no_api, open=open, production=False)
 
 
-@studio.command()
-@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@web.command()
+@click.option('--port', '-p', default=7777, help='Port for the web UI')
 @click.option('--api-port', default=7770, help='Port for the API server')
 @click.option('--no-api', is_flag=True, help='Don\'t start the API server')
-@click.option('--open', '-o', is_flag=True, help='Open studio in browser')
+@click.option('--open', '-o', is_flag=True, help='Open web interface in browser')
 @click.option('--production', is_flag=True, help='Run in production mode')
 def start(port: int, api_port: int, no_api: bool, open: bool, production: bool):
-    """Start VibeX Studio UI."""
-    studio_path = get_studio_path()
+    """Start VibeX Web UI."""
+    web_path = get_web_path()
     
-    # Check if pnpm is available (studio uses pnpm)
+    # Check if pnpm is available (web interface uses pnpm)
     try:
         subprocess.run(['pnpm', '--version'], capture_output=True, check=True)
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -116,28 +116,28 @@ def start(port: int, api_port: int, no_api: bool, open: bool, production: bool):
         sys.exit(1)
     
     # Check if npm dependencies are installed
-    node_modules = studio_path / "node_modules"
+    node_modules = web_path / "node_modules"
     if not node_modules.exists():
-        logger.error("Studio dependencies not installed. Run 'agentx studio setup' first.")
+        logger.error("Web dependencies not installed. Run 'vibex web setup' first.")
         sys.exit(1)
     
     # Prepare environment
     env = os.environ.copy()
-    env['NEXT_PUBLIC_AGENTX_API_URL'] = f'http://localhost:{api_port}'
+    env['NEXT_PUBLIC_VIBEX_API_URL'] = f'http://localhost:{api_port}'
     
-    # Start studio with integrated backend handling
+    # Start web interface with integrated backend handling
     try:
-        logger.info(f"Starting VibeX Studio on http://localhost:{port}")
+        logger.info(f"Starting VibeX Web on http://localhost:{port}")
         
         if production:
             # Build and run production
-            logger.info("Building studio for production...")
-            subprocess.run(['pnpm', 'run', 'build'], cwd=studio_path, check=True, env=env)
+            logger.info("Building web interface for production...")
+            subprocess.run(['pnpm', 'run', 'build'], cwd=web_path, check=True, env=env)
             
             # Use dev:full for integrated backend in production too
-            studio_process = subprocess.Popen(
+            web_process = subprocess.Popen(
                 ['pnpm', 'run', 'start'],
-                cwd=studio_path,
+                cwd=web_path,
                 env=env
             )
         else:
@@ -147,9 +147,9 @@ def start(port: int, api_port: int, no_api: bool, open: bool, production: bool):
             else:
                 cmd = ['pnpm', 'run', 'dev:full']
                 
-            studio_process = subprocess.Popen(
+            web_process = subprocess.Popen(
                 cmd,
-                cwd=studio_path,
+                cwd=web_path,
                 env=env
             )
         
@@ -158,29 +158,29 @@ def start(port: int, api_port: int, no_api: bool, open: bool, production: bool):
             time.sleep(3)  # Wait for server to start
             webbrowser.open(f'http://localhost:{port}')
         
-        logger.info("Studio is running. Press Ctrl+C to stop.")
+        logger.info("Web interface is running. Press Ctrl+C to stop.")
         
-        # Wait for studio process
-        studio_process.wait()
+        # Wait for web process
+        web_process.wait()
         
     except KeyboardInterrupt:
-        logger.info("Shutting down studio...")
+        logger.info("Shutting down web interface...")
     finally:
         # Cleanup
-        if 'studio_process' in locals():
-            studio_process.terminate()
+        if 'web_process' in locals():
+            web_process.terminate()
             # Give time for graceful shutdown
             time.sleep(2)
-            if studio_process.poll() is None:
-                studio_process.kill()
+            if web_process.poll() is None:
+                web_process.kill()
 
 
-@studio.command()
+@web.command()
 def setup():
-    """Install studio dependencies."""
-    studio_path = get_studio_path()
+    """Install web interface dependencies."""
+    web_path = get_web_path()
     
-    logger.info("Setting up VibeX Studio...")
+    logger.info("Setting up VibeX Web...")
     
     # Check if pnpm is available
     try:
@@ -194,36 +194,36 @@ def setup():
             logger.info("Visit https://nodejs.org/ to download and install Node.js")
             sys.exit(1)
     
-    # Run the studio setup script
+    # Run the web setup script
     try:
-        logger.info("Running studio setup...")
-        subprocess.run(['pnpm', 'run', 'setup'], cwd=studio_path, check=True)
+        logger.info("Running web setup...")
+        subprocess.run(['pnpm', 'run', 'setup'], cwd=web_path, check=True)
         
         # Also create .env.local from example if it doesn't exist
-        env_example = studio_path / '.env.example'
-        env_local = studio_path / '.env.local'
+        env_example = web_path / '.env.example'
+        env_local = web_path / '.env.local'
         if env_example.exists() and not env_local.exists():
             import shutil
             shutil.copy(env_example, env_local)
             logger.info("Created .env.local from .env.example")
         
-        logger.info("Studio setup completed successfully!")
-        logger.info("You can now run 'agentx studio' to launch the UI")
+        logger.info("Web setup completed successfully!")
+        logger.info("You can now run 'vibex web' to launch the UI")
     except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to setup studio: {e}")
+        logger.error(f"Failed to setup web interface: {e}")
         sys.exit(1)
 
 
-@studio.command()
-@click.option('--port', '-p', default=7777, help='Port for the studio UI')
+@web.command()
+@click.option('--port', '-p', default=7777, help='Port for the web UI')
 @click.option('--api-port', default=7770, help='Port for the API server')
 def dev(port: int, api_port: int):
-    """Start both API and Studio in development mode."""
+    """Start both API and Web interface in development mode."""
     # Just invoke the start command with the same parameters
     # Since start already handles everything with dev:full
     ctx = click.get_current_context()
     ctx.invoke(start, port=port, api_port=api_port, no_api=False, open=False, production=False)
 
 
-# Make studio command group available
-__all__ = ['studio']
+# Make web command group available
+__all__ = ['web']

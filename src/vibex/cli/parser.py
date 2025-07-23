@@ -11,22 +11,22 @@ import argparse
 def create_parser() -> argparse.ArgumentParser:
     """Create the main argument parser."""
     parser = argparse.ArgumentParser(
-        prog="agentx",
+        prog="vibex",
         description="🤖 VibeX - Multi-Agent Framework with Observability",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  agentx init                     # Create new project with interactive wizard
-  agentx init --template writing  # Create writing project template
-  agentx start                    # Start API server with observability
-  agentx monitor                  # Start observability monitor (CLI)
-  agentx monitor --web            # Start web dashboard
-  agentx studio                   # Launch VibeX Studio UI
-  agentx studio dev               # Start API and Studio in dev mode
-  agentx status                   # Show system status
-  agentx example superwriter      # Run specific example
+  vibex init                      # Create new project with interactive wizard
+  vibex init --template writing   # Create writing project template
+  vibex start                     # Start API server with observability
+  vibex monitor                   # Start observability monitor (CLI)
+  vibex monitor --web             # Start web dashboard
+  vibex web                       # Launch VibeX Web UI
+  vibex web dev                   # Start API and Web interface in dev mode
+  vibex status                    # Show system status
+  vibex example superwriter       # Run specific example
 
-For more information, visit: https://github.com/dustland/agentx
+For more information, visit: https://github.com/dustland/vibex
         """
     )
 
@@ -60,8 +60,8 @@ For more information, visit: https://github.com/dustland/agentx
     # Debug command
     _add_debug_parser(subparsers)
 
-    # Studio command
-    _add_studio_parser(subparsers)
+    # Web command
+    _add_web_parser(subparsers)
 
     return parser
 
@@ -208,29 +208,29 @@ def _add_debug_parser(subparsers) -> None:
     )
 
 
-def _add_studio_parser(subparsers) -> None:
-    """Add the studio command parser."""
-    studio_parser = subparsers.add_parser(
-        "studio",
-        help="VibeX Studio - Web UI for task execution and observability",
-        description="Launch and manage the VibeX Studio web interface"
+def _add_web_parser(subparsers) -> None:
+    """Add the web command parser."""
+    web_parser = subparsers.add_parser(
+        "web",
+        help="VibeX Web - Web UI for task execution and observability",
+        description="Launch and manage the VibeX Web interface"
     )
     
-    studio_subparsers = studio_parser.add_subparsers(
-        dest="studio_action",
-        help="Studio actions"
+    web_subparsers = web_parser.add_subparsers(
+        dest="web_action",
+        help="Web interface actions"
     )
     
     # Start subcommand
-    start_parser = studio_subparsers.add_parser(
+    start_parser = web_subparsers.add_parser(
         "start",
-        help="Start VibeX Studio UI"
+        help="Start VibeX Web UI"
     )
     start_parser.add_argument(
         "--port", "-p",
         type=int,
         default=7777,
-        help="Port for the studio UI (default: 7777)"
+        help="Port for the web UI (default: 7777)"
     )
     start_parser.add_argument(
         "--api-port",
@@ -246,7 +246,7 @@ def _add_studio_parser(subparsers) -> None:
     start_parser.add_argument(
         "--open", "-o",
         action="store_true",
-        help="Open studio in browser"
+        help="Open web interface in browser"
     )
     start_parser.add_argument(
         "--production",
@@ -255,21 +255,21 @@ def _add_studio_parser(subparsers) -> None:
     )
     
     # Setup subcommand
-    studio_subparsers.add_parser(
+    web_subparsers.add_parser(
         "setup",
-        help="Install studio dependencies"
+        help="Install web interface dependencies"
     )
     
     # Dev subcommand
-    dev_parser = studio_subparsers.add_parser(
+    dev_parser = web_subparsers.add_parser(
         "dev",
-        help="Start both API and Studio in development mode"
+        help="Start both API and Web interface in development mode"
     )
     dev_parser.add_argument(
         "--port", "-p",
         type=int,
         default=7777,
-        help="Port for the studio UI (default: 7777)"
+        help="Port for the web UI (default: 7777)"
     )
     dev_parser.add_argument(
         "--api-port",

@@ -1,4 +1,4 @@
-# VibeX Studio
+# VibeX Web
 
 A modern, unified web interface for VibeX task execution and observability.
 
@@ -27,13 +27,13 @@ A modern, unified web interface for VibeX task execution and observability.
 
 ```bash
 # Install dependencies and set up UI components
-vibex studio setup
+vibex web setup
 
 # Start development server
-vibex studio dev
+vibex web dev
 
-# Or just start the studio
-vibex studio start --open
+# Or just start the web interface
+vibex web start --open
 ```
 
 ### Standalone Development
@@ -119,7 +119,7 @@ Railway will automatically detect and use this configuration.
 
 ## API Integration
 
-The studio connects to VibeX API through a proxy configuration in `next.config.js`:
+The web interface connects to VibeX API through a proxy configuration in `next.config.js`:
 
 ```javascript
 async rewrites() {
@@ -139,7 +139,7 @@ This allows the frontend to make requests to `/api/vibex/*` which are proxied to
 ### Project Structure
 
 ```
-studio/
+web/
 ├── src/
 │   ├── app/              # Next.js app directory
 │   ├── components/       # React components

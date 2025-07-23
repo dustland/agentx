@@ -1,5 +1,5 @@
-# Nixpacks configuration for AgentX
-# This deploys both the API server and Studio
+# Nixpacks configuration for VibeX
+# This deploys both the API server and Web interface
 
 [phases.setup]
 nixPkgs = ["python311", "nodejs_20", "pnpm", "git"]
@@ -11,24 +11,24 @@ cmds = [
     "pip install uv",
     "uv pip install -e .",
 
-    # Install Studio dependencies
-    "cd studio && pnpm install --frozen-lockfile",
+    # Install Web dependencies
+    "cd web && pnpm install --frozen-lockfile",
 ]
 
 [phases.build]
 dependsOn = ["install"]
 cmds = [
-    # Build Studio
-    "cd studio && pnpm run build",
+    # Build Web interface
+    "cd web && pnpm run build",
 ]
 
 [start]
-# Start both API and Studio using a process manager
-cmd = "python -m agentx.railway_start"
+# Start the API server (Web interface can be deployed separately)
+cmd = "python -m vibex start --host 0.0.0.0 --port $PORT"
 
 [variables]
 PYTHONUNBUFFERED = "1"
 NODE_ENV = "production"
 NEXT_TELEMETRY_DISABLED = "1"
 PORT = "7770"
-STUDIO_PORT = "7777"
+WEB_PORT = "7777"

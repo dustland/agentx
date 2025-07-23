@@ -80,31 +80,46 @@ def main():
             asyncio.run(debug_task(args.team_config, args.task_id))
             return 0
 
-        elif args.command == "studio":
-            # Handle studio commands
-            studio_action = getattr(args, 'studio_action', None)
+        elif args.command == "web":
+            # Handle web commands
+            web_action = getattr(args, 'web_action', None)
             
-            # Check if we're in a project directory with full studio
-            local_studio = Path.cwd() / "studio"
-            if local_studio.exists():
-                # Use full studio implementation
+            # Check if we're in a project directory with full web interface
+            local_web = Path.cwd() / "web"
+            if local_web.exists():
+                # Use full web implementation
                 try:
-                    from .commands.studio import handle_studio_command
-                    return handle_studio_command(args)
+                    from .commands.web import web
+                    # Convert argparse args to click format
+                    import sys
+                    sys.argv = ['vibex', 'web']
+                    if web_action:
+                        sys.argv.append(web_action)
+                    if hasattr(args, 'port'):
+                        sys.argv.extend(['--port', str(args.port)])
+                    if hasattr(args, 'api_port'):
+                        sys.argv.extend(['--api-port', str(args.api_port)])
+                    if hasattr(args, 'no_api') and args.no_api:
+                        sys.argv.append('--no-api')
+                    if hasattr(args, 'open') and args.open:
+                        sys.argv.append('--open')
+                    if hasattr(args, 'production') and args.production:
+                        sys.argv.append('--production')
+                    return web()
                 except ImportError:
                     pass
             
-            # Use simplified studio for pip-installed version
+            # Use simplified web interface for pip-installed version
             from .commands.studio_simple import run_studio_command
             
-            if not studio_action:
+            if not web_action:
                 # Default to start if no subcommand given
                 return run_studio_command(
                     action="start",
                     open_browser=True
                 )
             
-            if studio_action == "start":
+            if web_action == "start":
                 return run_studio_command(
                     action="start",
                     port=args.port,
@@ -113,9 +128,9 @@ def main():
                     open_browser=args.open,
                     production=args.production
                 )
-            elif studio_action == "setup":
+            elif web_action == "setup":
                 return run_studio_command(action="setup")
-            elif studio_action == "dev":
+            elif web_action == "dev":
                 return run_studio_command(
                     action="start",
                     port=args.port,
@@ -123,7 +138,7 @@ def main():
                     production=False
                 )
             else:
-                print(f"Unknown studio action: {studio_action}")
+                print(f"Unknown web action: {web_action}")
                 return 1
 
         else:

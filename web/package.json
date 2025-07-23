@@ -1,7 +1,7 @@
 {
   "name": "@vibex/frontend",
   "version": "0.1.0",
-  "description": "VibeX Studio - Unified interface for task execution and observability",
+  "description": "VibeX Web - Unified interface for task execution and observability",
   "private": true,
   "scripts": {
     "dev": "next dev --port 7777 --turbopack",
