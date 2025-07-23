@@ -161,43 +161,39 @@ export function Plan({ taskId }: PlanProps) {
   const taskLevels = organizeTasksByLevel(planData.tasks);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Target className="h-4 w-4 text-primary" />
-          <h3 className="text-lg font-semibold">Execution Plan</h3>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowRawJson(!showRawJson)}
-          >
-            {showRawJson ? "Visual" : "JSON"}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={loadPlan}
-            disabled={loadingPlan}
-          >
-            <RefreshCwIcon
-              className={cn("h-4 w-4", loadingPlan && "animate-spin")}
-            />
-          </Button>
-        </div>
+    <div className="h-full flex flex-col relative">
+      {/* Floating Action Buttons */}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setShowRawJson(!showRawJson)}
+          className="bg-background/80 backdrop-blur-sm border"
+        >
+          {showRawJson ? "Visual" : "JSON"}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={loadPlan}
+          disabled={loadingPlan}
+          className="bg-background/80 backdrop-blur-sm border"
+        >
+          <RefreshCwIcon
+            className={cn("h-4 w-4", loadingPlan && "animate-spin")}
+          />
+        </Button>
       </div>
 
-      <ScrollArea className="flex-1 min-h-0">
+      <ScrollArea className="flex-1 h-full">
         {showRawJson ? (
-          <div className="p-4">
+          <div className="p-4 pt-16">
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
               {JSON.stringify(planData, null, 2)}
             </pre>
           </div>
         ) : (
-          <div className="p-4 space-y-6">
+          <div className="p-4 pt-16 space-y-6">
             {/* Goal Section */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
