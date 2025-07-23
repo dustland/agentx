@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -61,6 +61,7 @@ export function TaskSpacePanel({
   );
   const [activeTab, setActiveTab] = useState("artifacts");
   const [hasPlan, setHasPlan] = useState(false);
+  const initialTabSetRef = useRef(false);
 
   // Set up tool call selection handler
   useEffect(() => {
@@ -89,12 +90,18 @@ export function TaskSpacePanel({
     return cleanup;
   }, [taskId, subscribe]);
 
-  // Check for plan existence
+  // Check for plan existence and set default tab
   useEffect(() => {
     const planExists = artifacts.some(
       (artifact: Artifact) => artifact.path === "plan.json"
     );
     setHasPlan(planExists);
+    
+    // Set plan as default tab if it exists and we haven't set initial tab yet
+    if (planExists && !initialTabSetRef.current) {
+      setActiveTab("plan");
+      initialTabSetRef.current = true;
+    }
   }, [artifacts]);
 
   return (
