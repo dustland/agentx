@@ -12,7 +12,6 @@ interface ChatInputProps {
   isLoading?: boolean;
   disabled?: boolean;
   placeholder?: string;
-  taskStatus?: string;
   allowEmptyMessage?: boolean;
 }
 
@@ -22,7 +21,6 @@ export function ChatInput({
   isLoading = false,
   disabled = false,
   placeholder = "Type a message...",
-  taskStatus,
   allowEmptyMessage = false,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
@@ -68,10 +66,10 @@ export function ChatInput({
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
           placeholder={
-            allowEmptyMessage && mode === "agent"
-              ? "Press Enter or click Send to continue plan execution..."
-              : mode === "agent" 
-              ? "Describe a task for agents to complete..." 
+            mode === "agent" 
+              ? allowEmptyMessage 
+                ? "Type a message or press Send to continue plan execution..." 
+                : "Describe a task for agents to complete..."
               : "Type a message..."
           }
           disabled={disabled || isLoading}

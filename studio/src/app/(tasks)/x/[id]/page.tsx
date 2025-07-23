@@ -53,11 +53,6 @@ export default function TaskPage({
     }
   }, [initialMessage, messages.length, isMessagesLoading, handleSubmit, setInitialMessage]);
 
-  const handlePauseResume = () => {
-    // TODO: Implement pause/resume functionality
-    console.log("Pause/Resume clicked");
-  };
-
   // ChatLayout expects onSendMessage to be (message: string, mode?: "agent" | "chat") => void
   const handleSendMessage = (message: string, mode?: "agent" | "chat") => {
     // If no message and plan exists in agent mode, execute the plan
@@ -89,14 +84,8 @@ export default function TaskPage({
           <ChatLayout
             messages={messages}
             onSendMessage={handleSendMessage}
-            taskStatus={isLoading ? "running" : "pending"}
             onStop={stop}
-            onPauseResume={handlePauseResume}
             isLoading={isLoading}
-            taskId={id}
-            taskName="Task"
-            onShare={() => {}}
-            onMoreActions={() => {}}
             allowEmptyMessage={hasPlan}
           />
         </ResizablePanel>

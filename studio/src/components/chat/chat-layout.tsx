@@ -1,31 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import {
-  Pause,
-  Play,
-  Share2,
-  MoreHorizontal,
-  Loader2,
-  Bot,
-  Sparkles,
-  User,
-  Copy,
-  Check,
-  RotateCcw,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Bot } from "lucide-react";
 import { ChatInput } from "./chat-input";
 import { MessageBubble } from "./message-bubble";
 
 interface ChatLayoutProps {
-  taskId: string;
-  taskName: string;
-  taskStatus: "pending" | "running" | "completed" | "error";
   messages: Array<{
     id: string;
     role: "user" | "assistant" | "system";
@@ -35,25 +16,16 @@ interface ChatLayoutProps {
   }>;
   onSendMessage: (message: string, mode?: "agent" | "chat") => void;
   onStop?: () => void;
-  onPauseResume: () => void;
-  onShare: () => void;
-  onMoreActions: () => void;
   isLoading?: boolean;
   allowEmptyMessage?: boolean;
 }
 
 export function ChatLayout({
-  taskId,
-  taskName,
-  taskStatus,
   messages,
   onSendMessage,
   onStop,
-  onPauseResume,
-  onShare,
-  onMoreActions,
-  isLoading,
-  allowEmptyMessage,
+  isLoading = false,
+  allowEmptyMessage = false,
 }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -73,33 +45,8 @@ export function ChatLayout({
     onSendMessage(message, mode);
   };
 
-  const getStatusColor = () => {
-    switch (taskStatus) {
-      case "running":
-        return "bg-blue-500";
-      case "completed":
-        return "bg-green-500";
-      case "error":
-        return "bg-red-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <h2 className="font-semibold text-lg">{taskName}</h2>
-          <Badge className={cn("capitalize", getStatusColor())}>
-            {taskStatus === "running" && (
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            )}
-            {taskStatus}
-          </Badge>
-        </div>
-      </div>
 
       {/* Message List */}
       <ScrollArea className="flex-1 overflow-hidden">
@@ -147,8 +94,7 @@ export function ChatLayout({
         <ChatInput
           onSendMessage={handleSubmit}
           onStop={onStop}
-          isLoading={taskStatus === "running"}
-          taskStatus={taskStatus}
+          isLoading={isLoading}
           allowEmptyMessage={allowEmptyMessage}
         />
       </div>
