@@ -2,11 +2,12 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SendButton } from "./send-button";
 
 interface ChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, mode?: "agent" | "chat") => void;
   onStop?: () => void;
   isLoading?: boolean;
   disabled?: boolean;
@@ -24,33 +25,21 @@ export function ChatInput({
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
+  const [mode, setMode] = useState<"agent" | "chat">("agent");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 200)}px`;
-
-      // Adjust line-height for single line to center text
-      const lineCount = input.split("\n").length;
-      if (lineCount === 1 && !input.includes("\n")) {
-        textareaRef.current.style.lineHeight = "52px";
-      } else {
-        textareaRef.current.style.lineHeight = "1.5";
-      }
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [input]);
 
   const handleSubmit = () => {
     if (input.trim() && !isComposing && !isLoading && !disabled) {
-      onSendMessage(input.trim());
+      onSendMessage(input.trim(), mode);
       setInput("");
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
     }
   };
 
@@ -64,7 +53,6 @@ export function ChatInput({
   return (
     <div className="relative mx-auto w-full max-w-3xl px-3 pb-3">
       <div className="relative">
-        {/* Textarea with integrated buttons */}
         <Textarea
           ref={textareaRef}
           value={input}
@@ -72,22 +60,60 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
-          placeholder={placeholder}
+          placeholder={mode === "agent" 
+            ? "Describe a task for agents to complete..." 
+            : "Type a message..."}
           disabled={disabled || isLoading}
           className={cn(
-            "w-full resize-none rounded-2xl border bg-background",
-            "pl-4 pr-12 py-0",
-            "min-h-[52px] max-h-[200px]",
+            "w-full resize-none rounded-2xl bg-background",
+            "pl-4 pr-12 pt-[14px] pb-[50px]",
+            "min-h-[80px] max-h-[200px]",
             "placeholder:text-muted-foreground/60",
-            "border-border/50",
-            "hover:border-border/80",
-            "focus:!border-border focus-visible:!border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
             "transition-all duration-200",
-            "overflow-hidden",
-            disabled && "opacity-50 cursor-not-allowed"
+            "scrollbar-hide hover:scrollbar-default",
+            disabled && "opacity-50 cursor-not-allowed",
+            // Override all border and focus styles
+            "[&]:border [&]:border-gray-300 dark:[&]:border-gray-700",
+            "[&:hover]:border-gray-400 dark:[&:hover]:border-gray-600",
+            "[&:focus]:border-gray-400 dark:[&:focus]:border-gray-600",
+            "[&:focus]:outline-none [&:focus]:ring-0",
+            "[&:focus-visible]:outline-none [&:focus-visible]:ring-0 [&:focus-visible]:ring-offset-0"
           )}
+          style={{
+            overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden'
+          }}
           rows={1}
         />
+
+        {/* Mode toggle - bottom left inside textarea */}
+        <div className="absolute left-3 bottom-2">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setMode("agent")}
+              className={cn(
+                "px-2.5 py-1 text-xs rounded-lg transition-all border",
+                mode === "agent" 
+                  ? "text-foreground font-medium bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent"
+              )}
+            >
+              Agent
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("chat")}
+              className={cn(
+                "px-2.5 py-1 text-xs rounded-lg transition-all border",
+                mode === "chat" 
+                  ? "text-foreground font-medium bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent"
+              )}
+            >
+              Chat
+            </button>
+          </div>
+        </div>
 
         {/* Submit/Stop Button */}
         <SendButton
