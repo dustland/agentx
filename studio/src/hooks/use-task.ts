@@ -108,6 +108,16 @@ export function useTask(taskId: string) {
       }
 
       try {
+        // Add user message immediately for optimistic UI
+        const userMessage: ChatMessage = {
+          id: nanoid(),
+          role: "user",
+          content: message,
+          timestamp: new Date(),
+          status: "complete",
+        };
+        addMessage(userMessage);
+
         // Send message to backend
         await apiClient.sendMessage(taskId, message);
         updateTaskStatus("running");
@@ -131,7 +141,7 @@ export function useTask(taskId: string) {
         throw error;
       }
     },
-    [taskId, apiClient, updateTaskStatus]
+    [taskId, apiClient, updateTaskStatus, addMessage]
   );
 
   // Handle SSE events

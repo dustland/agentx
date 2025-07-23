@@ -127,13 +127,27 @@ export const useTaskStore = create<TaskState>()(
       addTaskMessage: (taskId: string, message: ChatMessage) => {
         set((state) => {
           const existingTask = state.tasks[taskId];
+          const existingMessages = existingTask?.messages || [];
+          
+          // Check for duplicate messages by content and role within a short time window
+          const isDuplicate = existingMessages.some(m => 
+            m.role === message.role && 
+            m.content === message.content &&
+            Math.abs(new Date(m.timestamp).getTime() - new Date(message.timestamp).getTime()) < 5000 // 5 second window
+          );
+          
+          if (isDuplicate) {
+            console.log("Skipping duplicate message:", message);
+            return state;
+          }
+          
           return {
             tasks: {
               ...state.tasks,
               [taskId]: {
                 ...existingTask,
                 id: taskId,
-                messages: [...(existingTask?.messages || []), message],
+                messages: [...existingMessages, message],
                 lastUpdated: new Date(),
               },
             },
