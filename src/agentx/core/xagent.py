@@ -1001,6 +1001,8 @@ Respond with a JSON object following this schema:
             # Send task briefing as system message
             system_message = Message.system_message(f"Starting task: {task.name} - {task.goal}")
             await send_message_object(self.task_id, system_message)
+            # Persist the message
+            await self.chat_storage.save_message(self.task_id, system_message)
         except ImportError:
             # Streaming not available in this context
             pass
@@ -1039,6 +1041,8 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             from ..core.message import Message
             agent_message = Message.assistant_message(response)
             await send_message_object(self.task_id, agent_message)
+            # Persist the message
+            await self.chat_storage.save_message(self.task_id, agent_message)
         except ImportError:
             # Streaming not available in this context
             pass

@@ -14,6 +14,7 @@ import {
   Inbox,
 } from "lucide-react";
 import { useTask } from "@/hooks/use-task";
+import { useAPI } from "@/lib/api-client";
 import { formatBytes, formatDate } from "@/lib/utils";
 
 interface Artifact {
@@ -32,7 +33,8 @@ interface ArtifactsProps {
 }
 
 export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
-  const { getArtifacts, getArtifactContent } = useTask(taskId);
+  const { getArtifacts } = useTask(taskId);
+  const apiClient = useAPI();
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [loadingArtifacts, setLoadingArtifacts] = useState(false);
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
@@ -52,12 +54,9 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
     try {
       const artifactsList = await getArtifacts();
 
-      // Filter artifacts to only show those in the artifacts/ folder and exclude .git
+      // Filter artifacts to exclude .git and the artifacts directory itself
       const filteredArtifacts = artifactsList
         .filter((artifact: Artifact) => {
-          // Only include items that start with 'artifacts/'
-          if (!artifact.path.startsWith("artifacts/")) return false;
-
           // Exclude .git directories and files
           if (
             artifact.path.includes("/.git/") ||
@@ -65,16 +64,23 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
           )
             return false;
 
-          // Exclude the artifacts/ directory itself - only show its contents
-          if (artifact.path === "artifacts" || artifact.path === "artifacts/")
+          // Exclude the artifacts directory itself (by name or trailing slash)
+          if (
+            artifact.path === "artifacts" ||
+            artifact.path === "artifacts/" ||
+            artifact.path === "." ||
+            artifact.path === "./"
+          )
             return false;
 
           return true;
         })
         .map((artifact: Artifact) => ({
           ...artifact,
-          // Remove the 'artifacts/' prefix from the path for display
-          displayPath: artifact.path.replace(/^artifacts\//, ""),
+          // Remove the leading 'artifacts/' or './' prefix from the path for display, if present
+          displayPath: artifact.path
+            .replace(/^artifacts\//, "")
+            .replace(/^\.\//, ""),
         }));
 
       setArtifacts(filteredArtifacts);
@@ -98,7 +104,10 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const downloadFile = async (artifact: Artifact) => {
     try {
-      const response = await getArtifactContent(artifact.path);
+      const response = await apiClient.getArtifactContent(
+        taskId,
+        artifact.path
+      );
       const content = response.content || "";
       const blob = new Blob([content], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
@@ -116,7 +125,10 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const copyToClipboard = async (artifact: Artifact) => {
     try {
-      const response = await getArtifactContent(artifact.path);
+      const response = await apiClient.getArtifactContent(
+        taskId,
+        artifact.path
+      );
       const content = response.content || "";
       await navigator.clipboard.writeText(content);
     } catch (error) {

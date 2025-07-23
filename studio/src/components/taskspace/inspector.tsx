@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Code, BookOpenCheck } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useTask } from "@/hooks/use-task";
+import ReactMarkdown from "react-markdown";
+import { useTaskArtifact } from "@/hooks/use-task";
 
 interface Artifact {
   path: string;
@@ -39,33 +40,16 @@ export function Inspector({
   selectedToolCall,
   taskId,
 }: ViewerProps) {
-  const { getArtifactContent } = useTask(taskId);
-  const [artifactContent, setArtifactContent] = useState<string | null>(null);
-  const [loadingContent, setLoadingContent] = useState(false);
+  // Use the hook for the selected artifact
+  const { content, isLoading, error } = useTaskArtifact({
+    taskId,
+    path: selectedArtifact?.path || "",
+    enabled: !!selectedArtifact && !selectedArtifact.content,
+  });
 
-  // Load artifact content when selectedArtifact changes
-  useEffect(() => {
-    if (selectedArtifact && !selectedArtifact.content) {
-      loadArtifactContent(selectedArtifact);
-    } else if (selectedArtifact?.content) {
-      setArtifactContent(selectedArtifact.content);
-    } else {
-      setArtifactContent(null);
-    }
-  }, [selectedArtifact]);
-
-  const loadArtifactContent = async (artifact: Artifact) => {
-    setLoadingContent(true);
-    try {
-      const response = await getArtifactContent(artifact.path);
-      setArtifactContent(response.content || "");
-    } catch (error) {
-      console.error("Failed to load artifact content:", error);
-      setArtifactContent("[Error loading content]");
-    } finally {
-      setLoadingContent(false);
-    }
-  };
+  // Determine what content to display
+  const artifactContent = selectedArtifact?.content || content || null;
+  const loadingContent = isLoading;
 
   const getFileLanguage = (filename: string) => {
     const ext = filename.split(".").pop()?.toLowerCase();
@@ -165,8 +149,8 @@ export function Inspector({
         <div className="p-4">
           <div className="relative">
             {selectedArtifact.path.endsWith(".md") ? (
-              <div className="prose prose-sm dark:prose-invert max-w-none">
-                <pre className="whitespace-pre-wrap">{artifactContent}</pre>
+              <div className="markdown-content">
+                <ReactMarkdown>{artifactContent}</ReactMarkdown>
               </div>
             ) : (
               <SyntaxHighlighter

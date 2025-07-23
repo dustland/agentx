@@ -125,12 +125,6 @@ export function useTask(taskId: string) {
   }, []);
 
   // Helper functions for on-demand queries (only when really needed)
-  const getArtifactContent = async (path: string) => {
-    return queryClient.fetchQuery({
-      queryKey: [...taskKeys.artifacts(taskId), path],
-      queryFn: () => apiClient.getArtifactContent(taskId, path),
-    });
-  };
 
   const getTaskPlan = async () => {
     return queryClient.fetchQuery({
@@ -171,7 +165,6 @@ export function useTask(taskId: string) {
     stop,
     
     // On-demand functions (rarely used)
-    getArtifactContent,
     getTaskPlan,
     searchMemory,
     
@@ -205,6 +198,37 @@ export function useTaskLogs(taskId: string, options?: { limit?: number; offset?:
     hasMore: query.data?.has_more || false,
     isLoading: query.isLoading,
     error: query.error,
+    refetch: query.refetch,
+  };
+}
+
+/**
+ * Hook for fetching individual artifact content
+ */
+export function useTaskArtifact({
+  taskId,
+  path,
+  enabled = true,
+}: {
+  taskId: string;
+  path: string;
+  enabled?: boolean;
+}) {
+  const apiClient = useAPI();
+
+  const query = useQuery({
+    queryKey: [...taskKeys.artifacts(taskId), path],
+    queryFn: () => apiClient.getArtifactContent(taskId, path),
+    enabled: enabled && !!taskId && !!path && taskId !== "dummy-task-id",
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  return {
+    content: query.data?.content,
+    isLoading: query.isLoading,
+    error: query.error,
+    isBinary: query.data?.is_binary || false,
+    size: query.data?.size || 0,
     refetch: query.refetch,
   };
 }

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./markdown.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -455,4 +456,12 @@ html {
 
 .streaming-dots > span:nth-child(3) {
   animation-delay: 0s;
+}
+
+/* Suppress blue focus ring for all textareas */
+textarea:focus,
+textarea:focus-visible {
+  --tw-ring-color: transparent !important;
+  --color-ring: hsl(var(--muted-foreground)) !important;
+  box-shadow: none !important;
 }

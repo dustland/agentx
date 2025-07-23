@@ -319,12 +319,15 @@ class TaskService:
             raise PermissionError("Access denied")
         
         artifacts = []
-        task_path = Path(f"task_data/{task_id}")
+        task_path = Path(f"task_data/{task_id}/artifacts")
         
         if task_path.exists():
             for item in task_path.rglob("*"):
                 if item.is_file():
                     relative_path = item.relative_to(task_path)
+                    # Skip any files under .git
+                    if any(part == ".git" for part in relative_path.parts):
+                        continue
                     artifacts.append({
                         "path": str(relative_path),
                         "size": item.stat().st_size,

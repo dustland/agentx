@@ -2,9 +2,9 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SendButton } from "./send-button";
+import { Button } from "../ui/button";
 
 interface ChatInputProps {
   onSendMessage: (message: string, mode?: "agent" | "chat") => void;
@@ -41,8 +41,13 @@ export function ChatInput({
     if (e) {
       e.preventDefault();
     }
-    
-    if ((input.trim() || allowEmptyMessage) && !isComposing && !isLoading && !disabled) {
+
+    if (
+      (input.trim() || allowEmptyMessage) &&
+      !isComposing &&
+      !isLoading &&
+      !disabled
+    ) {
       onSendMessage(input.trim() || "", mode);
       setInput("");
     }
@@ -57,7 +62,7 @@ export function ChatInput({
 
   return (
     <div className="relative mx-auto w-full max-w-3xl px-3 pb-3">
-      <div className="relative">
+      <div className="relative group">
         <Textarea
           ref={textareaRef}
           value={input}
@@ -66,9 +71,9 @@ export function ChatInput({
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
           placeholder={
-            mode === "agent" 
-              ? allowEmptyMessage 
-                ? "Type a message or press Send to continue plan execution..." 
+            mode === "agent"
+              ? allowEmptyMessage
+                ? "Type a message or press Send to continue plan execution..."
                 : "Describe a task for agents to complete..."
               : "Type a message..."
           }
@@ -81,46 +86,40 @@ export function ChatInput({
             "transition-all duration-200",
             "scrollbar-hide hover:scrollbar-default",
             disabled && "opacity-50 cursor-not-allowed",
-            // Override all border and focus styles
-            "[&]:border [&]:border-gray-300 dark:[&]:border-gray-700",
-            "[&:hover]:border-gray-400 dark:[&:hover]:border-gray-600",
-            "[&:focus]:border-gray-400 dark:[&:focus]:border-gray-600",
-            "[&:focus]:outline-none [&:focus]:ring-0",
-            "[&:focus-visible]:outline-none [&:focus-visible]:ring-0 [&:focus-visible]:ring-offset-0"
+            // Use semantic border colors
+            "border border-border",
+            "group-hover:border-muted-foreground",
+            "focus:border-muted-foreground",
+            "focus:outline-none focus:ring-0 focus:ring-transparent",
+            "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"
           )}
-          style={{
-            overflowY: input.split('\n').length > 3 ? 'auto' : 'hidden'
-          }}
+          style={
+            {
+              overflowY: input.split("\n").length > 3 ? "auto" : "hidden",
+              "--tw-ring-color": "transparent",
+              boxShadow: "none",
+            } as React.CSSProperties
+          }
           rows={1}
         />
 
         {/* Mode toggle - bottom left inside textarea */}
         <div className="absolute left-3 bottom-2">
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setMode("agent")}
-              className={cn(
-                "px-2.5 py-1 text-xs rounded-lg transition-all border",
-                mode === "agent" 
-                  ? "text-foreground font-medium bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent"
-              )}
-            >
-              Agent
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("chat")}
-              className={cn(
-                "px-2.5 py-1 text-xs rounded-lg transition-all border",
-                mode === "chat" 
-                  ? "text-foreground font-medium bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 border-transparent"
-              )}
-            >
-              Chat
-            </button>
+            {["agent", "chat"].map((m) => (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setMode(m as "agent" | "chat")}
+                className={`text-xs h-6 rounded-full transition-all border ${
+                  mode === m
+                    ? "shadow-sm border-muted-foreground/20 bg-muted"
+                    : "border-transparent bg-transparent text-muted-foreground"
+                }`}
+              >
+                <span className="capitalize">{m}</span>
+              </Button>
+            ))}
           </div>
         </div>
 

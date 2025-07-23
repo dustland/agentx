@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ChatInput } from "@/components/chat/chat-input";
-import { generateId } from "@/lib/utils";
+import { ChatInput } from "@/components/chat/input";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
 import { useAppStore } from "@/store/app";
@@ -23,38 +21,38 @@ export default function HomePage() {
   const sampleTasks = [
     {
       id: 1,
-      title: "Market Research Report",
-      description: "Analyze market trends and create comprehensive report",
+      title: "AI Tools Market Analysis",
+      description: "Research the current AI productivity tools market, compare top 5 competitors, and identify opportunities for differentiation",
       config: "auto_writer",
     },
     {
       id: 2,
-      title: "Code Review & Documentation",
-      description: "Review codebase and generate technical documentation",
+      title: "Python Code Documentation",
+      description: "Generate comprehensive documentation for a Python REST API project including API endpoints, data models, and usage examples",
       config: "simple_team",
     },
     {
       id: 3,
-      title: "Content Strategy Planning",
-      description: "Develop content strategy and editorial calendar",
+      title: "SaaS Blog Content Strategy",
+      description: "Create a 3-month content calendar for a B2B SaaS startup focusing on SEO-optimized topics in the project management space",
       config: "handoff_demo",
     },
     {
       id: 4,
-      title: "Competitive Analysis",
-      description: "Research competitors and identify market opportunities",
+      title: "E-commerce Competitor Analysis",
+      description: "Analyze top 5 sustainable fashion e-commerce brands, their pricing strategies, marketing channels, and unique selling propositions",
       config: "extractor",
     },
     {
       id: 5,
-      title: "Product Launch Plan",
-      description: "Create comprehensive product launch strategy",
+      title: "Mobile App Launch Plan",
+      description: "Develop a go-to-market strategy for a fitness tracking mobile app including pre-launch, launch week, and post-launch activities",
       config: "auto_writer",
     },
     {
       id: 6,
-      title: "Website Content Audit",
-      description: "Analyze website content and suggest improvements",
+      title: "Technical Blog Optimization",
+      description: "Audit a developer blog for SEO, readability, and engagement, then provide actionable recommendations for improvement",
       config: "simple_team",
     },
   ];
@@ -145,7 +143,9 @@ export default function HomePage() {
         <div className="px-6 pb-12">
           <div className="max-w-4xl mx-auto">
             <div className="mb-6">
-              <h2 className="text-lg font-medium mb-6">Sample tasks to start with</h2>
+              <h2 className="text-lg font-medium mb-6">
+                Sample tasks to start with
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

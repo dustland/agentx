@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Bot } from "lucide-react";
-import { ChatInput } from "./chat-input";
+import { ChatInput } from "./input";
 import { MessageBubble } from "./message-bubble";
 
 interface ChatLayoutProps {
@@ -47,7 +47,6 @@ export function ChatLayout({
 
   return (
     <div className="flex flex-col h-full">
-
       {/* Message List */}
       <ScrollArea className="flex-1 overflow-hidden">
         <div className="p-4 space-y-3">

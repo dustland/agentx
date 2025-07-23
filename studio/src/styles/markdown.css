@@ -1,0 +1,89 @@
+/* Markdown content styles */
+.markdown-content {
+  @apply text-foreground text-sm;
+}
+
+.markdown-content h1 {
+  @apply text-xl font-bold mb-4 mt-6 first:mt-0 text-foreground border-b border-border pb-2;
+}
+
+.markdown-content h2 {
+  @apply text-lg font-semibold mb-3 mt-5 first:mt-0 text-foreground border-b border-border/50 pb-1;
+}
+
+.markdown-content h3 {
+  @apply text-base font-semibold mb-2 mt-4 first:mt-0 text-foreground;
+}
+
+.markdown-content h4 {
+  @apply text-sm font-semibold mb-2 mt-3 first:mt-0 text-foreground;
+}
+
+.markdown-content h5,
+.markdown-content h6 {
+  @apply text-xs font-semibold mb-2 mt-3 first:mt-0 text-foreground;
+}
+
+.markdown-content p {
+  @apply mb-4 text-foreground leading-relaxed text-sm;
+}
+
+.markdown-content ul {
+  @apply mb-4 ml-6 list-disc text-sm;
+}
+
+.markdown-content ol {
+  @apply mb-4 ml-6 list-decimal text-sm;
+}
+
+.markdown-content li {
+  @apply mb-1 text-foreground text-sm;
+}
+
+.markdown-content blockquote {
+  @apply border-l-4 border-muted-foreground/30 pl-4 my-4 italic text-muted-foreground text-sm;
+}
+
+.markdown-content code {
+  @apply bg-muted px-1.5 py-0.5 rounded text-xs font-mono text-foreground;
+}
+
+.markdown-content pre {
+  @apply bg-muted p-4 rounded-lg overflow-x-auto my-4 border border-border;
+}
+
+.markdown-content pre code {
+  @apply bg-transparent p-0 text-xs;
+}
+
+.markdown-content table {
+  @apply w-full border-collapse border border-border my-4 text-sm;
+}
+
+.markdown-content th {
+  @apply border border-border px-3 py-2 bg-muted font-semibold text-left text-sm;
+}
+
+.markdown-content td {
+  @apply border border-border px-3 py-2 text-sm;
+}
+
+.markdown-content a {
+  @apply text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline text-sm;
+}
+
+.markdown-content hr {
+  @apply border-t border-border my-6;
+}
+
+.markdown-content strong {
+  @apply font-semibold text-foreground;
+}
+
+.markdown-content em {
+  @apply italic;
+}
+
+.markdown-content img {
+  @apply max-w-full h-auto rounded-lg my-4;
+} 

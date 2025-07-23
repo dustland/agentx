@@ -566,8 +566,12 @@ async def _execute_task_async(user_id: str, task_id: str):
         
         # Send initial message to indicate plan execution is starting
         from ..core.message import Message
+        from ..server.streaming import send_complete_message
+        from pathlib import Path
+        
+        taskspace_path = str(Path(f"task_data/{task_id}"))
         start_message = Message.system_message("Starting plan execution...")
-        await send_message_object(task_id, start_message)
+        await send_complete_message(task_id, taskspace_path, start_message)
         
         # Add a small delay to ensure task is fully initialized
         await asyncio.sleep(1)
@@ -596,7 +600,7 @@ async def _execute_task_async(user_id: str, task_id: str):
             # Send step result as system message
             from ..core.message import Message
             step_message = Message.system_message(f"Step {step_count}: {result}")
-            await send_message_object(task_id, step_message)
+            await send_complete_message(task_id, taskspace_path, step_message)
             
             # Small delay to prevent overwhelming the system
             await asyncio.sleep(0.1)

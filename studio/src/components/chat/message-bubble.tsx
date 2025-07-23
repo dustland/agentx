@@ -31,23 +31,19 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
 
   return (
     <div
-      className={cn(
-        "group relative",
-        isUser ? "flex justify-end" : "w-full"
-      )}
+      className={cn("group relative", isUser ? "flex justify-end" : "w-full")}
     >
       <div
         className={cn(
           "relative",
-          isUser ? [
-            "max-w-[85%] md:max-w-[75%] lg:max-w-[65%]",
-            "bg-card rounded-xl border border-border",
-            "px-4 py-3",
-            "hover:shadow-sm"
-          ] : [
-            "w-full",
-            "py-3"
-          ],
+          isUser
+            ? [
+                "max-w-[85%] md:max-w-[75%] lg:max-w-[65%]",
+                "bg-card rounded-xl border border-border",
+                "px-4 py-3",
+                "hover:shadow-sm",
+              ]
+            : ["w-full", "py-3"],
           "transition-all duration-200",
           message.status === "error" && "text-destructive"
         )}
@@ -78,7 +74,9 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                   key={idx}
                   className={cn(
                     "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs",
-                    isUser ? "bg-muted text-muted-foreground" : "bg-muted/50 text-muted-foreground",
+                    isUser
+                      ? "bg-muted text-muted-foreground"
+                      : "bg-muted/50 text-muted-foreground",
                     tool.status === "running" && "animate-pulse"
                   )}
                 >
@@ -111,13 +109,11 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
             >
               {copied ? (
                 <>
-                  <Check className="h-3 w-3 mr-1" />
-                  Copied
+                  <Check className="h-3 w-3" />
                 </>
               ) : (
                 <>
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
+                  <Copy className="h-3 w-3" />
                 </>
               )}
             </Button>
@@ -128,8 +124,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                 className="h-7 px-2 text-xs"
                 onClick={onRetry}
               >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Retry
+                <RotateCcw className="h-3 w-3" />
               </Button>
             )}
           </div>
