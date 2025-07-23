@@ -1,475 +1,220 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { nanoid } from "nanoid";
-import { useAgentXAPI } from "@/lib/api-client";
-import { useTaskStore } from "@/store/task";
-import { ChatMessage } from "@/types/chat";
-import {
-  TaskStatus,
-  StreamEvent,
-  AgentMessageEvent,
-  ToolCallStartEvent,
-  ToolCallResultEvent,
-  TaskUpdateEvent,
-  StreamChunkEvent,
-  getMessageText,
-  ArtifactContent,
-} from "@/types/agentx";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
+import { useAPI } from "@/lib/api-client";
+import { StreamEvent } from "@/types/agentx";
 
 /**
- * Core hook for managing a single task
- * Handles task state, persistence, API calls, and SSE
+ * Query keys for task-related data
+ */
+export const taskKeys = {
+  all: ["tasks"] as const,
+  list: () => [...taskKeys.all, "list"] as const,
+  detail: (id: string) => [...taskKeys.all, id] as const,
+  messages: (id: string) => [...taskKeys.detail(id), "messages"] as const,
+  artifacts: (id: string) => [...taskKeys.detail(id), "artifacts"] as const,
+  logs: (id: string, options?: any) => [...taskKeys.detail(id), "logs", options] as const,
+  memory: (id: string, query: string, limit: number) => [...taskKeys.detail(id), "memory", { query, limit }] as const,
+};
+
+/**
+ * Comprehensive task hook using React Query
+ * Returns data directly for easy consumption
  */
 export function useTask(taskId: string) {
-  const apiClient = useAgentXAPI();
-  const router = useRouter();
-
-  // Get store methods
-  const store = useTaskStore();
-  const {
-    getTask,
-    setTaskInfo,
-    setTaskMessages,
-    addTaskMessage,
-    setTaskStatus: setTaskStatusInStore,
-    updateTaskInList,
-    consumeInitialMessage,
-  } = store;
-
-  // Get task data from store
-  const cachedTask = getTask(taskId);
-  const messages = cachedTask?.messages || [];
-
-  // Local state
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [taskNotFound, setTaskNotFound] = useState(false);
-  const [taskStatus, setTaskStatus] = useState<TaskStatus>(
-    cachedTask?.status || "pending"
-  );
-
-  // SSE event handlers
-  const eventHandlersRef = useRef<{
-    onMessage?: (message: ChatMessage) => void;
-    onStreamChunk?: (data: StreamChunkEvent) => void;
-    onToolCallStart?: (data: ToolCallStartEvent) => void;
-    onToolCallResult?: (data: ToolCallResultEvent) => void;
-    onStatusChange?: (status: TaskStatus) => void;
-  }>({});
-
-  // SSE cleanup ref
+  const apiClient = useAPI();
+  const queryClient = useQueryClient();
   const sseCleanupRef = useRef<(() => void) | null>(null);
 
-  // Update task status in both local state and store
-  const updateTaskStatus = useCallback(
-    (status: TaskStatus) => {
-      setTaskStatus(status);
-      setTaskStatusInStore(taskId, status);
-      updateTaskInList(taskId, { status });
-      eventHandlersRef.current.onStatusChange?.(status);
+  // Queries
+  const taskQuery = useQuery({
+    queryKey: taskKeys.detail(taskId),
+    queryFn: () => apiClient.getTask(taskId),
+    enabled: !!taskId && taskId !== "dummy-task-id",
+  });
+
+  const messagesQuery = useQuery({
+    queryKey: taskKeys.messages(taskId),
+    queryFn: () => apiClient.getMessages(taskId),
+    enabled: !!taskId && taskId !== "dummy-task-id",
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
+  });
+
+  const artifactsQuery = useQuery({
+    queryKey: taskKeys.artifacts(taskId),
+    queryFn: () => apiClient.getTaskArtifacts(taskId),
+    enabled: !!taskId && taskId !== "dummy-task-id",
+  });
+
+  // Mutations
+  const sendMessage = useMutation({
+    mutationFn: (message: string) => apiClient.sendMessage(taskId, message),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: taskKeys.messages(taskId) });
+      queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
     },
-    [taskId, setTaskStatusInStore, updateTaskInList]
-  );
+  });
 
-  // Update task info
-  const updateTaskInfo = useCallback(
-    (info: any) => {
-      setTaskInfo(taskId, info);
-      updateTaskInList(taskId, info);
+  const deleteTask = useMutation({
+    mutationFn: () => apiClient.deleteTask(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.list() });
     },
-    [taskId, setTaskInfo, updateTaskInList]
-  );
+  });
 
-  // Add a message
-  const addMessage = useCallback(
-    (message: ChatMessage) => {
-      addTaskMessage(taskId, message);
-    },
-    [taskId, addTaskMessage]
-  );
-
-  // Set all messages
-  const setMessages = useCallback(
-    (messages: ChatMessage[]) => {
-      setTaskMessages(taskId, messages);
-    },
-    [taskId, setTaskMessages]
-  );
-
-  // Send a message to the backend
-  const sendMessage = useCallback(
-    async (message: string) => {
-      if (!message.trim()) return;
-
-      // Skip if no valid taskId
-      if (!taskId || taskId === "dummy-task-id") {
-        console.warn("Cannot send message without valid taskId");
-        return;
-      }
-
-      try {
-        // Add user message immediately for optimistic UI
-        const userMessage: ChatMessage = {
-          id: nanoid(),
-          role: "user",
-          content: message,
-          timestamp: new Date(),
-          status: "complete",
-        };
-        addMessage(userMessage);
-
-        // Send message to backend
-        await apiClient.sendMessage(taskId, message);
-        updateTaskStatus("running");
-
-        // Set a timeout to reset status if no update received
-        setTimeout(() => {
-          setTaskStatus((current) => {
-            if (current === "running") {
-              console.warn(
-                "No task status update received, resetting to pending"
-              );
-              updateTaskStatus("pending");
-              return "pending";
-            }
-            return current;
-          });
-        }, 30000); // 30 second timeout
-      } catch (error) {
-        console.error("Failed to send message:", error);
-        updateTaskStatus("pending");
-        throw error;
-      }
-    },
-    [taskId, apiClient, updateTaskStatus, addMessage]
-  );
-
-  // Handle SSE events
-  const handleStreamEvent = useCallback(
-    (event: StreamEvent) => {
-      console.log("[useTask] Received SSE event:", event.type, event);
-
-      switch (event.type) {
-        case "message": {
-          // New event type for complete Message objects
-          const data = event.data;
-          console.log("Processing message:", data);
-
-          const message: ChatMessage = {
-            id: data.id,
-            role: data.role as "user" | "assistant" | "system",
-            content: data.content,
-            timestamp: new Date(data.timestamp),
-            status: "complete",
-            metadata: data.metadata || {},
-          };
-
-          // Add to store - the backend is the source of truth
-          addMessage(message);
-
-          // Notify listeners
-          eventHandlersRef.current.onMessage?.(message);
-          break;
-        }
-
-        case "agent_message": {
-          // Legacy event type - deprecated, use "message" events instead
-          console.warn(
-            "Received deprecated agent_message event, use 'message' events instead"
-          );
-          const data = event.data as AgentMessageEvent;
-          console.log("Processing legacy agent_message:", data);
-
-          // Convert to standard message format
-          const messageId = data.message_id || nanoid();
-          const timestamp = data.timestamp || new Date().toISOString();
-
-          const message: ChatMessage = {
-            id: messageId,
-            role: data.agent_id === "user" ? "user" : "assistant",
-            content: data.message,
-            timestamp: new Date(timestamp),
-            status: "complete",
-            metadata: {
-              agentId: data.agent_id,
-              ...data.metadata,
-            },
-          };
-
-          // Add to store - the backend is the source of truth
-          addMessage(message);
-
-          // Notify listeners
-          eventHandlersRef.current.onMessage?.(message);
-          break;
-        }
-
-        case "tool_call_start": {
-          const data = event.data as ToolCallStartEvent;
-          console.log("Tool call started:", data);
-          eventHandlersRef.current.onToolCallStart?.(data);
-          break;
-        }
-
-        case "tool_call_result": {
-          const data = event.data as ToolCallResultEvent;
-          console.log("Tool call result:", data);
-          eventHandlersRef.current.onToolCallResult?.(data);
-          break;
-        }
-
-        case "agent_status": {
-          const data = event.data;
-          updateTaskStatus(data.status === "working" ? "running" : "pending");
-          break;
-        }
-
-        case "task_update": {
-          const data = event.data as TaskUpdateEvent;
-          if (data.status) {
-            updateTaskStatus(data.status);
-          }
-          break;
-        }
-
-        case "stream_chunk": {
-          const data = event.data as StreamChunkEvent;
-          console.log("[useTask] Processing stream chunk:", {
-            message_id: data.message_id,
-            chunk_length: data.chunk?.length || 0,
-            is_final: data.is_final,
-            has_error: !!data.error,
-            timestamp: data.timestamp,
-          });
-          console.log(
-            "[useTask] Event handlers available:",
-            Object.keys(eventHandlersRef.current)
-          );
-
-          // Notify listeners
-          if (eventHandlersRef.current.onStreamChunk) {
-            console.log(
-              "[useTask] Calling onStreamChunk handler with data:",
-              data
-            );
-            eventHandlersRef.current.onStreamChunk(data);
-          } else {
-            console.warn(
-              "[useTask] No onStreamChunk handler registered! This will cause streaming to not work properly."
-            );
-          }
-          break;
-        }
-
-        case "artifact_created":
-        case "artifact_updated": {
-          // Handled in taskspace panel
-          break;
-        }
-
-        default:
-          console.log("Unhandled event type:", event);
-      }
-    },
-    [addMessage, updateTaskStatus]
-  );
-
-  // Load task data
-  const loadTask = useCallback(async () => {
-    // Skip if no valid taskId
-    if (!taskId || taskId === "dummy-task-id") {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      console.log(`Loading task with ID: ${taskId}`);
-      const task = await apiClient.getTask(taskId);
-      console.log("Task loaded successfully:", task);
-
-      // Update store
-      updateTaskInfo(task);
-      updateTaskStatus(task.status || "pending");
-
-      // Load messages if not cached
-      if (!cachedTask?.messages || cachedTask.messages.length === 0) {
-        try {
-          const messagesResponse = await apiClient.getMessages(taskId);
-          if (
-            messagesResponse.messages &&
-            messagesResponse.messages.length > 0
-          ) {
-            const formattedMessages = messagesResponse.messages.map(
-              (msg: any) => ({
-                id: msg.message_id || nanoid(),
-                role: msg.role as "user" | "assistant" | "system",
-                content: getMessageText(msg),
-                timestamp: new Date(msg.timestamp),
-                status: "complete" as const,
-                metadata: msg.metadata,
-              })
-            );
-            setMessages(formattedMessages);
-          }
-        } catch (error) {
-          console.log(
-            "No existing messages or messages endpoint not available"
-          );
-        }
-      }
-
-      setIsLoading(false);
-      setIsInitialized(true);
-
-      // Set up SSE streaming
-      try {
-        const cleanup = apiClient.subscribeToTaskUpdates(
-          taskId,
-          handleStreamEvent
-        );
-        sseCleanupRef.current = cleanup;
-      } catch (error) {
-        console.error("Failed to set up SSE connection:", error);
-      }
-    } catch (error) {
-      console.error("Failed to load task:", error);
-      if ((error as any)?.message?.includes("404")) {
-        setTaskNotFound(true);
-      }
-      setIsLoading(false);
-    }
-  }, [
-    taskId,
-    apiClient,
-    cachedTask,
-    updateTaskInfo,
-    updateTaskStatus,
-    setMessages,
-    handleStreamEvent,
-  ]);
-
-  // Stop task execution
-  const stopTask = useCallback(() => {
-    // Close SSE connection
-    if (sseCleanupRef.current) {
-      sseCleanupRef.current();
-      sseCleanupRef.current = null;
-    }
-    updateTaskStatus("pending");
-    console.log("Stopping task execution");
-  }, [updateTaskStatus]);
-
-  // Subscribe to events
+  // SSE subscription
   const subscribe = useCallback(
-    (handlers: typeof eventHandlersRef.current) => {
-      // Don't subscribe if no valid taskId
+    (handlers: {
+      onMessage?: (message: any) => void;
+      onStreamChunk?: (data: any) => void;
+      onToolCallStart?: (data: any) => void;
+      onToolCallResult?: (data: any) => void;
+      onStatusChange?: (status: string) => void;
+    }) => {
       if (!taskId || taskId === "dummy-task-id") {
         return () => {}; // Return no-op unsubscribe
       }
 
-      eventHandlersRef.current = { ...eventHandlersRef.current, ...handlers };
+      const cleanup = apiClient.subscribeToTaskUpdates(
+        taskId,
+        (event: StreamEvent) => {
+          switch (event.type) {
+            case "message":
+              handlers.onMessage?.(event.data);
+              break;
+            case "stream_chunk":
+              handlers.onStreamChunk?.(event.data);
+              break;
+            case "tool_call_start":
+              handlers.onToolCallStart?.(event.data);
+              break;
+            case "tool_call_result":
+              handlers.onToolCallResult?.(event.data);
+              break;
+            case "task_update":
+              if (event.data.status) {
+                handlers.onStatusChange?.(event.data.status);
+              }
+              break;
+          }
+        }
+      );
 
-      // Return unsubscribe function
-      return () => {
-        eventHandlersRef.current = {};
-      };
-    },
-    [taskId]
-  );
-
-  // Initial load
-  useEffect(() => {
-    if (!isInitialized) {
-      loadTask();
-    }
-
-    return () => {
-      // Cleanup SSE on unmount
-      if (sseCleanupRef.current) {
-        sseCleanupRef.current();
-      }
-    };
-  }, [isInitialized, loadTask]);
-
-  // Redirect if task not found
-  useEffect(() => {
-    if (taskNotFound) {
-      router.push("/");
-    }
-  }, [taskNotFound, router]);
-
-  // Get artifacts
-  const getArtifacts = useCallback(async () => {
-    try {
-      const response = await apiClient.getTaskArtifacts(taskId);
-      return response.artifacts || [];
-    } catch (error) {
-      console.error("Failed to get artifacts:", error);
-      return [];
-    }
-  }, [taskId, apiClient]);
-
-  // Get artifact content
-  const getArtifactContent = useCallback(
-    async (path: string): Promise<ArtifactContent> => {
-      try {
-        return await apiClient.getArtifactContent(taskId, path);
-      } catch (error) {
-        console.error("Failed to get artifact content:", error);
-        return { path, content: null, size: 0 };
-      }
+      sseCleanupRef.current = cleanup;
+      return cleanup;
     },
     [taskId, apiClient]
   );
 
-  // Get logs
-  const getLogs = useCallback(
-    async (options?: any) => {
-      try {
-        const response = await apiClient.getTaskLogs(taskId, options);
-        return response;
-      } catch (error) {
-        console.error("Failed to get logs:", error);
-        return { logs: [], file_size: 0, has_more: false };
-      }
-    },
-    [taskId, apiClient]
-  );
+  // Stop SSE connection
+  const stop = useCallback(() => {
+    if (sseCleanupRef.current) {
+      sseCleanupRef.current();
+      sseCleanupRef.current = null;
+    }
+  }, []);
 
-  // Search memory
-  const searchMemory = useCallback(
-    async (query: string, limit = 10) => {
-      try {
-        const results = await apiClient.searchMemory(taskId, { query, limit });
-        return results;
-      } catch (error) {
-        console.error("Failed to search memory:", error);
-        return [];
-      }
-    },
-    [taskId, apiClient]
-  );
+  // Helper functions for on-demand queries (only when really needed)
+  const getArtifactContent = async (path: string) => {
+    return queryClient.fetchQuery({
+      queryKey: [...taskKeys.artifacts(taskId), path],
+      queryFn: () => apiClient.getArtifactContent(taskId, path),
+    });
+  };
+
+  const searchMemory = async (query: string, limit = 10) => {
+    return queryClient.fetchQuery({
+      queryKey: taskKeys.memory(taskId, query, limit),
+      queryFn: () => apiClient.searchMemory(taskId, { query, limit }),
+    });
+  };
 
   return {
-    // Data
-    messages,
-    taskStatus,
-    taskInfo: cachedTask,
-    isLoading,
-    taskNotFound,
-    initialMessage: consumeInitialMessage(),
-
-    // Actions
+    // Direct data access
+    task: taskQuery.data,
+    messages: messagesQuery.data?.messages || [],
+    artifacts: artifactsQuery.data?.artifacts || [],
+    
+    // Loading states
+    isLoading: taskQuery.isLoading || messagesQuery.isLoading,
+    isTaskLoading: taskQuery.isLoading,
+    isMessagesLoading: messagesQuery.isLoading,
+    isArtifactsLoading: artifactsQuery.isLoading,
+    
+    // Errors
+    error: taskQuery.error || messagesQuery.error || artifactsQuery.error,
+    
+    // Mutations
     sendMessage,
-    addMessage,
-    stopTask,
-    reload: loadTask,
+    deleteTask,
+    
+    // SSE
     subscribe,
-
-    // Task data access
-    getArtifacts,
+    stop,
+    
+    // On-demand functions (rarely used)
     getArtifactContent,
-    getLogs,
     searchMemory,
+    
+    // Legacy compatibility
+    getArtifacts: async () => artifactsQuery.data?.artifacts || [],
+    getLogs: async (options?: any) => {
+      return queryClient.fetchQuery({
+        queryKey: taskKeys.logs(taskId, options),
+        queryFn: () => apiClient.getTaskLogs(taskId, options),
+      });
+    },
+    stopTask: stop,
+  };
+}
+
+/**
+ * Hook for task logs with direct data access
+ */
+export function useTaskLogs(taskId: string, options?: { limit?: number; offset?: number; tail?: boolean }) {
+  const apiClient = useAPI();
+  
+  const query = useQuery({
+    queryKey: taskKeys.logs(taskId, options),
+    queryFn: () => apiClient.getTaskLogs(taskId, options),
+    enabled: !!taskId && taskId !== "dummy-task-id",
+  });
+  
+  return {
+    logs: query.data?.logs || [],
+    fileSize: query.data?.file_size || 0,
+    hasMore: query.data?.has_more || false,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
+
+/**
+ * Hook for tasks list
+ */
+export function useTasks() {
+  const apiClient = useAPI();
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
+    queryKey: taskKeys.list(),
+    queryFn: () => apiClient.getTasks(),
+    refetchInterval: 10000, // Poll every 10 seconds
+  });
+
+  const deleteTask = useMutation({
+    mutationFn: (taskId: string) => apiClient.deleteTask(taskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskKeys.list() });
+    },
+  });
+
+  return {
+    tasks: query.data?.tasks || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    deleteTask,
   };
 }

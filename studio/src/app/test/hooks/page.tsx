@@ -137,7 +137,7 @@ export default function HooksTestPage() {
 
         <div className="p-4 bg-muted/50 rounded-lg border border-primary/20">
           <div className="text-sm mb-2 text-muted-foreground">
-            Stream ID: {streamingMsg.streamMessageId}
+            Message ID: {streamingMsg.id}
           </div>
           <div className="font-mono text-sm whitespace-pre-wrap">
             {streamingMsg.content}

@@ -415,3 +415,25 @@ html {
     transparent 100%
   );
 }
+
+/* Streaming dots animation */
+@keyframes streaming-dot {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+.streaming-dots > span {
+  animation: streaming-dot 1.4s infinite ease-in-out both;
+}
+
+.streaming-dots > span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.streaming-dots > span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.streaming-dots > span:nth-child(3) {
+  animation-delay: 0s;
+}

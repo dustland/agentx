@@ -33,18 +33,23 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
     <div
       className={cn(
         "group relative",
-        isUser ? "flex justify-end" : "flex justify-start"
+        isUser ? "flex justify-end" : "w-full"
       )}
     >
       <div
         className={cn(
-          "relative max-w-[85%] md:max-w-[75%] lg:max-w-[65%]",
-          "bg-card rounded-xl border border-border",
-          "px-4 py-3",
+          "relative",
+          isUser ? [
+            "max-w-[85%] md:max-w-[75%] lg:max-w-[65%]",
+            "bg-card rounded-xl border border-border",
+            "px-4 py-3",
+            "hover:shadow-sm"
+          ] : [
+            "w-full",
+            "py-3"
+          ],
           "transition-all duration-200",
-          "hover:shadow-sm",
-          isStreaming && "border-primary/20",
-          message.status === "error" && "border-destructive/20"
+          message.status === "error" && "text-destructive"
         )}
       >
         {/* Content */}
@@ -56,10 +61,10 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
         >
           {message.content}
           {isStreaming && (
-            <span className="inline-flex items-center ml-2">
-              <span className="w-1.5 h-4 bg-current rounded-sm animate-pulse" />
-              <span className="w-1.5 h-4 bg-current rounded-sm animate-pulse animation-delay-150 ml-0.5" />
-              <span className="w-1.5 h-4 bg-current rounded-sm animate-pulse animation-delay-300 ml-0.5" />
+            <span className="inline-flex items-center ml-2 space-x-1 streaming-dots">
+              <span className="w-1 h-1 bg-current rounded-full" />
+              <span className="w-1 h-1 bg-current rounded-full" />
+              <span className="w-1 h-1 bg-current rounded-full" />
             </span>
           )}
         </p>
@@ -73,7 +78,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                   key={idx}
                   className={cn(
                     "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs",
-                    "bg-muted text-muted-foreground",
+                    isUser ? "bg-muted text-muted-foreground" : "bg-muted/50 text-muted-foreground",
                     tool.status === "running" && "animate-pulse"
                   )}
                 >
@@ -94,7 +99,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
         {isAssistant && (
           <div
             className={cn(
-              "absolute -bottom-8 right-0 flex items-center gap-1",
+              "flex items-center gap-1 mt-2",
               "opacity-0 group-hover:opacity-100 transition-all duration-200"
             )}
           >

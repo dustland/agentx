@@ -31,7 +31,7 @@ export function chatMessageToMessage(chatMessage: ChatMessage): Message {
           toolCallId: `${chatMessage.id}-tool-${index}`,
           toolName: toolCall.name,
           result: toolCall.result,
-          isError: toolCall.status === "failed",
+          isError: toolCall.status === "error",
         });
       }
     });
@@ -73,7 +73,7 @@ export function messageToChatMessage(message: Message): ChatMessage {
       } else if (part.type === "tool-result") {
         const toolCall = toolCalls.find(tc => tc.name === part.toolName);
         if (toolCall) {
-          toolCall.status = part.isError ? "failed" : "completed";
+          toolCall.status = part.isError ? "error" : "completed";
           toolCall.result = part.result;
         }
       }

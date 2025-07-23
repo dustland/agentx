@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useEffect } from "react";
 import { TaskSpacePanel } from "@/components/taskspace/panel";
 import { ChatLayout } from "@/components/chat";
 import {
@@ -9,6 +9,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { useChat } from "@/hooks/use-chat";
+import { useAppStore } from "@/store/app";
 
 export default function TaskPage({
   params,
@@ -16,12 +17,14 @@ export default function TaskPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { initialMessage, setInitialMessage } = useAppStore();
 
   // Use the chat hook for chat functionality
   const {
     messages,
     input,
     isLoading,
+    isMessagesLoading,
     handleInputChange,
     handleSubmit,
     stop,
@@ -33,6 +36,14 @@ export default function TaskPage({
       // You could show a toast here
     },
   });
+
+  // Send initial message if present
+  useEffect(() => {
+    if (initialMessage && messages.length === 0) {
+      handleSubmit(initialMessage);
+      setInitialMessage(null);
+    }
+  }, [initialMessage, messages.length, handleSubmit, setInitialMessage]);
 
   const handlePauseResume = () => {
     // TODO: Implement pause/resume functionality

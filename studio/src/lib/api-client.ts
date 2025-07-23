@@ -483,6 +483,6 @@ export class AgentXAPIClient {
 export const apiClient = new AgentXAPIClient();
 
 // Hook for React components - returns the singleton instance
-export function useAgentXAPI() {
+export function useAPI() {
   return apiClient;
 }

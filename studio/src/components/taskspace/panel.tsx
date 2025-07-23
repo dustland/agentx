@@ -52,7 +52,7 @@ export function TaskSpacePanel({
   taskId,
   onToolCallSelect,
 }: TaskSpacePanelProps) {
-  const { subscribe, getArtifacts } = useTask(taskId);
+  const { subscribe, artifacts } = useTask(taskId);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -91,16 +91,11 @@ export function TaskSpacePanel({
 
   // Check for plan existence
   useEffect(() => {
-    const checkPlan = async () => {
-      const artifacts = await getArtifacts();
-      const planExists = artifacts.some(
-        (artifact: Artifact) => artifact.path === "plan.json"
-      );
-      setHasPlan(planExists);
-    };
-
-    checkPlan();
-  }, [taskId, getArtifacts]);
+    const planExists = artifacts.some(
+      (artifact: Artifact) => artifact.path === "plan.json"
+    );
+    setHasPlan(planExists);
+  }, [artifacts]);
 
   return (
     <div className="h-full flex flex-col px-2 py-3">

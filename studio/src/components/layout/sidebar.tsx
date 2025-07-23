@@ -38,7 +38,8 @@ import { useUser } from "@/contexts/user-context";
 import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ThemeSwitcher } from "../common/theme-switcher";
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks } from "@/hooks/use-task";
+import { useAppStore } from "@/store/app";
 
 interface SidebarProps {
   className?: string;
@@ -76,6 +77,17 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const getTimeAgo = (date: Date): string => {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 export function Sidebar({
   className,
   isFloating = false,
@@ -84,26 +96,25 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useUser();
-  const { tasks, loading: isLoading, deleteTask } = useTasks();
+  const { tasks: tasksResponse, isLoading, deleteTask: deleteTaskMutation } = useTasks();
+  const { sidebarPinned, setSidebarPinned } = useAppStore();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(!isFloating);
+  
+  const tasks = tasksResponse.map((task: any) => ({
+    id: task.task_id,
+    status: task.status,
+    task_description: task.task_description,
+    config_path: task.config_path,
+    created_at: task.created_at,
+  }));
 
-  // Load pinned state from localStorage after mount
+  // Sync with isFloating prop
   useEffect(() => {
-    const stored = localStorage.getItem("sidebar-pinned");
-    if (stored !== null) {
-      setIsPinned(stored === "true");
+    if (onFloatingChange && sidebarPinned === isFloating) {
+      onFloatingChange(!sidebarPinned);
     }
-  }, []);
-
-  // Sync isPinned with isFloating prop only on initial mount
-  useEffect(() => {
-    // Only sync if the internal state differs from the prop
-    if (isPinned === isFloating) {
-      setIsPinned(!isFloating);
-    }
-  }, [isFloating]);
+  }, [sidebarPinned, isFloating, onFloatingChange]);
 
   const currentTaskId = pathname.match(/\/x\/([^\/]+)/)?.[1];
 
@@ -122,12 +133,10 @@ export function Sidebar({
 
   // Only notify parent when user manually changes the pin state
   const handlePinToggle = () => {
-    const newPinnedState = !isPinned;
-    setIsPinned(newPinnedState);
+    setSidebarPinned(!sidebarPinned);
     if (onFloatingChange) {
-      onFloatingChange(!newPinnedState);
+      onFloatingChange(sidebarPinned);
     }
-    localStorage.setItem("sidebar-pinned", newPinnedState.toString());
   };
 
   const sidebarWidth = "w-72";
@@ -135,7 +144,7 @@ export function Sidebar({
   return (
     <>
       {/* Hover trigger area when unpinned */}
-      {!isPinned && (
+      {!sidebarPinned && (
         <div
           className="fixed left-0 top-0 w-4 h-full z-40"
           onMouseEnter={() => setIsHovered(true)}
@@ -146,15 +155,15 @@ export function Sidebar({
         className={cn(
           "bg-card flex flex-col transition-all duration-300",
           sidebarWidth,
-          isPinned
+          sidebarPinned
             ? "relative h-full border-r"
             : "fixed left-2 top-2 bottom-2 z-50 shadow-xl rounded-lg border h-[calc(100vh-1rem)]",
-          !isPinned && !isHovered
+          !sidebarPinned && !isHovered
             ? "-translate-x-[calc(100%+1rem)]"
             : "translate-x-0",
           className
         )}
-        onMouseLeave={() => !isPinned && setIsHovered(false)}
+        onMouseLeave={() => !sidebarPinned && setIsHovered(false)}
       >
         {/* Header */}
         <div className="p-3">
@@ -177,9 +186,9 @@ export function Sidebar({
                 variant="ghost"
                 className="h-7 w-7 p-0"
                 onClick={handlePinToggle}
-                title={isPinned ? "Float sidebar" : "Pin sidebar"}
+                title={sidebarPinned ? "Float sidebar" : "Pin sidebar"}
               >
-                {isPinned ? (
+                {sidebarPinned ? (
                   <PinOff className="h-3 w-3" />
                 ) : (
                   <Pin className="h-3 w-3" />
@@ -257,41 +266,42 @@ export function Sidebar({
             ) : (
               filteredTasks.map((task, index) => {
                 const isActive = currentTaskId === task.id;
+                const createdAt = task.created_at ? new Date(task.created_at) : null;
+                const timeAgo = createdAt ? getTimeAgo(createdAt) : null;
 
                 return (
                   <div
-                    key={index}
+                    key={task.id}
                     className={cn(
-                      "group relative rounded-lg cursor-pointer transition-all duration-150 border border-border/30 hover:border-border/60",
-                      "bg-card/30 hover:bg-card/60",
-                      isActive && "bg-accent/70 border-accent-foreground/30"
+                      "group relative rounded-lg cursor-pointer transition-all duration-200",
+                      "border hover:shadow-sm",
+                      isActive 
+                        ? "bg-accent border-accent-foreground/20 shadow-sm" 
+                        : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                     )}
                     onClick={() => router.push(`/x/${task.id}`)}
                   >
                     {/* Status indicator bar */}
                     <div
                       className={cn(
-                        "absolute left-0 top-2 bottom-2 w-0.5 rounded-r-full",
-                        getStatusColor(task.status).replace("border-l-", "bg-")
+                        "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
+                        task.status === "running" && "bg-blue-500",
+                        task.status === "completed" && "bg-green-500",
+                        task.status === "error" && "bg-red-500",
+                        task.status === "pending" && "bg-yellow-500"
                       )}
                     />
 
-                    <div className="p-2 pl-3">
-                      {/* Header with status, title and actions */}
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          <div
-                            className={cn(
-                              "flex-shrink-0 w-2 h-2 rounded-full",
-                              task.status === "running" && "bg-blue-500",
-                              task.status === "completed" && "bg-green-500",
-                              task.status === "error" && "bg-red-500",
-                              task.status === "pending" && "bg-yellow-500"
-                            )}
-                          />
-                          <span className="font-medium text-xs truncate text-foreground">
+                    <div className="p-3 pl-4">
+                      {/* Header with title and actions */}
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex-1 min-w-0">
+                          <h4 className={cn(
+                            "font-medium text-sm leading-tight line-clamp-2",
+                            isActive ? "text-accent-foreground" : "text-foreground"
+                          )}>
                             {task.task_description || "Untitled Task"}
-                          </span>
+                          </h4>
                         </div>
 
                         <DropdownMenu>
@@ -299,10 +309,14 @@ export function Sidebar({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                              className={cn(
+                                "h-6 w-6 p-0 flex-shrink-0 transition-opacity",
+                                "opacity-0 group-hover:opacity-100 focus:opacity-100",
+                                isActive && "opacity-60 hover:opacity-100"
+                              )}
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <MoreHorizontal className="h-2.5 w-2.5" />
+                              <MoreHorizontal className="h-3 w-3" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-40">
@@ -317,17 +331,16 @@ export function Sidebar({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive"
-                              onClick={async (e) => {
+                              onClick={(e) => {
                                 e.stopPropagation();
-                                const success = await deleteTask(task.id);
-                                if (success) {
-                                  // If we deleted the current task, redirect to homepage
-                                  if (currentTaskId === task.id) {
-                                    router.push("/");
-                                  }
-                                } else {
-                                  console.error("Failed to delete task");
-                                }
+                                deleteTaskMutation.mutate(task.id, {
+                                  onSuccess: () => {
+                                    // If we deleted the current task, redirect to homepage
+                                    if (currentTaskId === task.id) {
+                                      router.push("/");
+                                    }
+                                  },
+                                });
                               }}
                             >
                               <Trash2 className="h-3 w-3 mr-2" />
@@ -337,25 +350,28 @@ export function Sidebar({
                         </DropdownMenu>
                       </div>
 
-                      {/* Footer with config and status */}
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="truncate flex-1 mr-2">
-                          {task.config_path
-                            ? task.config_path
-                                .replace(/^.*\//, "")
-                                .replace(/\.(yaml|yml)$/, "")
-                            : task.status === "completed"
-                            ? "Completed"
-                            : task.status === "error"
-                            ? "Error"
-                            : task.status === "running"
-                            ? "Running"
-                            : "Pending"}
-                        </span>
-
-                        <span className="font-mono text-xs opacity-60">
-                          {task.id.slice(-4)}
-                        </span>
+                      {/* Metadata */}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          {getStatusIcon(task.status)}
+                          <span className="capitalize">{task.status}</span>
+                        </div>
+                        
+                        {timeAgo && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span>{timeAgo}</span>
+                          </>
+                        )}
+                        
+                        {task.config_path && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span className="truncate max-w-[80px]" title={task.config_path}>
+                              {task.config_path.split('/').pop()?.replace(/\.(yaml|yml)$/, '')}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

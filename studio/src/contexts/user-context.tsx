@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { User, getCurrentUser, loginUser, logoutUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { useAgentXAPI } from "@/lib/api-client";
+import { useAPI } from "@/lib/api-client";
 
 interface UserContextType {
   user: User | null;
@@ -25,7 +25,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const apiClient = useAgentXAPI();
+  const apiClient = useAPI();
 
   const refreshUser = async () => {
     try {

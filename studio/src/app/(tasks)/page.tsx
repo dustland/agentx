@@ -8,13 +8,15 @@ import { ChatInput } from "@/components/chat/chat-input";
 import { generateId } from "@/lib/utils";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
-import { useTasks } from "@/hooks/use-tasks";
+import { useAppStore } from "@/store/app";
+import { useAPI } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
-  const { setInitialMessage, createTask } = useTasks();
+  const { setInitialMessage } = useAppStore();
+  const apiClient = useAPI();
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample tasks with team-based configurations
@@ -66,7 +68,7 @@ export default function HomePage() {
         console.log("Creating task with prompt:", prompt);
 
         // Create task with empty description - the prompt becomes the first message
-        const response = await createTask({
+        const response = await apiClient.createTask({
           task_description: "",
           config_path: "examples/simple_chat/config/team.yaml",
           context: { source: "studio_homepage" },
@@ -106,7 +108,7 @@ export default function HomePage() {
         setIsCreating(false);
       }
     },
-    [createTask, router, setInitialMessage]
+    [apiClient, router, setInitialMessage]
   );
 
   const handleSampleTaskClick = (task: any) => {

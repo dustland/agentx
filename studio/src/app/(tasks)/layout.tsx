@@ -33,21 +33,12 @@ export default function TasksLayout({
 
   return (
     <div className="h-screen flex">
-      {/* Sidebar - conditionally render based on pinned state */}
-      {isSidebarPinned ? (
-        <Sidebar
-          key="pinned-sidebar"
-          className="flex-shrink-0"
-          isFloating={false}
-          onFloatingChange={handleFloatingChange}
-        />
-      ) : (
-        <Sidebar
-          key="floating-sidebar"
-          isFloating={true}
-          onFloatingChange={handleFloatingChange}
-        />
-      )}
+      {/* Sidebar - always render the same instance to prevent remounting */}
+      <Sidebar
+        className={isSidebarPinned ? "flex-shrink-0" : ""}
+        isFloating={!isSidebarPinned}
+        onFloatingChange={handleFloatingChange}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden relative bg-muted">
