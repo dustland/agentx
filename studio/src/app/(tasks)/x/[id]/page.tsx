@@ -60,7 +60,13 @@ export default function TaskPage({
 
   // ChatLayout expects onSendMessage to be (message: string, mode?: "agent" | "chat") => void
   const handleSendMessage = (message: string, mode?: "agent" | "chat") => {
-    // Pass the message with mode to handleSubmit
+    // If no message and plan exists in agent mode, execute the plan
+    if (!message && hasPlan && mode === "agent") {
+      executeTask.mutate();
+      return;
+    }
+    
+    // Otherwise, pass the message with mode to handleSubmit
     handleSubmit(message, mode);
   };
 
@@ -91,8 +97,7 @@ export default function TaskPage({
             taskName="Task"
             onShare={() => {}}
             onMoreActions={() => {}}
-            hasPlan={hasPlan}
-            onExecutePlan={() => executeTask.mutate()}
+            allowEmptyMessage={hasPlan}
           />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />

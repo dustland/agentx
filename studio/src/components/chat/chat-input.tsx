@@ -13,8 +13,7 @@ interface ChatInputProps {
   disabled?: boolean;
   placeholder?: string;
   taskStatus?: string;
-  hasPlan?: boolean;
-  onExecutePlan?: () => void;
+  allowEmptyMessage?: boolean;
 }
 
 export function ChatInput({
@@ -24,8 +23,7 @@ export function ChatInput({
   disabled = false,
   placeholder = "Type a message...",
   taskStatus,
-  hasPlan = false,
-  onExecutePlan,
+  allowEmptyMessage = false,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
@@ -46,15 +44,8 @@ export function ChatInput({
       e.preventDefault();
     }
     
-    // If there's no input and we have a plan, execute the plan
-    if (!input.trim() && hasPlan && mode === "agent" && onExecutePlan && !isLoading && !disabled) {
-      onExecutePlan();
-      return;
-    }
-    
-    // Otherwise send regular message
-    if (input.trim() && !isComposing && !isLoading && !disabled) {
-      onSendMessage(input.trim(), mode);
+    if ((input.trim() || allowEmptyMessage) && !isComposing && !isLoading && !disabled) {
+      onSendMessage(input.trim() || "", mode);
       setInput("");
     }
   };
@@ -76,11 +67,13 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
-          placeholder={hasPlan && mode === "agent"
-            ? "Press Enter or click Send to continue plan execution..."
-            : mode === "agent" 
-            ? "Describe a task for agents to complete..." 
-            : "Type a message..."}
+          placeholder={
+            allowEmptyMessage && mode === "agent"
+              ? "Press Enter or click Send to continue plan execution..."
+              : mode === "agent" 
+              ? "Describe a task for agents to complete..." 
+              : "Type a message..."
+          }
           disabled={disabled || isLoading}
           className={cn(
             "w-full resize-none rounded-2xl bg-background",
@@ -136,7 +129,7 @@ export function ChatInput({
         {/* Submit/Stop Button */}
         <SendButton
           isLoading={isLoading}
-          disabled={!input.trim() && !isLoading && !hasPlan}
+          disabled={!input.trim() && !isLoading && !allowEmptyMessage}
           onClick={handleSubmit}
           onStop={onStop}
           size="sm"
