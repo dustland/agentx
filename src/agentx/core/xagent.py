@@ -282,10 +282,26 @@ class XAgent(Agent):
             await self._persist_plan()
 
     async def _ensure_plan_initialized(self) -> None:
-        """Ensure plan is initialized if we have an initial prompt."""
-        if not self._plan_initialized and self.initial_prompt:
+        """Ensure plan is initialized - either from initial prompt or by loading existing plan."""
+        if self._plan_initialized:
+            return
+            
+        # If we have an initial prompt, use it to initialize
+        if self.initial_prompt:
             await self._initialize_with_prompt(self.initial_prompt)
             self._plan_initialized = True
+        # Otherwise, try to load existing plan
+        elif not self.plan:
+            plan_path = self.taskspace.get_taskspace_path() / "plan.json"
+            if plan_path.exists():
+                try:
+                    with open(plan_path, 'r') as f:
+                        plan_data = json.load(f)
+                    self.plan = Plan(**plan_data)
+                    logger.info("Loaded existing plan from taskspace")
+                    self._plan_initialized = True
+                except Exception as e:
+                    logger.warning(f"Failed to load existing plan: {e}")
 
     async def chat(self, message: Union[str, Message], mode: str = "agent") -> XAgentResponse:
         """

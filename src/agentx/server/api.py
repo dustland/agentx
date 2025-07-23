@@ -569,6 +569,9 @@ async def _execute_task_async(user_id: str, task_id: str):
         start_message = Message.system_message("Starting plan execution...")
         await send_message_object(task_id, start_message)
         
+        # Add a small delay to ensure task is fully initialized
+        await asyncio.sleep(1)
+        
         # Execute until complete
         step_count = 0
         max_steps = 1000  # Safety limit to prevent infinite loops
@@ -578,6 +581,7 @@ async def _execute_task_async(user_id: str, task_id: str):
             logger.info(f"[BACKGROUND] Executing step {step_count} for task {task_id}")
             
             result = await task.step()
+            logger.info(f"[BACKGROUND] Step {step_count} result: {result[:200]}")
             
             # Check if task is stuck without a plan
             if "No plan available" in result:
