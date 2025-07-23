@@ -33,7 +33,7 @@ interface ChatLayoutProps {
     timestamp: Date;
     status?: "streaming" | "complete" | "error";
   }>;
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, mode?: "agent" | "chat") => void;
   onStop?: () => void;
   onPauseResume: () => void;
   onShare: () => void;
@@ -67,8 +67,8 @@ export function ChatLayout({
     return () => clearTimeout(timer);
   }, [messages]);
 
-  const handleSubmit = (message: string) => {
-    onSendMessage(message);
+  const handleSubmit = (message: string, mode?: "agent" | "chat") => {
+    onSendMessage(message, mode);
   };
 
   const getStatusColor = () => {

@@ -110,6 +110,7 @@ export interface SendMessageRequest {
   content: string | MessageContent | MessageContent[];
   role?: MessageRole;
   name?: string;
+  mode?: "agent" | "chat"; // Execution mode: agent (multi-agent with plan) or chat (direct response)
 }
 
 // Streaming event types

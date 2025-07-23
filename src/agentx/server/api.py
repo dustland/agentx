@@ -190,12 +190,14 @@ def create_app() -> FastAPI:
         
         try:
             content = message.get("content", "")
-            logger.info(f"[API] Extracted content: {content[:100]}...")
+            mode = message.get("mode", "agent")  # Default to agent mode
+            logger.info(f"[API] Extracted content: {content[:100]}... with mode: {mode}")
             
             response = await task_service.send_message(
                 x_user_id,
                 task_id,
-                content
+                content,
+                mode=mode
             )
             logger.info(f"[API] Response from task_service: {response}")
             return response

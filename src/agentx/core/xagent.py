@@ -287,7 +287,7 @@ class XAgent(Agent):
             await self._initialize_with_prompt(self.initial_prompt)
             self._plan_initialized = True
 
-    async def chat(self, message: Union[str, Message]) -> XAgentResponse:
+    async def chat(self, message: Union[str, Message], mode: str = "agent") -> XAgentResponse:
         """
         Send a conversational message to X and get a response.
 
@@ -302,6 +302,7 @@ class XAgent(Agent):
 
         Args:
             message: Either a simple text string or a rich Message with parts
+            mode: Execution mode - "agent" (multi-agent with plan) or "chat" (direct response)
 
         Returns:
             XAgentResponse with text, artifacts, and execution details
@@ -325,27 +326,32 @@ class XAgent(Agent):
 
         response = None
         try:
-            # Ensure plan is initialized if we have an initial prompt
-            await self._ensure_plan_initialized()
-
-            # Analyze message impact on current plan
-            impact_analysis = await self._analyze_message_impact(message)
-
-            # If message requires plan adjustment
-            if impact_analysis.get("requires_plan_adjustment", False):
-                response = await self._handle_plan_adjustment(message, impact_analysis)
-
-            # If message is Q&A or informational
-            elif impact_analysis.get("is_informational", False):
-                response = await self._handle_informational_query(message)
-
-            # If no plan exists and this is a new task request
-            elif not self.plan and impact_analysis.get("is_new_task", False):
-                response = await self._handle_new_task_request(message)
-
-            # Default: treat as conversational input
+            # In chat mode, always respond directly without plan
+            if mode == "chat":
+                response = await self._handle_chat_mode(message)
             else:
-                response = await self._handle_conversational_input(message)
+                # Agent mode - original behavior with plan
+                # Ensure plan is initialized if we have an initial prompt
+                await self._ensure_plan_initialized()
+
+                # Analyze message impact on current plan
+                impact_analysis = await self._analyze_message_impact(message)
+
+                # If message requires plan adjustment
+                if impact_analysis.get("requires_plan_adjustment", False):
+                    response = await self._handle_plan_adjustment(message, impact_analysis)
+
+                # If message is Q&A or informational
+                elif impact_analysis.get("is_informational", False):
+                    response = await self._handle_informational_query(message)
+
+                # If no plan exists and this is a new task request
+                elif not self.plan and impact_analysis.get("is_new_task", False):
+                    response = await self._handle_new_task_request(message)
+
+                # Default: treat as conversational input
+                else:
+                    response = await self._handle_conversational_input(message)
 
         except Exception as e:
             logger.error(f"Error processing chat message: {e}")
@@ -646,6 +652,32 @@ suggest they be more specific about what changes they want.
         return XAgentResponse(
             text=response_text,
             metadata={"query_type": "conversational"},
+            message_id=message_id
+        )
+
+    async def _handle_chat_mode(self, message: Message) -> XAgentResponse:
+        """Handle messages in chat mode - direct LLM response without plan."""
+        # Build context for direct response
+        context_prompt = f"""
+You are a helpful AI assistant. Respond directly to the user's message without creating or executing plans.
+
+USER MESSAGE: {message.content}
+
+CONVERSATION HISTORY:
+{self._get_conversation_summary()}
+
+Please provide a direct, helpful response to the user's message.
+"""
+
+        # Stream the response
+        response_text, message_id = await self._stream_full_response(
+            messages=[{"role": "user", "content": context_prompt}],
+            system_prompt=self.build_system_prompt({"task_id": self.task_id})
+        )
+
+        return XAgentResponse(
+            text=response_text,
+            metadata={"mode": "chat", "query_type": "direct_response"},
             message_id=message_id
         )
 

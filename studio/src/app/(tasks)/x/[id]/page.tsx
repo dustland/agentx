@@ -39,21 +39,22 @@ export default function TaskPage({
 
   // Send initial message if present
   useEffect(() => {
-    if (initialMessage && messages.length === 0) {
+    // Only send initial message if we have one and messages have been loaded (not loading)
+    if (initialMessage && !isMessagesLoading && messages.length === 0) {
       handleSubmit(initialMessage);
       setInitialMessage(null);
     }
-  }, [initialMessage, messages.length, handleSubmit, setInitialMessage]);
+  }, [initialMessage, messages.length, isMessagesLoading, handleSubmit, setInitialMessage]);
 
   const handlePauseResume = () => {
     // TODO: Implement pause/resume functionality
     console.log("Pause/Resume clicked");
   };
 
-  // ChatLayout expects onSendMessage to be (message: string) => void
-  const handleSendMessage = (message: string) => {
-    // Pass the message directly to handleSubmit
-    handleSubmit(message);
+  // ChatLayout expects onSendMessage to be (message: string, mode?: "agent" | "chat") => void
+  const handleSendMessage = (message: string, mode?: "agent" | "chat") => {
+    // Pass the message with mode to handleSubmit
+    handleSubmit(message, mode);
   };
 
   // Callback registration function for tool call selection

@@ -178,6 +178,25 @@
   background-color: rgba(0, 0, 0, 0.3);
 }
 
+/* Utility classes for hiding/showing scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.hover\:scrollbar-default:hover {
+  -ms-overflow-style: auto;
+  scrollbar-width: thin;
+}
+
+.hover\:scrollbar-default:hover::-webkit-scrollbar {
+  display: block;
+}
+
 /* Dark mode scrollbar adjustments */
 .dark *::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);

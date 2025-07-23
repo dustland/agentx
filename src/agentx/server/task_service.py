@@ -202,7 +202,7 @@ class TaskService:
         
         logger.info(f"Deleted task {task_id} for user {user_id}")
     
-    async def send_message(self, user_id: str, task_id: str, content: str) -> Dict[str, Any]:
+    async def send_message(self, user_id: str, task_id: str, content: str, mode: str = "agent") -> Dict[str, Any]:
         """
         Send a message to a task.
         
@@ -217,7 +217,7 @@ class TaskService:
         Raises:
             PermissionError: If user doesn't own the task
         """
-        logger.info(f"[CHAT] Starting send_message for task {task_id} from user {user_id}")
+        logger.info(f"[CHAT] Starting send_message for task {task_id} from user {user_id} in {mode} mode")
         logger.info(f"[CHAT] Message content: {content[:100]}...")
         
         # Get task with ownership check
@@ -225,9 +225,9 @@ class TaskService:
         task = await self.get_task(user_id, task_id)
         logger.info(f"[CHAT] Task instance retrieved successfully")
         
-        # Send message and get response
-        logger.info(f"[CHAT] Calling task.chat() to process message")
-        response = await task.chat(content)
+        # Send message and get response with mode
+        logger.info(f"[CHAT] Calling task.chat() to process message in {mode} mode")
+        response = await task.chat(content, mode=mode)
         logger.info(f"[CHAT] Received response from task.chat()")
         
         # Send the actual Message objects via SSE

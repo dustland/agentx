@@ -26,9 +26,15 @@ export function Plan({ taskId }: PlanProps) {
       const response = await getArtifactContent("plan.json");
       const content = response.content || "";
       setPlanContent(content);
-    } catch (error) {
-      console.error("Failed to load plan:", error);
-      setPlanContent(null);
+    } catch (error: any) {
+      // Check if it's a 404 error (plan doesn't exist yet)
+      if (error?.message?.includes("404")) {
+        // This is expected - plan hasn't been created yet
+        setPlanContent(null);
+      } else {
+        console.error("Failed to load plan:", error);
+        setPlanContent(null);
+      }
     } finally {
       setLoadingPlan(false);
     }

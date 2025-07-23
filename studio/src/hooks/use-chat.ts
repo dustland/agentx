@@ -44,32 +44,46 @@ export function useChat({ taskId, onError }: UseChatOptions) {
   // Remove optimistic messages that now exist in real messages
   useEffect(() => {
     if (optimisticMessages.length > 0 && messages.length > 0) {
+      const realMessageIds = new Set(messages.map(m => m.id));
       const realMessageContents = new Set(messages.map(m => m.content));
       setOptimisticMessages(prev => 
-        prev.filter(msg => !realMessageContents.has(msg.content))
+        prev.filter(msg => !realMessageIds.has(msg.id) && !realMessageContents.has(msg.content))
       );
     }
   }, [messages, optimisticMessages.length]);
   
   // Combine all messages in the correct order
   const allMessages = useMemo(() => {
-    const combined = [...messages];
+    // Use a Map to ensure unique messages by ID
+    const messageMap = new Map<string, ChatMessage>();
     
-    // Add optimistic messages that aren't duplicates
-    const messageContents = new Set(messages.map(m => m.content));
+    // Add real messages first
+    messages.forEach(msg => {
+      messageMap.set(msg.id, msg);
+    });
+    
+    // Add optimistic messages if they don't already exist
     optimisticMessages.forEach(msg => {
-      if (!messageContents.has(msg.content)) {
-        combined.push(msg);
+      if (!messageMap.has(msg.id)) {
+        // Also check if content already exists to prevent duplicates
+        const isDuplicate = Array.from(messageMap.values()).some(
+          existing => existing.content === msg.content && existing.role === msg.role
+        );
+        if (!isDuplicate) {
+          messageMap.set(msg.id, msg);
+        }
       }
     });
     
-    // Add streaming message if present
-    if (streamingMessage) {
-      combined.push(streamingMessage);
+    // Add streaming message if present and not duplicate
+    if (streamingMessage && !messageMap.has(streamingMessage.id)) {
+      messageMap.set(streamingMessage.id, streamingMessage);
     }
     
-    // Sort by timestamp to ensure correct order
-    return combined.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    // Convert back to array and sort by timestamp
+    return Array.from(messageMap.values()).sort(
+      (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+    );
   }, [messages, optimisticMessages, streamingMessage]);
   
   // Subscribe to SSE for streaming
@@ -103,7 +117,7 @@ export function useChat({ taskId, onError }: UseChatOptions) {
     return unsubscribe;
   }, [subscribe, streamingMessage]);
   
-  const handleSubmit = useCallback((message: string) => {
+  const handleSubmit = useCallback((message: string, mode?: "agent" | "chat") => {
     if (!message.trim()) return;
     
     // Add optimistic message IMMEDIATELY
@@ -119,8 +133,8 @@ export function useChat({ taskId, onError }: UseChatOptions) {
     setStreamingMessage(null);
     setInput(""); // Clear input immediately
     
-    // Send the actual message
-    sendMessage.mutate(message, {
+    // Send the actual message with mode
+    sendMessage.mutate({ message: message.trim(), mode }, {
       onError: (error) => {
         console.error("Failed to send message:", error);
         // Remove the optimistic message on error

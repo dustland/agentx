@@ -48,7 +48,8 @@ export function useTask(taskId: string) {
 
   // Mutations
   const sendMessage = useMutation({
-    mutationFn: (message: string) => apiClient.sendMessage(taskId, message),
+    mutationFn: ({ message, mode }: { message: string; mode?: "agent" | "chat" }) => 
+      apiClient.sendMessage(taskId, { content: message, mode }),
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: taskKeys.messages(taskId) });

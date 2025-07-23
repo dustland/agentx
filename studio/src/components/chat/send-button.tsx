@@ -65,9 +65,7 @@ export const SendButton = React.forwardRef<HTMLButtonElement, SendButtonProps>((
       className={cn(
         "relative rounded-full transition-all duration-200",
         config.button,
-        isLoading
-          ? "bg-red-600 border-red-600 hover:bg-red-500 text-white"
-          : disabled
+        disabled && !isLoading
           ? "bg-muted text-muted-foreground hover:bg-muted"
           : "bg-primary text-primary-foreground hover:bg-primary/90",
         className
@@ -75,18 +73,18 @@ export const SendButton = React.forwardRef<HTMLButtonElement, SendButtonProps>((
       aria-label={ariaLabel || (isLoading ? "Stop generating" : "Send message")}
       onClick={handleClick}
     >
-      {/* Loading spinner - subtle animation around the button */}
+      {/* Loading spinner - animated border */}
       {isLoading && (
-        <div className="absolute inset-0 rounded-full">
-          <div className="absolute inset-0 rounded-full border-2 border-white/20" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-white/70 animate-spin" />
+        <div className="absolute inset-0 rounded-full overflow-hidden">
+          <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
         </div>
       )}
 
       {/* Center content */}
       <div className="relative z-10 flex items-center justify-center">
         {isLoading ? (
-          <Square className={cn("shrink-0", config.square)} />
+          <Square className={cn("shrink-0 fill-current", config.square)} />
         ) : (
           <ArrowUp className={cn("shrink-0", config.icon)} />
         )}
