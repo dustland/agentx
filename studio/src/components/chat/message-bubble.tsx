@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, RotateCcw, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { TypingIndicator } from "../common/typing-indicator";
 
 interface MessageBubbleProps {
   message: {
@@ -49,21 +51,21 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
         )}
       >
         {/* Content */}
-        <p
+        <div
           className={cn(
             "text-sm leading-relaxed whitespace-pre-wrap break-words",
             "text-foreground"
           )}
         >
-          {message.content}
-          {isStreaming && (
-            <span className="inline-flex items-center ml-2 space-x-1 streaming-dots">
-              <span className="w-1 h-1 bg-current rounded-full" />
-              <span className="w-1 h-1 bg-current rounded-full" />
-              <span className="w-1 h-1 bg-current rounded-full" />
-            </span>
+          {isAssistant ? (
+            <div className="markdown-message">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
+          ) : (
+            message.content
           )}
-        </p>
+          {isStreaming && <TypingIndicator />}
+        </div>
 
         {/* Tool Usage */}
         {message.metadata?.toolCalls &&

@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useCallback, useEffect } from "react";
-import { TaskSpacePanel } from "@/components/taskspace/panel";
+import { TaskspaceLayout } from "@/components/taskspace";
 import { ChatLayout } from "@/components/chat";
 import {
   ResizablePanelGroup,
@@ -9,7 +9,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { useChat } from "@/hooks/use-chat";
-import { useTask } from "@/hooks/use-task";
+import { useTask, useTaskPlan } from "@/hooks/use-task";
 import { useAppStore } from "@/store/app";
 
 export default function TaskPage({
@@ -20,11 +20,11 @@ export default function TaskPage({
   const { id } = use(params);
   const { initialMessage, setInitialMessage } = useAppStore();
 
-  // Use the task hook to get artifacts (to check for plan) and executeTask
-  const { artifacts, executeTask } = useTask(id);
-  
-  // Check if plan exists
-  const hasPlan = artifacts.some(artifact => artifact.path === "plan.json");
+  // Use the task hook to get executeTask
+  const { executeTask } = useTask(id);
+
+  // Use the plan hook to check if plan exists
+  const { hasPlan } = useTaskPlan(id);
 
   // Use the chat hook for chat functionality
   const {
@@ -51,7 +51,13 @@ export default function TaskPage({
       handleSubmit(initialMessage);
       setInitialMessage(null);
     }
-  }, [initialMessage, messages.length, isMessagesLoading, handleSubmit, setInitialMessage]);
+  }, [
+    initialMessage,
+    messages.length,
+    isMessagesLoading,
+    handleSubmit,
+    setInitialMessage,
+  ]);
 
   // ChatLayout expects onSendMessage to be (message: string, mode?: "agent" | "chat") => void
   const handleSendMessage = (message: string, mode?: "agent" | "chat") => {
@@ -60,7 +66,7 @@ export default function TaskPage({
       executeTask.mutate();
       return;
     }
-    
+
     // Otherwise, pass the message with mode to handleSubmit
     handleSubmit(message, mode);
   };
@@ -91,7 +97,7 @@ export default function TaskPage({
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />
         <ResizablePanel defaultSize={45} minSize={20}>
-          <TaskSpacePanel
+          <TaskspaceLayout
             taskId={id}
             onToolCallSelect={registerToolCallHandler}
           />

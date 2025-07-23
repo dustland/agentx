@@ -2,19 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  FileText,
-  Activity,
-  Brain,
-  ListIcon,
-  Eye,
-  Target,
-  Folder,
-  Monitor,
-} from "lucide-react";
-import { useTask } from "@/hooks/use-task";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Activity, Folder, Monitor, Goal } from "lucide-react";
+import { useTask, useTaskPlan } from "@/hooks/use-task";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
@@ -43,16 +33,16 @@ interface ToolCall {
   status: "pending" | "completed" | "error";
 }
 
-interface TaskSpacePanelProps {
+interface TaskspaceLayoutProps {
   taskId: string;
   onToolCallSelect?: (handler: (toolCall: ToolCall) => void) => void;
 }
 
-export function TaskSpacePanel({
+export function TaskspaceLayout({
   taskId,
   onToolCallSelect,
-}: TaskSpacePanelProps) {
-  const { subscribe, artifacts } = useTask(taskId);
+}: TaskspaceLayoutProps) {
+  const { plan, isLoading: isPlanLoading } = useTaskPlan(taskId);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -60,7 +50,6 @@ export function TaskSpacePanel({
     null
   );
   const [activeTab, setActiveTab] = useState("artifacts");
-  const [hasPlan, setHasPlan] = useState(false);
   const initialTabSetRef = useRef(false);
 
   // Set up tool call selection handler
@@ -78,31 +67,18 @@ export function TaskSpacePanel({
     setActiveTab("inspector");
   };
 
-  // Subscribe to task events
-  useEffect(() => {
-    if (!taskId) return;
-
-    const cleanup = subscribe({
-      // We can listen to events here if needed
-      // For now, individual components handle their own data
-    });
-
-    return cleanup;
-  }, [taskId, subscribe]);
-
   // Check for plan existence and set default tab
   useEffect(() => {
-    const planExists = artifacts.some(
-      (artifact: Artifact) => artifact.path === "plan.json"
-    );
-    setHasPlan(planExists);
-    
+    const hasPlan = !!plan;
+
     // Set plan as default tab if it exists and we haven't set initial tab yet
-    if (planExists && !initialTabSetRef.current) {
+    if (hasPlan && !initialTabSetRef.current && !isPlanLoading) {
       setActiveTab("plan");
       initialTabSetRef.current = true;
     }
-  }, [artifacts]);
+  }, [plan, isPlanLoading]);
+
+  const hasPlan = !!plan;
 
   return (
     <div className="h-full flex flex-col px-2 py-3">
@@ -116,7 +92,7 @@ export function TaskSpacePanel({
             <TabsList className="h-7 text-xs">
               {hasPlan && (
                 <TabsTrigger value="plan" className="text-xs gap-1 py-1">
-                  <ListIcon className="h-3 w-3 mr-1" />
+                  <Goal className="h-3 w-3 mr-1" />
                   Plan
                 </TabsTrigger>
               )}

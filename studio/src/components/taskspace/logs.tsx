@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Inbox,
+  Terminal,
+  FileStack,
 } from "lucide-react";
 import { AlertCircle, AlertTriangle, Info, Search } from "lucide-react";
 import {
@@ -19,64 +21,49 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatBytes } from "@/lib/utils";
-import { useTask } from "@/hooks/use-task";
+import { useTaskLogs } from "@/hooks/use-task";
 
 interface LogsProps {
   taskId: string;
 }
 
 export function Logs({ taskId }: LogsProps) {
-  const { getLogs } = useTask(taskId);
-  const [logs, setLogs] = useState<string[]>([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-  const [autoScrollLogs, setAutoScrollLogs] = useState(true);
   const [tailMode, setTailMode] = useState(true);
   const [offset, setOffset] = useState(0);
-  const [fileSize, setFileSize] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
+  const [autoScrollLogs, setAutoScrollLogs] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const limit = 100;
 
-  const loadLogs = async (newOffset?: number, newTailMode?: boolean) => {
-    if (!taskId) return;
+  const {
+    logs,
+    fileSize,
+    hasMore,
+    isLoading: loadingLogs,
+    refetch,
+  } = useTaskLogs(taskId, {
+    limit,
+    offset: tailMode ? 0 : offset,
+    tail: tailMode,
+  });
 
-    setLoadingLogs(true);
-    try {
-      const useTail = newTailMode !== undefined ? newTailMode : tailMode;
-      const useOffset = newOffset !== undefined ? newOffset : offset;
+  const loadLogs = (newOffset?: number, newTailMode?: boolean) => {
+    const useTail = newTailMode !== undefined ? newTailMode : tailMode;
+    const useOffset = newOffset !== undefined ? newOffset : offset;
 
-      const response = await getLogs({
-        limit,
-        offset: useTail ? 0 : useOffset,
-        tail: useTail,
-      });
-
-      setLogs(response.logs || []);
-      setFileSize(response.file_size || 0);
-      setHasMore(response.has_more || false);
-
-      if (!useTail) {
-        setOffset(useOffset);
-      }
-    } catch (error) {
-      // console.error("Failed to load logs:", error);
-    } finally {
-      setLoadingLogs(false);
+    if (!useTail) {
+      setOffset(useOffset);
     }
+
+    refetch();
   };
 
-  // Load logs when component mounts or taskId changes
+  // Auto-refresh logs every 2 seconds only in tail mode
   useEffect(() => {
-    if (taskId) {
-      loadLogs();
-    }
-
-    // Auto-refresh logs every 2 seconds only in tail mode
     if (tailMode) {
-      const interval = setInterval(() => loadLogs(), 2000);
+      const interval = setInterval(() => refetch(), 2000);
       return () => clearInterval(interval);
     }
-  }, [taskId, tailMode]);
+  }, [tailMode, refetch]);
 
   // Auto-scroll to bottom when new logs arrive or when first loading in tail mode
   useEffect(() => {
@@ -142,77 +129,91 @@ export function Logs({ taskId }: LogsProps) {
   return (
     <div className="h-full relative">
       <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
-        {fileSize > 0 && (
-          <span className="text-xs text-muted-foreground mr-2">
-            {formatBytes(fileSize)}
-          </span>
-        )}
-        <Button
-          size="sm"
-          variant={tailMode ? "default" : "ghost"}
-          onClick={() => {
-            setTailMode(!tailMode);
-            loadLogs(0, !tailMode);
-          }}
-          className="h-7 px-2 text-xs"
-        >
-          {tailMode ? "Tail" : "Page"}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  setTailMode(!tailMode);
+                  loadLogs(0, !tailMode);
+                }}
+                className={`h-8 w-8 bg-background/80 backdrop-blur-sm border ${
+                  tailMode ? "text-primary border-primary" : ""
+                }`}
+              >
+                {tailMode ? (
+                  <Terminal className="h-4 w-4" />
+                ) : (
+                  <FileStack className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {tailMode ? "Following latest logs" : "Paginated view"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         {!tailMode && (
           <>
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
               onClick={() => {
                 const newOffset = Math.max(0, offset - limit);
                 loadLogs(newOffset, false);
               }}
               disabled={offset === 0 || loadingLogs}
-              className="h-7 w-7 p-0"
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
             >
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-xs text-muted-foreground px-1">
+            <span className="text-xs text-muted-foreground px-2">
               {offset + 1}-{offset + logs.length}
             </span>
             <Button
-              size="sm"
+              size="icon"
               variant="ghost"
               onClick={() => {
                 const newOffset = offset + limit;
                 loadLogs(newOffset, false);
               }}
               disabled={!hasMore || loadingLogs}
-              className="h-7 w-7 p-0"
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
             >
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </>
         )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setAutoScrollLogs(!autoScrollLogs)}
+                className={`h-8 w-8 bg-background/80 backdrop-blur-sm border ${
+                  autoScrollLogs ? "text-primary border-primary" : ""
+                }`}
+              >
+                <Activity className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {autoScrollLogs ? "Auto-scroll enabled" : "Auto-scroll disabled"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Button
-          size="sm"
+          size="icon"
           variant="ghost"
-          onClick={() => setAutoScrollLogs(!autoScrollLogs)}
-          className={
-            autoScrollLogs
-              ? "text-primary h-7 w-7 p-0"
-              : "text-muted-foreground h-7 w-7 p-0"
-          }
-          title={
-            autoScrollLogs ? "Auto-scroll enabled" : "Auto-scroll disabled"
-          }
-        >
-          <Activity className="h-3 w-3" />
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => loadLogs()}
+          onClick={() => refetch()}
           disabled={loadingLogs}
-          className="h-7 w-7 p-0"
+          className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
         >
           <RefreshCwIcon
-            className={`h-3 w-3 ${loadingLogs ? "animate-spin" : ""}`}
+            className={`h-4 w-4 ${loadingLogs ? "animate-spin" : ""}`}
           />
         </Button>
       </div>

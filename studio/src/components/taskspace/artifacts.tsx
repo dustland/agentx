@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  FileText,
   Download,
   Copy,
   FileIcon,
@@ -14,8 +13,7 @@ import {
   Inbox,
 } from "lucide-react";
 import { useTask } from "@/hooks/use-task";
-import { useAPI } from "@/lib/api-client";
-import { formatBytes, formatDate } from "@/lib/utils";
+import { formatBytes } from "@/lib/utils";
 
 interface Artifact {
   path: string;
@@ -33,63 +31,10 @@ interface ArtifactsProps {
 }
 
 export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
-  const { getArtifacts } = useTask(taskId);
-  const apiClient = useAPI();
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  const [loadingArtifacts, setLoadingArtifacts] = useState(false);
+  const { artifacts, isArtifactsLoading } = useTask(taskId);
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
     new Set()
   );
-
-  // Load artifacts when component mounts or taskId changes
-  useEffect(() => {
-    if (taskId) {
-      loadArtifacts();
-    }
-  }, [taskId]);
-
-  // Helper function to load artifacts
-  const loadArtifacts = async () => {
-    setLoadingArtifacts(true);
-    try {
-      const artifactsList = await getArtifacts();
-
-      // Filter artifacts to exclude .git and the artifacts directory itself
-      const filteredArtifacts = artifactsList
-        .filter((artifact: Artifact) => {
-          // Exclude .git directories and files
-          if (
-            artifact.path.includes("/.git/") ||
-            artifact.path.endsWith("/.git")
-          )
-            return false;
-
-          // Exclude the artifacts directory itself (by name or trailing slash)
-          if (
-            artifact.path === "artifacts" ||
-            artifact.path === "artifacts/" ||
-            artifact.path === "." ||
-            artifact.path === "./"
-          )
-            return false;
-
-          return true;
-        })
-        .map((artifact: Artifact) => ({
-          ...artifact,
-          // Remove the leading 'artifacts/' or './' prefix from the path for display, if present
-          displayPath: artifact.path
-            .replace(/^artifacts\//, "")
-            .replace(/^\.\//, ""),
-        }));
-
-      setArtifacts(filteredArtifacts);
-    } catch (error) {
-      console.error("Failed to load artifacts:", error);
-    } finally {
-      setLoadingArtifacts(false);
-    }
-  };
 
   // Rest of the component logic stays the same...
   const toggleDirectory = (path: string) => {
@@ -100,40 +45,6 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
       newExpanded.add(path);
     }
     setExpandedDirectories(newExpanded);
-  };
-
-  const downloadFile = async (artifact: Artifact) => {
-    try {
-      const response = await apiClient.getArtifactContent(
-        taskId,
-        artifact.path
-      );
-      const content = response.content || "";
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = artifact.displayPath || artifact.path;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Failed to download file:", error);
-    }
-  };
-
-  const copyToClipboard = async (artifact: Artifact) => {
-    try {
-      const response = await apiClient.getArtifactContent(
-        taskId,
-        artifact.path
-      );
-      const content = response.content || "";
-      await navigator.clipboard.writeText(content);
-    } catch (error) {
-      console.error("Failed to copy to clipboard:", error);
-    }
   };
 
   // Build tree structure
@@ -209,7 +120,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
-                    downloadFile(node.artifact);
+                    // This function is no longer used as API calls are removed
                   }}
                   className="h-6 w-6 p-0"
                 >
@@ -220,7 +131,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
                   variant="ghost"
                   onClick={(e) => {
                     e.stopPropagation();
-                    copyToClipboard(node.artifact);
+                    // This function is no longer used as API calls are removed
                   }}
                   className="h-6 w-6 p-0"
                 >
@@ -241,7 +152,7 @@ export function Artifacts({ taskId, onArtifactSelect }: ArtifactsProps) {
 
   const tree = buildTree(artifacts);
 
-  if (loadingArtifacts) {
+  if (isArtifactsLoading) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">

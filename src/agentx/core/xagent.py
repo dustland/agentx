@@ -1043,6 +1043,11 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             await send_message_object(self.task_id, agent_message)
             # Persist the message
             await self.chat_storage.save_message(self.task_id, agent_message)
+            
+            # Send task completion status
+            completion_message = Message.system_message(f"Completed task: {task.name}")
+            await send_message_object(self.task_id, completion_message)
+            await self.chat_storage.save_message(self.task_id, completion_message)
         except ImportError:
             # Streaming not available in this context
             pass

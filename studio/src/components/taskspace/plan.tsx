@@ -16,12 +16,12 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  ArrowDown,
   Target,
   Braces,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTask } from "@/hooks/use-task";
+import { useTaskPlan } from "@/hooks/use-task";
 
 interface PlanTask {
   id: string;
@@ -43,47 +43,28 @@ interface PlanProps {
 }
 
 export function Plan({ taskId }: PlanProps) {
-  const { getTaskPlan } = useTask(taskId);
+  const {
+    plan: planResponse,
+    isLoading: loadingPlan,
+    refetch: loadPlan,
+  } = useTaskPlan(taskId);
   const [planData, setPlanData] = useState<PlanData | null>(null);
-  const [loadingPlan, setLoadingPlan] = useState(false);
   const [showRawJson, setShowRawJson] = useState(false);
 
-  // Load plan function
-  const loadPlan = async () => {
-    if (!taskId) return;
-
-    setLoadingPlan(true);
-    try {
-      const response = await getTaskPlan();
-
-      // Parse the JSON content
-      const content = response.content || "";
-
-      if (content) {
-        try {
-          const parsed = JSON.parse(content);
-          setPlanData(parsed);
-        } catch (e) {
-          console.error("Plan content is not valid JSON:", e);
-          setPlanData(null);
-        }
-      } else {
+  // Parse plan data when plan response changes
+  useEffect(() => {
+    if (planResponse?.content) {
+      try {
+        const parsed = JSON.parse(planResponse.content);
+        setPlanData(parsed);
+      } catch (e) {
+        console.error("Plan content is not valid JSON:", e);
         setPlanData(null);
       }
-    } catch (error: any) {
-      console.error("Failed to load plan:", error);
+    } else {
       setPlanData(null);
-    } finally {
-      setLoadingPlan(false);
     }
-  };
-
-  // Load plan when component mounts or taskId changes
-  useEffect(() => {
-    if (taskId) {
-      loadPlan();
-    }
-  }, [taskId]);
+  }, [planResponse]);
 
   // Helper functions
   const getStatusIcon = (status: string) => {
@@ -91,7 +72,7 @@ export function Plan({ taskId }: PlanProps) {
       case "completed":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       case "in_progress":
-        return <Clock className="h-4 w-4 text-blue-500 animate-pulse" />;
+        return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />;
       case "failed":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
@@ -182,7 +163,7 @@ export function Plan({ taskId }: PlanProps) {
         <Button
           size="icon"
           variant="ghost"
-          onClick={loadPlan}
+          onClick={() => loadPlan()}
           disabled={loadingPlan}
           className="bg-background/80 backdrop-blur-sm border h-8 w-8"
         >

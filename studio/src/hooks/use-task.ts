@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import { useAPI } from "@/lib/api-client";
 import { StreamEvent } from "@/types/agentx";
 
@@ -12,8 +12,11 @@ export const taskKeys = {
   detail: (id: string) => [...taskKeys.all, id] as const,
   messages: (id: string) => [...taskKeys.detail(id), "messages"] as const,
   artifacts: (id: string) => [...taskKeys.detail(id), "artifacts"] as const,
-  logs: (id: string, options?: any) => [...taskKeys.detail(id), "logs", options] as const,
-  memory: (id: string, query: string, limit: number) => [...taskKeys.detail(id), "memory", { query, limit }] as const,
+  plan: (id: string) => [...taskKeys.detail(id), "plan"] as const,
+  logs: (id: string, options?: any) =>
+    [...taskKeys.detail(id), "logs", options] as const,
+  memory: (id: string, query: string, limit: number) =>
+    [...taskKeys.detail(id), "memory", { query, limit }] as const,
 };
 
 /**
@@ -46,10 +49,57 @@ export function useTask(taskId: string) {
     enabled: !!taskId && taskId !== "dummy-task-id",
   });
 
+  // Auto-subscribe to task updates and invalidate queries
+  useEffect(() => {
+    if (!taskId || taskId === "dummy-task-id") return;
+
+    const cleanup = apiClient.subscribeToTaskUpdates(
+      taskId,
+      (event: StreamEvent) => {
+        switch (event.type) {
+          case "message":
+            // Invalidate messages when new messages arrive
+            queryClient.invalidateQueries({
+              queryKey: taskKeys.messages(taskId),
+            });
+            break;
+          case "tool_call_result":
+            // Invalidate artifacts when tools complete (they might create files)
+            queryClient.invalidateQueries({
+              queryKey: taskKeys.artifacts(taskId),
+            });
+            break;
+          case "task_update":
+            // Invalidate task status and potentially artifacts/plan
+            queryClient.invalidateQueries({
+              queryKey: taskKeys.detail(taskId),
+            });
+            if (event.data.status === "completed") {
+              queryClient.invalidateQueries({
+                queryKey: taskKeys.artifacts(taskId),
+              });
+              queryClient.invalidateQueries({
+                queryKey: taskKeys.plan(taskId),
+              });
+            }
+            break;
+        }
+      }
+    );
+
+    sseCleanupRef.current = cleanup;
+    return cleanup;
+  }, [taskId, apiClient, queryClient]);
+
   // Mutations
   const sendMessage = useMutation({
-    mutationFn: ({ message, mode }: { message: string; mode?: "agent" | "chat" }) => 
-      apiClient.sendMessage(taskId, { content: message, mode }),
+    mutationFn: ({
+      message,
+      mode,
+    }: {
+      message: string;
+      mode?: "agent" | "chat";
+    }) => apiClient.sendMessage(taskId, { content: message, mode }),
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: taskKeys.messages(taskId) });
@@ -72,50 +122,6 @@ export function useTask(taskId: string) {
     },
   });
 
-  // SSE subscription
-  const subscribe = useCallback(
-    (handlers: {
-      onMessage?: (message: any) => void;
-      onStreamChunk?: (data: any) => void;
-      onToolCallStart?: (data: any) => void;
-      onToolCallResult?: (data: any) => void;
-      onStatusChange?: (status: string) => void;
-    }) => {
-      if (!taskId || taskId === "dummy-task-id") {
-        return () => {}; // Return no-op unsubscribe
-      }
-
-      const cleanup = apiClient.subscribeToTaskUpdates(
-        taskId,
-        (event: StreamEvent) => {
-          switch (event.type) {
-            case "message":
-              handlers.onMessage?.(event.data);
-              break;
-            case "stream_chunk":
-              handlers.onStreamChunk?.(event.data);
-              break;
-            case "tool_call_start":
-              handlers.onToolCallStart?.(event.data);
-              break;
-            case "tool_call_result":
-              handlers.onToolCallResult?.(event.data);
-              break;
-            case "task_update":
-              if (event.data.status) {
-                handlers.onStatusChange?.(event.data.status);
-              }
-              break;
-          }
-        }
-      );
-
-      sseCleanupRef.current = cleanup;
-      return cleanup;
-    },
-    [taskId, apiClient]
-  );
-
   // Stop SSE connection
   const stop = useCallback(() => {
     if (sseCleanupRef.current) {
@@ -124,74 +130,67 @@ export function useTask(taskId: string) {
     }
   }, []);
 
-  // Helper functions for on-demand queries (only when really needed)
-
-  const getTaskPlan = async () => {
-    return queryClient.fetchQuery({
-      queryKey: [...taskKeys.detail(taskId), "plan"],
-      queryFn: () => apiClient.getTaskPlan(taskId),
-    });
-  };
-
-  const searchMemory = async (query: string, limit = 10) => {
-    return queryClient.fetchQuery({
-      queryKey: taskKeys.memory(taskId, query, limit),
-      queryFn: () => apiClient.searchMemory(taskId, { query, limit }),
-    });
-  };
-
   return {
     // Direct data access
     task: taskQuery.data,
     messages: messagesQuery.data?.messages || [],
     artifacts: artifactsQuery.data?.artifacts || [],
-    
+
     // Loading states
     isLoading: taskQuery.isLoading || messagesQuery.isLoading,
     isTaskLoading: taskQuery.isLoading,
     isMessagesLoading: messagesQuery.isLoading,
     isArtifactsLoading: artifactsQuery.isLoading,
-    
+
     // Errors
     error: taskQuery.error || messagesQuery.error || artifactsQuery.error,
-    
+
     // Mutations
     sendMessage,
     executeTask,
     deleteTask,
-    
-    // SSE
-    subscribe,
+
+    // Cleanup
     stop,
-    
-    // On-demand functions (rarely used)
-    getTaskPlan,
-    searchMemory,
-    
-    // Legacy compatibility
-    getArtifacts: async () => artifactsQuery.data?.artifacts || [],
-    getLogs: async (options?: any) => {
-      return queryClient.fetchQuery({
-        queryKey: taskKeys.logs(taskId, options),
-        queryFn: () => apiClient.getTaskLogs(taskId, options),
-      });
-    },
-    stopTask: stop,
+  };
+}
+
+/**
+ * Hook for task plan with direct data access
+ */
+export function useTaskPlan(taskId: string) {
+  const apiClient = useAPI();
+
+  const query = useQuery({
+    queryKey: taskKeys.plan(taskId),
+    queryFn: () => apiClient.getTaskPlan(taskId),
+    enabled: !!taskId && taskId !== "dummy-task-id",
+  });
+
+  return {
+    plan: query.data,
+    hasPlan: !!query.data && !query.isLoading && !query.error,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 }
 
 /**
  * Hook for task logs with direct data access
  */
-export function useTaskLogs(taskId: string, options?: { limit?: number; offset?: number; tail?: boolean }) {
+export function useTaskLogs(
+  taskId: string,
+  options?: { limit?: number; offset?: number; tail?: boolean }
+) {
   const apiClient = useAPI();
-  
+
   const query = useQuery({
     queryKey: taskKeys.logs(taskId, options),
     queryFn: () => apiClient.getTaskLogs(taskId, options),
     enabled: !!taskId && taskId !== "dummy-task-id",
   });
-  
+
   return {
     logs: query.data?.logs || [],
     fileSize: query.data?.file_size || 0,

@@ -1,1 +1,1 @@
-export { TaskSpacePanel } from './panel';
+export { TaskspaceLayout } from "./layout";
