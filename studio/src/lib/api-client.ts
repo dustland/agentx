@@ -138,15 +138,26 @@ export class AgentXAPIClient {
         }
       }
 
-      const error = await response.text();
-      console.error("API Error:", {
+      let errorText = "";
+      try {
+        errorText = await response.text();
+      } catch (e) {
+        errorText = "Failed to read error response";
+      }
+      
+      const errorDetails = {
         status: response.status,
         statusText: response.statusText,
-        error,
+        error: errorText,
         url,
         userId: this.userId,
-      });
-      throw new Error(`API Error ${response.status}: ${error}`);
+      };
+      
+      console.error("API Error:", errorDetails);
+      
+      // Create a more descriptive error message
+      const errorMessage = errorText || response.statusText || `HTTP ${response.status}`;
+      throw new Error(`API Error ${response.status}: ${errorMessage}`);
     }
 
     return response.json();

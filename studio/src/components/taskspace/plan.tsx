@@ -24,17 +24,30 @@ export function Plan({ taskId }: PlanProps) {
     setLoadingPlan(true);
     try {
       const response = await getArtifactContent("plan.json");
-      const content = response.content || "";
+      
+      // The content might be a string that needs to be parsed
+      let content = response.content || "";
+      
+      // If the content is a valid JSON string, format it nicely
+      if (content) {
+        try {
+          const parsed = JSON.parse(content);
+          content = JSON.stringify(parsed, null, 2);
+        } catch (e) {
+          // If it's not valid JSON, use as-is
+          console.log("Plan content is not valid JSON, using as-is");
+        }
+      }
+      
       setPlanContent(content);
     } catch (error: any) {
-      // Check if it's a 404 error (plan doesn't exist yet)
-      if (error?.message?.includes("404")) {
-        // This is expected - plan hasn't been created yet
-        setPlanContent(null);
-      } else {
-        console.error("Failed to load plan:", error);
-        setPlanContent(null);
-      }
+      console.error("Failed to load plan:", error);
+      console.error("Error details:", {
+        message: error.message,
+        taskId,
+        path: "plan.json"
+      });
+      setPlanContent(null);
     } finally {
       setLoadingPlan(false);
     }
