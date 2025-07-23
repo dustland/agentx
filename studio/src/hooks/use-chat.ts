@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ChatMessage } from "@/types/chat";
 import { nanoid } from "nanoid";
 import { useTask } from "./use-task";
+import { taskKeys } from "@/lib/query-keys";
 
 interface UseChatOptions {
   taskId: string;
@@ -15,6 +17,7 @@ export function useChat({ taskId, onError }: UseChatOptions) {
   const [input, setInput] = useState("");
   const [streamingMessage, setStreamingMessage] = useState<ChatMessage | null>(null);
   const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>([]);
+  const queryClient = useQueryClient();
   
   // Get everything we need from useTask
   const { 
@@ -86,9 +89,31 @@ export function useChat({ taskId, onError }: UseChatOptions) {
     );
   }, [messages, optimisticMessages, streamingMessage]);
   
-  // Subscribe to SSE for streaming
+  // Subscribe to SSE for streaming and messages
   useEffect(() => {
     const unsubscribe = subscribe({
+      onMessage: (message) => {
+        // Handle complete messages from SSE (e.g., system messages from background execution)
+        const newMessage: ChatMessage = {
+          id: message.id,
+          role: message.role,
+          content: message.content,
+          timestamp: new Date(message.timestamp),
+          status: "complete",
+        };
+        
+        // Add to optimistic messages to show immediately
+        setOptimisticMessages(prev => {
+          // Check if message already exists
+          if (prev.some(m => m.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
+        
+        // Also trigger a refetch to ensure consistency
+        queryClient.invalidateQueries({ queryKey: taskKeys.messages(taskId) });
+      },
       onStreamChunk: (chunk) => {
         if (!streamingMessage || streamingMessage.id !== chunk.message_id) {
           // New streaming message
@@ -115,7 +140,7 @@ export function useChat({ taskId, onError }: UseChatOptions) {
     });
     
     return unsubscribe;
-  }, [subscribe, streamingMessage]);
+  }, [subscribe, streamingMessage, queryClient, taskId]);
   
   const handleSubmit = useCallback((message: string, mode?: "agent" | "chat") => {
     if (!message.trim()) return;
