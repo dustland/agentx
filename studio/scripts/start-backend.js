@@ -5,12 +5,12 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 
-const API_URL = process.env.NEXT_PUBLIC_AGENTX_API_URL || 'http://localhost:7770';
+const API_URL = process.env.NEXT_PUBLIC_VIBEX_API_URL || 'http://localhost:7770';
 const HEALTH_CHECK_TIMEOUT = 3000; // 3 seconds
 const HEALTH_CHECK_RETRIES = 5;
 const RETRY_DELAY = 1000; // 1 second
 
-console.log('🔍 Checking AgentX Backend Server...');
+console.log('🔍 Checking VibeX Backend Server...');
 
 // Parse API URL
 const apiUrl = new URL(API_URL);
@@ -40,19 +40,19 @@ async function checkHealth() {
       res.on('end', () => {
         try {
           const healthData = JSON.parse(data);
-          // Verify this is actually AgentX API
-          const isAgentX = healthData.service_type === 'agentx-task-orchestration' &&
-                          healthData.service_name === 'AgentX API' &&
+          // Verify this is actually VibeX API
+          const isVibeX = healthData.service_type === 'vibex-task-orchestration' &&
+                          healthData.service_name === 'VibeX API' &&
                           healthData.api_endpoints &&
                           healthData.api_endpoints.includes('/tasks');
           
-          if (isAgentX) {
+          if (isVibeX) {
             console.log(`📍 Detected ${healthData.service_name} v${healthData.version} (${healthData.active_tasks} active tasks)`);
           }
           
-          resolve(isAgentX);
+          resolve(isVibeX);
         } catch (e) {
-          // Failed to parse JSON or not AgentX format
+          // Failed to parse JSON or not VibeX format
           resolve(false);
         }
       });
@@ -77,7 +77,7 @@ async function waitForServer(retries = HEALTH_CHECK_RETRIES) {
     console.log(`⏳ Waiting for server to be ready... (${i + 1}/${retries})`);
     const isHealthy = await checkHealth();
     if (isHealthy) {
-      console.log('✅ AgentX server is ready!');
+      console.log('✅ VibeX server is ready!');
       return true;
     }
     if (i < retries - 1) {
@@ -93,42 +93,42 @@ async function main() {
   const isRunning = await checkHealth();
   
   if (isRunning) {
-    console.log(`✅ AgentX server is already running at ${API_URL}`);
+    console.log(`✅ VibeX server is already running at ${API_URL}`);
     console.log('💡 Using existing server instance.');
     return;
   }
 
-  console.log('🚀 Starting AgentX Backend Server...');
+  console.log('🚀 Starting VibeX Backend Server...');
 
   // Check if we're in the correct directory structure
-  const agentxRoot = path.resolve(__dirname, '../../');
-  const serverPath = path.join(agentxRoot, 'src/agentx/server');
+  const vibexRoot = path.resolve(__dirname, '../../');
+  const serverPath = path.join(vibexRoot, 'src/vibex/server');
 
   if (!fs.existsSync(serverPath)) {
-    console.error('❌ AgentX server not found. Make sure you\'re running this from the studio directory.');
+    console.error('❌ VibeX server not found. Make sure you\'re running this from the studio directory.');
     process.exit(1);
   }
 
-  // Start the AgentX server
-  const serverProcess = spawn('python', ['-m', 'agentx.server.api'], {
-    cwd: agentxRoot,
+  // Start the VibeX server
+  const serverProcess = spawn('python', ['-m', 'vibex.server.api'], {
+    cwd: vibexRoot,
     stdio: 'inherit',
     env: {
       ...process.env,
-      PYTHONPATH: path.join(agentxRoot, 'src'),
+      PYTHONPATH: path.join(vibexRoot, 'src'),
     }
   });
 
   serverProcess.on('close', (code) => {
-    console.log(`\n🔴 AgentX server exited with code ${code}`);
+    console.log(`\n🔴 VibeX server exited with code ${code}`);
     process.exit(code);
   });
 
   serverProcess.on('error', (error) => {
-    console.error('❌ Failed to start AgentX server:', error.message);
+    console.error('❌ Failed to start VibeX server:', error.message);
     console.log('\n💡 Make sure you have:');
     console.log('   1. Python installed');
-    console.log('   2. AgentX dependencies installed (pip install -e .)');
+    console.log('   2. VibeX dependencies installed (pip install -e .)');
     console.log('   3. Running from the correct directory');
     process.exit(1);
   });
@@ -143,12 +143,12 @@ async function main() {
 
   // Handle graceful shutdown
   process.on('SIGINT', () => {
-    console.log('\n🛑 Shutting down AgentX server...');
+    console.log('\n🛑 Shutting down VibeX server...');
     serverProcess.kill('SIGINT');
   });
 
   process.on('SIGTERM', () => {
-    console.log('\n🛑 Shutting down AgentX server...');
+    console.log('\n🛑 Shutting down VibeX server...');
     serverProcess.kill('SIGTERM');
   });
 }

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-GAIA Benchmark Runner for AgentX Framework
+GAIA Benchmark Runner for VibeX Framework
 
 A comprehensive benchmark implementation for evaluating agent teams on the
-GAIA (General AI Assistant) dataset using the AgentX multi-agent framework.
+GAIA (General AI Assistant) dataset using the VibeX multi-agent framework.
 """
 
 import asyncio
@@ -15,8 +15,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# Import AgentX core functions
-from agentx import start_task, set_log_level
+# Import VibeX core functions
+from vibex import start_task, set_log_level
 
 # Import benchmark utilities
 from .utils.data_loader import GAIADataLoader
@@ -43,7 +43,7 @@ class Colors:
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Run GAIA benchmark with AgentX framework",
+        description="Run GAIA benchmark with VibeX framework",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

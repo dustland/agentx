@@ -47,7 +47,7 @@ Create a high-quality HTML report with REAL content, not fake summaries.
 
 ### Step 5: Generate HTML Report
 
-- Use AgentX with clear instructions
+- Use VibeX with clear instructions
 - Reference the actual research files
 - **Validation:**
   - HTML file must exist

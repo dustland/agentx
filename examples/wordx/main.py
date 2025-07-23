@@ -28,7 +28,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from agentx import start_task
+from vibex import start_task
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -106,7 +106,7 @@ async def process_document_with_agents(document_content: str, task_description: 
         Provide comprehensive improvements and recommendations.
         """
 
-        # Start the AgentX task
+        # Start the VibeX task
         config_path = get_config_path()
 
         print("🤖 Initializing agent team...")
@@ -276,7 +276,7 @@ async def main():
 
 if __name__ == "__main__":
     print("🎯 WordX - AI-Powered Document Processing")
-    print("   Built with AgentX Multi-Agent Framework")
+    print("   Built with VibeX Multi-Agent Framework")
     print("   Professional document review, editing, and compliance")
     print()
 

@@ -1,5 +1,5 @@
 /**
- * Simple file-based user database for AgentX Studio
+ * Simple file-based user database for VibeX Studio
  * 
  * This is a lightweight solution for development and small deployments.
  * For production, replace with a proper database.
@@ -9,7 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 
-const DB_FILE = path.join(process.cwd(), '.agentx-users.json');
+const DB_FILE = path.join(process.cwd(), '.vibex-users.json');
 
 export interface User {
   id: string;

@@ -1,5 +1,5 @@
 /**
- * Authentication client for AgentX Studio
+ * Authentication client for VibeX Studio
  * 
  * Handles user authentication and session management via API endpoints.
  */

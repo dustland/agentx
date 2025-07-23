@@ -5,7 +5,7 @@ output_dir: "taskspace"
 agents:
   - name: assistant
     description: "AI assistant that uses tools to gather information and provide comprehensive answers"
-    class: agentx.core.agent.Agent
+    class: vibex.core.agent.Agent
     prompt_template: "prompts/assistant.md"
     tools:
       - get_weather

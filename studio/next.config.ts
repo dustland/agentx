@@ -12,20 +12,20 @@ const nextConfig: NextConfig = {
   },
   // Configure for Railway deployment
   output: "standalone",
-  // Allow API proxy to AgentX backend
+  // Allow API proxy to VibeX backend
   async rewrites() {
     return [
       {
-        source: "/api/agentx/:path*",
+        source: "/api/vibex/:path*",
         destination: `${
-          process.env.AGENTX_API_URL || "http://localhost:7770"
+          process.env.VIBEX_API_URL || "http://localhost:7770"
         }/:path*`,
       },
     ];
   },
   // Environment variables that can be used in the browser
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api/agentx",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api/vibex",
   },
 };
 

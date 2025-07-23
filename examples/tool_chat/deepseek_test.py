@@ -1,7 +1,7 @@
 """
 Direct test of DeepSeek's function calling capabilities.
 
-This script tests DeepSeek's function calling without the AgentX framework
+This script tests DeepSeek's function calling without the VibeX framework
 to isolate whether issues are with the model or our implementation.
 Tests both streaming and non-streaming modes to identify differences.
 """

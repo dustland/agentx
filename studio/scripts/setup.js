@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * AgentX Studio Setup Script
+ * VibeX Studio Setup Script
  * Ensures all dependencies are up to date and properly configured
  */
 
@@ -34,7 +34,7 @@ function exec(command, options = {}) {
 }
 
 async function main() {
-  log('\nAgentX Studio Setup\n', colors.bright);
+  log('\nVibeX Studio Setup\n', colors.bright);
 
   // Check if pnpm is installed
   try {
@@ -102,7 +102,7 @@ async function main() {
   }
 
   log('\nNext steps:', colors.bright);
-  log('  1. Update .env.local with your AgentX API URL', colors.reset);
+  log('  1. Update .env.local with your VibeX API URL', colors.reset);
   log('  2. Run "pnpm dev" to start the development server', colors.reset);
   log('  3. Open http://localhost:7777 in your browser', colors.reset);
   log('');

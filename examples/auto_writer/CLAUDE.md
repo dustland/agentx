@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is the AutoWriter example within the AgentX framework - a demonstration of a professional multi-agent research and writing system that produces consulting-grade HTML reports. AgentX is an open-source framework for building autonomous AI agent teams using natural language orchestration.
+This is the AutoWriter example within the VibeX framework - a demonstration of a professional multi-agent research and writing system that produces consulting-grade HTML reports. VibeX is an open-source framework for building autonomous AI agent teams using natural language orchestration.
 
 ## Common Development Commands
 
@@ -26,40 +26,40 @@ python main.py
 ### Development Workflow
 ```bash
 # Start development server with hot reloading
-agentx dev
+vibex dev
 
 # Run tests
-agentx test
+vibex test
 # Or: pytest tests/ -v --tb=short
 
 # Set up pre-commit hooks (run once)
-agentx setup-hooks
+vibex setup-hooks
 
 # Generate API documentation
-agentx docs
+vibex docs
 
 # Run linting/formatting (via pre-commit)
 pre-commit run --all-files
 ```
 
-### Key Commands from AgentX Framework
+### Key Commands from VibeX Framework
 ```bash
-agentx start     # Start the API server
-agentx monitor   # Run observability monitor
-agentx benchmark # Run performance benchmarks
+vibex start     # Start the API server
+vibex monitor   # Run observability monitor
+vibex benchmark # Run performance benchmarks
 ```
 
 ## Architecture and Code Structure
 
 ### AutoWriter Example Structure
-- **main.py**: Entry point that demonstrates the AgentX framework usage
+- **main.py**: Entry point that demonstrates the VibeX framework usage
 - **config/team.yaml**: Defines the multi-agent team configuration with four agents:
   - Researcher: Gathers evidence-based research
   - Writer: Transforms research into executive narratives
   - Web Designer: Creates interactive HTML output
   - Reviewer: Quality assurance on final output
 
-### AgentX Framework Architecture
+### VibeX Framework Architecture
 - **Multi-Agent System**: Teams of AI agents collaborate through natural language
 - **Task Orchestration**: Automatic task planning and delegation based on agent capabilities
 - **Memory System**: Stateful conversations with semantic search (Mem0 backend)

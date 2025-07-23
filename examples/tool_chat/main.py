@@ -9,10 +9,10 @@ from pathlib import Path
 import litellm
 
 # Add the src directory to Python path
-# This allows importing agentx module from the source code
+# This allows importing vibex module from the source code
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from agentx import start_task
+from vibex import start_task
 from weather_tool import WeatherTool
 
 

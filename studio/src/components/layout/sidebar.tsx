@@ -171,13 +171,13 @@ export function Sidebar({
             <Link href="/" className="flex items-center gap-2">
               <Image
                 src="/logo.png"
-                alt="AgentX"
+                alt="VibeX"
                 width={20}
                 height={20}
                 className="object-contain"
               />
               <span className="font-semibold text-sm">
-                Agent<span className="text-primary">X</span>
+                Vibe<span className="text-primary">X</span>
               </span>
             </Link>
             <div className="flex items-center gap-1">
@@ -410,7 +410,7 @@ export function Sidebar({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
-                        href="https://dustland.github.io/agentx/docs"
+                        href="https://dustland.github.io/vibex/docs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
@@ -422,7 +422,7 @@ export function Sidebar({
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href="https://github.com/dustland/agentx"
+                        href="https://github.com/dustland/vibex"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
@@ -447,7 +447,7 @@ export function Sidebar({
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href="https://github.com/dustland/agentx/issues"
+                        href="https://github.com/dustland/vibex/issues"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
@@ -481,7 +481,7 @@ export function Sidebar({
                 </Button>
               </Link>
               <Link
-                href="https://dustland.github.io/agentx/docs"
+                href="https://dustland.github.io/vibex/docs"
                 target="_blank"
                 rel="noopener noreferrer"
               >

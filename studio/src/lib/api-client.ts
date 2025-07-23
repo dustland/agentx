@@ -12,9 +12,9 @@ import type {
   Artifact,
   ArtifactContent,
   LogsResponse,
-} from "@/types/agentx";
+} from "@/types/vibex";
 
-export class AgentXAPIClient {
+export class VibeXAPIClient {
   private baseURL: string;
   private userId: string | null = null;
   private userPromise: Promise<void> | null = null;
@@ -22,11 +22,11 @@ export class AgentXAPIClient {
   constructor(baseURL?: string) {
     this.baseURL =
       baseURL ||
-      process.env.NEXT_PUBLIC_AGENTX_API_URL ||
+      process.env.NEXT_PUBLIC_VIBEX_API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       "http://localhost:7770";
 
-    // console.log("AgentX API client initialized with baseURL:", this.baseURL);
+    // console.log("VibeX API client initialized with baseURL:", this.baseURL);
   }
 
   async init() {
@@ -299,7 +299,7 @@ export class AgentXAPIClient {
       // For streaming, we need to connect directly to the backend, not through Next.js proxy
       // because EventSource doesn't work through Next.js rewrites
       const directBackendURL =
-        process.env.NEXT_PUBLIC_AGENTX_BACKEND_URL || "http://localhost:7770";
+        process.env.NEXT_PUBLIC_VIBEX_BACKEND_URL || "http://localhost:7770";
       const streamUrl = `${directBackendURL}/tasks/${taskId}/stream${params}`;
       console.log("Creating EventSource for URL:", streamUrl);
       eventSource = new EventSource(streamUrl);
@@ -507,7 +507,7 @@ export class AgentXAPIClient {
 }
 
 // Export a singleton instance
-export const apiClient = new AgentXAPIClient();
+export const apiClient = new VibeXAPIClient();
 
 // Hook for React components - returns the singleton instance
 export function useAPI() {

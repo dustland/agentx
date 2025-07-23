@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AgentX",
-  description: "Login to AgentX Studio",
+  title: "VibeX",
+  description: "Login to VibeX Studio",
 };
 
 export default function AuthLayout({

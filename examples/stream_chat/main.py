@@ -4,9 +4,9 @@ import sys
 import argparse
 import time
 from pathlib import Path
-from agentx.core.xagent import XAgent
-from agentx.config.team_loader import load_team_config
-from agentx.utils.logger import get_logger
+from vibex.core.xagent import XAgent
+from vibex.config.team_loader import load_team_config
+from vibex.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -90,7 +90,7 @@ async def stream_response(x: XAgent, message: str, show_streaming: bool = False,
 
 async def main():
     parser = argparse.ArgumentParser(
-        description='AgentX Simple Chat - Interactive or single-shot mode',
+        description='VibeX Simple Chat - Interactive or single-shot mode',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -151,7 +151,7 @@ Examples:
     
     # Header
     if not args.quiet:
-        print(f"{Colors.BOLD}{Colors.CYAN}🤖 AgentX Simple Chat{Colors.END}")
+        print(f"{Colors.BOLD}{Colors.CYAN}🤖 VibeX Simple Chat{Colors.END}")
         print(f"Config: {config_path}")
         if args.task_id:
             print(f"Task ID: {args.task_id}")

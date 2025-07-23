@@ -7,7 +7,7 @@ that solve the reliability issues with previous extraction methods.
 """
 
 import asyncio
-from agentx import start_task
+from vibex import start_task
 
 async def main():
     """Run a content extraction demonstration."""

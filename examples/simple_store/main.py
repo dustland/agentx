@@ -17,7 +17,7 @@ load_dotenv(project_root / ".env")
 # Add src to path
 sys.path.insert(0, str(project_root / "src"))
 
-from agentx import start_task
+from vibex import start_task
 
 async def test_storage():
     """Test basic file storage functionality."""

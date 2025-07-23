@@ -69,13 +69,13 @@ export default function LoginPage() {
           <div className="flex flex-col items-center justify-center gap-3 mb-2">
             <Image
               src="/logo.png"
-              alt="AgentX"
+              alt="VibeX"
               width={64}
               height={64}
               priority
               className="my-4"
             />
-            <h1 className="text-lg font-semibold">Welcome to AgentX</h1>
+            <h1 className="text-lg font-semibold">Welcome to VibeX</h1>
           </div>
         </CardHeader>
         <CardContent>

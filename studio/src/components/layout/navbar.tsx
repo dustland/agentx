@@ -53,7 +53,7 @@ export function Navbar({ className }: NavbarProps) {
         {/* Left: Logo and Navigation */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="AgentX" width={20} height={20} className="object-contain" />
+            <Image src="/logo.png" alt="VibeX" width={20} height={20} className="object-contain" />
             <span className="font-semibold">
               Agent<span className="text-primary">X</span> Studio
             </span>

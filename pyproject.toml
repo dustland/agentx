@@ -3,9 +3,9 @@ requires = [ "setuptools>=42", "wheel",]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agentx-py"
+name = "vibex-py"
 version = "0.25.0"
-description = "AgentX - An Opinionated Multi-Agent Framework"
+description = "VibeX - An Opinionated Multi-Agent Framework"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [ "Programming Language :: Python :: 3.11", "Operating System :: OS Independent",]
@@ -25,18 +25,18 @@ web-automation = [ "browser-use>=0.1.0", "playwright>=1.40.0",]
 all = [ "streamlit>=1.32.0", "daytona>=0.1.0", "browser-use>=0.1.0", "playwright>=1.40.0",]
 
 [project.urls]
-Homepage = "https://github.com/dustland/agentx"
-"Bug Tracker" = "https://github.com/dustland/agentx/issues"
+Homepage = "https://github.com/dustland/vibex"
+"Bug Tracker" = "https://github.com/dustland/vibex/issues"
 
 [project.scripts]
-agentx = "agentx.cli.main:main"
-start = "agentx.run:start"
-monitor = "agentx.run:monitor"
-dev = "agentx.run:dev"
-prod = "agentx.run:prod"
-test = "agentx.run:test"
-docs = "agentx.run:docs"
-build-docs = "agentx.run:build_docs"
+vibex = "vibex.cli.main:main"
+start = "vibex.run:start"
+monitor = "vibex.run:monitor"
+dev = "vibex.run:dev"
+prod = "vibex.run:prod"
+test = "vibex.run:test"
+docs = "vibex.run:docs"
+build-docs = "vibex.run:build_docs"
 benchmark = "benchmark.main:main"
 benchmark-team1 = "benchmark.main:team1"
 benchmark-team2 = "benchmark.main:team2"
@@ -78,7 +78,7 @@ ignore_missing_imports = true
 benchmark = "benchmark"
 
 [tool.setuptools.package-data]
-agentx = [ "py.typed", "**/*.jinja2", "**/*.png",]
+vibex = [ "py.typed", "**/*.jinja2", "**/*.png",]
 
 [tool.pytest.ini_options]
 testpaths = [ "tests",]
@@ -91,10 +91,10 @@ members = [ "examples/superwriter",]
 
 [tool.setuptools.packages.find]
 where = [ "src", ".",]
-include = [ "agentx*", "benchmark*",]
+include = [ "vibex*", "benchmark*",]
 
 [tool.hatch.build.targets.wheel]
-packages = [ "src/agentx",]
+packages = [ "src/vibex",]
 
 [tool.hatch.build.targets.sdist]
-include = [ "src/agentx", "config", "examples", "tests", "README.md", "LICENSE",]
+include = [ "src/vibex", "config", "examples", "tests", "README.md", "LICENSE",]

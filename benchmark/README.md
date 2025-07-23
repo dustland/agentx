@@ -1,6 +1,6 @@
-# GAIA Benchmark for AgentX Framework
+# GAIA Benchmark for VibeX Framework
 
-A comprehensive benchmark implementation for evaluating agent teams on the GAIA (General AI Assistant) dataset using the AgentX multi-agent framework.
+A comprehensive benchmark implementation for evaluating agent teams on the GAIA (General AI Assistant) dataset using the VibeX multi-agent framework.
 
 ## Quick Start
 
@@ -91,7 +91,7 @@ Results are saved to `results/` directory with:
 ## Requirements
 
 - Python 3.11+
-- AgentX framework installed (`uv pip install -e .`)
+- VibeX framework installed (`uv pip install -e .`)
 - Required API keys (OpenAI, SERP API, etc.) configured in environment
 
 ## Overview
@@ -144,11 +144,11 @@ This implementation provides multiple team configurations for comprehensive eval
 ### 1. Prerequisites
 
 ```bash
-# Ensure AgentX is installed
-pip install agentx-py
+# Ensure VibeX is installed
+pip install vibex-py
 
 # Or install from source
-cd /path/to/agentx
+cd /path/to/vibex
 pip install -e .
 ```
 
@@ -176,7 +176,7 @@ export DEEPSEEK_API_KEY="your_deepseek_api_key"
 export ANTHROPIC_API_KEY="your_anthropic_api_key"
 
 # Optional: Enable verbose logging
-export AGENTX_VERBOSE=1
+export VIBEX_VERBOSE=1
 ```
 
 ## Usage
@@ -409,10 +409,10 @@ agents:
 
 ## License
 
-This benchmark implementation follows the AgentX project license. The GAIA dataset has its own licensing terms - please refer to the original GAIA paper and dataset documentation.
+This benchmark implementation follows the VibeX project license. The GAIA dataset has its own licensing terms - please refer to the original GAIA paper and dataset documentation.
 
 ## References
 
 - [GAIA: A Benchmark for General AI Assistants](https://arxiv.org/abs/2311.12983)
-- [AgentX Framework Documentation](../docs)
+- [VibeX Framework Documentation](../docs)
 - [GAIA Leaderboard](https://gaia-benchmark.github.io)

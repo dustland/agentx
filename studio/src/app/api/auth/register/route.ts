@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createUser, initializeDemoUsers } from '@/lib/auth-db';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'agentx-studio-secret-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || 'vibex-studio-secret-change-in-production';
 
 export async function POST(request: NextRequest) {
   try {

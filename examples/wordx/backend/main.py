@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WordX Backend Service
-AI-powered document processing backend using AgentX framework
+AI-powered document processing backend using VibeX framework
 """
 
 import asyncio
@@ -15,7 +15,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import json
 import uuid
-from agentx import start_task
+from vibex import start_task
 from dotenv import load_dotenv
 from config import config
 
@@ -76,10 +76,10 @@ class ChatResponse(BaseModel):
 # Helper functions
 def get_config_path() -> Path:
     """Get the path to the team configuration file"""
-    return config.get_agentx_config_path()
+    return config.get_vibex_config_path()
 
 async def monitor_task_progress(task_id: str):
-    """Monitor AgentX task progress and update status"""
+    """Monitor VibeX task progress and update status"""
     task = active_tasks[task_id]
     x = task["x"]
     
@@ -135,7 +135,7 @@ async def create_document_processing_task(content: str, task_description: str, d
         Please analyze this document and provide comprehensive improvements.
         """
 
-        # Start the AgentX task
+        # Start the VibeX task
         config_path = get_config_path()
         x = await start_task(initial_prompt, str(config_path))
 
@@ -167,7 +167,7 @@ async def root():
 
 @app.post("/api/process-document", response_model=DocumentProcessResponse)
 async def process_document(request: DocumentProcessRequest, background_tasks: BackgroundTasks):
-    """Start document processing with AgentX"""
+    """Start document processing with VibeX"""
     try:
         task_id = await create_document_processing_task(
             request.content,
@@ -214,7 +214,7 @@ async def get_task_results(task_id: str):
 
     try:
         x = task["x"]
-        # Get the final output from AgentX
+        # Get the final output from VibeX
         final_result = await x.get_result() if hasattr(x, 'get_result') else str(x)
         
         return {
@@ -252,7 +252,7 @@ async def chat_with_agents(request: ChatRequest):
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting WordX Backend Service...")
-    print("📋 AgentX-powered document processing")
+    print("📋 VibeX-powered document processing")
     print(f"🌐 Environment: {config.environment}")
     print(f"🌐 CORS enabled for: {', '.join(config.get_cors_origins())}")
     print(f"🔌 Backend running on {config.backend_host}:{config.backend_port}")

@@ -1,6 +1,6 @@
-# AgentX Studio
+# VibeX Studio
 
-A modern, unified web interface for AgentX task execution and observability.
+A modern, unified web interface for VibeX task execution and observability.
 
 ## Features
 
@@ -23,17 +23,17 @@ A modern, unified web interface for AgentX task execution and observability.
 
 ## Quick Start
 
-### From AgentX Project
+### From VibeX Project
 
 ```bash
 # Install dependencies and set up UI components
-agentx studio setup
+vibex studio setup
 
 # Start development server
-agentx studio dev
+vibex studio dev
 
 # Or just start the studio
-agentx studio start --open
+vibex studio start --open
 ```
 
 ### Standalone Development
@@ -62,9 +62,9 @@ pnpm run clean         # Clean install (removes node_modules and lockfile)
 Create a `.env.local` file:
 
 ```env
-# Required: AgentX API URL
-AGENTX_API_URL=http://localhost:8000
-NEXT_PUBLIC_API_URL=/api/agentx
+# Required: VibeX API URL
+VIBEX_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=/api/vibex
 
 # Optional: Enable mock data for development
 NEXT_PUBLIC_ENABLE_MOCK_DATA=false
@@ -85,7 +85,7 @@ railway up
 ```
 
 Set environment variables in Railway dashboard:
-- `AGENTX_API_URL`: Your AgentX API deployment URL
+- `VIBEX_API_URL`: Your VibeX API deployment URL
 
 ### Vercel
 
@@ -119,20 +119,20 @@ Railway will automatically detect and use this configuration.
 
 ## API Integration
 
-The studio connects to AgentX API through a proxy configuration in `next.config.js`:
+The studio connects to VibeX API through a proxy configuration in `next.config.js`:
 
 ```javascript
 async rewrites() {
   return [
     {
-      source: '/api/agentx/:path*',
-      destination: `${process.env.AGENTX_API_URL}/:path*`,
+      source: '/api/vibex/:path*',
+      destination: `${process.env.VIBEX_API_URL}/:path*`,
     },
   ]
 }
 ```
 
-This allows the frontend to make requests to `/api/agentx/*` which are proxied to your AgentX backend.
+This allows the frontend to make requests to `/api/vibex/*` which are proxied to your VibeX backend.
 
 ## Development
 
@@ -185,4 +185,4 @@ pnpm dev
 
 ## License
 
-Part of the AgentX project. See the main repository for license information.
+Part of the VibeX project. See the main repository for license information.

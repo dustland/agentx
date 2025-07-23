@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import asyncio
 from pathlib import Path
-from agentx.core.xagent import XAgent
-from agentx.config.team_loader import load_team_config
+from vibex.core.xagent import XAgent
+from vibex.config.team_loader import load_team_config
 
 async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"

@@ -127,14 +127,14 @@ def check_npm():
     print_info("Install pnpm with: npm install -g pnpm")
     return False
 
-def check_agentx_installation():
-    """Check if AgentX is installed"""
+def check_vibex_installation():
+    """Check if VibeX is installed"""
     try:
-        import agentx
-        print_success("AgentX framework found")
+        import vibex
+        print_success("VibeX framework found")
         return True
     except ImportError:
-        print_warning("AgentX not found. Will install with dependencies.")
+        print_warning("VibeX not found. Will install with dependencies.")
         return False
 
 def check_environment_variables():
@@ -358,7 +358,7 @@ def check_environment():
         ("Node.js version", check_node_version),
         ("uv availability", check_uv),
         ("pnpm/npm availability", check_npm),
-        ("AgentX installation", check_agentx_installation),
+        ("VibeX installation", check_vibex_installation),
         ("Environment variables", check_environment_variables),
     ]
 

@@ -1,6 +1,6 @@
-# AgentX Stream Chat Example
+# VibeX Stream Chat Example
 
-An enhanced chat interface for AgentX with streaming visualization, auto-execution, and automation support.
+An enhanced chat interface for VibeX with streaming visualization, auto-execution, and automation support.
 
 ## Features
 

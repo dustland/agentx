@@ -26,8 +26,8 @@ class WordXConfig(BaseSettings):
     # CORS settings
     cors_origins: Optional[list] = None
     
-    # AgentX settings
-    agentx_config_path: Optional[str] = None
+    # VibeX settings
+    vibex_config_path: Optional[str] = None
     
     # API settings
     api_timeout: int = 300  # 5 minutes
@@ -61,10 +61,10 @@ class WordXConfig(BaseSettings):
                 "https://localhost:8080",  # Default Office.js debugging
             ]
     
-    def get_agentx_config_path(self) -> Path:
-        """Get the AgentX configuration file path"""
-        if self.agentx_config_path:
-            return Path(self.agentx_config_path)
+    def get_vibex_config_path(self) -> Path:
+        """Get the VibeX configuration file path"""
+        if self.vibex_config_path:
+            return Path(self.vibex_config_path)
         
         # Default to config/team.yaml relative to backend
         return Path(__file__).parent / "config" / "team.yaml"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Minimal CLI wrapper for AgentX chat - perfect for automation.
+Minimal CLI wrapper for VibeX chat - perfect for automation.
 No logging, just input and output.
 """
 import asyncio
@@ -15,8 +15,8 @@ logging.disable(logging.CRITICAL)
 import warnings
 warnings.filterwarnings("ignore")
 
-from agentx.core.xagent import XAgent
-from agentx.config.team_loader import load_team_config
+from vibex.core.xagent import XAgent
+from vibex.config.team_loader import load_team_config
 
 async def chat(message: str, task_id: str = None):
     """Send a message and return the response."""

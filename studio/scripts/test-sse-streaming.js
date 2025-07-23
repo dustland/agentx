@@ -10,7 +10,7 @@
 
 const { EventSource } = require('eventsource');
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_AGENTX_API_URL || 'http://localhost:7770';
+const API_BASE_URL = process.env.NEXT_PUBLIC_VIBEX_API_URL || 'http://localhost:7770';
 const USER_ID = 'sse-stream-test';
 
 const colors = {

@@ -14,12 +14,12 @@ export function Header() {
         <div className="flex items-center space-x-4">
           <Image
             src="/logo.svg"
-            alt="AgentX Logo"
+            alt="VibeX Logo"
             width={40}
             height={40}
             className="rounded-lg"
           />
-          <span className="font-semibold text-lg">AgentX Studio</span>
+          <span className="font-semibold text-lg">VibeX Studio</span>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -38,7 +38,7 @@ export function Header() {
 
           <Button variant="ghost" size="icon" asChild className="w-9 h-9">
             <a
-              href="https://github.com/your-org/agentx"
+              href="https://github.com/dustland/vibex"
               target="_blank"
               rel="noopener noreferrer"
             >

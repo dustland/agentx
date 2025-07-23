@@ -5,7 +5,7 @@ output_dir: "taskspace"
 agents:
   - name: writer
     description: "Professional content writer for creating high-quality articles and documents"
-    class: agentx.core.agents.Agent
+    class: vibex.core.agents.Agent
     prompt_template: "prompts/writer.md"
     llm_config:
       model: deepseek/deepseek-chat
@@ -14,7 +14,7 @@ agents:
 
   - name: reviewer
     description: "Quality assurance specialist for reviewing and improving content"
-    class: agentx.core.agents.Agent
+    class: vibex.core.agents.Agent
     prompt_template: "prompts/reviewer.md"
     llm_config:
       model: deepseek/deepseek-chat

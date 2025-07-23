@@ -7,7 +7,7 @@ import Image from "next/image";
 // Get the base path for favicon assets in metadata
 const basePath =
   process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
-    ? "/agentx"
+    ? "/vibex"
     : "";
 
 const navbar = (
@@ -16,7 +16,7 @@ const navbar = (
       <div>
         <Image
           src={`${basePath}/logo.png`}
-          alt="AgentX"
+          alt="VibeX"
           height={24}
           width={24}
           style={{
@@ -26,23 +26,23 @@ const navbar = (
             marginRight: "8px",
           }}
         />
-        <b>AgentX</b>
+        <b>VibeX</b>
       </div>
     }
-    projectLink="https://github.com/dustland/agentx"
+    projectLink="https://github.com/dustland/vibex"
   />
 );
 
 export const metadata = {
-  metadataBase: new URL("https://dustland.github.io/agentx"),
+  metadataBase: new URL("https://dustland.github.io/vibex"),
   title: {
-    default: "AgentX – Multi-Agent Framework",
-    template: "%s | AgentX",
+    default: "VibeX – Multi-Agent Framework",
+    template: "%s | VibeX",
   },
   description:
     "An open-source framework for building, observing, and orchestrating autonomous multi-agent systems.",
   keywords: [
-    "AgentX",
+    "VibeX",
     "Multi-Agent",
     "AI",
     "Framework",
@@ -51,10 +51,10 @@ export const metadata = {
     "LLM",
     "Agent Orchestration",
   ],
-  applicationName: "AgentX",
+  applicationName: "VibeX",
   generator: "Next.js",
   appleWebApp: {
-    title: "AgentX",
+    title: "VibeX",
   },
   icons: {
     icon: [
@@ -74,8 +74,8 @@ export const metadata = {
     apple: `${basePath}/logo.png`,
   },
   openGraph: {
-    url: "https://dustland.github.io/agentx",
-    siteName: "AgentX",
+    url: "https://dustland.github.io/vibex",
+    siteName: "VibeX",
     locale: "en_US",
     type: "website",
   },
@@ -83,7 +83,7 @@ export const metadata = {
     "msapplication-TileColor": "#fff",
   },
   alternates: {
-    canonical: "https://dustland.github.io/agentx",
+    canonical: "https://dustland.github.io/vibex",
   },
 };
 
@@ -96,7 +96,7 @@ export default async function RootLayout({ children }) {
         <Layout
           navbar={navbar}
           editLink="Edit this page on GitHub"
-          docsRepositoryBase="https://github.com/dustland/agentx/tree/main/docs"
+          docsRepositoryBase="https://github.com/dustland/vibex/tree/main/docs"
           sidebar={{ defaultMenuCollapseLevel: 1 }}
           pageMap={pageMap}
         >

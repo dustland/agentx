@@ -1,6 +1,6 @@
 # WordX - AI Assistant for Microsoft Word
 
-**WordX** is a professional Microsoft Word add-in that brings the power of AgentX multi-agent teams directly into your document workflow. Transform your documents with AI-powered review, editing, formatting, and compliance checking.
+**WordX** is a professional Microsoft Word add-in that brings the power of VibeX multi-agent teams directly into your document workflow. Transform your documents with AI-powered review, editing, formatting, and compliance checking.
 
 ## Features
 
@@ -16,7 +16,7 @@
 
 WordX consists of three main components:
 
-1. **AgentX Backend**: FastAPI service with multi-agent teams
+1. **VibeX Backend**: FastAPI service with multi-agent teams
 2. **Office.js Add-in**: Microsoft Word integration interface
 3. **Agent Team**: Specialized AI agents for document processing
 
@@ -45,15 +45,15 @@ python wordx_setup.py --start-dev
 - Node.js 16+
 - Microsoft Word (Desktop or Online)
 - uv (Python package manager) - Install from https://github.com/astral-sh/uv
-- AgentX framework
+- VibeX framework
 - API keys for AI models (DeepSeek, OpenAI, etc.)
 
 ### 1. Backend Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/dustland/agentx.git
-cd agentx/examples/wordx
+git clone https://github.com/dustland/vibex.git
+cd vibex/examples/wordx
 
 # Install uv if not already installed
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -147,7 +147,7 @@ python wordx_setup.py --start-dev     # Start development servers
 ### API Usage
 
 ```python
-from agentx import start_task
+from vibex import start_task
 from pathlib import Path
 
 # Load configuration
@@ -209,7 +209,7 @@ OPENAI_API_KEY="your_openai_api_key"
 CLAUDE_API_KEY="your_claude_api_key"
 
 # Optional configuration
-AGENTX_VERBOSE=1              # Enable verbose logging
+VIBEX_VERBOSE=1              # Enable verbose logging
 WORDX_BACKEND_URL="http://localhost:7779"  # Backend URL
 WORDX_TIMEOUT=300             # Processing timeout (seconds)
 ```
@@ -333,15 +333,15 @@ pnpm run validate  # or npm run validate
 Enable verbose logging:
 
 ```bash
-export AGENTX_VERBOSE=1
+export VIBEX_VERBOSE=1
 python main.py --backend-only
 ```
 
 ### Support
 
-- **Documentation**: [AgentX Documentation](https://docs.agentx.ai)
-- **Issues**: [GitHub Issues](https://github.com/dustland/agentx/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/dustland/agentx/discussions)
+- **Documentation**: [VibeX Documentation](https://docs.vibex.ai)
+- **Issues**: [GitHub Issues](https://github.com/dustland/vibex/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/dustland/vibex/discussions)
 
 ## License
 
@@ -349,7 +349,7 @@ This project is licensed under the MIT License - see the [LICENSE](../../LICENSE
 
 ## Acknowledgments
 
-- Built with [AgentX](https://github.com/dustland/agentx) multi-agent framework
+- Built with [VibeX](https://github.com/dustland/vibex) multi-agent framework
 - Powered by [Office.js](https://docs.microsoft.com/en-us/office/dev/add-ins/) for Word integration
 - Uses [FastAPI](https://fastapi.tiangolo.com/) for backend services
 

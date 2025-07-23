@@ -1,5 +1,5 @@
 import { ChatMessage } from "@/types/chat";
-import { Message, MessageContent } from "@/types/agentx";
+import { Message, MessageContent } from "@/types/vibex";
 
 /**
  * Convert legacy ChatMessage to new Message format

@@ -36,7 +36,7 @@ export default function RegisterPage() {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Create account</CardTitle>
         <CardDescription className="text-center">
-          Enter your information to get started with AgentX Studio
+          Enter your information to get started with VibeX Studio
         </CardDescription>
       </CardHeader>
       <CardContent>

@@ -1,6 +1,6 @@
 # Content Extractor Example
 
-This example demonstrates **powerful web content extraction** using AgentX's new Crawl4AI-powered tools.
+This example demonstrates **powerful web content extraction** using VibeX's new Crawl4AI-powered tools.
 
 ## Purpose
 
@@ -120,4 +120,4 @@ This example specifically tests:
 - **Parallel processing**: Multiple URLs processed simultaneously
 - **Search integration**: Finding and extracting content in one step
 
-Perfect for demonstrating how AgentX has solved the web content extraction challenges!
+Perfect for demonstrating how VibeX has solved the web content extraction challenges!

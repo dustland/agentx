@@ -12,7 +12,7 @@ Professional multi-agent research system that produces consulting-quality report
 
 ## 📋 **Pure Preset Architecture**
 
-This example uses **only preset agents** from the AgentX framework:
+This example uses **only preset agents** from the VibeX framework:
 
 - **Researcher**: Market intelligence and data gathering
 - **Writer**: Strategic content creation and business analysis
@@ -26,7 +26,7 @@ name: "AutoWriter Enhanced Team"
 
 # Enhanced orchestrator with language detection
 orchestrator:
-  class: "agentx.core.orchestrator.Orchestrator"
+  class: "vibex.core.orchestrator.Orchestrator"
   max_rounds: 15
   timeout: 1800
 
@@ -60,7 +60,7 @@ Despite **zero custom agent code**, this example produces **enterprise-grade qua
 ## 🚀 **Usage**
 
 ```python
-from agentx import execute_task
+from vibex import execute_task
 
 # Enterprise-quality results with zero custom code
 result = await execute_task(
@@ -100,7 +100,7 @@ Request specific web outputs in your prompt:
 
 ## ⚡ **Preset Power Demonstration**
 
-| Metric                  | Traditional Framework | AgentX Presets             |
+| Metric                  | Traditional Framework | VibeX Presets             |
 | ----------------------- | --------------------- | -------------------------- |
 | **Configuration Lines** | 80-200+ lines         | 12 lines                   |
 | **Custom Agent Files**  | 4-8 files             | 0 files                    |
@@ -112,7 +112,7 @@ Request specific web outputs in your prompt:
 
 ## 🎯 **Framework Philosophy Proven**
 
-This example perfectly demonstrates **AgentX's core philosophy**:
+This example perfectly demonstrates **VibeX's core philosophy**:
 
 - ✅ **"Zero to Production"**: Professional results with minimal configuration
 - ✅ **"Presets Power"**: Framework handles complexity, you focus on business value
@@ -121,7 +121,7 @@ This example perfectly demonstrates **AgentX's core philosophy**:
 
 ## 🏆 **Why This Exceeds Magic Project**
 
-| Capability             | Magic Project          | AgentX AutoWriter          |
+| Capability             | Magic Project          | VibeX AutoWriter          |
 | ---------------------- | ---------------------- | -------------------------- |
 | **Setup Complexity**   | Manual agent creation  | Preset agents              |
 | **Code Requirements**  | Custom implementations | Zero custom code           |
@@ -130,4 +130,4 @@ This example perfectly demonstrates **AgentX's core philosophy**:
 | **Language Support**   | Manual handling        | Automatic intelligence     |
 | **Maintenance Burden** | High                   | Zero                       |
 
-This example proves that **AgentX delivers superior results** with **dramatically less complexity** than traditional approaches. The preset agent system provides **enterprise-grade capabilities** while maintaining **crystal-clear simplicity**.
+This example proves that **VibeX delivers superior results** with **dramatically less complexity** than traditional approaches. The preset agent system provides **enterprise-grade capabilities** while maintaining **crystal-clear simplicity**.

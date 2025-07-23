@@ -10,7 +10,7 @@ import asyncio
 from pathlib import Path
 from datetime import datetime
 import time
-from agentx import start_task
+from vibex import start_task
 
 async def main():
     """

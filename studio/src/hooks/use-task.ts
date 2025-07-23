@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useEffect } from "react";
 import { useAPI } from "@/lib/api-client";
-import { StreamEvent } from "@/types/agentx";
+import { StreamEvent } from "@/types/vibex";
 
 /**
  * Query keys for task-related data
