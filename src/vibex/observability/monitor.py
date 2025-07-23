@@ -2,7 +2,7 @@
 VibeX Observability Monitor
 
 Read-only observability system that monitors VibeX project data:
-- Reads taskspace data from {project_path}/task_data/
+- Reads taskspace data from {project_path}/.vibex/tasks/
 - Reads configuration from {project_path}/config/
 - Provides web interface for viewing project data
 - Does NOT create or modify any files
@@ -24,7 +24,7 @@ class ProjectStorage:
 
     def __init__(self, project_path: str):
         self.project_path = Path(project_path)
-        self.taskspace_dir = self.project_path / "task_data"
+        self.taskspace_dir = self.project_path / ".vibex" / "tasks"
         self.config_dir = self.project_path / "config"
 
     def _get_taskspace_file_path(self, filename: str) -> Path:
@@ -467,7 +467,7 @@ class ObservabilityMonitor:
     def get_project_status(self) -> Dict[str, Any]:
         """Get status of the project directories."""
         project_path = Path(self.project_path)
-        taskspace_path = project_path / "task_data"
+        taskspace_path = project_path / ".vibex" / "tasks"
         config_path = project_path / "config"
 
         return {
@@ -576,14 +576,14 @@ def find_project_directory() -> str:
     current_dir = Path.cwd()
 
     # Check current directory
-    if (current_dir / "task_data").exists() and (current_dir / "config").exists():
+    if (current_dir / ".vibex" / "tasks").exists() and (current_dir / "config").exists():
         return str(current_dir)
 
     # Check parent directories
     for parent in [current_dir.parent, current_dir.parent.parent, current_dir.parent.parent.parent]:
         if parent == current_dir:
             break
-        if (parent / "task_data").exists() and (parent / "config").exists():
+        if (parent / ".vibex" / "tasks").exists() and (parent / "config").exists():
             return str(parent)
 
     # Return current directory as default

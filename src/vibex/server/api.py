@@ -208,7 +208,7 @@ def create_app() -> FastAPI:
             
             # Check if plan exists
             from pathlib import Path
-            plan_path = Path(f"task_data/{task_id}/plan.json")
+            plan_path = Path(f".vibex/tasks/{task_id}/plan.json")
             if not plan_path.exists():
                 raise HTTPException(status_code=400, detail="No plan available for execution")
             
@@ -361,7 +361,7 @@ def create_app() -> FastAPI:
             
             # Read artifact directly (service could handle this too)
             from pathlib import Path
-            artifact_path = Path(f"task_data/{task_id}/artifacts/{file_path}")
+            artifact_path = Path(f".vibex/tasks/{task_id}/artifacts/{file_path}")
             
             if not artifact_path.exists():
                 raise HTTPException(status_code=404, detail="Artifact not found")
@@ -404,13 +404,13 @@ def create_app() -> FastAPI:
             from pathlib import Path
             
             # Get the plan file path - same pattern as logs endpoint
-            plan_path = Path(f"task_data/{task_id}/plan.json")
+            plan_path = Path(f".vibex/tasks/{task_id}/plan.json")
             
             if not plan_path.exists():
                 # Try with absolute path based on where we know files exist
                 import os
                 base_path = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-                plan_path = base_path / "task_data" / task_id / "plan.json"
+                plan_path = base_path / ".vibex" / "tasks" / task_id / "plan.json"
                 
                 if not plan_path.exists():
                     logger.error(f"Plan not found at: {plan_path}")
@@ -456,7 +456,7 @@ def create_app() -> FastAPI:
             import os
             import glob
             
-            log_dir = Path(f"task_data/{task_id}/logs")
+            log_dir = Path(f".vibex/tasks/{task_id}/logs")
             log_file = log_dir / "task.log"
             
             # Check for rotated log files
@@ -576,7 +576,7 @@ async def _execute_task_async(user_id: str, task_id: str):
         from ..server.streaming import send_complete_message
         from pathlib import Path
         
-        taskspace_path = str(Path(f"task_data/{task_id}"))
+        taskspace_path = str(Path(f".vibex/tasks/{task_id}"))
         start_message = Message.system_message("Starting plan execution...")
         await send_complete_message(task_id, taskspace_path, start_message)
         

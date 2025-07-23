@@ -480,7 +480,7 @@ class StorageConfig(BaseModel):
     config: Dict[str, Any] = Field(default_factory=dict)
 
     # General settings
-    taskspace_path: str = "./task_data"
+    taskspace_path: str = "./.vibex/tasks"
     max_file_size_mb: int = 100
     allowed_extensions: Optional[List[str]] = None
     blocked_extensions: List[str] = Field(default_factory=lambda: ['.exe', '.bat', '.sh'])

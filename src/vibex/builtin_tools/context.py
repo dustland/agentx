@@ -28,7 +28,7 @@ class ContextTool(Tool):
     - File-based persistence with backup
     """
 
-    def __init__(self, context_file: str = "context.json", taskspace_path: str = "./task_data"):
+    def __init__(self, context_file: str = "context.json", taskspace_path: str = "./.vibex/tasks"):
         super().__init__()
         self.taskspace_path = Path(taskspace_path).resolve()
         self.taskspace_path.mkdir(parents=True, exist_ok=True)

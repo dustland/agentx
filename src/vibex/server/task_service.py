@@ -94,7 +94,7 @@ class TaskService:
             ValueError: If task doesn't exist
         """
         # Check if task directory exists
-        task_path = Path(f"task_data/{task_id}")
+        task_path = Path(f".vibex/tasks/{task_id}")
         if not task_path.exists():
             raise ValueError(f"Task {task_id} not found")
         
@@ -153,7 +153,7 @@ class TaskService:
         for task_id in task_ids:
             try:
                 # Check if task still exists
-                task_path = Path(f"task_data/{task_id}")
+                task_path = Path(f".vibex/tasks/{task_id}")
                 if task_path.exists():
                     # Determine status from filesystem
                     status = "active"
@@ -193,7 +193,7 @@ class TaskService:
         
         # Delete task directory
         import shutil
-        task_path = Path(f"task_data/{task_id}")
+        task_path = Path(f".vibex/tasks/{task_id}")
         if task_path.exists():
             shutil.rmtree(task_path)
         
@@ -277,7 +277,7 @@ class TaskService:
             raise PermissionError("Access denied")
         
         # Read messages from task storage (JSONL format)
-        messages_file = Path(f"task_data/{task_id}/history/messages.jsonl")
+        messages_file = Path(f".vibex/tasks/{task_id}/history/messages.jsonl")
         messages = []
         
         if messages_file.exists():
@@ -319,7 +319,7 @@ class TaskService:
             raise PermissionError("Access denied")
         
         artifacts = []
-        task_path = Path(f"task_data/{task_id}/artifacts")
+        task_path = Path(f".vibex/tasks/{task_id}/artifacts")
         
         if task_path.exists():
             for item in task_path.rglob("*"):

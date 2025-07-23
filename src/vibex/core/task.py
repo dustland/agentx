@@ -276,7 +276,7 @@ async def resume_task(
     from vibex.config.team_loader import load_team_config
     
     # Determine taskspace path - always use simple task_id path
-    taskspace_path = Path(f"task_data/{task_id}")
+    taskspace_path = Path(f".vibex/tasks/{task_id}")
     
     # Check if taskspace exists
     if not taskspace_path.exists():

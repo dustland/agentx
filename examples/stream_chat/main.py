@@ -113,7 +113,7 @@ Examples:
   python main.py --task-id my-task-123 --message "Hello!"
 
   # Resume an existing task
-  python main.py --resume task_data/abc123 --message "Continue our conversation"
+  python main.py --resume .vibex/tasks/abc123 --message "Continue our conversation"
 """
     )
     
@@ -190,7 +190,7 @@ Examples:
             
             if not args.quiet:
                 print(f"\n{Colors.GREEN}✓ Task completed successfully{Colors.END}")
-                print(f"Task data saved to: task_data/{x.task_id}/")
+                print(f"Task data saved to: .vibex/tasks/{x.task_id}/")
         except Exception as e:
             print(f"{Colors.RED}❌ Error: {e}{Colors.END}")
             logger.error(f"Chat failed: {e}", exc_info=True)
@@ -252,7 +252,7 @@ Examples:
         
         if not args.quiet:
             print(f"\n{Colors.GREEN}Chat session ended.{Colors.END}")
-            print(f"Task data saved to: task_data/{x.task_id}/")
+            print(f"Task data saved to: .vibex/tasks/{x.task_id}/")
 
 if __name__ == "__main__":
     try:

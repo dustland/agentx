@@ -69,7 +69,9 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         prompts_dir.mkdir()
 
         # Create taskspace directory
-        taskspace_dir = project_path / "task_data"
+        vibex_dir = project_path / ".vibex"
+        vibex_dir.mkdir()
+        taskspace_dir = vibex_dir / "tasks"
         taskspace_dir.mkdir()
 
         # Generate team configuration

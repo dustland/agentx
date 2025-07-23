@@ -100,7 +100,7 @@ def _register_builtin_tools(with_taskspace: bool = True):
         from pathlib import Path
         # For CLI, create a default taskspace
         taskspace_storage = TaskspaceFactory.create_taskspace(
-            base_path=Path("./task_data"),
+            base_path=Path("./.vibex/tasks"),
             task_id="cli_default"
         )
         register_builtin_tools(registry, taskspace_storage=taskspace_storage, memory_system=None)

@@ -75,7 +75,7 @@ python main.py -m "Explain quantum computing" --stream
 python main.py -t project-api -m "Create a Python REST API"
 
 # Continue later
-python main.py -r task_data/project-api -m "Add user authentication"
+python main.py -r .vibex/tasks/project-api -m "Add user authentication"
 ```
 
 ### Quiet Mode for Scripts

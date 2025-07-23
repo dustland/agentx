@@ -58,7 +58,7 @@ class UserTaskIndex:
 class FileUserTaskIndex(UserTaskIndex):
     """File-based implementation of user-task index"""
     
-    def __init__(self, base_path: Path = Path("./user_index")):
+    def __init__(self, base_path: Path = Path("./.vibex/users")):
         self.base_path = base_path
         self.base_path.mkdir(parents=True, exist_ok=True)
         self._lock = asyncio.Lock()

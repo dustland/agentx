@@ -147,7 +147,7 @@ class XAgent(Agent):
         else:
             # Use standard taskspace: task_data/{task_id}
             self.taskspace = TaskspaceFactory.create_taskspace(
-                base_path=Path("./task_data"),
+                base_path=Path("./.vibex/tasks"),
                 task_id=self.task_id,
                 cache_provider=cache_provider
             )
