@@ -13,6 +13,7 @@ interface ChatInputProps {
   disabled?: boolean;
   placeholder?: string;
   taskStatus?: string;
+  hasPlan?: boolean;
 }
 
 export function ChatInput({
@@ -22,6 +23,7 @@ export function ChatInput({
   disabled = false,
   placeholder = "Type a message...",
   taskStatus,
+  hasPlan = false,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
@@ -37,8 +39,9 @@ export function ChatInput({
   }, [input]);
 
   const handleSubmit = () => {
-    if (input.trim() && !isComposing && !isLoading && !disabled) {
-      onSendMessage(input.trim(), mode);
+    // Allow sending empty message if there's a plan
+    if ((input.trim() || hasPlan) && !isComposing && !isLoading && !disabled) {
+      onSendMessage(input.trim() || "", mode);
       setInput("");
     }
   };
@@ -60,7 +63,9 @@ export function ChatInput({
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setIsComposing(true)}
           onCompositionEnd={() => setIsComposing(false)}
-          placeholder={mode === "agent" 
+          placeholder={hasPlan && mode === "agent"
+            ? "Press Enter or click Send to continue plan execution..."
+            : mode === "agent" 
             ? "Describe a task for agents to complete..." 
             : "Type a message..."}
           disabled={disabled || isLoading}
@@ -118,7 +123,7 @@ export function ChatInput({
         {/* Submit/Stop Button */}
         <SendButton
           isLoading={isLoading}
-          disabled={!input.trim() && !isLoading}
+          disabled={!input.trim() && !isLoading && !hasPlan}
           onClick={handleSubmit}
           onStop={onStop}
           size="sm"

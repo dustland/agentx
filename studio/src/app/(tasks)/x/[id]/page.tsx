@@ -9,6 +9,7 @@ import {
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { useChat } from "@/hooks/use-chat";
+import { useTask } from "@/hooks/use-task";
 import { useAppStore } from "@/store/app";
 
 export default function TaskPage({
@@ -18,6 +19,12 @@ export default function TaskPage({
 }) {
   const { id } = use(params);
   const { initialMessage, setInitialMessage } = useAppStore();
+
+  // Use the task hook to get artifacts (to check for plan)
+  const { artifacts } = useTask(id);
+  
+  // Check if plan exists
+  const hasPlan = artifacts.some(artifact => artifact.path === "plan.json");
 
   // Use the chat hook for chat functionality
   const {
@@ -84,6 +91,7 @@ export default function TaskPage({
             taskName="Task"
             onShare={() => {}}
             onMoreActions={() => {}}
+            hasPlan={hasPlan}
           />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />

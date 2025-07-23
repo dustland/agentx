@@ -39,6 +39,7 @@ interface ChatLayoutProps {
   onShare: () => void;
   onMoreActions: () => void;
   isLoading?: boolean;
+  hasPlan?: boolean;
 }
 
 export function ChatLayout({
@@ -52,6 +53,7 @@ export function ChatLayout({
   onShare,
   onMoreActions,
   isLoading,
+  hasPlan,
 }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -147,6 +149,7 @@ export function ChatLayout({
           onStop={onStop}
           isLoading={taskStatus === "running"}
           taskStatus={taskStatus}
+          hasPlan={hasPlan}
         />
       </div>
     </div>

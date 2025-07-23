@@ -96,14 +96,24 @@ def create_app() -> FastAPI:
                 config_path=request.config_path
             )
             
-            # Don't automatically start background execution
-            # Tasks should be explicitly started or use chat() for interactive mode
-            logger.info(f"[API] Task created without automatic background execution")
-            
-            return TaskResponse(
-                task_id=task_info["task_id"],
-                status=TaskStatus.PENDING
-            )
+            # If task has an initial prompt, start background execution automatically
+            if request.task_description and request.task_description.strip():
+                logger.info(f"[API] Task created with initial prompt, starting background execution")
+                background_tasks.add_task(
+                    _execute_task_async,
+                    x_user_id,
+                    task_info["task_id"]
+                )
+                return TaskResponse(
+                    task_id=task_info["task_id"],
+                    status=TaskStatus.RUNNING
+                )
+            else:
+                logger.info(f"[API] Task created without initial prompt, not starting execution")
+                return TaskResponse(
+                    task_id=task_info["task_id"],
+                    status=TaskStatus.PENDING
+                )
             
         except Exception as e:
             logger.error(f"Failed to create task: {e}")
@@ -515,6 +525,11 @@ async def _execute_task_async(user_id: str, task_id: str):
             status="running",
             result={"message": "Task execution started"}
         )
+        
+        # Send initial message to indicate plan execution is starting
+        from ..core.message import Message
+        start_message = Message.system_message("Starting plan execution...")
+        await send_message_object(task_id, start_message)
         
         # Execute until complete
         step_count = 0
