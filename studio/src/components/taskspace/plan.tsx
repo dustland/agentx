@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { 
   ListIcon, 
   RefreshCwIcon, 
@@ -11,7 +17,8 @@ import {
   Clock, 
   AlertCircle, 
   ArrowDown,
-  Target
+  Target,
+  Braces
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTask } from "@/hooks/use-task";
@@ -165,19 +172,19 @@ export function Plan({ taskId }: PlanProps) {
       {/* Floating Action Buttons */}
       <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
         <Button
-          size="sm"
+          size="icon"
           variant="ghost"
           onClick={() => setShowRawJson(!showRawJson)}
-          className="bg-background/80 backdrop-blur-sm border"
+          className="bg-background/80 backdrop-blur-sm border h-8 w-8"
         >
-          {showRawJson ? "Visual" : "JSON"}
+          <Braces className="h-4 w-4" />
         </Button>
         <Button
-          size="sm"
+          size="icon"
           variant="ghost"
           onClick={loadPlan}
           disabled={loadingPlan}
-          className="bg-background/80 backdrop-blur-sm border"
+          className="bg-background/80 backdrop-blur-sm border h-8 w-8"
         >
           <RefreshCwIcon
             className={cn("h-4 w-4", loadingPlan && "animate-spin")}
@@ -187,104 +194,120 @@ export function Plan({ taskId }: PlanProps) {
 
       <ScrollArea className="flex-1 h-full">
         {showRawJson ? (
-          <div className="p-4 pt-16">
+          <div className="p-4">
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
               {JSON.stringify(planData, null, 2)}
             </pre>
           </div>
         ) : (
-          <div className="p-4 pt-16 space-y-6">
-            {/* Goal Section */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-primary" />
-                <h4 className="text-base font-semibold">Goal</h4>
-              </div>
-              <p className="text-sm text-muted-foreground pl-6">{planData.goal}</p>
-            </div>
+          <div className="p-4">
+            <Accordion type="multiple" defaultValue={["goal", "stats", "workflow"]} className="w-full">
+              {/* Goal Section */}
+              <AccordionItem value="goal">
+                <AccordionTrigger className="text-left">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4 text-primary" />
+                    <span>Goal</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-sm text-muted-foreground pl-6">{planData.goal}</p>
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Statistics */}
-            <div className="bg-muted/30 rounded-lg p-4">
-              <div className="grid grid-cols-4 gap-4 text-center">
-                <div>
-                  <div className="text-lg font-semibold text-green-600">
-                    {planData.tasks.filter(t => t.status === "completed").length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Completed</div>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold text-blue-600">
-                    {planData.tasks.filter(t => t.status === "in_progress").length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">In Progress</div>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold text-gray-600">
-                    {planData.tasks.filter(t => t.status === "pending").length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Pending</div>
-                </div>
-                <div>
-                  <div className="text-lg font-semibold text-red-600">
-                    {planData.tasks.filter(t => t.status === "failed").length}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Failed</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tasks Workflow */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Task Workflow ({planData.tasks.length} tasks)
-              </h4>
-              
-              {taskLevels.map((level, levelIndex) => (
-                <div key={levelIndex} className="space-y-3">
-                  {/* Level indicator */}
-                  {levelIndex > 0 && (
-                    <div className="flex justify-center">
-                      <ArrowDown className="h-4 w-4 text-muted-foreground" />
+              {/* Statistics */}
+              <AccordionItem value="stats">
+                <AccordionTrigger className="text-left">
+                  <span>Progress Statistics</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <div className="grid grid-cols-4 gap-4 text-center">
+                      <div>
+                        <div className="text-lg font-semibold text-green-600">
+                          {planData.tasks.filter(t => t.status === "completed").length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Completed</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-blue-600">
+                          {planData.tasks.filter(t => t.status === "in_progress").length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">In Progress</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-gray-600">
+                          {planData.tasks.filter(t => t.status === "pending").length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Pending</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-semibold text-red-600">
+                          {planData.tasks.filter(t => t.status === "failed").length}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Failed</div>
+                      </div>
                     </div>
-                  )}
-                  
-                  {/* Tasks in this level */}
-                  <div className="grid gap-3">
-                    {level.map((task) => (
-                      <div key={task.id} className="border rounded-lg p-4 bg-background">
-                        <div className="flex items-start gap-3">
-                          {getStatusIcon(task.status)}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h5 className="font-medium text-sm truncate">
-                                {task.name}
-                              </h5>
-                              <Badge 
-                                variant="outline"
-                                className={cn("text-xs", getStatusColor(task.status))}
-                              >
-                                {task.status}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-2">
-                              {task.goal}
-                            </p>
-                            {task.dependencies.length > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                <span>Depends on:</span>
-                                <span className="font-mono">
-                                  {task.dependencies.join(", ")}
-                                </span>
-                              </div>
-                            )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Tasks Workflow */}
+              <AccordionItem value="workflow">
+                <AccordionTrigger className="text-left">
+                  <span>Task Workflow ({planData.tasks.length} tasks)</span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-4">
+                    {taskLevels.map((level, levelIndex) => (
+                      <div key={levelIndex} className="space-y-3">
+                        {/* Level indicator */}
+                        {levelIndex > 0 && (
+                          <div className="flex justify-center">
+                            <ArrowDown className="h-4 w-4 text-muted-foreground" />
                           </div>
+                        )}
+                        
+                        {/* Tasks in this level */}
+                        <div className="grid gap-3">
+                          {level.map((task) => (
+                            <div key={task.id} className="border rounded-lg p-4 bg-background">
+                              <div className="flex items-start gap-3">
+                                {getStatusIcon(task.status)}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="font-medium text-sm truncate">
+                                      {task.name}
+                                    </h5>
+                                    <Badge 
+                                      variant="outline"
+                                      className={cn("text-xs", getStatusColor(task.status))}
+                                    >
+                                      {task.status}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    {task.goal}
+                                  </p>
+                                  {task.dependencies.length > 0 && (
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                      <span>Depends on:</span>
+                                      <span className="font-mono">
+                                        {task.dependencies.join(", ")}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         )}
       </ScrollArea>
