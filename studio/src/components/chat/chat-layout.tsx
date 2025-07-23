@@ -40,6 +40,7 @@ interface ChatLayoutProps {
   onMoreActions: () => void;
   isLoading?: boolean;
   hasPlan?: boolean;
+  onExecutePlan?: () => void;
 }
 
 export function ChatLayout({
@@ -54,6 +55,7 @@ export function ChatLayout({
   onMoreActions,
   isLoading,
   hasPlan,
+  onExecutePlan,
 }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -150,6 +152,7 @@ export function ChatLayout({
           isLoading={taskStatus === "running"}
           taskStatus={taskStatus}
           hasPlan={hasPlan}
+          onExecutePlan={onExecutePlan}
         />
       </div>
     </div>

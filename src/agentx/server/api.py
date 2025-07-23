@@ -185,6 +185,44 @@ def create_app() -> FastAPI:
     
     # ===== Chat/Messaging =====
     
+    @app.post("/tasks/{task_id}/execute")
+    async def execute_task_plan(
+        task_id: str,
+        background_tasks: BackgroundTasks,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
+    ):
+        """Execute the task plan in the background."""
+        if not x_user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+        
+        try:
+            # Verify ownership
+            await task_service.verify_task_ownership(x_user_id, task_id)
+            
+            # Check if plan exists
+            from pathlib import Path
+            plan_path = Path(f"task_data/{task_id}/plan.json")
+            if not plan_path.exists():
+                raise HTTPException(status_code=400, detail="No plan available for execution")
+            
+            # Start background execution
+            logger.info(f"[API] Starting plan execution for task {task_id}")
+            background_tasks.add_task(_execute_task_async, x_user_id, task_id)
+            
+            return {
+                "message": "Plan execution started",
+                "task_id": task_id,
+                "status": "running"
+            }
+            
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Access denied")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Failed to execute task: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+    
     @app.post("/tasks/{task_id}/chat")
     async def send_message(
         task_id: str,

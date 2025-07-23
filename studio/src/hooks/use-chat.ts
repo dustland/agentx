@@ -118,33 +118,27 @@ export function useChat({ taskId, onError }: UseChatOptions) {
   }, [subscribe, streamingMessage]);
   
   const handleSubmit = useCallback((message: string, mode?: "agent" | "chat") => {
-    // Allow empty messages in agent mode (for plan execution continuation)
-    if (!message.trim() && mode !== "agent") return;
+    if (!message.trim()) return;
     
-    // Only add optimistic message if there's actual content
-    if (message.trim()) {
-      const optimisticMsg: ChatMessage = {
-        id: `optimistic-${Date.now()}`,
-        role: "user",
-        content: message.trim(),
-        timestamp: new Date(),
-        status: "complete",
-      };
-      
-      setOptimisticMessages(prev => [...prev, optimisticMsg]);
-    }
+    // Add optimistic message
+    const optimisticMsg: ChatMessage = {
+      id: `optimistic-${Date.now()}`,
+      role: "user",
+      content: message.trim(),
+      timestamp: new Date(),
+      status: "complete",
+    };
     
+    setOptimisticMessages(prev => [...prev, optimisticMsg]);
     setStreamingMessage(null);
     setInput(""); // Clear input immediately
     
     // Send the actual message with mode
-    sendMessage.mutate({ message: message.trim() || "", mode }, {
+    sendMessage.mutate({ message: message.trim(), mode }, {
       onError: (error) => {
         console.error("Failed to send message:", error);
-        // Remove the last optimistic message on error (if any)
-        if (message.trim()) {
-          setOptimisticMessages(prev => prev.slice(0, -1));
-        }
+        // Remove the last optimistic message on error
+        setOptimisticMessages(prev => prev.slice(0, -1));
         onError?.(error as Error);
       },
     });

@@ -20,8 +20,8 @@ export default function TaskPage({
   const { id } = use(params);
   const { initialMessage, setInitialMessage } = useAppStore();
 
-  // Use the task hook to get artifacts (to check for plan)
-  const { artifacts } = useTask(id);
+  // Use the task hook to get artifacts (to check for plan) and executeTask
+  const { artifacts, executeTask } = useTask(id);
   
   // Check if plan exists
   const hasPlan = artifacts.some(artifact => artifact.path === "plan.json");
@@ -92,6 +92,7 @@ export default function TaskPage({
             onShare={() => {}}
             onMoreActions={() => {}}
             hasPlan={hasPlan}
+            onExecutePlan={() => executeTask.mutate()}
           />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />

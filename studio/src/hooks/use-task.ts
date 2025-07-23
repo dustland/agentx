@@ -57,6 +57,14 @@ export function useTask(taskId: string) {
     },
   });
 
+  const executeTask = useMutation({
+    mutationFn: () => apiClient.executeTaskPlan(taskId),
+    onSuccess: () => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: taskKeys.detail(taskId) });
+    },
+  });
+
   const deleteTask = useMutation({
     mutationFn: () => apiClient.deleteTask(taskId),
     onSuccess: () => {
@@ -155,6 +163,7 @@ export function useTask(taskId: string) {
     
     // Mutations
     sendMessage,
+    executeTask,
     deleteTask,
     
     // SSE

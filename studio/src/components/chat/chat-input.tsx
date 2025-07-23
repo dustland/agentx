@@ -14,6 +14,7 @@ interface ChatInputProps {
   placeholder?: string;
   taskStatus?: string;
   hasPlan?: boolean;
+  onExecutePlan?: () => void;
 }
 
 export function ChatInput({
@@ -24,6 +25,7 @@ export function ChatInput({
   placeholder = "Type a message...",
   taskStatus,
   hasPlan = false,
+  onExecutePlan,
 }: ChatInputProps) {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
@@ -44,9 +46,15 @@ export function ChatInput({
       e.preventDefault();
     }
     
-    // Allow sending empty message if there's a plan
-    if ((input.trim() || hasPlan) && !isComposing && !isLoading && !disabled) {
-      onSendMessage(input.trim() || "", mode);
+    // If there's no input and we have a plan, execute the plan
+    if (!input.trim() && hasPlan && mode === "agent" && onExecutePlan && !isLoading && !disabled) {
+      onExecutePlan();
+      return;
+    }
+    
+    // Otherwise send regular message
+    if (input.trim() && !isComposing && !isLoading && !disabled) {
+      onSendMessage(input.trim(), mode);
       setInput("");
     }
   };

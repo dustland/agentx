@@ -225,34 +225,7 @@ class TaskService:
         task = await self.get_task(user_id, task_id)
         logger.info(f"[CHAT] Task instance retrieved successfully")
         
-        # Check if this is a request to continue plan execution (empty message in agent mode)
-        if not content.strip() and mode == "agent":
-            logger.info(f"[CHAT] Empty message in agent mode - starting continuous plan execution")
-            
-            # Check if plan exists
-            from pathlib import Path
-            plan_path = Path(f"task_data/{task_id}/plan.json")
-            if not plan_path.exists():
-                logger.info(f"[CHAT] No plan found, calling task.chat() to create one")
-                response = await task.chat("", mode=mode)
-            else:
-                logger.info(f"[CHAT] Plan exists, starting background execution")
-                
-                # Start background execution
-                from ..server.api import _execute_task_async
-                import asyncio
-                
-                # Create background task for continuous execution
-                asyncio.create_task(_execute_task_async(user_id, task_id))
-                
-                # Return immediate response
-                return {
-                    "message_id": f"msg_{datetime.now().timestamp():.0f}",
-                    "response": "Continuing plan execution...",
-                    "timestamp": datetime.now().isoformat()
-                }
-        
-        # Regular message handling
+        # Send message and get response with mode
         logger.info(f"[CHAT] Calling task.chat() to process message in {mode} mode")
         response = await task.chat(content, mode=mode)
         logger.info(f"[CHAT] Received response from task.chat()")

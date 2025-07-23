@@ -438,6 +438,17 @@ export class AgentXAPIClient {
     return this.request<MessagesResponse>(`/tasks/${taskId}/messages`);
   }
 
+  // Execute task plan
+  async executeTaskPlan(taskId: string): Promise<{ message: string; task_id: string; status: string }> {
+    await this.init();
+    return this.request<{ message: string; task_id: string; status: string }>(
+      `/tasks/${taskId}/execute`,
+      {
+        method: "POST",
+      }
+    );
+  }
+
   // Send message to task
   async sendMessage(
     taskId: string,
