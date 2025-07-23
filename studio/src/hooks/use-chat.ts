@@ -2,8 +2,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChatMessage } from "@/types/chat";
 import { nanoid } from "nanoid";
-import { useTask } from "./use-task";
-import { taskKeys } from "@/lib/query-keys";
+import { useTask, taskKeys } from "./use-task";
 
 interface UseChatOptions {
   taskId: string;
