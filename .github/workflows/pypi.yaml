@@ -298,4 +298,4 @@ jobs:
       - name: Output PyPI publish info
         if: steps.version_bump.outputs.skip != 'true'
         run: |
-          echo "📦 Published to PyPI: https://pypi.org/project/agentx-py/${{ steps.version_bump.outputs.new_version }}/"
+          echo "📦 Published to PyPI: https://pypi.org/project/vibex/${{ steps.version_bump.outputs.new_version }}/"
