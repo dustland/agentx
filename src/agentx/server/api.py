@@ -347,10 +347,23 @@ def create_app() -> FastAPI:
             
             # Read plan.json from task workspace root
             from pathlib import Path
+            import os
+            
+            # Try to find the plan.json file
             plan_path = Path(f"task_data/{task_id}/plan.json")
             
+            # Debug logging
+            logger.info(f"Looking for plan at: {plan_path}")
+            logger.info(f"Absolute path: {plan_path.absolute()}")
+            logger.info(f"Current working directory: {os.getcwd()}")
+            logger.info(f"Plan exists: {plan_path.exists()}")
+            
             if not plan_path.exists():
-                raise HTTPException(status_code=404, detail="Plan not found")
+                # Also check the absolute path that user mentioned
+                alt_path = Path(f"/Users/hugh/dustland/agentx/task_data/{task_id}/plan.json")
+                logger.info(f"Checking alternative path: {alt_path}")
+                logger.info(f"Alternative exists: {alt_path.exists()}")
+                raise HTTPException(status_code=404, detail=f"Plan not found at {plan_path.absolute()}")
             
             try:
                 content = plan_path.read_text(encoding='utf-8')
