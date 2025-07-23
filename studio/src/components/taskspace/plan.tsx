@@ -3,10 +3,33 @@
 import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ListIcon, RefreshCwIcon } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ListIcon, 
+  RefreshCwIcon, 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle, 
+  ArrowDown,
+  Target
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useTask } from "@/hooks/use-task";
+
+interface PlanTask {
+  id: string;
+  name: string;
+  goal: string;
+  agent: string;
+  dependencies: string[];
+  status: "pending" | "in_progress" | "completed" | "failed";
+  on_failure: string;
+}
+
+interface PlanData {
+  goal: string;
+  tasks: PlanTask[];
+}
 
 interface PlanProps {
   taskId: string;
@@ -14,8 +37,9 @@ interface PlanProps {
 
 export function Plan({ taskId }: PlanProps) {
   const { getTaskPlan } = useTask(taskId);
-  const [planContent, setPlanContent] = useState<string | null>(null);
+  const [planData, setPlanData] = useState<PlanData | null>(null);
   const [loadingPlan, setLoadingPlan] = useState(false);
+  const [showRawJson, setShowRawJson] = useState(false);
 
   // Load plan function
   const loadPlan = async () => {
@@ -25,28 +49,23 @@ export function Plan({ taskId }: PlanProps) {
     try {
       const response = await getTaskPlan();
       
-      // The content might be a string that needs to be parsed
-      let content = response.content || "";
+      // Parse the JSON content
+      const content = response.content || "";
       
-      // If the content is a valid JSON string, format it nicely
       if (content) {
         try {
           const parsed = JSON.parse(content);
-          content = JSON.stringify(parsed, null, 2);
+          setPlanData(parsed);
         } catch (e) {
-          // If it's not valid JSON, use as-is
-          console.log("Plan content is not valid JSON, using as-is");
+          console.error("Plan content is not valid JSON:", e);
+          setPlanData(null);
         }
+      } else {
+        setPlanData(null);
       }
-      
-      setPlanContent(content);
     } catch (error: any) {
       console.error("Failed to load plan:", error);
-      console.error("Error details:", {
-        message: error.message,
-        taskId
-      });
-      setPlanContent(null);
+      setPlanData(null);
     } finally {
       setLoadingPlan(false);
     }
@@ -59,6 +78,64 @@ export function Plan({ taskId }: PlanProps) {
     }
   }, [taskId]);
 
+  // Helper functions
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "in_progress":
+        return <Clock className="h-4 w-4 text-blue-500 animate-pulse" />;
+      case "failed":
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <Clock className="h-4 w-4 text-gray-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "in_progress":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "failed":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-600 border-gray-200";
+    }
+  };
+
+  const organizeTasksByLevel = (tasks: PlanTask[]) => {
+    const taskMap = new Map(tasks.map(task => [task.id, task]));
+    const levels: PlanTask[][] = [];
+    const visited = new Set<string>();
+    
+    const getTaskLevel = (taskId: string): number => {
+      const task = taskMap.get(taskId);
+      if (!task || visited.has(taskId)) return 0;
+      
+      visited.add(taskId);
+      
+      if (task.dependencies.length === 0) {
+        return 0;
+      }
+      
+      const maxDepLevel = Math.max(
+        ...task.dependencies.map(depId => getTaskLevel(depId))
+      );
+      return maxDepLevel + 1;
+    };
+    
+    // Calculate levels for all tasks
+    tasks.forEach(task => {
+      const level = getTaskLevel(task.id);
+      if (!levels[level]) levels[level] = [];
+      levels[level].push(task);
+    });
+    
+    return levels.filter(level => level.length > 0);
+  };
+
   if (loadingPlan) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -70,7 +147,7 @@ export function Plan({ taskId }: PlanProps) {
     );
   }
 
-  if (!planContent) {
+  if (!planData) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
@@ -81,35 +158,139 @@ export function Plan({ taskId }: PlanProps) {
     );
   }
 
+  const taskLevels = organizeTasksByLevel(planData.tasks);
+
   return (
     <div className="h-full flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
-        <h3 className="text-lg font-semibold">Plan</h3>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={loadPlan}
-          disabled={loadingPlan}
-        >
-          <RefreshCwIcon
-            className={`h-4 w-4 ${loadingPlan ? "animate-spin" : ""}`}
-          />
-        </Button>
-      </div>
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="p-4 space-y-4">
-          <SyntaxHighlighter
-            language="json"
-            style={vscDarkPlus}
-            customStyle={{
-              margin: 0,
-              fontSize: "0.875rem",
-              borderRadius: "0.375rem",
-            }}
-          >
-            {planContent}
-          </SyntaxHighlighter>
+        <div className="flex items-center gap-2">
+          <Target className="h-4 w-4 text-primary" />
+          <h3 className="text-lg font-semibold">Execution Plan</h3>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowRawJson(!showRawJson)}
+          >
+            {showRawJson ? "Visual" : "JSON"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={loadPlan}
+            disabled={loadingPlan}
+          >
+            <RefreshCwIcon
+              className={cn("h-4 w-4", loadingPlan && "animate-spin")}
+            />
+          </Button>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-1 min-h-0">
+        {showRawJson ? (
+          <div className="p-4">
+            <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-sm overflow-auto">
+              {JSON.stringify(planData, null, 2)}
+            </pre>
+          </div>
+        ) : (
+          <div className="p-4 space-y-6">
+            {/* Goal Section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                <h4 className="text-base font-semibold">Goal</h4>
+              </div>
+              <p className="text-sm text-muted-foreground pl-6">{planData.goal}</p>
+            </div>
+
+            {/* Statistics */}
+            <div className="bg-muted/30 rounded-lg p-4">
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-semibold text-green-600">
+                    {planData.tasks.filter(t => t.status === "completed").length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Completed</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-blue-600">
+                    {planData.tasks.filter(t => t.status === "in_progress").length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">In Progress</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-600">
+                    {planData.tasks.filter(t => t.status === "pending").length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Pending</div>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-red-600">
+                    {planData.tasks.filter(t => t.status === "failed").length}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Failed</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tasks Workflow */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-muted-foreground">
+                Task Workflow ({planData.tasks.length} tasks)
+              </h4>
+              
+              {taskLevels.map((level, levelIndex) => (
+                <div key={levelIndex} className="space-y-3">
+                  {/* Level indicator */}
+                  {levelIndex > 0 && (
+                    <div className="flex justify-center">
+                      <ArrowDown className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  
+                  {/* Tasks in this level */}
+                  <div className="grid gap-3">
+                    {level.map((task) => (
+                      <div key={task.id} className="border rounded-lg p-4 bg-background">
+                        <div className="flex items-start gap-3">
+                          {getStatusIcon(task.status)}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h5 className="font-medium text-sm truncate">
+                                {task.name}
+                              </h5>
+                              <Badge 
+                                variant="outline"
+                                className={cn("text-xs", getStatusColor(task.status))}
+                              >
+                                {task.status}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {task.goal}
+                            </p>
+                            {task.dependencies.length > 0 && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <span>Depends on:</span>
+                                <span className="font-mono">
+                                  {task.dependencies.join(", ")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </ScrollArea>
     </div>
   );
