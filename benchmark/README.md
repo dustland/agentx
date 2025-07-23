@@ -145,7 +145,7 @@ This implementation provides multiple team configurations for comprehensive eval
 
 ```bash
 # Ensure VibeX is installed
-pip install vibex-py
+pip install vibex
 
 # Or install from source
 cd /path/to/vibex
