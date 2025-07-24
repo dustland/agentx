@@ -2,9 +2,16 @@
 
 import React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Bot, Workflow, Library, Monitor, MessageSquare } from "lucide-react";
+import {
+  Home,
+  Bot,
+  Workflow,
+  Library,
+  Monitor,
+  MessageSquare,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/common/theme-toggle";
+import { ThemeSwitcher } from "@/components/common/theme-switcher";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +35,8 @@ export function Navbar({ className }: NavbarProps) {
       label: "Tasks",
       icon: Workflow,
       href: "/tasks",
-      isActive: pathname.includes("/tasks") && !pathname.match(/\/tasks\/[^\/]+$/),
+      isActive:
+        pathname.includes("/tasks") && !pathname.match(/\/tasks\/[^\/]+$/),
     },
     {
       label: "Observability",
@@ -53,7 +61,13 @@ export function Navbar({ className }: NavbarProps) {
         {/* Left: Logo and Navigation */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="VibeX" width={20} height={20} className="object-contain" />
+            <Image
+              src="/logo.png"
+              alt="VibeX"
+              width={20}
+              height={20}
+              className="object-contain"
+            />
             <span className="font-semibold">
               Agent<span className="text-primary">X</span> Studio
             </span>
@@ -78,7 +92,7 @@ export function Navbar({ className }: NavbarProps) {
 
         {/* Right: Theme Toggle */}
         <div className="flex items-center gap-3">
-          <ThemeToggle />
+          <ThemeSwitcher />
         </div>
       </div>
     </div>

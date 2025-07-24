@@ -1,4 +1,4 @@
-name: Deploy Nextra Documentation to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:

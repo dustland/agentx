@@ -84,8 +84,24 @@ railway init
 railway up
 ```
 
-Set environment variables in Railway dashboard:
-- `VIBEX_API_URL`: Your VibeX API deployment URL
+#### Configure Persistent Storage
+
+VibeX requires persistent storage for task data, agent memory, and artifacts. After deployment:
+
+1. **Create a Volume** in Railway dashboard:
+   - Go to your project settings
+   - Add a new volume
+   - Name it (e.g., "vibex-data")
+
+2. **Mount the Volume**:
+   - Mount path: `/app/.vibex`
+   - This preserves all task data between deployments
+
+3. **Set Environment Variables** in Railway dashboard:
+   - `VIBEX_API_URL`: Your VibeX API deployment URL (if separate)
+   - `PORT`: `7770` (Railway usually sets this automatically)
+
+**Note**: Without a volume, all task data and agent memory will be lost on each deployment or container restart.
 
 ### Vercel
 

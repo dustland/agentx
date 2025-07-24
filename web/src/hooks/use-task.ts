@@ -156,16 +156,38 @@ export function useTask(taskId: string) {
 }
 
 /**
- * Hook for task plan with direct data access
+ * Hook for task plan with real-time updates
  */
 export function useTaskPlan(taskId: string) {
   const apiClient = useAPI();
+  const queryClient = useQueryClient();
+  const sseCleanupRef = useRef<(() => void) | null>(null);
 
   const query = useQuery({
     queryKey: taskKeys.plan(taskId),
     queryFn: () => apiClient.getTaskPlan(taskId),
     enabled: !!taskId && taskId !== "dummy-task-id",
   });
+
+  // Subscribe to real-time plan updates
+  useEffect(() => {
+    if (!taskId || taskId === "dummy-task-id") return;
+
+    const cleanup = apiClient.subscribeToTaskUpdates(
+      taskId,
+      (event: StreamEvent) => {
+        if (event.type === "task_update") {
+          // For plan-specific updates, invalidate the plan query to refetch
+          queryClient.invalidateQueries({
+            queryKey: taskKeys.plan(taskId),
+          });
+        }
+      }
+    );
+
+    sseCleanupRef.current = cleanup;
+    return cleanup;
+  }, [taskId, apiClient, queryClient]);
 
   return {
     plan: query.data,

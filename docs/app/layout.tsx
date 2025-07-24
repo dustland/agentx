@@ -3,6 +3,7 @@ import { Head } from "nextra/components";
 import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import Image from "next/image";
+import TryAppButton from "@/components/app-button";
 
 const navbar = (
   <Navbar
@@ -24,7 +25,9 @@ const navbar = (
       </div>
     }
     projectLink="https://github.com/dustland/vibex"
-  />
+  >
+    <TryAppButton />
+  </Navbar>
 );
 
 export const metadata = {
