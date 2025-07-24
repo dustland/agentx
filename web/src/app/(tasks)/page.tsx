@@ -65,9 +65,9 @@ export default function HomePage() {
       try {
         console.log("Creating task with prompt:", prompt);
 
-        // Create task with empty description - the prompt becomes the first message
+        // Create task with the prompt as task_description for autonomous execution
         const response = await apiClient.createTask({
-          task_description: "",
+          task_description: prompt,
           config_path: "examples/simple_chat/config/team.yaml",
           context: { source: "studio_homepage" },
         });
@@ -79,10 +79,8 @@ export default function HomePage() {
           throw new Error("No task ID returned from API");
         }
 
-        // Store the initial message to be sent when the task page loads
-        setInitialMessage(prompt);
-
-        // Navigate to the task page
+        // No need to store initial message since task_description handles it
+        // Just navigate to the task page
         router.push(`/x/${taskId}`);
       } catch (error) {
         console.error("Failed to create task:", error);
