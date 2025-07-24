@@ -1,6 +1,6 @@
 /**
- * Authentication client for VibeX Studio
- * 
+ * Authentication client for VibeX
+ *
  * Handles user authentication and session management via API endpoints.
  */
 
@@ -24,18 +24,22 @@ export interface AuthError {
 /**
  * Register a new user
  */
-export async function registerUser(username: string, password: string, email?: string): Promise<User> {
-  const response = await fetch('/api/auth/register', {
-    method: 'POST',
+export async function registerUser(
+  username: string,
+  password: string,
+  email?: string
+): Promise<User> {
+  const response = await fetch("/api/auth/register", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ username, password, email }),
   });
 
   if (!response.ok) {
     const error: AuthError = await response.json();
-    throw new Error(error.error || 'Registration failed');
+    throw new Error(error.error || "Registration failed");
   }
 
   const data: AuthResponse = await response.json();
@@ -45,18 +49,21 @@ export async function registerUser(username: string, password: string, email?: s
 /**
  * Login with username and password
  */
-export async function loginUser(username: string, password: string): Promise<User> {
-  const response = await fetch('/api/auth/login', {
-    method: 'POST',
+export async function loginUser(
+  username: string,
+  password: string
+): Promise<User> {
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ username, password }),
   });
 
   if (!response.ok) {
     const error: AuthError = await response.json();
-    throw new Error(error.error || 'Login failed');
+    throw new Error(error.error || "Login failed");
   }
 
   const data: AuthResponse = await response.json();
@@ -67,8 +74,8 @@ export async function loginUser(username: string, password: string): Promise<Use
  * Logout the current user
  */
 export async function logoutUser(): Promise<void> {
-  await fetch('/api/auth/logout', {
-    method: 'POST',
+  await fetch("/api/auth/logout", {
+    method: "POST",
   });
 }
 
@@ -77,8 +84,8 @@ export async function logoutUser(): Promise<void> {
  */
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    const response = await fetch('/api/auth/me');
-    
+    const response = await fetch("/api/auth/me");
+
     if (!response.ok) {
       // If we get a 401, it means the user is not authenticated
       if (response.status === 401) {
@@ -93,7 +100,7 @@ export async function getCurrentUser(): Promise<User | null> {
     const data = await response.json();
     return data.user;
   } catch (error) {
-    console.error('Error fetching current user:', error);
+    console.error("Error fetching current user:", error);
     // Re-throw the error to be handled by the caller
     throw error;
   }
@@ -110,7 +117,7 @@ export function getUserDisplayName(user: User): string {
  * Demo user credentials for easy testing
  */
 export const DEMO_USERS = [
-  { username: 'guest', password: 'GuestDemo$2024!' },
-  { username: 'alice', password: 'alice123' },
-  { username: 'bob', password: 'bob123' },
+  { username: "guest", password: "GuestDemo$2024!" },
+  { username: "alice", password: "alice123" },
+  { username: "bob", password: "bob123" },
 ];

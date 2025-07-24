@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * VibeX Studio Setup Script
+ * VibeX Setup Script
  * Ensures all dependencies are up to date and properly configured
  */
 
@@ -34,7 +34,7 @@ function exec(command, options = {}) {
 }
 
 async function main() {
-  log('\nVibeX Studio Setup\n', colors.bright);
+  log('\nVibeX Setup\n', colors.bright);
 
   // Check if pnpm is installed
   try {

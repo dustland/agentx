@@ -1,8 +1,27 @@
-# Minimal Nixpacks configuration for VibeX
-# Let Railway auto-detect Python and Node.js
+# Nixpacks configuration for deploying VibeX backend and web frontend together.
+
+[phases.setup]
+# Explicitly define the system dependencies needed.
+# This ensures Python, Node.js, and pnpm are all available in the environment.
+nixPkgs = ["python311", "nodejs_20", "pnpm"]
+
+[phases.install]
+# Install dependencies for both the Python root project and the web project.
+cmds = ["pip install .", "cd web && pnpm install"]
+
+[phases.build]
+# Build the web application for production.
+cmds = ["cd web && pnpm run build"]
 
 [start]
-cmd = "cd web && npx concurrently \"cd .. && python -m vibex start --host 0.0.0.0 --port $PORT\" \"pnpm run start\""
+# Start both the API server and the web server concurrently.
+# We run this from the 'web' directory because 'concurrently' is installed there.
+cmd = "cd web && npx concurrently --names 'API,WEB' -c 'bgBlue.bold,bgMagenta.bold' 'cd .. && python -m vibex.run --host 0.0.0.0 --port $PORT' 'pnpm run start'"
 
 [variables]
+# Define environment variables. PORT is used by the Python server.
+# The web server will run on the port defined in its own start script.
 PORT = "7770"
+PYTHONUNBUFFERED = "1"
+NODE_ENV = "production"
+NEXT_TELEMETRY_DISABLED = "1"

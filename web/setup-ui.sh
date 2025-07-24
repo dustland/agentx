@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# VibeX Studio UI Setup Script
+# VibeX UI Setup Script
 # This script updates dependencies and installs all required shadcn/ui components
 
-echo "🚀 Setting up VibeX Studio..."
+echo "🚀 Setting up VibeX..."
 
 # Update all dependencies to latest versions
 echo "📦 Updating dependencies to latest versions..."

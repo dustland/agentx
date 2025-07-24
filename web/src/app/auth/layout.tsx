@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "VibeX",
-  description: "Login to VibeX Studio",
+  description: "Login to VibeX",
 };
 
 export default function AuthLayout({

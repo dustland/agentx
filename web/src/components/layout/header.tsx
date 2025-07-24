@@ -19,7 +19,7 @@ export function Header() {
             height={40}
             className="rounded-lg"
           />
-          <span className="font-semibold text-lg">VibeX Studio</span>
+          <span className="font-semibold text-lg">VibeX</span>
         </div>
 
         <div className="flex items-center space-x-4">

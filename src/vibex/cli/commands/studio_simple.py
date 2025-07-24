@@ -93,7 +93,7 @@ export default function Home() {
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'system-ui' }}>
-      <h1>VibeX Studio</h1>
+      <h1>VibeX</h1>
       <p>Connected to API: {apiUrl}</p>
       
       <div style={{ marginTop: '2rem' }}>
@@ -154,7 +154,7 @@ export default function App({ Component, pageProps }: AppProps) {
 def download_full_studio(target_dir: Path) -> bool:
     """Download the full studio from GitHub."""
     try:
-        logger.info("Downloading full VibeX Studio from GitHub...")
+        logger.info("Downloading full VibeX from GitHub...")
         
         # Use git to clone just the studio directory
         subprocess.run([
@@ -241,7 +241,7 @@ def run_studio_command(
     
     try:
         # Start studio
-        logger.info(f"Starting VibeX Studio on http://localhost:{port}")
+        logger.info(f"Starting VibeX on http://localhost:{port}")
         
         if not is_full:
             logger.info("Note: Running minimal embedded studio. For full features, clone the VibeX repository.")
@@ -259,7 +259,7 @@ def run_studio_command(
             time.sleep(2)
             webbrowser.open(f'http://localhost:{port}')
         
-        logger.info(f"\n✨ VibeX Studio is running at http://localhost:{port}")
+        logger.info(f"\n✨ VibeX is running at http://localhost:{port}")
         logger.info("Press Ctrl+C to stop.\n")
         
         studio_process.wait()

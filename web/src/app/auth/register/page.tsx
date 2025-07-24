@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
 
 export default function RegisterPage() {
@@ -20,9 +26,9 @@ export default function RegisterPage() {
       alert("Passwords don't match");
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     // Simulate registration
     setTimeout(() => {
       setIsLoading(false);
@@ -36,7 +42,7 @@ export default function RegisterPage() {
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Create account</CardTitle>
         <CardDescription className="text-center">
-          Enter your information to get started with VibeX Studio
+          Enter your information to get started with VibeX
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -89,9 +95,11 @@ export default function RegisterPage() {
             {isLoading ? "Creating account..." : "Create account"}
           </Button>
         </form>
-        
+
         <div className="mt-4 text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
+          <span className="text-muted-foreground">
+            Already have an account?{" "}
+          </span>
           <Link href="/auth/login" className="text-primary hover:underline">
             Sign in
           </Link>

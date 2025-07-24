@@ -9,133 +9,6 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "vibex"
-version = "0.24.3"
-source = { editable = "." }
-dependencies = [
-    { name = "aiofiles" },
-    { name = "aiohttp" },
-    { name = "beautifulsoup4" },
-    { name = "browser-use" },
-    { name = "chromadb" },
-    { name = "crawl4ai" },
-    { name = "fastapi" },
-    { name = "firecrawl-py" },
-    { name = "gitpython" },
-    { name = "google-search-results" },
-    { name = "httpx" },
-    { name = "jinja2" },
-    { name = "litellm" },
-    { name = "loguru" },
-    { name = "markdown" },
-    { name = "mcp" },
-    { name = "mem0ai" },
-    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.2.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "openai" },
-    { name = "playwright" },
-    { name = "pyarrow" },
-    { name = "pydantic" },
-    { name = "pygithub" },
-    { name = "python-dotenv" },
-    { name = "pyyaml" },
-    { name = "requests" },
-    { name = "rich" },
-    { name = "sqlalchemy" },
-    { name = "sqlmodel" },
-    { name = "sse-starlette" },
-    { name = "uvicorn" },
-]
-
-[package.optional-dependencies]
-all = [
-    { name = "browser-use" },
-    { name = "daytona" },
-    { name = "playwright" },
-    { name = "streamlit" },
-]
-code-execution = [
-    { name = "daytona" },
-]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "uv" },
-]
-web-automation = [
-    { name = "browser-use" },
-    { name = "playwright" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "toml" },
-    { name = "types-aiofiles" },
-    { name = "types-pyyaml" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiofiles", specifier = ">=24.1.0" },
-    { name = "aiohttp", specifier = ">=3.8.0" },
-    { name = "beautifulsoup4", specifier = ">=4.12.0" },
-    { name = "browser-use", specifier = ">=0.1.0" },
-    { name = "browser-use", marker = "extra == 'all'", specifier = ">=0.1.0" },
-    { name = "browser-use", marker = "extra == 'web-automation'", specifier = ">=0.1.0" },
-    { name = "chromadb", specifier = ">=1.0.12" },
-    { name = "crawl4ai", specifier = ">=0.7.0" },
-    { name = "daytona", marker = "extra == 'all'", specifier = ">=0.1.0" },
-    { name = "daytona", marker = "extra == 'code-execution'", specifier = ">=0.1.0" },
-    { name = "fastapi", specifier = ">=0.104.0" },
-    { name = "firecrawl-py", specifier = ">=0.0.16" },
-    { name = "gitpython", specifier = ">=3.1.44" },
-    { name = "google-search-results", specifier = ">=2.4.2" },
-    { name = "httpx", specifier = ">=0.24.0" },
-    { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "litellm" },
-    { name = "loguru" },
-    { name = "markdown", specifier = ">=3.4.0" },
-    { name = "mcp", specifier = ">=1.4.1" },
-    { name = "mem0ai", specifier = ">=0.1.106" },
-    { name = "numpy", specifier = ">=1.24.3" },
-    { name = "openai", specifier = ">=1.0.0" },
-    { name = "playwright", specifier = ">=1.52.0" },
-    { name = "playwright", marker = "extra == 'all'", specifier = ">=1.40.0" },
-    { name = "playwright", marker = "extra == 'web-automation'", specifier = ">=1.40.0" },
-    { name = "pyarrow", specifier = ">=19.0.1" },
-    { name = "pydantic", specifier = ">=2.7.1" },
-    { name = "pygithub", specifier = ">=2.6.1" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "pyyaml", specifier = ">=6.0.1" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "rich", specifier = ">=13.6.0" },
-    { name = "sqlalchemy", specifier = ">=2.0.0" },
-    { name = "sqlmodel", specifier = ">=0.0.8" },
-    { name = "sse-starlette", specifier = ">=1.6.5" },
-    { name = "streamlit", marker = "extra == 'all'", specifier = ">=1.32.0" },
-    { name = "uv", marker = "extra == 'dev'" },
-    { name = "uvicorn", specifier = ">=0.24.0" },
-]
-provides-extras = ["dev", "code-execution", "web-automation", "all"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "mypy", specifier = ">=1.16.1" },
-    { name = "pytest", specifier = ">=8.3.5" },
-    { name = "pytest-asyncio", specifier = ">=1.0.0" },
-    { name = "toml", specifier = ">=0.10.2" },
-    { name = "types-aiofiles", specifier = ">=24.1.0.20250708" },
-    { name = "types-pyyaml", specifier = ">=6.0.12.20250516" },
-]
-
-[[package]]
 name = "aiofiles"
 version = "24.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -7206,6 +7079,133 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d2/19/f5b78616566ea68edd42aacaf645adbf71fbd83fc52281fba555dc27e3f1/uvloop-0.21.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f3df876acd7ec037a3d005b3ab85a7e4110422e4d9c1571d4fc89b0fc41b6816", size = 4701068 },
     { url = "https://files.pythonhosted.org/packages/47/57/66f061ee118f413cd22a656de622925097170b9380b30091b78ea0c6ea75/uvloop-0.21.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:bd53ecc9a0f3d87ab847503c2e1552b690362e005ab54e8a48ba97da3924c0dc", size = 4454428 },
     { url = "https://files.pythonhosted.org/packages/63/9a/0962b05b308494e3202d3f794a6e85abe471fe3cafdbcf95c2e8c713aabd/uvloop-0.21.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:a5c39f217ab3c663dc699c04cbd50c13813e31d917642d459fdcec07555cc553", size = 4660018 },
+]
+
+[[package]]
+name = "vibex"
+version = "0.27.10"
+source = { editable = "." }
+dependencies = [
+    { name = "aiofiles" },
+    { name = "aiohttp" },
+    { name = "beautifulsoup4" },
+    { name = "browser-use" },
+    { name = "chromadb" },
+    { name = "crawl4ai" },
+    { name = "fastapi" },
+    { name = "firecrawl-py" },
+    { name = "gitpython" },
+    { name = "google-search-results" },
+    { name = "httpx" },
+    { name = "jinja2" },
+    { name = "litellm" },
+    { name = "loguru" },
+    { name = "markdown" },
+    { name = "mcp" },
+    { name = "mem0ai" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.2.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "openai" },
+    { name = "playwright" },
+    { name = "pyarrow" },
+    { name = "pydantic" },
+    { name = "pygithub" },
+    { name = "python-dotenv" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "rich" },
+    { name = "sqlalchemy" },
+    { name = "sqlmodel" },
+    { name = "sse-starlette" },
+    { name = "uvicorn" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "browser-use" },
+    { name = "daytona" },
+    { name = "playwright" },
+    { name = "streamlit" },
+]
+code-execution = [
+    { name = "daytona" },
+]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "uv" },
+]
+web-automation = [
+    { name = "browser-use" },
+    { name = "playwright" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "toml" },
+    { name = "types-aiofiles" },
+    { name = "types-pyyaml" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiofiles", specifier = ">=24.1.0" },
+    { name = "aiohttp", specifier = ">=3.8.0" },
+    { name = "beautifulsoup4", specifier = ">=4.12.0" },
+    { name = "browser-use", specifier = ">=0.1.0" },
+    { name = "browser-use", marker = "extra == 'all'", specifier = ">=0.1.0" },
+    { name = "browser-use", marker = "extra == 'web-automation'", specifier = ">=0.1.0" },
+    { name = "chromadb", specifier = ">=1.0.12" },
+    { name = "crawl4ai", specifier = ">=0.7.0" },
+    { name = "daytona", marker = "extra == 'all'", specifier = ">=0.1.0" },
+    { name = "daytona", marker = "extra == 'code-execution'", specifier = ">=0.1.0" },
+    { name = "fastapi", specifier = ">=0.104.0" },
+    { name = "firecrawl-py", specifier = ">=0.0.16" },
+    { name = "gitpython", specifier = ">=3.1.44" },
+    { name = "google-search-results", specifier = ">=2.4.2" },
+    { name = "httpx", specifier = ">=0.24.0" },
+    { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "litellm" },
+    { name = "loguru" },
+    { name = "markdown", specifier = ">=3.4.0" },
+    { name = "mcp", specifier = ">=1.4.1" },
+    { name = "mem0ai", specifier = ">=0.1.106" },
+    { name = "numpy", specifier = ">=1.24.3" },
+    { name = "openai", specifier = ">=1.0.0" },
+    { name = "playwright", specifier = ">=1.52.0" },
+    { name = "playwright", marker = "extra == 'all'", specifier = ">=1.40.0" },
+    { name = "playwright", marker = "extra == 'web-automation'", specifier = ">=1.40.0" },
+    { name = "pyarrow", specifier = ">=19.0.1" },
+    { name = "pydantic", specifier = ">=2.7.1" },
+    { name = "pygithub", specifier = ">=2.6.1" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.1" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "rich", specifier = ">=13.6.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.0" },
+    { name = "sqlmodel", specifier = ">=0.0.8" },
+    { name = "sse-starlette", specifier = ">=1.6.5" },
+    { name = "streamlit", marker = "extra == 'all'", specifier = ">=1.32.0" },
+    { name = "uv", marker = "extra == 'dev'" },
+    { name = "uvicorn", specifier = ">=0.24.0" },
+]
+provides-extras = ["dev", "code-execution", "web-automation", "all"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.16.1" },
+    { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-asyncio", specifier = ">=1.0.0" },
+    { name = "toml", specifier = ">=0.10.2" },
+    { name = "types-aiofiles", specifier = ">=24.1.0.20250708" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20250516" },
 ]
 
 [[package]]

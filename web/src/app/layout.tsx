@@ -7,19 +7,14 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "VibeX Studio",
-    template: "%s | VibeX Studio",
+    default: "VibeX",
+    template: "%s | VibeX",
   },
   description: "Unified interface for VibeX task execution and observability",
-  keywords: [
-    "AI",
-    "agents",
-    "automation",
-    "multi-agent",
-  ],
+  keywords: ["AI", "agents", "automation", "multi-agent"],
   authors: [{ name: "VibeX Team" }],
-  creator: "VibeX Studio",
-  publisher: "VibeX Studio",
+  creator: "VibeX",
+  publisher: "VibeX",
   formatDetection: {
     email: false,
     address: false,
