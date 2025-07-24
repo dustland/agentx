@@ -2,7 +2,7 @@
 # This deploys both the API server and Web interface
 
 [phases.setup]
-nixPkgs = ["python311", "nodejs_20", "pnpm", "git"]
+nixPkgs = ["python311Full", "nodejs_20", "pnpm", "git"]
 
 [phases.install]
 dependsOn = ["setup"]
