@@ -67,12 +67,6 @@ import {
 import Image from "next/image";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { Button } from "nextra/components";
-
-const basePath =
-  process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
-    ? "/vibex"
-    : "";
 
 // Enhanced bootstrap tabs with example code
 const BootstrapTabs = () => {
@@ -1201,7 +1195,7 @@ export default function HomePage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="relative">
                   <Image
-                    src={`${basePath}/logo.png`}
+                    src={`/logo.png`}
                     alt="VibeX"
                     className="w-10 h-10"
                     width={40}

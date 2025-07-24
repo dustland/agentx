@@ -4,18 +4,12 @@ import { Layout, Navbar } from "nextra-theme-docs";
 import { getPageMap } from "nextra/page-map";
 import Image from "next/image";
 
-// Get the base path for favicon assets in metadata
-const basePath =
-  process.env.NODE_ENV === "production" && process.env.GITHUB_ACTIONS === "true"
-    ? "/vibex"
-    : "";
-
 const navbar = (
   <Navbar
     logo={
       <div>
         <Image
-          src={`${basePath}/logo.png`}
+          src={`/logo.png`}
           alt="VibeX"
           height={24}
           width={24}
@@ -58,20 +52,20 @@ export const metadata = {
   },
   icons: {
     icon: [
-      { url: `${basePath}/favicon.ico`, sizes: "16x16", type: "image/x-icon" },
+      { url: `/favicon.ico`, sizes: "16x16", type: "image/x-icon" },
       {
-        url: `${basePath}/favicon-16x16.png`,
+        url: `/favicon-16x16.png`,
         sizes: "16x16",
         type: "image/png",
       },
       {
-        url: `${basePath}/favicon-32x32.png`,
+        url: `/favicon-32x32.png`,
         sizes: "32x32",
         type: "image/png",
       },
     ],
-    shortcut: `${basePath}/favicon.ico`,
-    apple: `${basePath}/logo.png`,
+    shortcut: `/favicon.ico`,
+    apple: `/logo.png`,
   },
   openGraph: {
     url: "https://dustland.github.io/vibex",
