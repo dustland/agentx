@@ -1,3 +1,3 @@
 # Cli
 
-*Module: [`agentx.cli`](https://github.com/dustland/agentx/blob/main/src/agentx/cli.py)*
+_Module: [`vibex.cli`](https://github.com/dustland/vibex/blob/main/src/vibex/cli.py)_

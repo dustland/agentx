@@ -18,7 +18,7 @@ This project uses an automated release system that follows semantic versioning w
 ### **What Gets Updated**
 
 - ✅ `pyproject.toml` - Project version
-- ✅ `src/agentx/__init__.py` - Package `__version__` variable
+- ✅ `src/vibex/__init__.py` - Package `__version__` variable
 - ✅ Git tag created (e.g., `v0.10.0`)
 - ✅ GitHub release with auto-generated notes
 - ✅ PyPI package published automatically

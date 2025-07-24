@@ -6,9 +6,9 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from agentx.storage import TaskspaceStorage
-from agentx.storage.git_storage import GitArtifactStorage
-from agentx.builtin_tools.file import FileTool
+from vibex.storage import TaskspaceStorage
+from vibex.storage.git_storage import GitArtifactStorage
+from vibex.builtin_tools.file import FileTool
 
 
 class TestFileToolIntegration:

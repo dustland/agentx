@@ -7,8 +7,8 @@ import aiohttp
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from agentx import get_logger
-from agentx.core.tool import Tool, tool
+from vibex import get_logger
+from vibex.core.tool import Tool, tool
 
 logger = get_logger(__name__)
 

@@ -1,10 +1,10 @@
-# AgentX REST API
+# VibeX REST API
 
-A simple FastAPI-based REST API for task execution and memory management in the AgentX framework.
+A simple FastAPI-based REST API for task execution and memory management in the VibeX framework.
 
 ## Overview
 
-The AgentX server provides a straightforward RESTful interface for:
+The VibeX server provides a straightforward RESTful interface for:
 
 - Creating and managing tasks
 - Accessing task and agent memory
@@ -13,7 +13,7 @@ The AgentX server provides a straightforward RESTful interface for:
 ## Quick Start
 
 ```python
-from agentx.server import run_server
+from vibex.server import run_server
 
 # Start the server
 run_server(host="0.0.0.0", port=7770)
@@ -262,7 +262,7 @@ curl "http://localhost:7770/tasks/task_123/memory?query=trends&agent_id=writer"
 The server can be configured when starting:
 
 ```python
-from agentx.server import run_server
+from vibex.server import run_server
 
 run_server(
     host="0.0.0.0",      # Host to bind to

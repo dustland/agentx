@@ -3,10 +3,10 @@ import tempfile
 import yaml
 from pathlib import Path
 from pydantic import ValidationError
-from agentx.core.xagent import XAgent
-from agentx.core.agent import Agent
-from agentx.tool.registry import get_tool_registry
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError
+from vibex.core.xagent import XAgent
+from vibex.core.agent import Agent
+from vibex.tool.registry import get_tool_registry
+from vibex.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError
 
 # It's better to use absolute paths in tests to avoid issues with the test runner's CWD
 # This finds the project root based on the test file's location.

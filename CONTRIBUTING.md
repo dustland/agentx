@@ -1,6 +1,6 @@
-# Contributing to AgentX
+# Contributing to VibeX
 
-Thank you for your interest in contributing to AgentX! This document provides guidelines and instructions for contributing to this project.
+Thank you for your interest in contributing to VibeX! This document provides guidelines and instructions for contributing to this project.
 
 ## Code of Conduct
 
@@ -52,8 +52,8 @@ We welcome suggestions for enhancements! Please create an issue with:
 
 ```bash
 # Clone your fork
-git clone https://github.com/dustland/agentx.git
-cd agentx
+git clone https://github.com/dustland/vibex.git
+cd vibex
 
 # Set up the development environment
 ./setup.sh  # On Unix/macOS
@@ -78,7 +78,7 @@ pytest
 - Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) for Python code
 - Use descriptive variable and function names
 - Include docstrings for all modules, classes, and functions
-- Organize imports as described in [agentx.mdc](.cursor/rules/agentx.mdc)
+- Organize imports as described in [vibex.mdc](.cursor/rules/vibex.mdc)
 
 ## Documentation
 
@@ -90,7 +90,7 @@ Update documentation when you make changes:
 
 ## License
 
-By contributing to AgentX, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
+By contributing to VibeX, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
 
 ## Recognition
 

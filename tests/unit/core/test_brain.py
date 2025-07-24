@@ -11,8 +11,8 @@ import asyncio
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from datetime import datetime
 
-from agentx.core.brain import Brain, BrainConfig, BrainMessage, BrainResponse
-from agentx.utils.logger import get_logger
+from vibex.core.brain import Brain, BrainConfig, BrainMessage, BrainResponse
+from vibex.utils.logger import get_logger
 
 
 class TestBrainInitialization:
@@ -158,7 +158,7 @@ class TestBrainGeneration:
             {"role": "user", "content": "Hello, how are you?"}
         ]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "I'm doing well, thank you!"
@@ -183,7 +183,7 @@ class TestBrainGeneration:
         messages = [{"role": "user", "content": "Test"}]
         system_prompt = "You are a helpful assistant."
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "Response"
@@ -225,7 +225,7 @@ class TestBrainGeneration:
             }
         ]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = None
@@ -254,7 +254,7 @@ class TestBrainGeneration:
         """generate_response should handle LLM errors gracefully."""
         messages = [{"role": "user", "content": "Test"}]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_completion.side_effect = Exception("API Error")
 
             response = await self.brain.generate_response(messages)
@@ -269,7 +269,7 @@ class TestBrainGeneration:
         """generate_response should support JSON mode."""
         messages = [{"role": "user", "content": "Return JSON data"}]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = '{"result": "success"}'
@@ -292,7 +292,7 @@ class TestBrainGeneration:
         """generate_response should use configuration parameters."""
         messages = [{"role": "user", "content": "Test"}]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "Response"
@@ -341,7 +341,7 @@ class TestBrainStreaming:
             for chunk in chunks:
                 yield chunk
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_completion.return_value = mock_stream()
 
             chunks = []
@@ -397,7 +397,7 @@ class TestBrainStreaming:
             mock_stream.return_value = mock_streaming_response()
 
             # Also mock the LLM call to return a dummy response
-            with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+            with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
                 mock_completion.return_value = Mock()  # Dummy response
 
                 chunks = []
@@ -426,7 +426,7 @@ class TestBrainStreaming:
             yield Mock(choices=[Mock(delta=Mock(content="Start"))])
             raise Exception("Stream error")
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_completion.return_value = mock_stream()
 
             chunks = []
@@ -452,7 +452,7 @@ class TestBrainStreaming:
             chunk.usage = {"total_tokens": 10}
             yield chunk
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_completion.return_value = mock_stream()
 
             chunks = []
@@ -477,7 +477,7 @@ class TestBrainInitialization:
     @pytest.mark.asyncio
     async def test_ensure_initialized_validates_function_calling(self):
         """_ensure_initialized should validate function calling support."""
-        with patch('agentx.core.brain.litellm.supports_function_calling') as mock_supports:
+        with patch('vibex.core.brain.litellm.supports_function_calling') as mock_supports:
             mock_supports.return_value = True
 
             await self.brain._ensure_initialized()
@@ -488,7 +488,7 @@ class TestBrainInitialization:
     @pytest.mark.asyncio
     async def test_ensure_initialized_handles_validation_errors(self):
         """_ensure_initialized should handle validation errors gracefully."""
-        with patch('agentx.core.brain.litellm.supports_function_calling') as mock_supports:
+        with patch('vibex.core.brain.litellm.supports_function_calling') as mock_supports:
             mock_supports.side_effect = Exception("Validation error")
 
             await self.brain._ensure_initialized()
@@ -552,7 +552,7 @@ class TestBrainIntegration:
             {"role": "user", "content": "What can you do?"}
         ]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "I can help with many tasks!"
@@ -585,8 +585,8 @@ class TestBrainIntegration:
 
         messages = [{"role": "user", "content": "Test"}]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion, \
-             patch('agentx.core.brain.os.getenv') as mock_getenv:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion, \
+             patch('vibex.core.brain.os.getenv') as mock_getenv:
 
             mock_getenv.return_value = "env_api_key"
             mock_response = Mock()
@@ -621,7 +621,7 @@ class TestBrainIntegration:
         messages = [{"role": "user", "content": "Test"}]
         tools = [{"type": "function", "function": {"name": "test_tool"}}]
 
-        with patch('agentx.core.brain.litellm.acompletion') as mock_completion:
+        with patch('vibex.core.brain.litellm.acompletion') as mock_completion:
             mock_response = Mock()
             mock_response.choices = [Mock()]
             mock_response.choices[0].message.content = "Response without tools"

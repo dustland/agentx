@@ -9,9 +9,9 @@ import statistics
 from pathlib import Path
 from typing import List, Tuple
 
-from agentx.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
-from agentx.storage.cached_taskspace import CachedTaskspaceStorage
-from agentx.storage.factory import StorageFactory
+from vibex.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
+from vibex.storage.cached_taskspace import CachedTaskspaceStorage
+from vibex.storage.factory import StorageFactory
 
 
 async def benchmark_operation(name: str, func, iterations: int = 100) -> Tuple[float, float, float]:

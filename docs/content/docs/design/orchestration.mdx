@@ -1,13 +1,13 @@
 ---
 title: "Orchestration System"
-description: "The core design and principles for coordinating autonomous agents in AgentX."
+description: "The core design and principles for coordinating autonomous agents in VibeX."
 ---
 
 # Orchestration System
 
 ## 1. Core Principles
 
-The AgentX orchestration model is designed to coordinate multiple autonomous agents to achieve complex goals reliably and predictably. The architecture is built on three core principles:
+The VibeX orchestration model is designed to coordinate multiple autonomous agents to achieve complex goals reliably and predictably. The architecture is built on three core principles:
 
 1.  **Unified Conversational Interface**: Users interact with a single entity (`XAgent`) that manages the entire multi-agent team behind the scenes. This provides a natural, chat-like experience while maintaining sophisticated orchestration capabilities.
 2.  **Plan-Driven Execution**: Every task is driven by a structured, machine-readable `Plan`. The `Plan` is the single source of truth for XAgent, defining the sequence of tasks, their dependencies, and their goals. This ensures the process is predictable, repeatable, and resumable.
@@ -125,7 +125,7 @@ print(response.text)
 #### **Rich Messages with Attachments**
 
 ```python
-from agentx.core.message import Message, TextPart, ArtifactPart
+from vibex.core.message import Message, TextPart, ArtifactPart
 
 response = await x.chat(Message(parts=[
     TextPart("Use this style guide for the report"),

@@ -10,8 +10,8 @@ import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-from agentx.builtin_tools.research import ResearchTool
-from agentx.storage.taskspace import TaskspaceStorage
+from vibex.builtin_tools.research import ResearchTool
+from vibex.storage.taskspace import TaskspaceStorage
 
 
 async def test_research_file_naming():

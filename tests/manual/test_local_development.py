@@ -13,12 +13,12 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from agentx.storage import TaskspaceFactory
+from vibex.storage import TaskspaceFactory
 
 
 async def test_local_development_scenario():
     """Test the complete local development workflow."""
-    print("=== AgentX Taskspace System - Local Development Test ===\n")
+    print("=== VibeX Taskspace System - Local Development Test ===\n")
     
     # Setup
     temp_dir = Path(tempfile.mkdtemp())

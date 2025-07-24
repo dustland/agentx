@@ -2,7 +2,7 @@
 
 ## 1. Overview and Core Principles
 
-This document details the architecture for defining, executing, and managing tools within AgentX. It is designed to be secure, robust, and extensible. The core principles are:
+This document details the architecture for defining, executing, and managing tools within VibeX. It is designed to be secure, robust, and extensible. The core principles are:
 
 - **Security First**: Untrusted code (LLM-generated shell commands) must never execute directly on the host machine. All tool execution is centralized and sandboxed.
 - **Robust Self-Correction**: LLM-generated tool calls can be malformed. The system must be able to detect this, provide corrective feedback to the LLM, and allow it to fix its own mistakes.
@@ -32,7 +32,7 @@ Tools are made available to agents via a central `ToolRegistry`.
 - **Decorator-Based Registration**: The `@register_tool` decorator is the primary mechanism for adding a tool to the registry.
 
   ```python
-  from agentx.tool import register_tool
+  from vibex.tool import register_tool
 
   @register_tool
   def write_file(path: str, content: str) -> str:
@@ -117,7 +117,7 @@ graph TD
 
 ## 4. Security Architecture: The Sandbox
 
-Executing arbitrary, LLM-generated shell commands is a major security risk. AgentX mitigates this by using a sandboxed execution environment with user-scoped isolation.
+Executing arbitrary, LLM-generated shell commands is a major security risk. VibeX mitigates this by using a sandboxed execution environment with user-scoped isolation.
 
 **User-Scoped Execution**: All tool executions are scoped to the user's taskspace directory, preventing access to other users' data. Tools can only read from and write to `taskspace/{user_id}/{task_id}/` directories, ensuring complete data isolation in multi-tenant deployments.
 
@@ -131,7 +131,7 @@ Executing arbitrary, LLM-generated shell commands is a major security risk. Agen
 
 ### 5.1. Custom and Built-in Tools
 
-- **Built-in Tools**: AgentX provides a core set of safe tools for file I/O, search, etc., located in `src/agentx/builtin_tools/`.
+- **Built-in Tools**: VibeX provides a core set of safe tools for file I/O, search, etc., located in `src/vibex/builtin_tools/`.
 - **Custom Tools**: Users can easily define their own tools in their project's codebase. As long as the file is imported and the functions are decorated with `@register_tool`, they will be available to the agents.
 
 ### 5.2. MCP (Multi-Agent Communication Protocol) Integration

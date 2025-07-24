@@ -13,7 +13,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from agentx.storage import TaskspaceFactory
+from vibex.storage import TaskspaceFactory
 
 
 async def test_cache_integration():

@@ -1,14 +1,14 @@
-# AgentX System Architecture
+# VibeX System Architecture
 
 ## 1. Executive Summary
 
-AgentX is an open-source backbone for building secure, observable, and fully autonomous multi-agent systems. A lightweight micro-kernel orchestrates specialised agents, turning a single user request into a coordinated workflow that spans tool execution, memory retrieval, and artifact management—all within isolated, version-controlled taskspaces. Every decision, message, and side effect is captured as a structured event, providing complete auditability and real-time insight into system behaviour.
+VibeX is an open-source backbone for building secure, observable, and fully autonomous multi-agent systems. A lightweight micro-kernel orchestrates specialised agents, turning a single user request into a coordinated workflow that spans tool execution, memory retrieval, and artifact management—all within isolated, version-controlled taskspaces. Every decision, message, and side effect is captured as a structured event, providing complete auditability and real-time insight into system behaviour.
 
 ## 2. Vision & Principles
 
 ### 2.1 Project Vision
 
-AgentX enables organisations to decompose complex goals into collaborative **Teams** of agents, each focusing on a well-defined role. A stateful **Orchestrator** governs the workflow, assigns tasks to agents, and executes tools on the agents' behalf, while a **Task Executor** drives the lifecycle of the task itself. The result is a flexible framework that elevates individual agent capabilities into a cohesive, self-optimising system that can learn, adapt, and scale with minimal human intervention.
+VibeX enables organisations to decompose complex goals into collaborative **Teams** of agents, each focusing on a well-defined role. A stateful **Orchestrator** governs the workflow, assigns tasks to agents, and executes tools on the agents' behalf, while a **Task Executor** drives the lifecycle of the task itself. The result is a flexible framework that elevates individual agent capabilities into a cohesive, self-optimising system that can learn, adapt, and scale with minimal human intervention.
 
 ### 2.2 Architectural Principles
 
@@ -56,7 +56,7 @@ graph TD
     TE --> PLAT
 ```
 
-The AgentX architecture follows a **clean dependency inversion principle** with four distinct layers:
+The VibeX architecture follows a **clean dependency inversion principle** with four distinct layers:
 
 - **Consumer Modules**: User-facing interfaces that depend on core in a single direction. Includes CLI tools, REST/WebSocket APIs, and observability dashboards. These modules can freely import from core without creating circular dependencies.
 
@@ -148,7 +148,7 @@ graph TD
 
 ## 4. Collaboration Model
 
-In AgentX, a **Team** of collaborating agents is the primary mechanism for executing complex tasks. The core runtime consists of three key components that work in concert to manage the task lifecycle.
+In VibeX, a **Team** of collaborating agents is the primary mechanism for executing complex tasks. The core runtime consists of three key components that work in concert to manage the task lifecycle.
 
 ### 4.1 Key Roles
 
@@ -175,7 +175,7 @@ In AgentX, a **Team** of collaborating agents is the primary mechanism for execu
 
 ### 4.2 Execution Modes
 
-AgentX supports two primary modes of execution, offering a trade-off between autonomy and control.
+VibeX supports two primary modes of execution, offering a trade-off between autonomy and control.
 
 **1. Autonomous Execution (`execute_task`)**
 
@@ -231,7 +231,7 @@ sequenceDiagram
 
 ### 4.3 Orchestrator vs Specialist Agents: A Key Distinction
 
-The AgentX architecture makes a crucial distinction between two types of intelligence:
+The VibeX architecture makes a crucial distinction between two types of intelligence:
 
 **The Orchestrator (Project Manager)**
 
@@ -316,7 +316,7 @@ sequenceDiagram
 
 ### 5.3 End-to-End Streaming
 
-To provide maximum transparency and a highly responsive user experience, AgentX is designed for **end-to-end streaming**. This is more than just streaming the final answer; it means that every significant piece of text generated during the task lifecycle is yielded back to the client in real-time.
+To provide maximum transparency and a highly responsive user experience, VibeX is designed for **end-to-end streaming**. This is more than just streaming the final answer; it means that every significant piece of text generated during the task lifecycle is yielded back to the client in real-time.
 
 This is achieved by making streaming the default behavior at every layer of the stack:
 
@@ -328,11 +328,11 @@ This architecture allows a developer or user to watch the entire multi-agent col
 
 ## 6. State and Context Management
 
-AgentX is designed around the core principle that agents should operate on a rich, durable, and easily accessible context. This is achieved through two tightly integrated components: the **Taskspace** and the **Memory System**.
+VibeX is designed around the core principle that agents should operate on a rich, durable, and easily accessible context. This is achieved through two tightly integrated components: the **Taskspace** and the **Memory System**.
 
 ### 6.1 Taskspace: A Durable Foundation
 
-The **Taskspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the taskspace, AgentX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
+The **Taskspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the taskspace, VibeX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
 
 **Multi-Tenant Architecture**: All taskspaces are user-scoped with the structure `taskspace/{user_id}/{task_id}/` to provide organizational separation between users. See the [Multi-Tenant Architecture](/design/multi-tenant-security) documentation for details on user isolation patterns and required authentication for secure deployments.
 
@@ -371,7 +371,7 @@ This scenario demonstrates how the combination of a durable `Taskspace` and an i
 
 ### 6.3 Standard Agents Library
 
-AgentX ships with a curated library of specialist agents in `src/agentx/agents/`:
+VibeX ships with a curated library of specialist agents in `src/vibex/agents/`:
 
 **Core Workflow Agents:**
 
@@ -436,7 +436,7 @@ This infrastructure design ensures that the Memory System can scale from develop
 
 ### 7.4 Observability
 
-The Observability service provides real-time insight into the inner workings of the AgentX framework. It subscribes to the `Event Bus` to receive a live stream of all system events—from task creation to agent handoffs to tool executions. This data is then exposed through a built-in web dashboard, allowing developers to:
+The Observability service provides real-time insight into the inner workings of the VibeX framework. It subscribes to the `Event Bus` to receive a live stream of all system events—from task creation to agent handoffs to tool executions. This data is then exposed through a built-in web dashboard, allowing developers to:
 
 - Visually trace the entire lifecycle of a task.
 - Inspect the contents of any agent's taskspace, including conversation history and artifacts.
@@ -446,7 +446,7 @@ By making the system transparent by default, the Observability service dramatica
 
 ## 8. Tool Management Architecture
 
-The AgentX framework uses a unified **ToolManager** architecture that provides task-level tool isolation and streamlined execution. Each Task Executor creates its own ToolManager instance, ensuring that tool registrations and executions are isolated between different tasks.
+The VibeX framework uses a unified **ToolManager** architecture that provides task-level tool isolation and streamlined execution. Each Task Executor creates its own ToolManager instance, ensuring that tool registrations and executions are isolated between different tasks.
 
 ### 8.1 ToolManager Components
 
@@ -465,7 +465,7 @@ The ToolManager combines three key components:
 
 ## 9. Builtin Tools
 
-Builtin Tools extend AgentX with first-class capabilities without requiring users to write custom plugins. They are registered automatically at startup and are available to any agent subject to security policy. These tools are designed to be general-purpose and cover the most common needs of autonomous agents.
+Builtin Tools extend VibeX with first-class capabilities without requiring users to write custom plugins. They are registered automatically at startup and are available to any agent subject to security policy. These tools are designed to be general-purpose and cover the most common needs of autonomous agents.
 
 Key builtin tools include:
 
@@ -476,16 +476,16 @@ Key builtin tools include:
 - **Planning Tools**: Sophisticated task planning and execution tracking tools that help agents break down complex tasks into manageable phases.
 - **Search Tools**: Web search capabilities using multiple search engines (Google, Bing, DuckDuckGo) with configurable parameters.
 
-By providing these foundational capabilities, AgentX ensures that developers can build powerful and effective agent teams from day one.
+By providing these foundational capabilities, VibeX ensures that developers can build powerful and effective agent teams from day one.
 
 ## 10. Extensibility
 
-AgentX is designed as a production-ready backbone, which means it must be extensible at every layer.
+VibeX is designed as a production-ready backbone, which means it must be extensible at every layer.
 
 - **Adding LLM Providers**: The `Brain` component uses a provider model that allows new LLMs to be integrated by implementing a simple, common interface.
 - **Custom Tools**: Developers can add their own tools by decorating Python functions. These are registered with the task's ToolManager and exposed to agents in the same way as standard tools.
 - **MCP Tools & API Integration**: For complex integrations, the framework supports Multi-Container Platform (MCP) tools, which run in secure sandboxes, allowing safe interaction with enterprise APIs and SaaS platforms.
 
-## 11. The Future of AgentX
+## 11. The Future of VibeX
 
-AgentX will continue to evolve along three pillars: performance, interoperability, and safety. Upcoming priorities include native support for streaming multimodal models, tighter integration with external knowledge graphs to improve grounding, and progressive guardrail policies that adapt to organisational compliance requirements. We also plan to continue enhancing the default **Orchestrator** and **Standard Agent** library to make the framework even more powerful out of the box.
+VibeX will continue to evolve along three pillars: performance, interoperability, and safety. Upcoming priorities include native support for streaming multimodal models, tighter integration with external knowledge graphs to improve grounding, and progressive guardrail policies that adapt to organisational compliance requirements. We also plan to continue enhancing the default **Orchestrator** and **Standard Agent** library to make the framework even more powerful out of the box.

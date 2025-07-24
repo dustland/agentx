@@ -2,7 +2,7 @@
 
 **⏱️ Time: 60 minutes | 🎯 Goal: Build a scalable, production-ready system**
 
-Time to build something serious! In this tutorial, you'll create a comprehensive research system with multiple specialized agents, persistent memory, and production-ready features. This is where AgentX really shines.
+Time to build something serious! In this tutorial, you'll create a comprehensive research system with multiple specialized agents, persistent memory, and production-ready features. This is where VibeX really shines.
 
 ## What You'll Learn
 
@@ -439,7 +439,7 @@ Create `tools/research_tools.py`:
 import aiohttp
 import asyncio
 from typing import List, Dict, Any
-from agentx.core.tool import Tool
+from vibex.core.tool import Tool
 
 class WebSearchTool(Tool):
     """Production web search tool with rate limiting and error handling."""
@@ -540,7 +540,7 @@ import json
 import aiofiles
 from pathlib import Path
 from typing import Dict, Any, Optional
-from agentx.core.tool import Tool
+from vibex.core.tool import Tool
 
 class FileOperationsTool(Tool):
     """Production file operations with error handling and security."""
@@ -683,7 +683,7 @@ from datetime import datetime
 # Add tools to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agentx.core.task import TaskExecutor
+from vibex.core.task import TaskExecutor
 
 # Configure production logging
 logging.basicConfig(
@@ -830,7 +830,7 @@ class ResearchSystem:
 
 async def main():
     """Main application entry point."""
-    print("🏭 AgentX Production Research System")
+    print("🏭 VibeX Production Research System")
     print("Advanced multi-agent research with memory and file operations")
     print()
 
@@ -873,7 +873,7 @@ if __name__ == "__main__":
 Create `requirements.txt`:
 
 ```txt
-agentx-py>=0.1.0
+vibex>=0.1.0
 aiofiles>=23.2.1
 aiohttp>=3.9.0
 mem0ai>=0.1.0
@@ -918,7 +918,7 @@ Enter research topic: Blockchain technology adoption in healthcare
 
 ## 🎉 Congratulations!
 
-You've completed the comprehensive AgentX tutorial series! You now have the knowledge and skills to build production-ready multi-agent systems.
+You've completed the comprehensive VibeX tutorial series! You now have the knowledge and skills to build production-ready multi-agent systems.
 
 ### What You've Mastered
 
@@ -929,7 +929,7 @@ You've completed the comprehensive AgentX tutorial series! You now have the know
 
 ### Real-World Applications
 
-With your AgentX skills, you can now build:
+With your VibeX skills, you can now build:
 
 - **Research Systems** - Automated research with multiple specialist agents
 - **Content Creation** - Writer-reviewer teams for high-quality content
@@ -939,11 +939,11 @@ With your AgentX skills, you can now build:
 
 ### Next Steps
 
-1. **Explore the Examples** - Check out the [example projects](https://github.com/dustland/agentx/tree/main/examples)
+1. **Explore the Examples** - Check out the [example projects](https://github.com/dustland/vibex/tree/main/examples)
 2. **Read the API Docs** - Dive deeper with the [API Reference](/api/core-classes)
-3. **Join the Community** - Connect with other developers on [GitHub Discussions](https://github.com/dustland/agentx/discussions)
+3. **Join the Community** - Connect with other developers on [GitHub Discussions](https://github.com/dustland/vibex/discussions)
 4. **Build Something Amazing** - Apply your skills to solve real problems
 
 ---
 
-🚀 **Ready to build the future with AgentX?** The possibilities are endless!
+🚀 **Ready to build the future with VibeX?** The possibilities are endless!

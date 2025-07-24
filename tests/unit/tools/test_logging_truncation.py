@@ -5,7 +5,7 @@ This test ensures that tool results with large content are properly truncated
 in logs to prevent overwhelming console output.
 """
 import pytest
-from agentx.tool.executor import _truncate_content_for_logging, safe_json_dumps_for_logging
+from vibex.tool.executor import _truncate_content_for_logging, safe_json_dumps_for_logging
 
 
 class TestLoggingTruncation:

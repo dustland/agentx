@@ -141,7 +141,7 @@ def _add_monitor_parser(subparsers) -> None:
     )
     monitor_parser.add_argument(
         "--data-dir",
-        help="Path to agentx data directory (default: auto-detect)"
+        help="Path to vibex data directory (default: auto-detect)"
     )
 
 

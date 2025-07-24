@@ -20,7 +20,7 @@
     "word",
     "ai",
     "document-processing",
-    "agentx"
+    "vibex"
   ],
   "author": "Dustland Team",
   "license": "MIT",
@@ -34,10 +34,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dustland/agentx.git"
+    "url": "https://github.com/dustland/vibex.git"
   },
   "bugs": {
-    "url": "https://github.com/dustland/agentx/issues"
+    "url": "https://github.com/dustland/vibex/issues"
   },
-  "homepage": "https://github.com/dustland/agentx#readme"
+  "homepage": "https://github.com/dustland/vibex#readme"
 }

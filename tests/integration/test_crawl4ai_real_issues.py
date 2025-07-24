@@ -10,8 +10,8 @@ import time
 import os
 from typing import List, Dict, Any
 
-from agentx.builtin_tools.web import WebTool
-from agentx.builtin_tools.research import ResearchTool
+from vibex.builtin_tools.web import WebTool
+from vibex.builtin_tools.research import ResearchTool
 
 
 class TestCrawl4AIRealIssues:

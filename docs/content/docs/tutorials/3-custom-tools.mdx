@@ -52,7 +52,7 @@ The heart of this tutorial is building a custom tool. Create `weather_tool.py`:
 ```python
 import aiohttp
 from typing import Dict, Any
-from agentx import Tool, tool
+from vibex import Tool, tool
 
 class WeatherTool(Tool):
     """Custom weather tool using Open-Meteo API (no API key required)."""
@@ -191,7 +191,7 @@ Data from Open-Meteo API"""
 
 ### Understanding the Tool
 
-- **Inherits from Tool**: All custom tools extend the AgentX `Tool` base class
+- **Inherits from Tool**: All custom tools extend the VibeX `Tool` base class
 - **Async methods**: Uses `async/await` for non-blocking API calls
 - **Error handling**: Graceful handling of network and API errors
 - **Structured data**: Converts raw API data into readable format
@@ -236,7 +236,7 @@ memory:
 
 ### Configuration Highlights
 
-- **Custom tool type**: `type: "custom"` tells AgentX this is a custom tool
+- **Custom tool type**: `type: "custom"` tells VibeX this is a custom tool
 - **Module and class**: Points to your Python file and class
 - **Tool reference**: Agent lists "weather" in its tools array
 
@@ -309,7 +309,7 @@ from pathlib import Path
 # Add current directory to path for custom tool import
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agentx.core.task import TaskExecutor
+from vibex.core.task import TaskExecutor
 
 async def main():
     print("🌤️  Weather Assistant")
@@ -432,7 +432,7 @@ You've successfully built an agent with custom capabilities! Here's what you acc
 
 1. **Agent receives request**: User asks about weather
 2. **LLM decides to use tool**: Based on the prompt and request
-3. **Tool is invoked**: AgentX calls your `get_weather` method
+3. **Tool is invoked**: VibeX calls your `get_weather` method
 4. **Tool processes request**: Makes API calls and formats data
 5. **Agent uses result**: Incorporates tool output into response
 

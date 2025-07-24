@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# AgentX Studio UI Setup Script
+# VibeX Studio UI Setup Script
 # This script updates dependencies and installs all required shadcn/ui components
 
-echo "🚀 Setting up AgentX Studio..."
+echo "🚀 Setting up VibeX Studio..."
 
 # Update all dependencies to latest versions
 echo "📦 Updating dependencies to latest versions..."

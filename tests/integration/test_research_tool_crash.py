@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-from agentx.builtin_tools.research import ResearchTool
+from vibex.builtin_tools.research import ResearchTool
 
 
 async def test_single_research_light():

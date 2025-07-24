@@ -1,6 +1,6 @@
-# AgentX Test Suite
+# VibeX Test Suite
 
-This directory contains comprehensive tests for the AgentX framework, organized following pytest best practices.
+This directory contains comprehensive tests for the VibeX framework, organized following pytest best practices.
 
 ## Test Structure
 
@@ -53,7 +53,7 @@ uv run pytest tests/unit/core/test_brain.py -v
 ### With Coverage
 
 ```bash
-uv run pytest tests/ --cov=src/agentx --cov-report=html
+uv run pytest tests/ --cov=src/vibex --cov-report=html
 ```
 
 ## Test Features

@@ -1,5 +1,5 @@
 """
-AgentX Framework Test Suite
+VibeX Framework Test Suite
 
 Comprehensive testing for all subsystems:
 - Core components (Agent, Brain, TaskExecutor, Team)

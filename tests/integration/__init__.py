@@ -1,1 +1,1 @@
-# Integration tests for AgentX
+# Integration tests for VibeX

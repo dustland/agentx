@@ -8,8 +8,8 @@ including handling of multiple URLs and browser context management.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from agentx.builtin_tools.web import WebTool, WebContent
-from agentx.core.tool import ToolResult
+from vibex.builtin_tools.web import WebTool, WebContent
+from vibex.core.tool import ToolResult
 
 
 class TestWebToolCrawl4AI:
@@ -39,7 +39,7 @@ class TestWebToolCrawl4AI:
         mock_crawler.__aenter__ = AsyncMock(return_value=mock_crawler)
         mock_crawler.__aexit__ = AsyncMock(return_value=None)
 
-        with patch('agentx.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
+        with patch('vibex.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
             result = await self.web_tool.extract_urls(test_url)
             
             assert result.success is True
@@ -84,7 +84,7 @@ class TestWebToolCrawl4AI:
             browser_instances.append(mock_crawler)
             return mock_crawler
 
-        with patch('agentx.builtin_tools.web.AsyncWebCrawler', side_effect=create_mock_crawler):
+        with patch('vibex.builtin_tools.web.AsyncWebCrawler', side_effect=create_mock_crawler):
             result = await self.web_tool.extract_urls(test_urls)
             
             # Verify separate browser instances were created
@@ -133,7 +133,7 @@ class TestWebToolCrawl4AI:
             call_count += 1
             return mock_crawler
 
-        with patch('agentx.builtin_tools.web.AsyncWebCrawler', side_effect=create_mock_crawler):
+        with patch('vibex.builtin_tools.web.AsyncWebCrawler', side_effect=create_mock_crawler):
             result = await self.web_tool.extract_urls(test_urls)
             
             # Should still return partial success
@@ -166,7 +166,7 @@ class TestWebToolCrawl4AI:
         mock_crawler.__aenter__ = AsyncMock(return_value=mock_crawler)
         mock_crawler.__aexit__ = AsyncMock(return_value=None)
 
-        with patch('agentx.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
+        with patch('vibex.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
             # Test with css selector
             result = await self.web_tool.extract_urls(
                 test_url, 
@@ -206,7 +206,7 @@ class TestWebToolCrawl4AI:
         mock_crawler.__aenter__ = AsyncMock(return_value=mock_crawler)
         mock_crawler.__aexit__ = AsyncMock(return_value=None)
 
-        with patch('agentx.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
+        with patch('vibex.builtin_tools.web.AsyncWebCrawler', return_value=mock_crawler):
             result = await self.web_tool.extract_urls(test_url)
             
             assert result.success is True

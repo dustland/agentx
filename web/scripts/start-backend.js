@@ -15,7 +15,7 @@ console.log('🔍 Checking VibeX Backend Server...');
 // Parse API URL
 const apiUrl = new URL(API_URL);
 
-// Function to check if server is already running and is AgentX
+// Function to check if server is already running and is VibeX
 async function checkHealth() {
   return new Promise((resolve) => {
     const options = {

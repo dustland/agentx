@@ -15,12 +15,12 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from agentx.storage import TaskspaceFactory
+from vibex.storage import TaskspaceFactory
 
 
 async def test_redis_cache_scenario():
     """Test Redis cache functionality."""
-    print("=== AgentX Taskspace System - Redis Cache Test ===\n")
+    print("=== VibeX Taskspace System - Redis Cache Test ===\n")
     
     # Setup
     temp_dir = Path(tempfile.mkdtemp())

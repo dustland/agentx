@@ -10,8 +10,8 @@ import asyncio
 import aiohttp
 import os
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from agentx.builtin_tools.web import WebTool, WebContent
-from agentx.core.tool import ToolResult
+from vibex.builtin_tools.web import WebTool, WebContent
+from vibex.core.tool import ToolResult
 
 
 class TestWebToolInitialization:

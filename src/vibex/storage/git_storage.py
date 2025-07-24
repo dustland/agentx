@@ -72,7 +72,7 @@ class GitArtifactStorage:
             # Configure repository
             with repo.config_writer() as config:
                 config.set_value("user", "name", "VibeX")
-                config.set_value("user", "email", "agentx@dustland.ai")
+                config.set_value("user", "email", "vibex@dustland.ai")
 
             # Git repository initialized - no initial commit needed
 

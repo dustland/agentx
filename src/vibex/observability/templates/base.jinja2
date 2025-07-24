@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AgentX Observability{% endblock %}</title>
+    <title>{% block title %}VibeX Observability{% endblock %}</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/static/logo.png">
@@ -111,8 +111,8 @@
             <!-- Logo -->
             <div class="me-5 lg:me-0 lg:hidden">
                 <a href="/" class="flex items-center text-xl font-bold text-gray-800 hover:text-gray-600 dark:text-white dark:hover:text-neutral-300 transition-colors">
-                    <img src="/static/logo.png" alt="AgentX" class="w-6 h-6 mr-2">
-                    AgentX
+                    <img src="/static/logo.png" alt="VibeX" class="w-6 h-6 mr-2">
+                    VibeX
                 </a>
             </div>
 
@@ -160,8 +160,8 @@
             <div class="px-6 pt-4">
                 <!-- Logo -->
                 <a href="/" class="flex items-center text-xl font-bold text-gray-800 dark:text-white">
-                    <img src="/static/logo.png" alt="AgentX" class="w-6 h-6 mr-2">
-                    AgentX <span class="text-sm text-gray-400 ml-2">O11y</span>
+                    <img src="/static/logo.png" alt="VibeX" class="w-6 h-6 mr-2">
+                    VibeX <span class="text-sm text-gray-400 ml-2">O11y</span>
                 </a>
             </div>
 
@@ -252,7 +252,7 @@
                             </h3>
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Set the path to your AgentX project directory containing taskspace/ and config/ folders
+                                    Set the path to your VibeX project directory containing taskspace/ and config/ folders
                                 </p>
                             </div>
 
@@ -268,7 +268,7 @@
                                     <label for="new-project-path" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Project Path:</label>
                                     <input type="text" id="new-project-path" name="new-project-path"
                                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                           placeholder="/path/to/your/agentx/project"
+                                           placeholder="/path/to/your/vibex/project"
                                            value="{{ config_data.project_path or '.' }}">
                                 </div>
 
@@ -537,7 +537,7 @@
         // Test functionality after initialization
         setTimeout(() => {
             // Test toast notification after everything is loaded
-            showToast('AgentX Observability Platform loaded successfully!', 'success');
+            showToast('VibeX Observability Platform loaded successfully!', 'success');
         }, 2000);
     </script>
 

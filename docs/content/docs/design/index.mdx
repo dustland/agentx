@@ -1,10 +1,10 @@
-# AgentX Design & Architecture
+# VibeX Design & Architecture
 
-Welcome to the AgentX design documentation! This section provides comprehensive technical insights into how AgentX works internally, its architectural decisions, and the principles that guide its development.
+Welcome to the VibeX design documentation! This section provides comprehensive technical insights into how VibeX works internally, its architectural decisions, and the principles that guide its development.
 
 ## 🏗️ Architecture Overview
 
-AgentX is built as a lightweight micro-kernel that orchestrates specialized agents in a secure, observable, and scalable manner. The system transforms complex user requests into coordinated multi-agent workflows with complete auditability.
+VibeX is built as a lightweight micro-kernel that orchestrates specialized agents in a secure, observable, and scalable manner. The system transforms complex user requests into coordinated multi-agent workflows with complete auditability.
 
 ### Key Design Principles
 
@@ -29,7 +29,7 @@ Organizational separation architecture for multi-tenant deployments, covering us
 
 ### [State and Context Management](/design/state-and-context)
 
-Deep dive into how AgentX manages state, context, and memory across agents and tasks. Covers taskspace isolation, memory systems, and context propagation.
+Deep dive into how VibeX manages state, context, and memory across agents and tasks. Covers taskspace isolation, memory systems, and context propagation.
 
 ### [Tool Execution](/design/tool-execution)
 
@@ -51,7 +51,7 @@ The stateful "Project Manager" of the task. Creates a plan, assigns micro-tasks 
 
 ### Specialist Agents
 
-Stateless, single-purpose experts defined by prompt files. Each agent has one clear responsibility (planning, research, writing, etc.) and is invoked by the Lead to perform specific micro-tasks. AgentX includes a standard library of common agents.
+Stateless, single-purpose experts defined by prompt files. Each agent has one clear responsibility (planning, research, writing, etc.) and is invoked by the Lead to perform specific micro-tasks. VibeX includes a standard library of common agents.
 
 ### Agent Brain
 
@@ -59,14 +59,14 @@ The reasoning engine that powers each agent. Handles LLM interactions, tool call
 
 ## 🔄 Execution Modes
 
-AgentX supports two primary execution patterns:
+VibeX supports two primary execution patterns:
 
 - **Autonomous Execution** - Fire-and-forget mode ideal for production workflows
 - **Interactive Execution** - Step-by-step control for debugging and human-in-the-loop scenarios
 
 ## 🛡️ Security & Observability
 
-Every interaction in AgentX is:
+Every interaction in VibeX is:
 
 - **Auditable** - Complete event logging of all decisions and actions
 - **Secure** - Sandboxed tool execution with policy enforcement
@@ -91,4 +91,4 @@ The design documentation evolves with the framework. If you're:
 
 ---
 
-_This documentation reflects the current architecture of AgentX. For implementation details and API references, see the [API Documentation](/api)._
+_This documentation reflects the current architecture of VibeX. For implementation details and API references, see the [API Documentation](/api)._

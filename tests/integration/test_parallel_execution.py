@@ -12,10 +12,10 @@ import shutil
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-from agentx.core.plan import Plan, PlanItem
-from agentx.core.xagent import XAgent
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig
-from agentx.storage.taskspace import TaskspaceStorage
+from vibex.core.plan import Plan, PlanItem
+from vibex.core.xagent import XAgent
+from vibex.core.config import TeamConfig, AgentConfig, BrainConfig
+from vibex.storage.taskspace import TaskspaceStorage
 
 
 class TestParallelExecution:
@@ -141,8 +141,8 @@ class TestParallelExecution:
         """Test the parallel execution logic without actual LLM calls."""
         
         # Create XAgent with mocked components
-        with patch('agentx.core.xagent.load_team_config', return_value=mock_team_config):
-            with patch('agentx.core.agent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+            with patch('vibex.core.agent.Agent') as MockAgent:
                 # Setup mock agents
                 mock_researcher = AsyncMock()
                 mock_writer = AsyncMock()
@@ -219,8 +219,8 @@ class TestParallelExecution:
     async def test_fallback_to_sequential(self, temp_taskspace, mock_team_config):
         """Test that parallel execution falls back to sequential when only one task available."""
         
-        with patch('agentx.core.xagent.load_team_config', return_value=mock_team_config):
-            with patch('agentx.core.agent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+            with patch('vibex.core.agent.Agent') as MockAgent:
                 mock_researcher = AsyncMock()
                 mock_researcher.generate_response = AsyncMock(return_value=AsyncMock(content="Research completed"))
                 MockAgent.return_value = mock_researcher
@@ -262,8 +262,8 @@ class TestParallelExecution:
     async def test_error_handling_in_parallel(self, temp_taskspace, mock_team_config):
         """Test error handling during parallel execution."""
         
-        with patch('agentx.core.xagent.load_team_config', return_value=mock_team_config):
-            with patch('agentx.core.agent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+            with patch('vibex.core.agent.Agent') as MockAgent:
                 # Setup one successful and one failing agent
                 mock_researcher = AsyncMock()
                 

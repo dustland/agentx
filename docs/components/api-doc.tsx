@@ -21,7 +21,7 @@ export function ApiDoc() {
       })
       .catch(() => {
         setError(
-          "Unable to connect to API server. Please ensure AgentX is running on port 7770."
+          "Unable to connect to API server. Please ensure VibeX is running on port 7770."
         );
         setIsLoading(false);
       });
@@ -118,7 +118,7 @@ export function ApiDoc() {
           background: isDarkMode ? "#0a0a0a" : "white",
           minHeight: "calc(100vh - 64px)",
         }}
-        title="AgentX API Documentation"
+        title="VibeX API Documentation"
       />
     </div>
   );

@@ -330,5 +330,5 @@ class Tool(ABC):
 
         return schemas
 
-# Note: ToolRegistry implementation is in agentx.tool.registry
+# Note: ToolRegistry implementation is in vibex.tool.registry
 # This module only contains the core tool models and functions

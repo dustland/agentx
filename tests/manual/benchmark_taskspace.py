@@ -15,7 +15,7 @@ import tempfile
 import shutil
 from typing import Dict, List, Any
 
-from agentx.storage import TaskspaceFactory
+from vibex.storage import TaskspaceFactory
 
 
 class TaskspaceBenchmark:

@@ -1,8 +1,8 @@
-# AgentX Taskspace Organization Guide
+# VibeX Taskspace Organization Guide
 
 ## Overview
 
-Every AgentX task creates a structured taskspace directory. This guide defines what goes where and how agents should use the storage tools.
+Every VibeX task creates a structured taskspace directory. This guide defines what goes where and how agents should use the storage tools.
 
 ## Taskspace Structure
 

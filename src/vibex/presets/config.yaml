@@ -1,4 +1,4 @@
-# AgentX Preset Agent Configurations
+# VibeX Preset Agent Configurations
 # This file defines all preset agents available in the framework
 
 # Default configurations that can be inherited
@@ -29,9 +29,9 @@ preset_agents:
       supports_function_calls: true
       streaming: true
     tools:
-      - "research_topic"  # Deep adaptive research with crawl4ai 0.7.0
-      - "search_web"      # Quick web search
-      - "extract_urls"    # Extract content from specific URLs
+      - "research_topic" # Deep adaptive research with crawl4ai 0.7.0
+      - "search_web" # Quick web search
+      - "extract_urls" # Extract content from specific URLs
       - "read_file"
       - "write_file"
       - "list_files"
@@ -67,10 +67,10 @@ preset_agents:
       streaming: true
     tools:
       - "read_file"
-      - "write_file"  # Added for saving polished versions
+      - "write_file" # Added for saving polished versions
       - "list_files"
       - "list_directory"
-      - "polish_document"  # New tool using DeepSeek Reasoner
+      - "polish_document" # New tool using DeepSeek Reasoner
 
   developer:
     description: "Code implementation specialist for software development"

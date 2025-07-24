@@ -124,7 +124,7 @@ def monitor(project_path: Optional[str] = None):
         monitor.start()
 
         if monitor.is_integrated:
-            print("⚠️  Warning: Detected integrated mode. Consider using 'agentx start' instead.")
+            print("⚠️  Warning: Detected integrated mode. Consider using 'vibex start' instead.")
 
         print("✅ Monitor started successfully")
         print()
@@ -211,7 +211,7 @@ def monitor(project_path: Optional[str] = None):
                         "exported_at": datetime.now().isoformat()
                     }
 
-                    filename = f"agentx_observability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                    filename = f"vibex_observability_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                     with open(filename, 'w') as f:
                         json.dump(data, f, indent=2, default=str)
                     print(f"✅ Data exported to {filename}")
@@ -425,7 +425,7 @@ def dev():
         
         # To enable concurrent request handling during development, uncomment this:
         # uvicorn.run(
-        #     "agentx.server.api:app",
+        #     "vibex.server.api:app",
         #     host="0.0.0.0",
         #     port=7770,
         #     workers=4,  # Multiple workers for concurrent requests
@@ -434,11 +434,11 @@ def dev():
         
         # Current setting: Hot reload enabled (single worker)
         uvicorn.run(
-            "agentx.server.api:app",
+            "vibex.server.api:app",
             host="0.0.0.0",
             port=7770,
             reload=True,
-            reload_dirs=["src/agentx"],
+            reload_dirs=["src/vibex"],
             log_level="debug",
             # Note: Can't use workers with reload=True
             # Consider running with --workers flag in production
@@ -472,7 +472,7 @@ def prod():
         print("🔄 Press Ctrl+C to stop")
 
         uvicorn.run(
-            "agentx.server.api:app",
+            "vibex.server.api:app",
             host="0.0.0.0",
             port=7770,
             workers=4,  # Multiple workers for concurrent requests

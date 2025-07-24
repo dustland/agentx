@@ -18,7 +18,7 @@ logger = get_logger(__name__)
 STUDIO_PACKAGE = {
     "package.json": """
 {
-  "name": "agentx-studio-embedded",
+  "name": "vibex-studio-embedded",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -52,7 +52,7 @@ STUDIO_PACKAGE = {
 def get_embedded_studio_path() -> Path:
     """Get or create the embedded studio directory."""
     # Use a consistent location in user's home directory
-    studio_dir = Path.home() / ".agentx" / "studio"
+    studio_dir = Path.home() / ".vibex" / "studio"
     
     # Check if already extracted
     if (studio_dir / "package.json").exists():
@@ -101,15 +101,15 @@ export default function Home() {
         <p>This is a minimal studio interface. For the full experience:</p>
         <ol>
           <li>Clone the VibeX repository</li>
-          <li>Run <code>agentx studio setup</code> in the project directory</li>
-          <li>Run <code>agentx studio start</code></li>
+          <li>Run <code>vibex studio setup</code> in the project directory</li>
+          <li>Run <code>vibex studio start</code></li>
         </ol>
       </div>
       
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
         <h3>API Status</h3>
         <p>Make sure VibeX API is running on port 7770</p>
-        <pre>agentx start</pre>
+        <pre>vibex start</pre>
       </div>
     </div>
   )
@@ -159,7 +159,7 @@ def download_full_studio(target_dir: Path) -> bool:
         # Use git to clone just the studio directory
         subprocess.run([
             'git', 'clone', '--depth', '1', '--filter=blob:none', '--sparse',
-            'https://github.com/yourusername/agentx.git',
+            'https://github.com/yourusername/vibex.git',
             str(target_dir / '.tmp')
         ], check=True, capture_output=True)
         
@@ -189,13 +189,13 @@ def ensure_studio_available() -> tuple[Path, bool]:
         return local_studio, True
     
     # Check if full studio is already downloaded
-    full_studio = Path.home() / ".agentx" / "studio-full"
+    full_studio = Path.home() / ".vibex" / "studio-full"
     if full_studio.exists() and (full_studio / "package.json").exists():
         return full_studio, True
     
     # Try to download full studio
-    if download_full_studio(Path.home() / ".agentx"):
-        return Path.home() / ".agentx" / "studio-full", True
+    if download_full_studio(Path.home() / ".vibex"):
+        return Path.home() / ".vibex" / "studio-full", True
     
     # Fall back to embedded minimal studio
     return get_embedded_studio_path(), False
@@ -233,7 +233,7 @@ def run_studio_command(
     if not no_api:
         logger.info(f"Starting API server on port {api_port}...")
         api_process = subprocess.Popen(
-            [sys.executable, "-m", "agentx", "start", "--port", str(api_port)],
+            [sys.executable, "-m", "vibex", "start", "--port", str(api_port)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )

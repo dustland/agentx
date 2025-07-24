@@ -3,8 +3,8 @@ Unit tests for storage configuration singleton
 """
 
 import pytest
-from agentx.storage.config import StorageConfig, storage_config
-from agentx.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
+from vibex.storage.config import StorageConfig, storage_config
+from vibex.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
 
 
 def test_storage_config_singleton():
@@ -54,8 +54,8 @@ def test_storage_config_reset():
 @pytest.mark.asyncio
 async def test_storage_factory_uses_config():
     """Test that StorageFactory uses the configured cache backend"""
-    from agentx.storage.factory import StorageFactory
-    from agentx.storage.cached_taskspace import CachedTaskspaceStorage
+    from vibex.storage.factory import StorageFactory
+    from vibex.storage.cached_taskspace import CachedTaskspaceStorage
     import tempfile
     import shutil
     

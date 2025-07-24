@@ -6,8 +6,8 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from agentx.storage import TaskspaceStorage
-from agentx.storage.git_storage import GitArtifactStorage
+from vibex.storage import TaskspaceStorage
+from vibex.storage.git_storage import GitArtifactStorage
 
 
 class TestTaskspaceStorageIntegration:

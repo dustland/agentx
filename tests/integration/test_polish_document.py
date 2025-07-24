@@ -11,8 +11,8 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-from agentx.builtin_tools.document import DocumentTool
-from agentx.storage.taskspace import TaskspaceStorage
+from vibex.builtin_tools.document import DocumentTool
+from vibex.storage.taskspace import TaskspaceStorage
 
 
 async def test_polish_with_sections():

@@ -1,6 +1,6 @@
 # Memory System
 
-*Module: [`agentx.memory`](https://github.com/dustland/agentx/blob/main/src/agentx/memory.py)*
+_Module: [`vibex.memory`](https://github.com/dustland/vibex/blob/main/src/vibex/memory.py)_
 
 Memory System Package
 

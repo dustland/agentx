@@ -38,29 +38,29 @@ graph TB
         subgraph "Core Layer"
             TaskspaceStorage[TaskspaceStorage<br/>Business Logic & Orchestration]
         end
-        
+
         subgraph "Provider Layer"
             subgraph "Storage Providers"
                 FileProvider[File Storage<br/>Provider]
                 S3Provider[S3 Storage<br/>Provider]
                 AzureProvider[Azure Storage<br/>Provider]
             end
-            
+
             subgraph "Cache Providers"
                 MemoryCache[Memory Cache<br/>Provider]
                 RedisCache[Redis Cache<br/>Provider]
                 NoOpCache[No-Op Cache<br/>Provider]
             end
         end
-        
+
         subgraph "Versioning Layer"
             GitStorage[Git Artifact<br/>Storage]
             SimpleStorage[Simple Artifact<br/>Storage]
         end
-        
+
         TaskspaceFactory[TaskspaceFactory<br/>Configuration & Assembly]
     end
-    
+
     subgraph "Backend Services"
         FS[(Local<br/>Filesystem)]
         S3[(Amazon S3<br/>Object Storage)]
@@ -70,7 +70,7 @@ graph TB
         Git[(Git<br/>Repository)]
         Files[(Versioned<br/>Files)]
     end
-    
+
     Client[Application Code] --> TaskspaceFactory
     TaskspaceFactory --> TaskspaceStorage
     TaskspaceStorage --> FileProvider
@@ -81,7 +81,7 @@ graph TB
     TaskspaceStorage --> NoOpCache
     TaskspaceStorage --> GitStorage
     TaskspaceStorage --> SimpleStorage
-    
+
     FileProvider -.-> FS
     S3Provider -.-> S3
     AzureProvider -.-> Azure
@@ -100,6 +100,7 @@ The architecture implements these key principles:
 ## Implementation Strategy
 
 ### Storage Provider Interface
+
 ```python
 class StorageProvider(ABC):
     async def read(self, path: str) -> bytes
@@ -112,6 +113,7 @@ class StorageProvider(ABC):
 ### Cache Strategy
 
 The system uses **write-through caching** - all writes go to both storage and cache, ensuring the cache never becomes stale. This eliminates the need for TTLs or expiration logic. Cache entries are only evicted when:
+
 - Memory limits are reached (LRU eviction)
 - Explicit invalidation on delete operations
 - Cache service restart
@@ -120,26 +122,28 @@ The system uses **write-through caching** - all writes go to both storage and ca
 
 Comprehensive benchmarks on realistic workloads demonstrate significant performance improvements with caching enabled:
 
-| Operation | No Cache | Memory Cache | Memory Speedup | Description |
-|-----------|----------|--------------|----------------|-------------|
-| Get Plan | 0.34ms | 0.00ms | **317.3x** | Retrieve task execution plan |
-| List Artifacts | 0.42ms | 0.00ms | **404.9x** | List all stored artifacts |
-| Get Artifact | 0.77ms | 0.00ms | **574.5x** | Retrieve specific artifact content |
-| Get Conversation | 11.14ms | 0.00ms | **8,898.7x** | Retrieve message history |
-| Get Summary | 0.69ms | 0.00ms | **653.9x** | Generate taskspace summary |
+| Operation        | No Cache | Memory Cache | Memory Speedup | Description                        |
+| ---------------- | -------- | ------------ | -------------- | ---------------------------------- |
+| Get Plan         | 0.34ms   | 0.00ms       | **317.3x**     | Retrieve task execution plan       |
+| List Artifacts   | 0.42ms   | 0.00ms       | **404.9x**     | List all stored artifacts          |
+| Get Artifact     | 0.77ms   | 0.00ms       | **574.5x**     | Retrieve specific artifact content |
+| Get Conversation | 11.14ms  | 0.00ms       | **8,898.7x**   | Retrieve message history           |
+| Get Summary      | 0.69ms   | 0.00ms       | **653.9x**     | Generate taskspace summary         |
 
 **Summary Statistics:**
+
 - Average speedup: **1,550.2x**
 - Maximum speedup: **8,898.7x** (conversation history)
 - Minimum speedup: **1.0x** (write operations)
 
 **Key Insights:**
+
 - Read operations show dramatic speedups (300-8,000x)
 - Write operations maintain consistent performance (no degradation)
 - Conversation history benefits most from caching due to message aggregation
 - Memory cache provides sub-millisecond response times for cached data
 
-*Benchmark methodology: 100 iterations per operation on realistic data (50-task plans, 5 artifacts with substantial content, 40 conversation messages). Results measured on macOS with local filesystem.*
+_Benchmark methodology: 100 iterations per operation on realistic data (50-task plans, 5 artifacts with substantial content, 40 conversation messages). Results measured on macOS with local filesystem._
 
 ### Concurrency Handling
 
@@ -151,6 +155,7 @@ Comprehensive benchmarks on realistic workloads demonstrate significant performa
 ## Usage Examples
 
 ### Local Development
+
 ```python
 taskspace = TaskspaceFactory.create_taskspace(
     base_path="./taskspaces",
@@ -159,6 +164,7 @@ taskspace = TaskspaceFactory.create_taskspace(
 ```
 
 ### Production with Caching
+
 ```python
 # Startup: register Redis
 TaskspaceFactory.register_cache_provider("redis", redis_cache)
@@ -172,6 +178,7 @@ taskspace = TaskspaceFactory.create_taskspace(
 ```
 
 ### Cloud Storage
+
 ```python
 # Startup: register S3
 TaskspaceFactory.register_storage_provider("s3", S3Provider)
@@ -197,6 +204,6 @@ Every architectural decision involves trade-offs. We've consciously optimized fo
 
 ## Conclusion
 
-The Taskspace System provides a robust foundation for AgentX's data management needs. By carefully analyzing usage patterns and designing targeted solutions for each data type, we've created a system that scales from laptop to cloud while maintaining simplicity where it matters most. The provider-based architecture ensures the system can evolve with changing requirements, while the clean separation of concerns keeps the core logic understandable and maintainable.
+The Taskspace System provides a robust foundation for VibeX's data management needs. By carefully analyzing usage patterns and designing targeted solutions for each data type, we've created a system that scales from laptop to cloud while maintaining simplicity where it matters most. The provider-based architecture ensures the system can evolve with changing requirements, while the clean separation of concerns keeps the core logic understandable and maintainable.
 
 The true test of this design is that developers shouldn't need to think about it during normal usage - it should just work, providing fast access to data when needed and reliable persistence throughout the task lifecycle. Only when scaling to production or debugging complex scenarios should the underlying sophistication become apparent, and even then, the layered architecture ensures each concern can be addressed independently.

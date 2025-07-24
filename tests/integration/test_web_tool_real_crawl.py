@@ -7,7 +7,7 @@ This test actually launches browsers and makes real web requests.
 import pytest
 import asyncio
 import time
-from agentx.builtin_tools.web import WebTool
+from vibex.builtin_tools.web import WebTool
 
 class TestWebToolRealCrawl:
     """Test web tool with real browser operations (no mocks)."""

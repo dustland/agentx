@@ -2,7 +2,7 @@
 Tests for FileTool builtin tool.
 
 These tests define the expected correct behavior for file operations
-within the AgentX framework's taskspace abstraction.
+within the VibeX framework's taskspace abstraction.
 """
 
 import pytest
@@ -10,11 +10,11 @@ import tempfile
 import asyncio
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from agentx.builtin_tools.file import FileTool, create_file_tool
-from agentx.storage.taskspace import TaskspaceStorage
-from agentx.storage.git_storage import GitArtifactStorage
-from agentx.core.config import TaskConfig
-from agentx.storage.interfaces import StorageResult
+from vibex.builtin_tools.file import FileTool, create_file_tool
+from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.git_storage import GitArtifactStorage
+from vibex.core.config import TaskConfig
+from vibex.storage.interfaces import StorageResult
 
 
 class TestFileToolInitialization:
@@ -255,7 +255,7 @@ class TestFileToolDirectoryOperations:
     @pytest.mark.asyncio
     async def test_list_directory_uses_taskspace(self):
         """list_directory should use taskspace file storage."""
-        from agentx.storage.interfaces import FileInfo
+        from vibex.storage.interfaces import FileInfo
         from datetime import datetime
 
         self.taskspace.file_storage.list_directory.return_value = [

@@ -9,10 +9,10 @@ import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
 from tests.unit.tools.weather_tool import WeatherTool
-from agentx.tool.registry import ToolRegistry
-from agentx.tool.manager import ToolManager
-from agentx.core.brain import Brain, BrainConfig
-from agentx.core.agent import Agent, AgentConfig
+from vibex.tool.registry import ToolRegistry
+from vibex.tool.manager import ToolManager
+from vibex.core.brain import Brain, BrainConfig
+from vibex.core.agent import Agent, AgentConfig
 
 
 class TestBrainToolIntegration:

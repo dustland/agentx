@@ -1,12 +1,12 @@
 # CLI Interface
 
-*Module: [`agentx.cli.main`](https://github.com/dustland/agentx/blob/main/src/agentx/cli/main.py)*
+_Module: [`vibex.cli.main`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/main.py)_
 
-Universal AgentX CLI
+Universal VibeX CLI
 
-Provides a unified command-line interface for all AgentX operations.
+Provides a unified command-line interface for all VibeX operations.
 
-## main <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/main.py#L17" class="source-link" title="View source code">source</a>
+## main <a href="https://github.com/dustland/vibex/blob/main/src/vibex/cli/main.py#L17" class="source-link" title="View source code">source</a>
 
 ```python
 def main()

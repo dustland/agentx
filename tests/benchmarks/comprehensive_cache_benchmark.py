@@ -12,9 +12,9 @@ import shutil
 from pathlib import Path
 from typing import List, Tuple, Dict
 
-from agentx.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
-from agentx.storage.cached_taskspace import CachedTaskspaceStorage
-from agentx.storage.factory import StorageFactory
+from vibex.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
+from vibex.storage.cached_taskspace import CachedTaskspaceStorage
+from vibex.storage.factory import StorageFactory
 
 
 async def benchmark_operation(name: str, func, iterations: int = 50) -> Dict[str, float]:
@@ -81,7 +81,7 @@ async def create_test_taskspace() -> Tuple[str, str]:
     # 3. Artifacts (simple storage format)
     artifacts_dir = taskspace_path / "artifacts"
     artifacts_dir.mkdir()
-    (taskspace_path / ".agentx_simple_storage").touch()
+    (taskspace_path / ".vibex_simple_storage").touch()
     
     for i in range(20):
         artifact_name = f"artifact_{i}.txt"

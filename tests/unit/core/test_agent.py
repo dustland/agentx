@@ -11,10 +11,10 @@ import asyncio
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from datetime import datetime
 
-from agentx.core.agent import Agent, AgentConfig, AgentState
-from agentx.core.brain import Brain, BrainConfig, BrainResponse
-from agentx.core.config import BrainConfig
-from agentx.utils.logger import get_logger
+from vibex.core.agent import Agent, AgentConfig, AgentState
+from vibex.core.brain import Brain, BrainConfig, BrainResponse
+from vibex.core.config import BrainConfig
+from vibex.utils.logger import get_logger
 
 
 class TestAgentInitialization:
@@ -137,7 +137,7 @@ class TestAgentInitialization:
             tools=["search_web"]
         )
 
-        with patch('agentx.core.agent.logger.warning') as mock_warning:
+        with patch('vibex.core.agent.logger.warning') as mock_warning:
             agent = Agent(config)
 
             # Should warn about mismatch

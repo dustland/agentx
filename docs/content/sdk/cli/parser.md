@@ -1,12 +1,12 @@
 # Argument Parser
 
-*Module: [`agentx.cli.parser`](https://github.com/dustland/agentx/blob/main/src/agentx/cli/parser.py)*
+_Module: [`vibex.cli.parser`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/parser.py)_
 
 CLI Argument Parser
 
-Defines the command-line interface structure and argument parsing for AgentX.
+Defines the command-line interface structure and argument parsing for VibeX.
 
-## create_parser <a href="https://github.com/dustland/agentx/blob/main/src/agentx/cli/parser.py#L11" class="source-link" title="View source code">source</a>
+## create_parser <a href="https://github.com/dustland/vibex/blob/main/src/vibex/cli/parser.py#L11" class="source-link" title="View source code">source</a>
 
 ```python
 def create_parser() -> argparse.ArgumentParser

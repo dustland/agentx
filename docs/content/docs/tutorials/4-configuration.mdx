@@ -1,10 +1,10 @@
 # Configuration Guide
 
-AgentX uses YAML configuration files to define agent teams and their behavior. This guide covers everything you need to know about organizing and configuring your AgentX projects effectively.
+VibeX uses YAML configuration files to define agent teams and their behavior. This guide covers everything you need to know about organizing and configuring your VibeX projects effectively.
 
 ## Quick Start
 
-Every AgentX project starts with a `team.yaml` file that defines your agent team:
+Every VibeX project starts with a `team.yaml` file that defines your agent team:
 
 ```yaml
 name: "my_team"
@@ -243,7 +243,7 @@ agents:
 
 ## Environment Variables
 
-AgentX supports environment variable substitution for secure configuration:
+VibeX supports environment variable substitution for secure configuration:
 
 ### Setting Up Environment Variables
 
@@ -657,10 +657,10 @@ agents:
 
 ### 1. Built-in Validation
 
-AgentX validates configurations at startup:
+VibeX validates configurations at startup:
 
 ```python
-from agentx.config import validate_config
+from vibex.config import validate_config
 
 # Validate configuration
 config = validate_config("config/team.yaml")
@@ -675,7 +675,7 @@ Use YAML schema validation:
 
 ```yaml
 # Add schema validation to your team.yaml
-$schema: "https://raw.githubusercontent.com/your-org/agentx/main/schemas/team.yaml"
+$schema: "https://raw.githubusercontent.com/your-org/vibex/main/schemas/team.yaml"
 
 name: "my_team"
 # ... rest of configuration
@@ -683,7 +683,7 @@ name: "my_team"
 
 ## Next Steps
 
-Now that you understand how to configure AgentX:
+Now that you understand how to configure VibeX:
 
 1. **Start Simple**: Begin with a single agent configuration
 2. **Iterate**: Add more agents and tools as needed
@@ -695,4 +695,4 @@ For more advanced topics, see:
 
 - [Custom Tools Tutorial](./3-custom-tools) - Creating custom tools
 - [API Reference](/api/core/config) - Complete configuration options
-- [Examples](https://github.com/your-org/agentx/tree/main/examples) - Real-world examples
+- [Examples](https://github.com/your-org/vibex/tree/main/examples) - Real-world examples

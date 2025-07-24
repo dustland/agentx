@@ -2,14 +2,14 @@
 Tests for CLI main functionality.
 
 These tests define the expected correct behavior for the
-AgentX command-line interface.
+VibeX command-line interface.
 """
 
 import pytest
 import sys
 from unittest.mock import patch, Mock, MagicMock
-from agentx.cli.main import main
-from agentx.cli.parser import create_parser
+from vibex.cli.main import main
+from vibex.cli.parser import create_parser
 
 
 class TestMainCLI:
@@ -17,8 +17,8 @@ class TestMainCLI:
 
     def test_main_with_no_args_shows_help(self):
         """main should show help when called with no arguments."""
-        with patch('sys.argv', ['agentx']):
-            with patch('agentx.cli.main.create_parser') as mock_parser:
+        with patch('sys.argv', ['vibex']):
+            with patch('vibex.cli.main.create_parser') as mock_parser:
                 mock_arg_parser = Mock()
                 mock_parser.return_value = mock_arg_parser
                 mock_arg_parser.parse_args.return_value = Mock(command=None)
@@ -31,13 +31,13 @@ class TestMainCLI:
     def test_main_delegates_to_subcommands(self):
         """main should delegate to appropriate subcommand handlers."""
         test_cases = [
-            (['agentx', 'status'], 'show_status'),
-            (['agentx', 'version'], 'show_version'),
+            (['vibex', 'status'], 'show_status'),
+            (['vibex', 'version'], 'show_version'),
         ]
 
         for argv, expected_func in test_cases:
             with patch('sys.argv', argv):
-                with patch(f'agentx.cli.main.{expected_func}') as mock_func:
+                with patch(f'vibex.cli.main.{expected_func}') as mock_func:
                     mock_func.return_value = None
 
                     result = main()
@@ -47,8 +47,8 @@ class TestMainCLI:
 
     def test_main_handles_keyboard_interrupt(self):
         """main should handle KeyboardInterrupt gracefully."""
-        with patch('sys.argv', ['agentx', 'status']):
-            with patch('agentx.cli.main.show_status') as mock_status:
+        with patch('sys.argv', ['vibex', 'status']):
+            with patch('vibex.cli.main.show_status') as mock_status:
                 mock_status.side_effect = KeyboardInterrupt()
 
                 result = main()
@@ -57,8 +57,8 @@ class TestMainCLI:
 
     def test_main_handles_general_exceptions(self):
         """main should handle general exceptions gracefully."""
-        with patch('sys.argv', ['agentx', 'status']):
-            with patch('agentx.cli.main.show_status') as mock_status:
+        with patch('sys.argv', ['vibex', 'status']):
+            with patch('vibex.cli.main.show_status') as mock_status:
                 mock_status.side_effect = Exception("Something went wrong")
 
                 result = main()
@@ -67,8 +67,8 @@ class TestMainCLI:
 
     def test_main_returns_command_exit_code(self):
         """main should return the exit code from command handlers."""
-        with patch('sys.argv', ['agentx', 'init', 'myproject']):
-            with patch('agentx.cli.main.bootstrap_project') as mock_bootstrap:
+        with patch('sys.argv', ['vibex', 'init', 'myproject']):
+            with patch('vibex.cli.main.bootstrap_project') as mock_bootstrap:
                 mock_bootstrap.return_value = 42
 
                 result = main()
@@ -81,8 +81,8 @@ class TestCommandRouting:
 
     def test_main_routes_init(self):
         """main should route init command correctly."""
-        with patch('sys.argv', ['agentx', 'init', 'myproject']):
-            with patch('agentx.cli.main.bootstrap_project') as mock_bootstrap:
+        with patch('sys.argv', ['vibex', 'init', 'myproject']):
+            with patch('vibex.cli.main.bootstrap_project') as mock_bootstrap:
                 mock_bootstrap.return_value = 0
 
                 result = main()
@@ -92,8 +92,8 @@ class TestCommandRouting:
 
     def test_main_routes_start(self):
         """main should route start command correctly."""
-        with patch('sys.argv', ['agentx', 'start']):
-            with patch('agentx.cli.main.start') as mock_start:
+        with patch('sys.argv', ['vibex', 'start']):
+            with patch('vibex.cli.main.start') as mock_start:
                 mock_start.return_value = 0
 
                 result = main()
@@ -103,8 +103,8 @@ class TestCommandRouting:
 
     def test_main_routes_status(self):
         """main should route status command correctly."""
-        with patch('sys.argv', ['agentx', 'status']):
-            with patch('agentx.cli.main.show_status') as mock_status:
+        with patch('sys.argv', ['vibex', 'status']):
+            with patch('vibex.cli.main.show_status') as mock_status:
                 mock_status.return_value = None
 
                 result = main()
@@ -114,8 +114,8 @@ class TestCommandRouting:
 
     def test_main_routes_version(self):
         """main should route version command correctly."""
-        with patch('sys.argv', ['agentx', 'version']):
-            with patch('agentx.cli.main.show_version') as mock_version:
+        with patch('sys.argv', ['vibex', 'version']):
+            with patch('vibex.cli.main.show_version') as mock_version:
                 mock_version.return_value = None
 
                 result = main()
@@ -125,9 +125,9 @@ class TestCommandRouting:
 
     def test_main_unknown_command_shows_help(self):
         """main should show help for unknown commands."""
-        with patch('sys.argv', ['agentx', 'unknown_command']):
+        with patch('sys.argv', ['vibex', 'unknown_command']):
             parser = create_parser()
-            with patch('agentx.cli.main.create_parser', return_value=parser):
+            with patch('vibex.cli.main.create_parser', return_value=parser):
                 with pytest.raises(SystemExit):
                     main()
 
@@ -137,8 +137,8 @@ class TestStartCommand:
 
     def test_start_command(self):
         """start command should be called correctly."""
-        with patch('sys.argv', ['agentx', 'start']):
-            with patch('agentx.cli.main.start') as mock_start:
+        with patch('sys.argv', ['vibex', 'start']):
+            with patch('vibex.cli.main.start') as mock_start:
                 mock_start.return_value = 0
 
                 result = main()
@@ -148,8 +148,8 @@ class TestStartCommand:
 
     def test_monitor_command(self):
         """monitor command should be called correctly."""
-        with patch('sys.argv', ['agentx', 'monitor']):
-            with patch('agentx.cli.main.monitor') as mock_monitor:
+        with patch('sys.argv', ['vibex', 'monitor']):
+            with patch('vibex.cli.main.monitor') as mock_monitor:
                 mock_monitor.return_value = 0
 
                 result = main()
@@ -159,13 +159,13 @@ class TestStartCommand:
 
     def test_monitor_web_command(self):
         """monitor --web command should be called correctly."""
-        with patch('sys.argv', ['agentx', 'monitor', '--web']):
+        with patch('sys.argv', ['vibex', 'monitor', '--web']):
             # Need to create a proper parser to handle the arguments
             parser = create_parser()
             args = parser.parse_args(['monitor', '--web'])
 
-            with patch('agentx.cli.main.create_parser', return_value=parser):
-                with patch('agentx.cli.main.web') as mock_web:
+            with patch('vibex.cli.main.create_parser', return_value=parser):
+                with patch('vibex.cli.main.web') as mock_web:
                     mock_web.return_value = 0
 
                     result = main()
@@ -273,15 +273,15 @@ class TestCLIErrorHandling:
 
     def test_cli_handles_import_errors(self):
         """CLI should handle import errors gracefully."""
-        with patch('sys.argv', ['agentx', 'start']):
-            with patch('agentx.cli.main.start', side_effect=ImportError("Missing dependency")):
+        with patch('sys.argv', ['vibex', 'start']):
+            with patch('vibex.cli.main.start', side_effect=ImportError("Missing dependency")):
                 result = main()
                 assert result == 1
 
     def test_cli_handles_permission_errors(self):
         """CLI should handle permission errors gracefully."""
-        with patch('sys.argv', ['agentx', 'init', 'myproject']):
-            with patch('agentx.cli.main.bootstrap_project', side_effect=PermissionError("Permission denied")):
+        with patch('sys.argv', ['vibex', 'init', 'myproject']):
+            with patch('vibex.cli.main.bootstrap_project', side_effect=PermissionError("Permission denied")):
                 result = main()
                 assert result == 1
 
@@ -292,11 +292,11 @@ class TestCLIIntegration:
     def test_cli_end_to_end_simulation(self):
         """Test complete CLI workflow simulation."""
         # Mock all external dependencies
-        with patch('agentx.cli.main.start') as mock_start:
+        with patch('vibex.cli.main.start') as mock_start:
             mock_start.return_value = 0
 
             # Simulate command line args
-            test_argv = ['agentx', 'start']
+            test_argv = ['vibex', 'start']
 
             with patch('sys.argv', test_argv):
                 result = main()
@@ -307,10 +307,10 @@ class TestCLIIntegration:
     def test_cli_with_environment_variables(self):
         """Test CLI behavior with environment variables."""
         with patch.dict('os.environ', {'AGENTX_VERBOSE': '1'}):
-            with patch('agentx.cli.main.start') as mock_start:
+            with patch('vibex.cli.main.start') as mock_start:
                 mock_start.return_value = 0
 
-                test_argv = ['agentx', 'start']
+                test_argv = ['vibex', 'start']
 
                 with patch('sys.argv', test_argv):
                     result = main()
@@ -322,8 +322,8 @@ class TestCLIIntegration:
         # This would test that output is properly formatted for console
         # Mock stdout to capture output
         with patch('sys.stdout') as mock_stdout:
-            with patch('sys.argv', ['agentx', 'version']):
-                with patch('agentx.cli.main.show_version') as mock_version:
+            with patch('sys.argv', ['vibex', 'version']):
+                with patch('vibex.cli.main.show_version') as mock_version:
                     mock_version.return_value = None
 
                     result = main()

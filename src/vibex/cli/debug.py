@@ -298,7 +298,7 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python -m agentx.cli.debug <team_config_path> [task_id] [taskspace_dir]")
+        print("Usage: python -m vibex.cli.debug <team_config_path> [task_id] [taskspace_dir]")
         sys.exit(1)
 
     team_config_path = sys.argv[1]

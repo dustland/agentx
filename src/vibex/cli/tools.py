@@ -59,7 +59,7 @@ def list_cli():
 def validate(tool_names):
     """Validate tool names against available tools."""
     if not tool_names:
-        click.echo("Usage: agentx tools validate <tool_name1> <tool_name2> ...")
+        click.echo("Usage: vibex tools validate <tool_name1> <tool_name2> ...")
         return
 
     _register_builtin_tools(with_taskspace=False)
@@ -81,7 +81,7 @@ def validate(tool_names):
 
     if invalid_tools:
         click.echo(f"❌ Invalid tools: {', '.join(invalid_tools)}")
-        click.echo("\nRun 'agentx tools list' to see available tools")
+        click.echo("\nRun 'vibex tools list' to see available tools")
 
 
 @tools.command()

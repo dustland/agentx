@@ -1,6 +1,6 @@
 # REST API
 
-AgentX provides a comprehensive REST API for managing agents, tasks, and real-time communication. The API server can be started with:
+VibeX provides a comprehensive REST API for managing agents, tasks, and real-time communication. The API server can be started with:
 
 ```bash
 uv run start --port 7770
@@ -8,7 +8,7 @@ uv run start --port 7770
 
 ## API Documentation
 
-The AgentX server provides interactive API documentation through two interfaces:
+The VibeX server provides interactive API documentation through two interfaces:
 
 - **[REST API Explorer](/api-explorer)** - Interactive documentation with ReDoc/Swagger UI
 - **OpenAPI Specification** - Available at `http://localhost:7770/openapi.json`
@@ -112,7 +112,7 @@ The API server enables CORS by default, allowing requests from any origin. In pr
 
 ### Server Not Running
 
-If you receive connection errors, ensure the AgentX server is running:
+If you receive connection errors, ensure the VibeX server is running:
 
 ```bash
 uv run start --port 7770
@@ -136,7 +136,7 @@ uv sync
 
 ## SDK Integration
 
-For Python applications, use the [AgentX SDK](/sdk) instead of calling the REST API directly. The SDK provides a more convenient and type-safe interface.
+For Python applications, use the [VibeX SDK](/sdk) instead of calling the REST API directly. The SDK provides a more convenient and type-safe interface.
 
 ## Further Reading
 

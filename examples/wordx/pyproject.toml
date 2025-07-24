@@ -1,7 +1,7 @@
 [project]
 name = "wordx"
 version = "1.0.0"
-description = "AI Assistant for Microsoft Word - AgentX powered document processing"
+description = "AI Assistant for Microsoft Word - VibeX powered document processing"
 readme = "README.md"
 authors = [{ name = "Dustland Team", email = "hi@dustland.ai" }]
 license = { text = "MIT" }
@@ -11,7 +11,7 @@ keywords = [
   "word",
   "ai",
   "document-processing",
-  "agentx",
+  "vibex",
   "multi-agent",
 ]
 classifiers = [
@@ -32,7 +32,7 @@ classifiers = [
 
 dependencies = [
   # Core framework
-  "agentx-py>=0.18.2",
+  "vibex>=0.18.2",
 
   # Web framework
   "fastapi>=0.104.0",
@@ -65,9 +65,9 @@ wordx = "backend.main:main"
 wordx-setup = "wordx_setup:main"
 
 [project.urls]
-"Homepage" = "https://github.com/dustland/agentx"
-"Bug Tracker" = "https://github.com/dustland/agentx/issues"
-"Documentation" = "https://docs.agentx.ai"
+"Homepage" = "https://github.com/dustland/vibex"
+"Bug Tracker" = "https://github.com/dustland/vibex/issues"
+"Documentation" = "https://docs.vibex.ai"
 
 [build-system]
 requires = ["setuptools>=61.0"]

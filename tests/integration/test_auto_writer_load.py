@@ -13,10 +13,10 @@ import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
-from agentx.builtin_tools.web import WebTool
-from agentx.builtin_tools.research import ResearchTool
-from agentx.builtin_tools.file import FileTool
-from agentx.storage.taskspace import TaskspaceStorage
+from vibex.builtin_tools.web import WebTool
+from vibex.builtin_tools.research import ResearchTool
+from vibex.builtin_tools.file import FileTool
+from vibex.storage.taskspace import TaskspaceStorage
 
 
 async def simulate_researcher_agent():

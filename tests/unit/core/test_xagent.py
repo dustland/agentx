@@ -7,10 +7,10 @@ import asyncio
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
 
-from agentx.core.xagent import XAgent, XAgentResponse
-from agentx.core.config import TeamConfig, AgentConfig, BrainConfig
-from agentx.core.message import Message, TextPart
-from agentx.core.plan import Plan, PlanItem
+from vibex.core.xagent import XAgent, XAgentResponse
+from vibex.core.config import TeamConfig, AgentConfig, BrainConfig
+from vibex.core.message import Message, TextPart
+from vibex.core.plan import Plan, PlanItem
 
 
 @pytest.fixture
@@ -39,9 +39,9 @@ def mock_taskspace_path(tmp_path):
 class TestXAgent:
     """Test XAgent functionality."""
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test XAgent initializes correctly."""
         # Arrange
@@ -62,9 +62,9 @@ class TestXAgent:
         mock_setup_logging.assert_called_once()
         mock_register_tools.assert_called_once()
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
     async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test chat with simple text message creates plan but doesn't execute automatically."""
@@ -110,9 +110,9 @@ class TestXAgent:
                 assert x.plan is not None
                 assert x.plan.goal == "Test goal"
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
     async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test chat with Message object."""
@@ -140,9 +140,9 @@ class TestXAgent:
             assert "informational response" in response.text
             assert response.metadata.get("query_type") == "informational"
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
     async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test that plan adjustment preserves completed work."""
@@ -202,9 +202,9 @@ class TestXAgent:
                 assert "task_2" in response.regenerated_steps
                 assert response.plan_changes.get("adjustment_type") == "regenerate"
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
     async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test error handling in chat method."""
@@ -227,9 +227,9 @@ class TestXAgent:
             assert "error processing your message" in response.text.lower()
             assert "Test error" in response.metadata.get("error", "")
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test plan summary generation."""
         # Arrange
@@ -256,9 +256,9 @@ class TestXAgent:
         assert "Test comprehensive plan" in summary
         assert "1/3 completed" in summary
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test conversation summary generation."""
         # Arrange
@@ -284,9 +284,9 @@ class TestXAgent:
         assert "user:" in summary.lower()
         assert "hi there!" in summary.lower()
 
-    @patch('agentx.storage.factory.StorageFactory')
-    @patch('agentx.core.xagent.setup_task_file_logging')
-    @patch('agentx.tool.manager.ToolManager._register_builtin_tools')
+    @patch('vibex.storage.factory.StorageFactory')
+    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
     async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
         """Test XAgent methods."""

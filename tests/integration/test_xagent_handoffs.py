@@ -7,10 +7,10 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from pathlib import Path
 import json
 
-from agentx.core.xagent import XAgent
-from agentx.core.config import TeamConfig, AgentConfig, Handoff
-from agentx.core.plan import Plan, PlanItem
-from agentx.core.handoff_evaluator import HandoffEvaluator, HandoffContext
+from vibex.core.xagent import XAgent
+from vibex.core.config import TeamConfig, AgentConfig, Handoff
+from vibex.core.plan import Plan, PlanItem
+from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
 
 
 class TestXAgentHandoffs:
@@ -66,11 +66,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_xagent_initializes_handoff_evaluator(self, team_config_with_handoffs, mock_taskspace):
         """Test that XAgent properly initializes HandoffEvaluator when handoffs are configured."""
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent') as MockAgent:
 
             # Mock agent creation
             mock_agents = {}
@@ -102,11 +102,11 @@ class TestXAgentHandoffs:
             handoffs=[]  # No handoffs
         )
 
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent'):
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent'):
 
             xagent = XAgent(
                 task_id="test_task",
@@ -120,11 +120,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_execute_single_task_with_handoff(self, team_config_with_handoffs, mock_taskspace):
         """Test that executing a task evaluates and creates handoffs."""
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent') as MockAgent:
 
             # Setup mock agents
             mock_writer = AsyncMock()
@@ -187,11 +187,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_execute_single_task_no_handoff(self, team_config_with_handoffs, mock_taskspace):
         """Test task execution when no handoff occurs."""
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent') as MockAgent:
 
             # Setup mock agent
             mock_writer = AsyncMock()
@@ -242,11 +242,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_handoff_task_dependencies(self, team_config_with_handoffs, mock_taskspace):
         """Test that handoff tasks have proper dependencies."""
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent') as MockAgent:
 
             mock_writer = AsyncMock()
             mock_writer.name = "writer"
@@ -302,11 +302,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_persist_plan_after_handoff(self, team_config_with_handoffs, mock_taskspace, tmp_path):
         """Test that plan is persisted after adding handoff task."""
-        with patch('agentx.core.xagent.Brain'), \
-             patch('agentx.core.xagent.ToolManager'), \
-             patch('agentx.core.xagent.MessageQueue'), \
-             patch('agentx.core.xagent.setup_task_file_logging'), \
-             patch('agentx.core.xagent.Agent') as MockAgent:
+        with patch('vibex.core.xagent.Brain'), \
+             patch('vibex.core.xagent.ToolManager'), \
+             patch('vibex.core.xagent.MessageQueue'), \
+             patch('vibex.core.xagent.setup_task_file_logging'), \
+             patch('vibex.core.xagent.Agent') as MockAgent:
 
             # Setup taskspace to actually save files
             mock_taskspace.get_taskspace_path.return_value = tmp_path

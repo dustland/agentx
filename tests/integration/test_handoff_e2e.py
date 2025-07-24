@@ -7,7 +7,7 @@ import asyncio
 from pathlib import Path
 import yaml
 
-from agentx import start_task
+from vibex import start_task
 
 
 @pytest.mark.asyncio

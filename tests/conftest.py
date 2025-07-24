@@ -1,5 +1,5 @@
 """
-Pytest configuration and shared fixtures for AgentX tests.
+Pytest configuration and shared fixtures for VibeX tests.
 """
 
 import pytest
@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, MagicMock
 @pytest.fixture(autouse=True)
 def clear_tool_registry():
     """Clear the tool registry before each test to prevent duplicate registrations."""
-    from agentx.tool.registry import ToolRegistry
+    from vibex.tool.registry import ToolRegistry
     # Clear the singleton registry before each test
     registry = ToolRegistry()
     registry.clear()
@@ -23,7 +23,7 @@ def clear_tool_registry():
     registry.clear()
 
 
-# from agentx.core.brain import BrainConfig, Message, ChatHistory
+# from vibex.core.brain import BrainConfig, Message, ChatHistory
 
 
 # @pytest.fixture(scope="session")
@@ -122,5 +122,5 @@ def mock_agents():
 @pytest.fixture
 def mock_agent_config():
     """Mock agent config for testing."""
-    from agentx.core.agent import AgentConfig, AgentRole
+    from vibex.core.agent import AgentConfig, AgentRole
     return AgentConfig(name="test_agent", role=AgentRole.ASSISTANT)

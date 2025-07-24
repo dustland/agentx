@@ -1,3 +1,3 @@
 # Core
 
-*Module: [`agentx.core`](https://github.com/dustland/agentx/blob/main/src/agentx/core.py)*
+_Module: [`vibex.core`](https://github.com/dustland/vibex/blob/main/src/vibex/core.py)_

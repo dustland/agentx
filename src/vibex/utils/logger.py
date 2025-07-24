@@ -48,13 +48,13 @@ def get_logger(name: str, level: Optional[str] = None) -> logging.Logger:
         global _task_file_handler
 
         # Always add file handler if available
-        if _task_file_handler and name.startswith('agentx'):
+        if _task_file_handler and name.startswith('vibex'):
             logger.addHandler(_task_file_handler)
             logger.setLevel(logging.INFO)
             logger.propagate = False
 
         # Add console handler only if not in streaming mode OR for important messages
-        if not _streaming_mode or not name.startswith('agentx'):
+        if not _streaming_mode or not name.startswith('vibex'):
             handler = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter(
                 '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -104,14 +104,14 @@ def setup_task_file_logging(log_file_path: str) -> None:
 
         # Add file handler to all existing VibeX loggers
         for logger_name in logging.Logger.manager.loggerDict:
-            if logger_name.startswith('agentx'):
+            if logger_name.startswith('vibex'):
                 logger = logging.getLogger(logger_name)
                 if file_handler not in logger.handlers:
                     logger.addHandler(file_handler)
                     logger.setLevel(logging.INFO)
 
         # Test that it works with a sample log
-        test_logger = logging.getLogger('agentx.core.task')
+        test_logger = logging.getLogger('vibex.core.task')
         test_logger.info("Task file logging initialized successfully with rotation (max 50MB per file, keeping 5 backups)")
 
         print(f"Task file logging initialized with rotation: {log_file}")

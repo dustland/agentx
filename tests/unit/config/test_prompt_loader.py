@@ -7,8 +7,8 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch
 
-from agentx.config.prompt_loader import PromptLoader, create_prompt_loader
-from agentx.core.config import ConfigurationError
+from vibex.config.prompt_loader import PromptLoader, create_prompt_loader
+from vibex.core.config import ConfigurationError
 
 
 class TestPromptLoader:

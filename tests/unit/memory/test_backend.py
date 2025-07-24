@@ -6,9 +6,9 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime
 
-from agentx.memory.backend import MemoryBackend
-from agentx.memory.types import MemoryType, MemoryItem, MemoryQuery, MemorySearchResult, MemoryStats
-from agentx.memory.factory import create_memory_backend
+from vibex.memory.backend import MemoryBackend
+from vibex.memory.types import MemoryType, MemoryItem, MemoryQuery, MemorySearchResult, MemoryStats
+from vibex.memory.factory import create_memory_backend
 
 
 class MockMemoryBackend(MemoryBackend):
@@ -385,7 +385,7 @@ class TestMemoryFactory:
 
     def test_create_memory_backend_with_config(self):
         """Test creating backend with config."""
-        from agentx.memory.models import MemoryConfig
+        from vibex.memory.models import MemoryConfig
         config = MemoryConfig()
 
         backend = create_memory_backend(config)
@@ -393,7 +393,7 @@ class TestMemoryFactory:
 
     def test_create_default_memory_backend(self):
         """Test creating default memory backend."""
-        from agentx.memory.factory import create_default_memory_backend
+        from vibex.memory.factory import create_default_memory_backend
 
         backend = create_default_memory_backend()
         assert backend is not None

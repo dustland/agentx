@@ -124,7 +124,7 @@ def bootstrap_project(project_name: Optional[str] = None, template: Optional[str
         print("   python main.py")
         print()
         print("💡 Need help? Check the README.md or visit:")
-        print("   https://github.com/dustland/agentx")
+        print("   https://github.com/dustland/vibex")
 
         return 0
 

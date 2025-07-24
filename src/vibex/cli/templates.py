@@ -233,7 +233,7 @@ This project was generated using the VibeX bootstrap wizard with the **{template
 
 1. **Install Dependencies**
    ```bash
-   pip install agentx-py
+   pip install vibex
    ```
 
 2. **Configure API Keys**
@@ -298,19 +298,19 @@ This project is configured for cost-effective operation:
 1. **Experiment**: Start asking questions and see how preset agents collaborate
 2. **Scale**: Add more preset agents like `web_designer` for enhanced output formatting
 3. **Customize**: Only create custom agents when presets don't meet your needs
-4. **Deploy**: Use `agentx start` to run as a service
+4. **Deploy**: Use `vibex start` to run as a service
 
 ## Learn More
 
-- [VibeX Documentation](https://github.com/dustland/agentx)
-- [Preset Agent System](https://github.com/dustland/agentx/blob/main/docs/preset-agents.md)
-- [Vibe-X Philosophy](https://github.com/dustland/agentx/blob/main/docs/content/docs/design/vibe-x-philosophy.mdx)
+- [VibeX Documentation](https://github.com/dustland/vibex)
+- [Preset Agent System](https://github.com/dustland/vibex/blob/main/docs/preset-agents.md)
+- [Vibe-X Philosophy](https://github.com/dustland/vibex/blob/main/docs/content/docs/design/vibe-x-philosophy.mdx)
 
 ## Support
 
-- 🐛 [Report Issues](https://github.com/dustland/agentx/issues)
-- 💬 [Discussions](https://github.com/dustland/agentx/discussions)
-- 📧 [Contact](mailto:support@agentx.dev)
+- 🐛 [Report Issues](https://github.com/dustland/vibex/issues)
+- 💬 [Discussions](https://github.com/dustland/vibex/discussions)
+- 📧 [Contact](mailto:support@vibex.dev)
 
 ---
 

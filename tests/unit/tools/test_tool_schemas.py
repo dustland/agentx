@@ -6,8 +6,8 @@ parameter descriptions, which are critical for LLM function calling.
 """
 
 import pytest
-from agentx.tool.registry import ToolRegistry
-from agentx.core.tool import Tool, tool
+from vibex.tool.registry import ToolRegistry
+from vibex.core.tool import Tool, tool
 
 
 class WeatherTool(Tool):

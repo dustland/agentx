@@ -78,7 +78,7 @@ class HealthResponse(BaseModel):
     version: str = "0.4.0"
     active_tasks: int = 0
     service_name: str = "VibeX API"
-    service_type: str = "agentx-task-orchestration"
+    service_type: str = "vibex-task-orchestration"
     api_endpoints: List[str] = Field(default_factory=lambda: [
         "/tasks", "/tasks/{task_id}", "/tasks/{task_id}/memory", "/health", "/monitor"
     ])

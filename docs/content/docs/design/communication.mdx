@@ -2,7 +2,7 @@
 
 ## 1. Core Principles
 
-The communication architecture in AgentX is designed to be robust, extensible, and streamable, drawing inspiration from modern standards like the Vercel AI SDK. The core principles are:
+The communication architecture in VibeX is designed to be robust, extensible, and streamable, drawing inspiration from modern standards like the Vercel AI SDK. The core principles are:
 
 - **Message-Oriented**: The fundamental unit of communication is a `Message`. All interactions, whether from a user, an agent, or a tool, are encapsulated in this structure.
 - **Composable Parts**: A `Message` is composed of a list of `Part` objects. This allows for rich, multi-modal content and a clear separation of concerns (e.g., text, tool calls, and tool results all have their own part type).
@@ -227,7 +227,7 @@ This new message now proceeds down the successful tool call path.
 
 ## 4. Streaming and Progressive Responses
 
-To build a truly responsive UI, a client needs to be aware of the agent's progress throughout its turn, not just at the end. This is especially important for multi-step operations like tool calls. AgentX achieves this by streaming a sequence of `Message` updates for a single logical turn.
+To build a truly responsive UI, a client needs to be aware of the agent's progress throughout its turn, not just at the end. This is especially important for multi-step operations like tool calls. VibeX achieves this by streaming a sequence of `Message` updates for a single logical turn.
 
 ### 4.1. The Streaming Protocol
 
@@ -238,34 +238,34 @@ The following sequence diagram illustrates how a client receives progressive upd
 ```mermaid
 sequenceDiagram
     participant Client
-    participant AgentX
+    participant VibeX
     participant Agent
     participant ToolExecutor
 
-    Client->>AgentX: POST /chat with User Message
+    Client->>VibeX: POST /chat with User Message
 
-    activate AgentX
-    AgentX->>Agent: invoke
+    activate VibeX
+    VibeX->>Agent: invoke
 
-    Agent-->>AgentX: Generate ToolCallPart
-    AgentX-->>Client: Stream Packet with ToolCallPart
+    Agent-->>VibeX: Generate ToolCallPart
+    VibeX-->>Client: Stream Packet with ToolCallPart
     Note over Client: UI displays tool call status
 
-    AgentX->>ToolExecutor: execute tool call
-    ToolExecutor-->>AgentX: result
+    VibeX->>ToolExecutor: execute tool call
+    ToolExecutor-->>VibeX: result
 
-    AgentX-->>Client: Stream Packet with ToolResultPart
+    VibeX-->>Client: Stream Packet with ToolResultPart
     Note over Client: UI displays tool success
 
-    AgentX->>Agent: provide result
-    Agent->>AgentX: Generate TextPart stream
+    VibeX->>Agent: provide result
+    Agent->>VibeX: Generate TextPart stream
 
     loop Text Streaming
-        AgentX-->>Client: Stream Packets with TextPart chunks
+        VibeX-->>Client: Stream Packets with TextPart chunks
     end
     Note over Client: UI streams final text response
 
-    deactivate AgentX
+    deactivate VibeX
 ```
 
 ### 4.2. Example Streamed Packets
@@ -275,7 +275,7 @@ Here is what the client would see for the successful tool call flow from section
 **1. Client sends a request:**
 `POST /chat` with a user message asking to write a file.
 
-**2. AgentX streams back the agent's decision to call the tool:**
+**2. VibeX streams back the agent's decision to call the tool:**
 The UI can immediately show that a tool is being used.
 
 ```json
@@ -293,7 +293,7 @@ The UI can immediately show that a tool is being used.
 }
 ```
 
-**3. AgentX streams the result of the tool execution:**
+**3. VibeX streams the result of the tool execution:**
 The UI knows the tool call has completed successfully _before_ the agent has formulated its final textual response.
 
 ```json
@@ -310,7 +310,7 @@ The UI knows the tool call has completed successfully _before_ the agent has for
 }
 ```
 
-**4. AgentX streams the final text response, token by token:**
+**4. VibeX streams the final text response, token by token:**
 The `id` field links these text chunks back to the same logical message.
 
 ```json

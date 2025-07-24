@@ -139,14 +139,14 @@ config = {
 
 ### Memory Type Mapping
 
-| AgentX Memory Type | Mem0 Implementation                       | Storage Strategy     |
-| ------------------ | ----------------------------------------- | -------------------- |
-| Task Status        | Simple key-value with task_id as user_id  | ChromaDB + SQLite    |
-| Task Metadata      | JSON documents with task_id namespace     | ChromaDB + SQLite    |
-| Agent Memory       | Semantic search with agent_id as user_id  | Vector store + LLM   |
-| Conversation       | Sequential messages with conversation_id  | SQLite with ordering |
-| Streaming Buffers  | Temporary in-memory + periodic flush      | Memory + SQLite      |
-| Artifacts          | Reference only, actual files in taskspace | Metadata in Mem0     |
+| VibeX Memory Type | Mem0 Implementation                       | Storage Strategy     |
+| ----------------- | ----------------------------------------- | -------------------- |
+| Task Status       | Simple key-value with task_id as user_id  | ChromaDB + SQLite    |
+| Task Metadata     | JSON documents with task_id namespace     | ChromaDB + SQLite    |
+| Agent Memory      | Semantic search with agent_id as user_id  | Vector store + LLM   |
+| Conversation      | Sequential messages with conversation_id  | SQLite with ordering |
+| Streaming Buffers | Temporary in-memory + periodic flush      | Memory + SQLite      |
+| Artifacts         | Reference only, actual files in taskspace | Metadata in Mem0     |
 
 ### Cross-Worker Synchronization
 
@@ -277,4 +277,4 @@ The memory system is designed to be:
 - **Scalable**: Handles growth from single worker to distributed system
 - **Maintainable**: Clear separation of concerns and upgrade path
 
-The use of Mem0 provides a solid foundation that can grow with AgentX's needs while keeping the initial implementation straightforward.
+The use of Mem0 provides a solid foundation that can grow with VibeX's needs while keeping the initial implementation straightforward.

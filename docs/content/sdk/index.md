@@ -1,8 +1,8 @@
 # SDK Reference
 
-Complete SDK reference for the AgentX framework.
+Complete SDK reference for the VibeX framework.
 
-This section contains the auto-generated documentation for all Python classes, functions, and modules in the AgentX SDK (`agentx-py`). For REST API endpoints and HTTP interface documentation, see the [REST API Explorer](/api-explorer).
+This section contains the auto-generated documentation for all Python classes, functions, and modules in the VibeX SDK (`vibex`). For REST API endpoints and HTTP interface documentation, see the [REST API Explorer](/api-explorer).
 
 ## Core Modules
 
@@ -28,7 +28,7 @@ Built-in tools for file operations, web search, memory management, and more.
 
 Command-line interface and project bootstrapping tools.
 
-- **Project Bootstrap** - `agentx init` command and project templates
+- **Project Bootstrap** - `vibex init` command and project templates
 - **CLI Interface** - Main command-line entry point
 - **Debug Commands** - Development and debugging utilities
 
@@ -90,16 +90,16 @@ Utility functions and helpers.
 
 ## Getting Started
 
-To start using AgentX, install it via pip:
+To start using VibeX, install it via pip:
 
 ```bash
-pip install agentx-py
+pip install vibex
 ```
 
 Then create your first agent:
 
 ```python
-from agentx import Agent
+from vibex import Agent
 
 agent = Agent(
     name="my_agent",

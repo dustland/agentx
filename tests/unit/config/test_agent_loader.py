@@ -8,14 +8,14 @@ import yaml
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from agentx.config.agent_loader import (
+from vibex.config.agent_loader import (
     load_agents_config,
     load_single_agent_config,
     create_team_config_template,
     create_single_agent_template,
     validate_config_file
 )
-from agentx.core.config import AgentConfig, ConfigurationError
+from vibex.core.config import AgentConfig, ConfigurationError
 
 
 class TestAgentConfig:
@@ -57,7 +57,7 @@ class TestAgentConfig:
 
     def test_agent_config_with_brain_config(self):
         """Test AgentConfig with brain configuration."""
-        from agentx.core.config import BrainConfig
+        from vibex.core.config import BrainConfig
 
         brain_config = BrainConfig(
             provider="openai",
@@ -262,8 +262,8 @@ class TestTemplateGeneration:
         """Create temporary directory for test files."""
         return tmp_path
 
-    @patch('agentx.config.agent_loader.list_tools')
-    @patch('agentx.config.agent_loader.suggest_tools_for_agent')
+    @patch('vibex.config.agent_loader.list_tools')
+    @patch('vibex.config.agent_loader.suggest_tools_for_agent')
     def test_create_team_config_template(self, mock_suggest, mock_list, temp_dir):
         """Test creating team configuration template."""
         mock_list.return_value = ["search", "file_ops", "memory"]
@@ -285,8 +285,8 @@ class TestTemplateGeneration:
         assert "agent2" in content
         assert "search" in content
 
-    @patch('agentx.config.agent_loader.list_tools')
-    @patch('agentx.config.agent_loader.suggest_tools_for_agent')
+    @patch('vibex.config.agent_loader.list_tools')
+    @patch('vibex.config.agent_loader.suggest_tools_for_agent')
     def test_create_single_agent_template(self, mock_suggest, mock_list, temp_dir):
         """Test creating single agent configuration template."""
         mock_list.return_value = ["search", "file_ops"]
@@ -309,7 +309,7 @@ class TestTemplateGeneration:
         """Test creating template without tool suggestions."""
         template_path = temp_dir / "no_suggestions.yaml"
 
-        with patch('agentx.config.agent_loader.list_tools') as mock_list:
+        with patch('vibex.config.agent_loader.list_tools') as mock_list:
             mock_list.return_value = ["search", "file_ops"]
 
             result_path = create_single_agent_template(

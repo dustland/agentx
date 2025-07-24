@@ -2,7 +2,7 @@
 Tests for TaskspaceStorage.
 
 These tests define the expected correct behavior for taskspace
-management and storage abstraction in the AgentX framework.
+management and storage abstraction in the VibeX framework.
 """
 
 import pytest
@@ -12,8 +12,8 @@ from pathlib import Path
 from unittest.mock import Mock, AsyncMock
 from typing import Dict, Any, List
 
-from agentx.storage import TaskspaceStorage, StorageBackend
-from agentx.storage.git_storage import GitArtifactStorage
+from vibex.storage import TaskspaceStorage, StorageBackend
+from vibex.storage.git_storage import GitArtifactStorage
 
 
 class TestTaskspaceStorageBasics:

@@ -1,6 +1,6 @@
 /*
  * WordX - Office.js Integration
- * Copyright (c) AgentX. All rights reserved.
+ * Copyright (c) VibeX. All rights reserved.
  * Licensed under the MIT License.
  */
 
@@ -172,7 +172,7 @@ async function getDocumentContent() {
 }
 
 /**
- * Process the document with AgentX
+ * Process the document with VibeX
  */
 async function processDocument() {
     try {

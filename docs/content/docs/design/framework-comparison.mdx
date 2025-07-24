@@ -1,10 +1,10 @@
-# Framework Comparison: Why AgentX?
+# Framework Comparison: Why VibeX?
 
-After two years of building production systems with AutoGen/AG2, we created AgentX to address fundamental architectural limitations and evolving needs in multi-agent systems. This document compares AgentX with other popular frameworks and explains our design decisions.
+After two years of building production systems with AutoGen/AG2, we created VibeX to address fundamental architectural limitations and evolving needs in multi-agent systems. This document compares VibeX with other popular frameworks and explains our design decisions.
 
 ## Quick Comparison Table
 
-| Feature              | AgentX                       | AG2/AutoGen          | CrewAI             | LangGraph        | LlamaIndex        |
+| Feature              | VibeX                        | AG2/AutoGen          | CrewAI             | LangGraph        | LlamaIndex        |
 | -------------------- | ---------------------------- | -------------------- | ------------------ | ---------------- | ----------------- |
 | **Configuration**    | YAML-based, no code required | Python code          | Python/YAML hybrid | Python code      | Python code       |
 | **Agent Presets**    | ✅ Built-in optimized agents | ❌ Manual setup      | ✅ Role templates  | ❌ Manual setup  | ❌ Manual setup   |
@@ -15,7 +15,7 @@ After two years of building production systems with AutoGen/AG2, we created Agen
 | **Production Ready** | ✅ REST API, monitoring      | ⚠️ Library only      | ⚠️ Library only    | ⚠️ Library only  | ⚠️ Library only   |
 | **Orchestration**    | ✅ X (unified interface)     | ⚠️ GroupChat         | ✅ Process-based   | ✅ Graph-based   | ❌ Manual         |
 
-## Why We Built AgentX
+## Why We Built VibeX
 
 ### 1. Configuration Without Code
 
@@ -35,7 +35,7 @@ user_proxy = UserProxyAgent(
 )
 ```
 
-**AgentX Solution:**
+**VibeX Solution:**
 
 ```yaml
 # Complete team setup in YAML - no Python required
@@ -49,7 +49,7 @@ agents:
 **The Problem with Code-Based Routing:**
 Most frameworks require programming state machines or complex conditional logic for agent coordination.
 
-**AgentX Innovation:**
+**VibeX Innovation:**
 
 ```yaml
 handoffs:
@@ -74,7 +74,7 @@ Frameworks typically use callbacks or polling, making it hard to:
 - Implement complex workflows
 - Add observability
 
-**AgentX Event System:**
+**VibeX Event System:**
 
 ```python
 # Every significant action emits typed events
@@ -95,7 +95,7 @@ This enables:
 ### 4. Production-First Design
 
 **Library vs. Framework:**
-AG2, CrewAI, and LangGraph are primarily libraries. AgentX is a complete framework with:
+AG2, CrewAI, and LangGraph are primarily libraries. VibeX is a complete framework with:
 
 - **REST API Server**: Deploy agents as services
 - **Task Management**: Persistent task tracking and resumption
@@ -106,7 +106,7 @@ AG2, CrewAI, and LangGraph are primarily libraries. AgentX is a complete framewo
 ### 5. MCP (Model Context Protocol) Support
 
 **The Future of AI Tools:**
-While other frameworks rely on custom tool implementations, AgentX embraces the emerging MCP standard:
+While other frameworks rely on custom tool implementations, VibeX embraces the emerging MCP standard:
 
 ```yaml
 tools:
@@ -131,7 +131,7 @@ Benefits:
 - Difficult to debug
 - No conversation memory
 
-**AgentX's X (Orchestrator):**
+**VibeX's X (Orchestrator):**
 
 ```python
 # Single interface for all interactions
@@ -161,7 +161,7 @@ Other frameworks require you to write and maintain every agent's prompt, leading
 - Repeated boilerplate
 - Maintenance burden
 
-**AgentX Presets:**
+**VibeX Presets:**
 
 ```yaml
 agents:
@@ -180,7 +180,7 @@ Each preset includes:
 ### 8. Semantic Memory System
 
 **Beyond Simple Context:**
-While AG2 uses basic conversation history, AgentX implements:
+While AG2 uses basic conversation history, VibeX implements:
 
 - **Semantic Search**: Find relevant past interactions
 - **Memory Synthesis**: Automatic summarization
@@ -190,7 +190,7 @@ While AG2 uses basic conversation history, AgentX implements:
 ### 9. Built-in Tool Suite
 
 **Complete vs. Minimal:**
-Unlike frameworks that provide minimal tools, AgentX includes:
+Unlike frameworks that provide minimal tools, VibeX includes:
 
 - **File Operations**: Full taskspace management
 - **Web Tools**: Search, scraping, content extraction
@@ -203,7 +203,7 @@ Unlike frameworks that provide minimal tools, AgentX includes:
 **Black Box Problem:**
 Most frameworks offer limited visibility into agent decisions.
 
-**AgentX Transparency:**
+**VibeX Transparency:**
 
 - Structured logging
 - Event stream access
@@ -261,7 +261,7 @@ Most frameworks offer limited visibility into agent decisions.
 
 ## Design Philosophy
 
-AgentX represents a fundamental shift in how we think about multi-agent systems:
+VibeX represents a fundamental shift in how we think about multi-agent systems:
 
 1. **Configuration over Code**: Define what, not how
 2. **Natural over Programmatic**: Use language, not logic
@@ -269,9 +269,9 @@ AgentX represents a fundamental shift in how we think about multi-agent systems:
 4. **Framework over Library**: Complete, not partial
 5. **Standards over Custom**: MCP, not proprietary
 
-## When to Choose AgentX
+## When to Choose VibeX
 
-**Choose AgentX when you need:**
+**Choose VibeX when you need:**
 
 - Rapid prototyping without coding
 - Production deployment with monitoring
@@ -289,7 +289,7 @@ AgentX represents a fundamental shift in how we think about multi-agent systems:
 
 ## Conclusion
 
-AgentX isn't just another multi-agent framework—it's a reimagining of how AI agent systems should be built and deployed. By learning from two years of AutoGen/AG2 production experience, we've created a framework that prioritizes:
+VibeX isn't just another multi-agent framework—it's a reimagining of how AI agent systems should be built and deployed. By learning from two years of AutoGen/AG2 production experience, we've created a framework that prioritizes:
 
 - **Developer Experience**: YAML configuration, presets, and natural language
 - **Production Readiness**: REST API, monitoring, and deployment tools

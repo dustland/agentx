@@ -1,16 +1,16 @@
 # Getting Started
 
-AgentX is a Python framework for building multi-agent AI systems. Get started with these three progressive examples.
+VibeX is a Python framework for building multi-agent AI systems. Get started with these three progressive examples.
 
 ## Installation
 
 ```bash
-pip install agentx-py
+pip install vibex
 ```
 
 ## 1. Single Agent (Simple Chat)
 
-Let's start with the simplest possible AgentX setup - a single chat agent.
+Let's start with the simplest possible VibeX setup - a single chat agent.
 
 ### Configuration
 
@@ -60,8 +60,8 @@ Create `main.py`:
 #!/usr/bin/env python3
 import asyncio
 from pathlib import Path
-from agentx.core.xagent import XAgent
-from agentx.config.team_loader import load_team_config
+from vibex.core.xagent import XAgent
+from vibex.config.team_loader import load_team_config
 
 async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
@@ -102,13 +102,13 @@ export DEEPSEEK_API_KEY="your-api-key-here"
 python main.py
 ```
 
-🎉 **Result:** You now have a working chat agent! This demonstrates the core AgentX conversational interface.
+🎉 **Result:** You now have a working chat agent! This demonstrates the core VibeX conversational interface.
 
 ---
 
 ## 2. Multiple Agents with Tools (Auto Writer)
 
-Now let's see the real power of AgentX - multiple specialized agents working together with tools.
+Now let's see the real power of VibeX - multiple specialized agents working together with tools.
 
 ### Configuration
 
@@ -123,7 +123,7 @@ orchestrator:
   max_rounds: 50
   timeout: 1800
 
-# All agents are presets from AgentX framework
+# All agents are presets from VibeX framework
 agents:
   - "researcher" # Gathers and synthesizes rigorous, evidence-based research
   - "writer" # Transforms research into clear, persuasive narrative
@@ -151,7 +151,7 @@ Create `main.py`:
 #!/usr/bin/env python3
 import asyncio
 from pathlib import Path
-from agentx import start_task
+from vibex import start_task
 
 async def main():
     # Get the absolute path to the configuration file
@@ -242,12 +242,12 @@ Now that you've seen both single and multi-agent systems, here are your next ste
 
 **For Advanced Users:**
 
-- [System Architecture](./design/system-architecture) - Understand how AgentX works internally
+- [System Architecture](./design/system-architecture) - Understand how VibeX works internally
 - [API Reference](./api/core) - Complete technical documentation
 
 ### 🚀 Working Examples
 
-All examples are in the [examples directory](https://github.com/dustland/agentx/tree/main/examples):
+All examples are in the [examples directory](https://github.com/dustland/vibex/tree/main/examples):
 
 - **simple_chat**: The single agent example above
 - **auto_writer**: The multi-agent example above
@@ -275,11 +275,11 @@ All examples are in the [examples directory](https://github.com/dustland/agentx/
 
 ```bash
 # Create a new project with the wizard
-agentx init
+vibex init
 
 # Clone and run examples
-git clone https://github.com/dustland/agentx.git
-cd agentx/examples/simple_chat
+git clone https://github.com/dustland/vibex.git
+cd vibex/examples/simple_chat
 python main.py
 
 # Or try the multi-agent example
@@ -290,9 +290,9 @@ python main.py
 ### 🤝 Get Help
 
 - **Documentation**: [API Reference](./api/core)
-- **Examples**: [Working Examples](https://github.com/dustland/agentx/tree/main/examples)
-- **Community**: [GitHub Discussions](https://github.com/dustland/agentx/discussions)
-- **Issues**: [GitHub Issues](https://github.com/dustland/agentx/issues)
+- **Examples**: [Working Examples](https://github.com/dustland/vibex/tree/main/examples)
+- **Community**: [GitHub Discussions](https://github.com/dustland/vibex/discussions)
+- **Issues**: [GitHub Issues](https://github.com/dustland/vibex/issues)
 
 ---
 

@@ -6,9 +6,9 @@ import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from typing import Dict, List
 
-from agentx.core.handoff_evaluator import HandoffEvaluator, HandoffContext
-from agentx.core.config import Handoff
-from agentx.core.agent import Agent
+from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
+from vibex.core.config import Handoff
+from vibex.core.agent import Agent
 
 
 class TestHandoffEvaluator:

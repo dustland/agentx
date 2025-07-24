@@ -6,7 +6,7 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock
 
-from agentx.memory.types import (
+from vibex.memory.types import (
     MemoryType, MemoryItem, MemoryQuery, MemorySearchResult, MemoryStats
 )
 

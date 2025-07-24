@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate API documentation for AgentX framework.
+Generate API documentation for VibeX framework.
 Simple, focused script that extracts docstrings and creates clean MD files.
 """
 
@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import sys
 
-# Add src to path so we can import agentx modules
+# Add src to path so we can import vibex modules
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 def extract_docstring(node) -> Optional[str]:
@@ -95,7 +95,7 @@ def format_docstring(docstring: str) -> str:
 def get_github_link(module_name: str, class_name: str = None, method_name: str = None, line_number: int = None) -> str:
     """Generate GitHub link to source code."""
     # GitHub repository base URL
-    github_base = "https://github.com/dustland/agentx/blob/main/src"
+    github_base = "https://github.com/dustland/vibex/blob/main/src"
 
     # Convert module name to file path
     module_path = module_name.replace('.', '/')
@@ -108,7 +108,7 @@ def get_github_link(module_name: str, class_name: str = None, method_name: str =
         # For regular modules, convert to .py file
         parts = module_path.split('/')
         if len(parts) > 1:
-            # e.g., agentx/core/agent -> agentx/core/agent.py
+            # e.g., vibex/core/agent -> vibex/core/agent.py
             file_path = f"{module_path}.py"
         else:
             file_path = f"{module_path}.py"
@@ -387,8 +387,8 @@ def generate_markdown(module_data: Dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 def main():
-    """Generate API documentation for all AgentX modules."""
-    src_path = Path(__file__).parent.parent / "src" / "agentx"
+    """Generate API documentation for all VibeX modules."""
+    src_path = Path(__file__).parent.parent / "src" / "vibex"
     docs_path = Path(__file__).parent.parent / "docs" / "content" / "api"
 
     # Clean existing docs
@@ -430,7 +430,7 @@ def main():
         # Process __init__.py first
         init_file = module_path / "__init__.py"
         if init_file.exists():
-            module_data = process_module(init_file, f"agentx.{module_name}")
+            module_data = process_module(init_file, f"vibex.{module_name}")
             markdown = generate_markdown(module_data)
 
             with open(module_docs_path / "index.md", 'w', encoding='utf-8') as f:
@@ -440,7 +440,7 @@ def main():
         for py_file in sorted(module_path.glob("*.py")):
             if py_file.name != "__init__.py" and not py_file.name.startswith("_"):
                 file_name = py_file.stem
-                module_data = process_module(py_file, f"agentx.{module_name}.{file_name}")
+                module_data = process_module(py_file, f"vibex.{module_name}.{file_name}")
                 markdown = generate_markdown(module_data)
 
                 with open(module_docs_path / f"{file_name}.md", 'w', encoding='utf-8') as f:
@@ -449,9 +449,9 @@ def main():
     # Create API index page
     index_content = """# API Reference
 
-Complete API reference for the AgentX framework.
+Complete API reference for the VibeX framework.
 
-AgentX is a modern, AI-powered multi-agent framework for building intelligent systems. This API reference covers all the core modules and components.
+VibeX is a modern, AI-powered multi-agent framework for building intelligent systems. This API reference covers all the core modules and components.
 
 ## Core Modules
 
@@ -474,7 +474,7 @@ Built-in tools for file operations, web search, memory management, and more.
 ### [CLI](/api/cli)
 Command-line interface and project bootstrapping tools.
 
-- **Project Bootstrap** - `agentx init` command and project templates
+- **Project Bootstrap** - `vibex init` command and project templates
 - **CLI Interface** - Main command-line entry point
 - **Debug Commands** - Development and debugging utilities
 
@@ -529,16 +529,16 @@ Utility functions and helpers.
 
 ## Getting Started
 
-To start using AgentX, install it via pip:
+To start using VibeX, install it via pip:
 
 ```bash
-pip install agentx-py
+pip install vibex
 ```
 
 Then create your first agent:
 
 ```python
-from agentx import Agent
+from vibex import Agent
 
 agent = Agent(
     name="my_agent",

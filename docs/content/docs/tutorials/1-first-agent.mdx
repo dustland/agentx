@@ -2,11 +2,11 @@
 
 **⏱️ Time: 15 minutes | 🎯 Goal: Build a simple chat agent**
 
-In this tutorial, you'll create your first AgentX agent - a helpful assistant that can chat with users. This is the foundation for everything else you'll build with AgentX.
+In this tutorial, you'll create your first VibeX agent - a helpful assistant that can chat with users. This is the foundation for everything else you'll build with VibeX.
 
 ## What You'll Learn
 
-- Basic AgentX project structure
+- Basic VibeX project structure
 - Agent configuration with YAML
 - Prompt engineering for agents
 - Running and interacting with agents
@@ -15,7 +15,7 @@ In this tutorial, you'll create your first AgentX agent - a helpful assistant th
 ## Prerequisites
 
 - Python 3.8+ installed
-- AgentX installed (`pip install agentx-py`)
+- VibeX installed (`pip install vibex`)
 - DeepSeek API key (get one free at [platform.deepseek.com](https://platform.deepseek.com))
 
 ---
@@ -47,11 +47,11 @@ my-first-agent/
 
 ## Step 2: Create Your Agent Configuration
 
-The heart of any AgentX system is the configuration file. Create `config/team.yaml`:
+The heart of any VibeX system is the configuration file. Create `config/team.yaml`:
 
 ```yaml
 name: "my_first_agent"
-description: "My first AgentX agent - a helpful assistant"
+description: "My first VibeX agent - a helpful assistant"
 
 # Define your agents
 agents:
@@ -98,7 +98,7 @@ The prompt defines your agent's personality and behavior. Create `config/prompts
 ```markdown
 # Helpful Assistant
 
-You are a helpful AI assistant created with AgentX. Your role is to:
+You are a helpful AI assistant created with VibeX. Your role is to:
 
 - Answer questions clearly and accurately
 - Be friendly and professional
@@ -132,10 +132,10 @@ Now let's create the Python application that runs your agent. Create `main.py`:
 #!/usr/bin/env python3
 import asyncio
 from pathlib import Path
-from agentx.core.task import TaskExecutor
+from vibex.core.task import TaskExecutor
 
 async def main():
-    print("🤖 My First AgentX Agent")
+    print("🤖 My First VibeX Agent")
     print("Type 'quit' to exit\n")
 
     # Load the agent configuration
@@ -162,10 +162,10 @@ if __name__ == "__main__":
 
 ### Understanding the Code
 
-- **`TaskExecutor`**: The main class for running AgentX agents
+- **`TaskExecutor`**: The main class for running VibeX agents
 - **`execute_task`**: Processes user input and generates responses
 - **`stream=True`**: Enables real-time response streaming
-- **Async/await**: AgentX uses asynchronous programming for better performance
+- **Async/await**: VibeX uses asynchronous programming for better performance
 
 ## Step 5: Run Your Agent
 
@@ -182,7 +182,7 @@ python main.py
 You should see:
 
 ```
-🤖 My First AgentX Agent
+🤖 My First VibeX Agent
 Type 'quit' to exit
 
 You:
@@ -195,8 +195,8 @@ Try these example conversations:
 **Example 1: Simple Question**
 
 ```
-You: What is AgentX?
-Assistant: AgentX is a multi-agent framework that allows you to build AI applications with multiple specialized agents working together...
+You: What is VibeX?
+Assistant: VibeX is a multi-agent framework that allows you to build AI applications with multiple specialized agents working together...
 ```
 
 **Example 2: Ask for Help**
@@ -215,7 +215,7 @@ Assistant: I don't have access to real-time weather data, but I can help you und
 
 ## 🎉 Congratulations!
 
-You've successfully built your first AgentX agent! Here's what you accomplished:
+You've successfully built your first VibeX agent! Here's what you accomplished:
 
 ✅ **Created a project structure** with proper organization
 ✅ **Configured an agent** using YAML

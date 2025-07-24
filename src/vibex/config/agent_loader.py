@@ -187,7 +187,7 @@ agents:"""
     template += f"""
 
 # Available tools: {available_tools}
-# Run 'agentx tools list' for detailed descriptions
+# Run 'vibex tools list' for detailed descriptions
 
 # Team settings (optional)
 team:
@@ -255,7 +255,7 @@ max_consecutive_replies: 10
 auto_reply: true
 
 # Available tools: {available_tools}
-# Run 'agentx tools list' for detailed descriptions
+# Run 'vibex tools list' for detailed descriptions
 """
 
     # Write template

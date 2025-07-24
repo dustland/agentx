@@ -1,6 +1,6 @@
 # Memory Backend System
 
-The memory backend system provides a pluggable architecture for sophisticated memory management in AgentX agents. It separates the simple memory interface used by agents from complex backend implementations.
+The memory backend system provides a pluggable architecture for sophisticated memory management in VibeX agents. It separates the simple memory interface used by agents from complex backend implementations.
 
 ## Architecture
 
@@ -18,7 +18,7 @@ The memory backend system provides a pluggable architecture for sophisticated me
 Abstract interface defining clean, concise methods:
 
 ```python
-from agentx.memory import MemoryBackend, MemoryQuery, MemoryType
+from vibex.memory import MemoryBackend, MemoryQuery, MemoryType
 
 class MemoryBackend(ABC):
     async def add(self, content: str, memory_type: MemoryType,
@@ -97,8 +97,8 @@ class MemoryQuery:
 ### Basic Usage
 
 ```python
-from agentx.memory import create_memory_backend, MemoryQuery, MemoryType
-from agentx.config.models import MemoryConfig
+from vibex.memory import create_memory_backend, MemoryQuery, MemoryType
+from vibex.config.models import MemoryConfig
 
 # Create backend
 config = MemoryConfig()
@@ -133,8 +133,8 @@ search_results = await backend.search(search_query)
 ### Core Memory Integration
 
 ```python
-from agentx.core.memory import Memory
-from agentx.config.models import MemoryConfig
+from vibex.core.memory import Memory
+from vibex.config.models import MemoryConfig
 
 # Create memory with backend
 agent = MyAgent("researcher")
@@ -187,7 +187,7 @@ agent.register_function("stats", backend.stats)
 Memory backends are configured through `MemoryConfig`:
 
 ```python
-from agentx.config.models import MemoryConfig
+from vibex.config.models import MemoryConfig
 
 config = MemoryConfig(
     backend_type="mem0",
@@ -223,5 +223,5 @@ config = MemoryConfig(
 pip install mem0ai
 
 # Or install basic version
-pip install agentx
+pip install vibex
 ```

@@ -35,10 +35,10 @@ def show_status() -> None:
         response = requests.get("http://localhost:7770/health", timeout=2)
         print(f"🌐 API Server: {'🟢 Running' if response.status_code == 200 else '🔴 Error'}")
         print(f"   URL: http://localhost:7770")
-        print(f"   Start with: agentx start")
+        print(f"   Start with: vibex start")
     except:
         print("🌐 API Server: 🔴 Not running")
-        print("   Start with: agentx start")
+        print("   Start with: vibex start")
 
     try:
         # Check if web dashboard is running
@@ -50,7 +50,7 @@ def show_status() -> None:
         print(f"   Theme: Professional SaaS dashboard styling")
     except:
         print("📱 Web Dashboard: 🔴 Not running")
-        print("   Run 'agentx monitor --web' to start the modern dashboard")
+        print("   Run 'vibex monitor --web' to start the modern dashboard")
 
     # Check examples
     examples_dir = Path("examples")
@@ -73,7 +73,7 @@ def show_version() -> None:
     try:
         # Try to get version from package
         import importlib.metadata
-        version = importlib.metadata.version("agentx")
+        version = importlib.metadata.version("vibex")
         print(f"Version: {version}")
     except:
         print("Version: Development")
@@ -144,7 +144,7 @@ def show_config() -> None:
 
     # Check data directory
     print("\nData Storage:")
-    data_dir = Path("agentx_data")
+    data_dir = Path("vibex_data")
     if data_dir.exists():
         files = list(data_dir.glob("*.json"))
         print(f"  📁 Data Directory: {data_dir} ({len(files)} files)")
@@ -161,7 +161,7 @@ def init_config() -> None:
     print("=" * 40)
 
     # Create data directory
-    data_dir = Path("agentx_data")
+    data_dir = Path("vibex_data")
     data_dir.mkdir(exist_ok=True)
     print(f"✅ Created data directory: {data_dir}")
 
@@ -189,4 +189,4 @@ SERP_API_KEY=your_serp_api_key_here
     print("\n📋 Next steps:")
     print("1. Copy .env.example to .env")
     print("2. Fill in your API keys in the .env file")
-    print("3. Run 'agentx status' to check configuration")
+    print("3. Run 'vibex status' to check configuration")

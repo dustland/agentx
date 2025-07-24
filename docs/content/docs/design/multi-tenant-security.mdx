@@ -4,11 +4,11 @@
 >
 > This multi-tenant implementation provides **organizational isolation only**, not true security isolation. Users can pass any `user_id` parameter to access other users' taskspaces and data. This design is suitable for trusted environments and development scenarios, but **requires external authentication and authorization layers** for production security. See the [Authentication Integration](#authentication-integration) section for secure deployment patterns.
 
-AgentX provides multi-tenant support through a clean layered architecture that separates user management from the core task execution framework. This design ensures that different users can logically separate their work when sharing the same AgentX instance, while keeping the framework pure and reusable.
+VibeX provides multi-tenant support through a clean layered architecture that separates user management from the core task execution framework. This design ensures that different users can logically separate their work when sharing the same VibeX instance, while keeping the framework pure and reusable.
 
 ## Overview
 
-Multi-tenancy in AgentX is implemented through a clean three-layer architecture that separates concerns:
+Multi-tenancy in VibeX is implemented through a clean three-layer architecture that separates concerns:
 
 1. **API Layer**: Thin HTTP wrapper handling authentication and user context
 2. **Service Layer**: Business logic managing user-task relationships and permissions
@@ -119,20 +119,20 @@ class XAgent:
 class TaskService:
     def __init__(self):
         self.user_index = get_user_task_index()  # File or Redis backend
-    
+
     async def create_task(self, user_id: str, prompt: str, config_path: str):
         # Create task without user context
         task = await start_task(prompt=prompt, config_path=config_path)
-        
+
         # Map task to user in service layer
         await self.user_index.add_task(user_id, task.task_id)
         return task
-    
+
     async def get_task(self, user_id: str, task_id: str):
         # Verify ownership before returning task
         if not await self.user_index.user_owns_task(user_id, task_id):
             raise PermissionError("Access denied")
-        
+
         # Resume task without user context
         return await resume_task(task_id)
 
@@ -141,7 +141,7 @@ class TaskService:
 async def create_task(request: TaskRequest, x_user_id: str = Header(None)):
     if not x_user_id:
         raise HTTPException(401, "User ID required")
-    
+
     # Delegate to service layer
     task_info = await task_service.create_task(
         user_id=x_user_id,
@@ -207,8 +207,8 @@ While basic isolation is provided, production deployments should implement:
 ### Multi-Tenant Mode (Default)
 
 ```bash
-# Start AgentX with multi-tenant support
-agentx start
+# Start VibeX with multi-tenant support
+vibex start
 
 # All tasks require user_id for isolated taskspaces
 POST /tasks {"user_id": "alice", "config_path": "config.yaml", "task_description": "..."}
@@ -218,7 +218,7 @@ POST /tasks {"user_id": "alice", "config_path": "config.yaml", "task_description
 
 ### Authentication Integration
 
-AgentX's multi-tenancy requires integration with authentication systems:
+VibeX's multi-tenancy requires integration with authentication systems:
 
 > **REQUIRED FOR SECURITY**: The examples below show how to implement proper authentication and authorization. Without this middleware, the multi-tenant system provides no security protection.
 
@@ -277,8 +277,8 @@ async def create_task(request: TaskRequest, user_id: str = Depends(get_current_u
 
 ```python
 from fastapi import FastAPI, Depends, HTTPException, Header
-from agentx.server.api import create_app
-from agentx.server.models import TaskRequest
+from vibex.server.api import create_app
+from vibex.server.models import TaskRequest
 
 app = create_app()
 
@@ -349,7 +349,7 @@ async def test_user_task_ownership():
 All user-related security is handled in one place (service layer), making it easier to audit and maintain:
 
 - Authentication: API layer
-- Authorization: Service layer  
+- Authorization: Service layer
 - Execution: Framework layer (no user knowledge)
 
 ### 4. Future Extensibility
@@ -361,4 +361,4 @@ New deployment patterns can be added without modifying the core:
 - External identity providers
 - Custom authorization rules
 
-This multi-tenant architecture provides organizational separation that enables AgentX to be deployed in shared environments with proper external authentication. By keeping the framework user-agnostic, we maintain maximum flexibility while ensuring clean separation of concerns. The framework itself does not provide security isolation - it relies on external authentication systems to validate user identity and enforce access controls through the service layer. When properly secured with authentication middleware, this design maintains the simplicity and flexibility that makes AgentX easy to use and deploy.
+This multi-tenant architecture provides organizational separation that enables VibeX to be deployed in shared environments with proper external authentication. By keeping the framework user-agnostic, we maintain maximum flexibility while ensuring clean separation of concerns. The framework itself does not provide security isolation - it relies on external authentication systems to validate user identity and enforce access controls through the service layer. When properly secured with authentication middleware, this design maintains the simplicity and flexibility that makes VibeX easy to use and deploy.

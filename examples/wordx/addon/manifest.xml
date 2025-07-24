@@ -14,7 +14,7 @@
   <Description DefaultValue="AI-powered document processing with multi-agent teams"/>
       <IconUrl DefaultValue="https://localhost:7778/assets/icon-32.png"/>
       <HighResolutionIconUrl DefaultValue="https://localhost:7778/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://github.com/dustland/agentx"/>
+  <SupportUrl DefaultValue="https://github.com/dustland/vibex"/>
 
   <!-- End Basic Settings. -->
 
@@ -118,7 +118,7 @@
 
       <bt:Urls>
         <bt:Url id="WordX.Taskpane.Url" DefaultValue="https://localhost:7778/taskpane.html"/>
-        <bt:Url id="WordX.GetStarted.LearnMoreUrl" DefaultValue="https://github.com/dustland/agentx"/>
+        <bt:Url id="WordX.GetStarted.LearnMoreUrl" DefaultValue="https://github.com/dustland/vibex"/>
         <bt:Url id="WordX.DesktopFunctionFile.Url" DefaultValue="https://localhost:7778/function-file/function-file.html"/>
       </bt:Urls>
 
@@ -130,7 +130,7 @@
 
       <bt:LongStrings>
         <bt:String id="WordX.TaskpaneButton.Tooltip" DefaultValue="Open WordX for AI-powered document processing"/>
-        <bt:String id="WordX.GetStarted.Description" DefaultValue="WordX uses AgentX multi-agent teams to review, edit, format, and audit your documents with AI precision."/>
+        <bt:String id="WordX.GetStarted.Description" DefaultValue="WordX uses VibeX multi-agent teams to review, edit, format, and audit your documents with AI precision."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

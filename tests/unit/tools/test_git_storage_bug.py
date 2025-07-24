@@ -11,8 +11,8 @@ import shutil
 from pathlib import Path
 from unittest.mock import patch
 
-from agentx.storage.git_storage import GitArtifactStorage
-from agentx.storage.interfaces import StorageResult
+from vibex.storage.git_storage import GitArtifactStorage
+from vibex.storage.interfaces import StorageResult
 
 
 class TestGitStorageExtensionHandling:
@@ -24,8 +24,8 @@ class TestGitStorageExtensionHandling:
         with tempfile.TemporaryDirectory() as temp_dir:
             taskspace_path = Path(temp_dir) / "test_git_taskspace"
             # Mock GitPython to avoid actual git operations in unit tests
-            with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
-                 patch('agentx.storage.git_storage.Repo') as mock_repo:
+            with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
+                 patch('vibex.storage.git_storage.Repo') as mock_repo:
 
                 # Mock the repo initialization
                 mock_repo_instance = mock_repo.return_value
@@ -86,7 +86,7 @@ class TestGitStorageExtensionHandling:
             extension = git_storage._get_extension_for_content_type(content_type)
             assert extension == expected_extension, f"Content type {content_type} should map to {expected_extension}, got {extension}"
 
-    @patch('agentx.storage.git_storage.asyncio.get_event_loop')
+    @patch('vibex.storage.git_storage.asyncio.get_event_loop')
     async def test_store_artifact_no_double_extension(self, mock_get_loop, git_storage):
         """Test storing artifacts doesn't create double extensions."""
         # Mock the asyncio executor
@@ -140,23 +140,23 @@ class TestGitStorageIntegrationWithFileTool:
             taskspace_path = Path(temp_dir) / "test_taskspace"
 
             # Mock GitPython for testing
-            with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
-                 patch('agentx.storage.git_storage.Repo') as mock_repo:
+            with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
+                 patch('vibex.storage.git_storage.Repo') as mock_repo:
 
                 mock_repo_instance = mock_repo.return_value
                 mock_repo_instance.config_writer.return_value.__enter__ = lambda x: mock_repo_instance.config_writer.return_value
                 mock_repo_instance.config_writer.return_value.__exit__ = lambda *args: None
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
-                from agentx.storage.factory import StorageFactory
+                from vibex.storage.factory import StorageFactory
                 storage = StorageFactory.create_taskspace_storage(taskspace_path, use_git_artifacts=True)
                 storage.artifact_storage.repo = mock_repo_instance  # Use mock
                 yield storage
 
-    @patch('agentx.storage.git_storage.asyncio.get_event_loop')
+    @patch('vibex.storage.git_storage.asyncio.get_event_loop')
     async def test_file_tool_with_git_storage_no_double_extensions(self, mock_get_loop, taskspace_with_git):
         """Test FileTool with GitStorage doesn't create double extensions."""
-        from agentx.builtin_tools.file import FileTool
+        from vibex.builtin_tools.file import FileTool
 
         # Mock the asyncio executor
         mock_loop = mock_get_loop.return_value
@@ -198,8 +198,8 @@ class TestGitStorageErrorScenarios:
         """Create GitArtifactStorage for testing."""
         with tempfile.TemporaryDirectory() as temp_dir:
             taskspace_path = Path(temp_dir) / "test_git_taskspace"
-            with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
-                 patch('agentx.storage.git_storage.Repo') as mock_repo:
+            with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
+                 patch('vibex.storage.git_storage.Repo') as mock_repo:
 
                 mock_repo_instance = mock_repo.return_value
                 mock_repo_instance.config_writer.return_value.__enter__ = lambda x: mock_repo_instance.config_writer.return_value
@@ -429,8 +429,8 @@ if __name__ == "__main__":
             taskspace_path = Path(temp_dir) / "test_taskspace"
 
             # Test the extension logic directly
-            with patch('agentx.storage.git_storage.GIT_AVAILABLE', True), \
-                 patch('agentx.storage.git_storage.Repo'):
+            with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
+                 patch('vibex.storage.git_storage.Repo'):
 
                 storage = GitArtifactStorage(taskspace_path)
 

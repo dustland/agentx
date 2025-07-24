@@ -15,9 +15,9 @@ from unittest.mock import Mock, AsyncMock
 
 import pytest
 
-from agentx.storage import TaskspaceFactory, TaskspaceStorage
-from agentx.storage.providers.cache import MemoryCacheProvider, NoOpCacheProvider
-from agentx.storage.interfaces import CacheBackend
+from vibex.storage import TaskspaceFactory, TaskspaceStorage
+from vibex.storage.providers.cache import MemoryCacheProvider, NoOpCacheProvider
+from vibex.storage.interfaces import CacheBackend
 
 
 class TestTaskspaceFactory:

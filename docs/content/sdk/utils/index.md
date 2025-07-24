@@ -1,5 +1,5 @@
 # Utils
 
-*Module: [`agentx.utils`](https://github.com/dustland/agentx/blob/main/src/agentx/utils.py)*
+_Module: [`vibex.utils`](https://github.com/dustland/vibex/blob/main/src/vibex/utils.py)_
 
-AgentX utilities.
+VibeX utilities.

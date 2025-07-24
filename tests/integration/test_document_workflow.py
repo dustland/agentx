@@ -11,9 +11,9 @@ import shutil
 from pathlib import Path
 from unittest.mock import AsyncMock
 
-from agentx.builtin_tools.document import DocumentTool
-from agentx.storage.taskspace import TaskspaceStorage
-from agentx import start_task
+from vibex.builtin_tools.document import DocumentTool
+from vibex.storage.taskspace import TaskspaceStorage
+from vibex import start_task
 
 
 class TestDocumentWorkflow:

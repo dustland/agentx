@@ -2,7 +2,7 @@
 Tests for logger utility.
 
 These tests define the expected correct behavior for logging
-functionality in the AgentX framework.
+functionality in the VibeX framework.
 """
 
 import pytest
@@ -10,7 +10,7 @@ import logging
 import tempfile
 from pathlib import Path
 from unittest.mock import patch, Mock
-from agentx.utils.logger import get_logger, setup_clean_chat_logging
+from vibex.utils.logger import get_logger, setup_clean_chat_logging
 
 
 class TestGetLogger:
@@ -41,9 +41,9 @@ class TestGetLogger:
 
     def test_get_logger_with_file_name(self):
         """get_logger should handle __name__ inputs correctly."""
-        logger = get_logger("agentx.core.agent")
+        logger = get_logger("vibex.core.agent")
 
-        assert logger.name == "agentx.core.agent"
+        assert logger.name == "vibex.core.agent"
         assert isinstance(logger, logging.Logger)
 
 
@@ -95,15 +95,15 @@ class TestSetupCleanChatLogging:
             logger = logging.getLogger(logger_name)
             assert logger.level >= logging.WARNING
 
-    def test_setup_clean_chat_logging_preserves_agentx_loggers(self):
-        """setup_clean_chat_logging should preserve AgentX logger levels."""
+    def test_setup_clean_chat_logging_preserves_vibex_loggers(self):
+        """setup_clean_chat_logging should preserve VibeX logger levels."""
         setup_clean_chat_logging()
 
-        # AgentX loggers should not be suppressed
-        agentx_logger = logging.getLogger("agentx")
-        assert agentx_logger.level <= logging.INFO
+        # VibeX loggers should not be suppressed
+        vibex_logger = logging.getLogger("vibex")
+        assert vibex_logger.level <= logging.INFO
 
-        core_logger = logging.getLogger("agentx.core")
+        core_logger = logging.getLogger("vibex.core")
         assert core_logger.level <= logging.INFO
 
     @patch.dict('os.environ', {'AGENTX_VERBOSE': '1'})
@@ -169,17 +169,17 @@ class TestLoggingIntegration:
         setup_clean_chat_logging()
 
         # Get loggers at different levels
-        root_logger = get_logger("agentx")
-        core_logger = get_logger("agentx.core")
-        agent_logger = get_logger("agentx.core.agent")
+        root_logger = get_logger("vibex")
+        core_logger = get_logger("vibex.core")
+        agent_logger = get_logger("vibex.core.agent")
 
         # Should all be different instances
         assert root_logger is not core_logger
         assert core_logger is not agent_logger
 
         # Should have proper hierarchy
-        assert agent_logger.parent.name == "agentx.core"
-        assert core_logger.parent.name == "agentx"
+        assert agent_logger.parent.name == "vibex.core"
+        assert core_logger.parent.name == "vibex"
 
     def test_logging_with_different_levels(self):
         """Logging should work correctly with different levels."""

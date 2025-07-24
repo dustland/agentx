@@ -1,10 +1,10 @@
 # Logging Utilities
 
-*Module: [`agentx.utils.logger`](https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py)*
+_Module: [`vibex.utils.logger`](https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py)_
 
-Simple streaming-aware logging for AgentX.
+Simple streaming-aware logging for VibeX.
 
-## set_streaming_mode <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L22" class="source-link" title="View source code">source</a>
+## set_streaming_mode <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L22" class="source-link" title="View source code">source</a>
 
 ```python
 def set_streaming_mode(enabled: bool)
@@ -12,7 +12,7 @@ def set_streaming_mode(enabled: bool)
 
 Enable/disable streaming mode to control console output.
 
-## get_logger <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L28" class="source-link" title="View source code">source</a>
+## get_logger <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L28" class="source-link" title="View source code">source</a>
 
 ```python
 def get_logger(name: str, level: Optional[str] = None) -> logging.Logger
@@ -21,17 +21,18 @@ def get_logger(name: str, level: Optional[str] = None) -> logging.Logger
 Get a configured logger instance.
 
 Simple rule:
-- If streaming mode is active: AgentX loggers go to file only, others suppressed
+
+- If streaming mode is active: VibeX loggers go to file only, others suppressed
 - If streaming mode is off: All loggers go to both console and file
 
 **Args:**
-    name: Logger name (usually __name__)
-    level: Optional log level override
+name: Logger name (usually **name**)
+level: Optional log level override
 
 **Returns:**
-    Configured logger instance
+Configured logger instance
 
-## setup_task_file_logging <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L72" class="source-link" title="View source code">source</a>
+## setup_task_file_logging <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L72" class="source-link" title="View source code">source</a>
 
 ```python
 def setup_task_file_logging(log_file_path: str) -> None
@@ -40,9 +41,9 @@ def setup_task_file_logging(log_file_path: str) -> None
 Set up file logging for a specific task.
 
 **Args:**
-    log_file_path: Path to the log file
+log_file_path: Path to the log file
 
-## setup_clean_chat_logging <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L115" class="source-link" title="View source code">source</a>
+## setup_clean_chat_logging <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L115" class="source-link" title="View source code">source</a>
 
 ```python
 def setup_clean_chat_logging()
@@ -50,7 +51,7 @@ def setup_clean_chat_logging()
 
 Configure logging for clean chat experience.
 
-## configure_logging <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L127" class="source-link" title="View source code">source</a>
+## configure_logging <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L127" class="source-link" title="View source code">source</a>
 
 ```python
 def configure_logging(level: str = 'INFO', format_string: Optional[str] = None)
@@ -58,7 +59,7 @@ def configure_logging(level: str = 'INFO', format_string: Optional[str] = None)
 
 Configure global logging settings.
 
-## set_log_level <a href="https://github.com/dustland/agentx/blob/main/src/agentx/utils/logger.py#L164" class="source-link" title="View source code">source</a>
+## set_log_level <a href="https://github.com/dustland/vibex/blob/main/src/vibex/utils/logger.py#L164" class="source-link" title="View source code">source</a>
 
 ```python
 def set_log_level(level: str)

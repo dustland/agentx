@@ -9,11 +9,11 @@ import tempfile
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
-from agentx.builtin_tools.file import FileTool, create_file_tool
-from agentx.storage.factory import StorageFactory
-from agentx.storage.taskspace import TaskspaceStorage
-from agentx.storage.interfaces import StorageResult
-from agentx.core.config import TaskConfig
+from vibex.builtin_tools.file import FileTool, create_file_tool
+from vibex.storage.factory import StorageFactory
+from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.interfaces import StorageResult
+from vibex.core.config import TaskConfig
 
 
 class TestFileToolTaskspaceIntegration:

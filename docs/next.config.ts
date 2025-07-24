@@ -17,8 +17,8 @@ export default withNextra({
   output: "export",
   trailingSlash: true,
   ...(isGitHubPages && {
-    basePath: "/agentx",
-    assetPrefix: "/agentx",
+    basePath: "/vibex",
+    assetPrefix: "/vibex",
   }),
   images: {
     unoptimized: true,
