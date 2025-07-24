@@ -8,7 +8,7 @@ WORKDIR /app/web
 
 # Copy web-specific files
 COPY web/package.json web/pnpm-lock.yaml ./
-COPY web/tsconfig.json web/next.config.mjs ./
+COPY web/tsconfig.json web/next.config.ts ./
 
 # Install dependencies
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
