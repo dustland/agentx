@@ -108,6 +108,7 @@ export function ChatInput({
           <div className="flex items-center gap-1">
             {["agent", "chat"].map((m) => (
               <Button
+                key={m}
                 size="sm"
                 variant="ghost"
                 onClick={() => setMode(m as "agent" | "chat")}

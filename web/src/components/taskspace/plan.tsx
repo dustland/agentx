@@ -257,8 +257,8 @@ export function Plan({ taskId }: PlanProps) {
                         </Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <div className="space-y-3 pl-7">
+                    <AccordionContent className="">
+                      <div className="space-y-3">
                         <div>
                           <h6 className="text-xs font-medium text-muted-foreground mb-1">
                             Goal
