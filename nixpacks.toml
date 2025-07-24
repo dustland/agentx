@@ -7,7 +7,7 @@ nixPkgs = ["python311", "nodejs_20", "pnpm"]
 
 [phases.install]
 # Install dependencies for both the Python root project and the web project.
-cmds = ["pip install .", "cd web && pnpm install"]
+cmds = ["python -m pip install .", "cd web && pnpm install"]
 
 [phases.build]
 # Build the web application for production.
