@@ -28,11 +28,17 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     build-essential \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install project dependencies
-COPY pyproject.toml .
-RUN pip install --no-cache-dir .
+# Copy only the necessary files for installation first
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+COPY benchmark/ ./benchmark/
+
+# Upgrade pip and install the package
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir .
 
 # --- 3. Final Production Stage ---
 FROM python:3.11-slim
@@ -42,8 +48,12 @@ LABEL description="Production image for VibeX backend and web frontend"
 
 WORKDIR /app
 
-# Install tini for proper process management
-RUN apt-get update && apt-get install -y --no-install-recommends tini && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies including tini for proper process management
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tini \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from the python-base stage
 COPY --from=python-base /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
