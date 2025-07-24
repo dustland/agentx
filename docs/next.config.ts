@@ -9,17 +9,10 @@ const withNextra = nextra({
   contentDirBasePath: "/",
 });
 
-// Use basePath only for GitHub Pages deployment
-const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
-
 export default withNextra({
   reactStrictMode: true,
   output: "export",
   trailingSlash: true,
-  ...(isGitHubPages && {
-    basePath: "/vibex",
-    assetPrefix: "/vibex",
-  }),
   images: {
     unoptimized: true,
   },
