@@ -4,16 +4,17 @@
 FROM node:20-slim AS web-builder
 
 # Set working directory
-WORKDIR /app
-
-# Copy the entire web directory first
-COPY web/ .
-
-# Set working directory for web
 WORKDIR /app/web
 
-# Install dependencies
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+# Copy package files first for better caching
+COPY web/package.json web/pnpm-lock.yaml ./
+
+# Install pnpm and dependencies
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile --prefer-offline
+
+# Copy the rest of the web directory
+COPY web/ .
 
 # Build the Next.js application
 RUN pnpm run build
@@ -64,7 +65,7 @@ COPY --from=web-builder /app/web/.next ./web/.next
 COPY --from=web-builder /app/web/node_modules ./web/node_modules
 COPY --from=web-builder /app/web/public ./web/public
 COPY --from=web-builder /app/web/package.json ./web/package.json
-COPY --from=web-builder /app/web/next.config.mjs ./web/next.config.mjs
+COPY --from=web-builder /app/web/next.config.ts ./web/next.config.ts
 
 # Copy application source code
 COPY . .

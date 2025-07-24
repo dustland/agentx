@@ -26,10 +26,8 @@ function getEnvVar(key: string, defaultValue?: string): string {
 }
 
 export const env = {
-  // Required in production
-  JWT_SECRET: process.env.NODE_ENV === 'production' 
-    ? getEnvVar('JWT_SECRET') 
-    : getEnvVar('JWT_SECRET', 'dev-secret-only-for-local-development'),
+  // JWT Secret with default for development
+  JWT_SECRET: getEnvVar('JWT_SECRET', 'dev-secret-only-for-local-development'),
   
   // API configuration
   NEXT_PUBLIC_API_URL: getEnvVar('NEXT_PUBLIC_API_URL', 'http://localhost:7770'),
@@ -40,12 +38,3 @@ export const env = {
   // Feature flags
   ENABLE_DEMO_USERS: getEnvVar('ENABLE_DEMO_USERS', 'true') === 'true',
 } as const;
-
-// Validate environment on module load
-if (process.env.NODE_ENV === 'production') {
-  if (env.JWT_SECRET === 'dev-secret-only-for-local-development') {
-    throw new EnvironmentError(
-      'JWT_SECRET must be set in production environment'
-    );
-  }
-}

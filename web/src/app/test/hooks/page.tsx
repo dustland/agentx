@@ -35,45 +35,30 @@ export default function HooksTestPage() {
   // Disable hooks when no taskId
   const isHooksActive = !!taskId;
 
-  // Subscribe to streaming events
+  // Track streaming events from chat hook
   useEffect(() => {
     if (!taskId || taskId === "dummy-task-id") return;
 
-    console.log("[TEST] Setting up subscriptions for task:", taskId);
+    console.log("[TEST] Setting up monitoring for task:", taskId);
 
-    const unsubscribe = taskHook.subscribe({
-      onStreamChunk: (chunk) => {
-        console.log("[TEST] Received stream chunk:", chunk);
-        setStreamEvents((prev) => [
-          ...prev,
-          {
-            type: "chunk",
-            data: chunk,
-            timestamp: new Date(),
-          },
-        ]);
-      },
-      onMessage: (message) => {
-        console.log("[TEST] Received complete message:", message);
-        setStreamEvents((prev) => [
-          ...prev,
-          {
-            type: "complete",
-            data: message,
-            timestamp: new Date(),
-          },
-        ]);
-      },
-      onStatusChange: (status) => {
-        console.log("[TEST] Task status changed:", status);
-      },
-    });
-
+    // The useTask hook already handles subscriptions internally
+    // We can track messages and streaming state through the chat hook
+    
     return () => {
-      console.log("[TEST] Cleaning up subscriptions");
-      unsubscribe();
+      console.log("[TEST] Cleaning up monitoring");
+      taskHook.stop();
     };
-  }, [taskId]); // Remove taskHook dependency
+  }, [taskId, taskHook]);
+
+  // Track message changes for streaming events
+  useEffect(() => {
+    // Since useChat doesn't expose streaming messages directly,
+    // we'll track changes in the messages array
+    if (chatHook.messages.length > 0) {
+      const lastMessage = chatHook.messages[chatHook.messages.length - 1];
+      console.log("[TEST] Messages updated, last message:", lastMessage);
+    }
+  }, [chatHook.messages]);
 
   const createTestTask = async () => {
     setIsCreatingTask(true);
@@ -124,26 +109,24 @@ export default function HooksTestPage() {
   };
 
   const StreamingVisualizer = () => {
-    const streamingMsg = chatHook.streamingMessage;
-
-    if (!streamingMsg) return null;
+    // Since we don't have direct access to streaming messages,
+    // we'll show the loading state when messages are being sent
+    if (!chatHook.isLoading) return null;
 
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-sm font-medium">Live Streaming</span>
+          <span className="text-sm font-medium">Processing Message</span>
         </div>
 
         <div className="p-4 bg-muted/50 rounded-lg border border-primary/20">
           <div className="text-sm mb-2 text-muted-foreground">
-            Message ID: {streamingMsg.id}
+            Waiting for response...
           </div>
-          <div className="font-mono text-sm whitespace-pre-wrap">
-            {streamingMsg.content}
-            <span className="inline-flex ml-1">
-              <span className="w-2 h-4 bg-primary rounded-sm animate-pulse" />
-            </span>
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">AI is thinking...</span>
           </div>
         </div>
       </div>
@@ -226,7 +209,7 @@ export default function HooksTestPage() {
 
     console.log("[STATS] Messages:", chatHook.messages.length);
     console.log("[STATS] Stream events:", streamEvents.length);
-    console.log("[STATS] Streaming message:", chatHook.streamingMessage);
+    console.log("[STATS] Is loading:", chatHook.isLoading);
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -253,7 +236,7 @@ export default function HooksTestPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
-              {chatHook.streamingMessage ? "Active" : "Idle"}
+              {chatHook.isLoading ? "Active" : "Idle"}
             </div>
             <p className="text-xs text-muted-foreground">Stream Status</p>
           </CardContent>
@@ -406,15 +389,10 @@ export default function HooksTestPage() {
               </CardHeader>
               <CardContent>
                 <StreamingVisualizer />
-                {!chatHook.streamingMessage && !chatHook.isLoading && (
+                {!chatHook.isLoading && (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     No active stream. Send a message to start streaming.
                   </p>
-                )}
-                {chatHook.isLoading && !chatHook.streamingMessage && (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
                 )}
               </CardContent>
             </Card>
