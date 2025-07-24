@@ -49,11 +49,15 @@ LABEL description="Production image for VibeX backend and web frontend"
 
 WORKDIR /app
 
-# Install runtime dependencies including tini for proper process management
+# Install runtime dependencies including tini for proper process management and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tini \
     curl \
     git \
+    ca-certificates \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g pnpm \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from the python-base stage
