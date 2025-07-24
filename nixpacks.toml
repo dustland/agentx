@@ -9,7 +9,7 @@ dependsOn = ["setup"]
 cmds = [
     # Install uv using official installer (doesn't require pip)
     "curl -LsSf https://astral.sh/uv/install.sh | sh",
-    "export PATH=\"/root/.cargo/bin:$PATH\" && uv pip install -e .",
+    "export PATH=\"/root/.cargo/bin:$PATH\" && uv pip install --system -e .",
     "cd web && pnpm install --frozen-lockfile",
     "pnpm add -g concurrently",
 ]
