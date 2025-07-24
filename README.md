@@ -9,12 +9,9 @@
   <a href="https://dustland.github.io/vibex"><strong>Explore the docs »</strong></a>
   <br />
   <br />
-  <a href="https://pypi.org/project/vibex/"><img src="https://img.shields.io/pypi/v/vibex.svg" alt="PyPI version" /></a>
-  <a href="https://pypi.org/project/vibex/"><img src="https://img.shields.io/pypi/dm/vibex.svg" alt="PyPI downloads" /></a>
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" /></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"/></a>
-  <a href="https://github.com/dustland/vibex/issues/new?assignees=&labels=bug&template=bug_report.md&title="><img src="https://img.shields.io/badge/Report%20an%20Issue-d73a4a?style=flat-square" alt="Report an Issue"/></a>
-  <a href="https://github.com/dustland/vibex/issues/new?assignees=&labels=enhancement&template=feature_request.md&title="><img src="https://img.shields.io/badge/Request%20a%20Feature-0366d6?style=flat-square" alt="Request a Feature"/></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" /></a>
+  <a href="https://pypi.org/project/vibex/"><img src="https://img.shields.io/pypi/v/vibex.svg" alt="PyPI version" /></a>
 </p>
 
 VibeX provides the backbone for creating, orchestrating, and observing sophisticated multi-agent systems. It moves beyond simple agent-to-agent communication to a robust, task-driven framework where teams of specialized agents collaborate to achieve complex goals.
