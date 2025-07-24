@@ -1,36 +1,8 @@
-# Nixpacks configuration for VibeX
-# This deploys both the API server and Web interface
-
-[phases.setup]
-nixPkgs = ["python311Full", "nodejs_20", "pnpm", "git"]
-
-[phases.install]
-dependsOn = ["setup"]
-cmds = [
-    # Install uv using official installer (doesn't require pip)
-    "curl -LsSf https://astral.sh/uv/install.sh | sh",
-    # Create virtual environment and install packages
-    "export PATH=\"/root/.cargo/bin:$PATH\" && uv venv",
-    "export PATH=\"/root/.cargo/bin:$PATH\" && uv pip install -e .",
-    "cd web && pnpm install --frozen-lockfile",
-    # Install concurrently locally in web directory
-    "cd web && pnpm add concurrently",
-]
-
-[phases.build]
-dependsOn = ["install"]
-cmds = [
-    # Build Web interface
-    "cd web && pnpm run build",
-]
+# Minimal Nixpacks configuration for VibeX
+# Let Railway auto-detect Python and Node.js
 
 [start]
-# Start the API server (Web interface can be deployed separately)
-cmd = "export PATH=\"/root/.cargo/bin:$PATH\" && source .venv/bin/activate && cd web && npx concurrently \"cd .. && python -m vibex start --host 0.0.0.0 --port $PORT\" \"pnpm run start\""
+cmd = "cd web && npx concurrently \"cd .. && python -m vibex start --host 0.0.0.0 --port $PORT\" \"pnpm run start\""
 
 [variables]
-PYTHONUNBUFFERED = "1"
-NODE_ENV = "production"
-NEXT_TELEMETRY_DISABLED = "1"
 PORT = "7770"
-WEB_PORT = "7777"
