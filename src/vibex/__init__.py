@@ -24,7 +24,7 @@ from vibex.core.agent import Agent
 from vibex.core.task import Task
 from vibex.core.xagent import XAgent
 
-__version__ = "0.27.5"
+__version__ = "0.27.6"
 
 __all__ = [
     # Main API - primary entry points
