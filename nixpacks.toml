@@ -13,7 +13,8 @@ cmds = [
     "export PATH=\"/root/.cargo/bin:$PATH\" && uv venv",
     "export PATH=\"/root/.cargo/bin:$PATH\" && uv pip install -e .",
     "cd web && pnpm install --frozen-lockfile",
-    "pnpm add -g concurrently",
+    # Install concurrently locally in web directory
+    "cd web && pnpm add concurrently",
 ]
 
 [phases.build]
@@ -25,7 +26,7 @@ cmds = [
 
 [start]
 # Start the API server (Web interface can be deployed separately)
-cmd = "export PATH=\"/root/.cargo/bin:$PATH\" && source .venv/bin/activate && concurrently \"python -m vibex start --host 0.0.0.0 --port $PORT\" \"cd web && pnpm run start\""
+cmd = "export PATH=\"/root/.cargo/bin:$PATH\" && source .venv/bin/activate && cd web && npx concurrently \"cd .. && python -m vibex start --host 0.0.0.0 --port $PORT\" \"pnpm run start\""
 
 [variables]
 PYTHONUNBUFFERED = "1"
