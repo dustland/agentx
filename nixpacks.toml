@@ -7,11 +7,8 @@ nixPkgs = ["python311", "nodejs_20", "pnpm", "git"]
 [phases.install]
 dependsOn = ["setup"]
 cmds = [
-    # Install Python dependencies
-    "pip install uv",
+    "python3 -m pip install uv",
     "uv pip install -e .",
-
-    # Install Web dependencies
     "cd web && pnpm install --frozen-lockfile",
     "pnpm add -g concurrently",
 ]
