@@ -263,7 +263,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add pyproject.toml src/vibex/__init__.py
-          git commit -m "chore: bump version to ${{ steps.version_bump.outputs.new_version }} [skip deploy]"
+          git commit -m "chore: bump version to ${{ steps.version_bump.outputs.new_version }} [railway skip]"
           git push
 
       - name: Create GitHub Release
