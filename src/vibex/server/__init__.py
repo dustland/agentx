@@ -6,7 +6,7 @@ Simple REST API for project execution and memory management.
 
 from .api import create_app, app
 from .models import (
-    ProjectRequest, ProjectResponse, TaskStatus, TaskInfo,
+    CreateXAgentRequest, XAgentResponse, TaskStatus, XAgentListResponse,
     MemoryRequest, MemoryResponse, HealthResponse
 )
 from .redis_cache import RedisCacheBackend
@@ -14,10 +14,10 @@ from .redis_cache import RedisCacheBackend
 __all__ = [
     "create_app",
     "app",
-    "ProjectRequest",
-    "ProjectResponse",
+    "CreateXAgentRequest",
+    "XAgentResponse",
     "TaskStatus",
-    "TaskInfo",
+    "XAgentListResponse",
     "MemoryRequest",
     "MemoryResponse",
     "HealthResponse",

@@ -20,13 +20,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useProjectLogs } from "@/hooks/use-project";
+import { useLogs } from "@/hooks/use-xagent";
 
 interface LogsProps {
-  projectId: string;
+  xagentId: string;
 }
 
-export function Logs({ projectId }: LogsProps) {
+export function Logs({ xagentId }: LogsProps) {
   const [tailMode, setTailMode] = useState(true);
   const [offset, setOffset] = useState(0);
   const [autoScrollLogs, setAutoScrollLogs] = useState(true);
@@ -38,10 +38,9 @@ export function Logs({ projectId }: LogsProps) {
     hasMore,
     isLoading: loadingLogs,
     refetch,
-  } = useProjectLogs(projectId, {
+  } = useLogs(xagentId, {
+    level: undefined,
     limit,
-    offset: tailMode ? 0 : offset,
-    tail: tailMode,
   });
 
   const loadLogs = (newOffset?: number, newTailMode?: boolean) => {
@@ -102,7 +101,7 @@ export function Logs({ projectId }: LogsProps) {
     };
   };
 
-  if (loadingLogs && logs.length === 0) {
+  if (loadingLogs || !logs) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
@@ -113,7 +112,7 @@ export function Logs({ projectId }: LogsProps) {
     );
   }
 
-  if (logs.length === 0 && !loadingLogs) {
+  if (!logs || (logs.length === 0 && !loadingLogs)) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
@@ -168,7 +167,7 @@ export function Logs({ projectId }: LogsProps) {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-xs text-muted-foreground px-2">
-              {offset + 1}-{offset + logs.length}
+              {offset + 1}-{offset + (logs?.length || 0)}
             </span>
             <Button
               size="icon"
@@ -217,7 +216,7 @@ export function Logs({ projectId }: LogsProps) {
       </div>
       <ScrollArea className="h-full" ref={scrollRef}>
         <div className="p-4 space-y-1">
-          {logs.map((log, idx) => {
+          {(logs || []).map((log, idx) => {
             const parsed = parseLogEntry(log);
             const isError = parsed.level === "ERROR";
             const isWarning =

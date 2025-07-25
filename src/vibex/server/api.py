@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
 from .xagent_service import XAgentService, get_xagent_service
-from .models import CreateXAgentRequest, TaskRunResponse, TaskStatus, TaskRunListResponse
+from .models import CreateXAgentRequest, XAgentResponse, TaskStatus, XAgentListResponse
 from .streaming import event_stream_manager
 from ..utils.logger import get_logger
 # Authentication temporarily disabled
@@ -76,9 +76,9 @@ def create_app() -> FastAPI:
             ]
         }
     
-    def _xagent_to_response(xagent, user_id: str) -> TaskRunResponse:
-        """Convert XAgent instance to TaskRunResponse DTO for API serialization."""
-        return TaskRunResponse(
+    def _xagent_to_response(xagent, user_id: str) -> XAgentResponse:
+        """Convert XAgent instance to XAgentResponse DTO for API serialization."""
+        return XAgentResponse(
             agent_id=xagent.project_id,
             status=TaskStatus.COMPLETED if xagent.is_complete() else TaskStatus.RUNNING,
             user_id=user_id,
@@ -117,7 +117,7 @@ def create_app() -> FastAPI:
     
     # ===== Agent Management =====
     
-    @app.post("/agents", response_model=TaskRunResponse)
+    @app.post("/agents", response_model=XAgentResponse)
     async def create_agent_run(
         request: CreateXAgentRequest,
         user_id: str = Depends(get_user_id),
@@ -146,7 +146,7 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to create XAgent: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents", response_model=TaskRunListResponse)
+    @app.get("/agents", response_model=XAgentListResponse)
     async def list_agent_runs(x_user_id: Optional[str] = Header(None, alias="X-User-ID")):
         """List all XAgent instances for the authenticated user."""
         if not x_user_id:
@@ -155,12 +155,12 @@ def create_app() -> FastAPI:
         try:
             xagents = await xagent_service.list_for_user(x_user_id)
             runs = [_xagent_to_response(xagent, x_user_id) for xagent in xagents]
-            return TaskRunListResponse(runs=runs)
+            return XAgentListResponse(runs=runs)
         except Exception as e:
             logger.error(f"Failed to list XAgents: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents/{agent_id}", response_model=TaskRunResponse)
+    @app.get("/agents/{agent_id}", response_model=XAgentResponse)
     async def get_agent_run(
         agent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")

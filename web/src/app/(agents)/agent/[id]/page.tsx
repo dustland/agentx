@@ -8,8 +8,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { useChat } from "@/hooks/use-chat";
-import { useProject, useProjectPlan } from "@/hooks/use-project";
+import { useXAgent, usePlan } from "@/hooks/use-xagent";
 import { useAppStore } from "@/store/app";
 
 export default function XAgentPage({
@@ -20,13 +19,7 @@ export default function XAgentPage({
   const { id } = use(params);
   const { initialMessage, setInitialMessage } = useAppStore();
 
-  // Use the XAgent hook to get executeProject
-  const { executeProject } = useProject(id);
-
-  // Use the plan hook to check if plan exists
-  const { hasPlan } = useProjectPlan(id);
-
-  // Use the chat hook for chat functionality
+  // Use the XAgent hook for all functionality
   const {
     messages,
     input,
@@ -34,15 +27,12 @@ export default function XAgentPage({
     isMessagesLoading,
     handleInputChange,
     handleSubmit,
-    stop,
     setInput,
-  } = useChat({
-    projectId: id,
-    onError: (error) => {
-      console.error("Chat error:", error);
-      // You could show a toast here
-    },
-  });
+    isSendingMessage,
+  } = useXAgent(id);
+
+  // Use the plan hook to check if plan exists
+  const { plan } = usePlan(id);
 
   // Send initial message if present
   useEffect(() => {
@@ -59,16 +49,11 @@ export default function XAgentPage({
     setInitialMessage,
   ]);
 
-  // ChatLayout expects onSendMessage to be (message: string, mode?: "agent" | "chat") => void
-  const handleSendMessage = (message: string, mode?: "agent" | "chat") => {
-    // If no message and plan exists in agent mode, execute the plan
-    if (!message && hasPlan && mode === "agent") {
-      executeProject.mutate();
-      return;
-    }
-
-    // Otherwise, pass the message with mode to handleSubmit
-    handleSubmit(message, mode);
+  // ChatLayout expects onSendMessage to be (message: string, mode?: "chat" | "agent") => void
+  const handleSendMessage = (message: string, mode?: "chat" | "agent") => {
+    // Convert "agent" mode to "command" for the API
+    const apiMode = mode === "agent" ? "command" : mode;
+    handleSubmit(message, apiMode);
   };
 
   // Callback registration function for tool call selection
@@ -92,15 +77,12 @@ export default function XAgentPage({
             onSendMessage={handleSendMessage}
             onStop={stop}
             isLoading={isLoading}
-            allowEmptyMessage={hasPlan}
+            allowEmptyMessage={!!plan}
           />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />
         <ResizablePanel defaultSize={45} minSize={20}>
-          <Workspace
-            projectId={id}
-            onToolCallSelect={registerToolCallHandler}
-          />
+          <Workspace xagentId={id} onToolCallSelect={registerToolCallHandler} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

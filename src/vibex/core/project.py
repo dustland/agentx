@@ -41,7 +41,7 @@ from vibex.utils.id import generate_short_id
 from vibex.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from vibex.xagent import XAgent
+    from vibex.core.xagent import XAgent
 
 logger = get_logger(__name__)
 
@@ -235,7 +235,7 @@ async def start_project(
     project_id: Optional[str] = None,
     workspace_dir: Optional[Path] = None,
 ) -> Project:
-    from vibex.xagent import XAgent
+    from vibex.core.xagent import XAgent
     
     if project_id is None:
         project_id = generate_short_id()
@@ -327,7 +327,7 @@ async def resume_project(
     project_id: str,
     config_path: Union[str, Path, TeamConfig]
 ) -> Project:
-    from vibex.xagent import XAgent
+    from vibex.core.xagent import XAgent
     
     workspace_path = Path(f".vibex/projects/{project_id}")
     if not workspace_path.exists():

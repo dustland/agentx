@@ -21,7 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useProjectPlan } from "@/hooks/use-project";
+import { usePlan } from "@/hooks/use-xagent";
 
 interface PlanTask {
   id: string;
@@ -39,23 +39,27 @@ interface PlanData {
 }
 
 interface PlanProps {
-  projectId: string;
+  xagentId: string;
 }
 
-export function Plan({ projectId }: PlanProps) {
+export function Plan({ xagentId }: PlanProps) {
   const {
     plan: planResponse,
     isLoading: loadingPlan,
     refetch: loadPlan,
-  } = useProjectPlan(projectId);
+  } = usePlan(xagentId);
   const [planData, setPlanData] = useState<PlanData | null>(null);
   const [showRawJson, setShowRawJson] = useState(false);
 
   // Parse plan data when plan response changes
   useEffect(() => {
-    if (planResponse?.content) {
+    if (planResponse?.plan) {
       try {
-        const parsed = JSON.parse(planResponse.content);
+        // If plan is already an object, use it directly; if it's a string, parse it
+        const parsed =
+          typeof planResponse.plan === "string"
+            ? JSON.parse(planResponse.plan)
+            : planResponse.plan;
         setPlanData(parsed);
       } catch (e) {
         console.error("Plan content is not valid JSON:", e);
@@ -99,10 +103,10 @@ export function Plan({ projectId }: PlanProps) {
     const visited = new Set<string>();
 
     const getTaskLevel = (taskId: string): number => {
-      const task = taskMap.get(projectId);
-      if (!task || visited.has(projectId)) return 0;
+      const task = taskMap.get(taskId);
+      if (!task || visited.has(taskId)) return 0;
 
-      visited.add(projectId);
+      visited.add(taskId);
 
       if (task.dependencies.length === 0) {
         return 0;

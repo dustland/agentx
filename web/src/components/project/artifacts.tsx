@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   Inbox,
 } from "lucide-react";
-import { useProject } from "@/hooks/use-project";
+import { useXAgent } from "@/hooks/use-xagent";
 import { formatBytes } from "@/lib/utils";
 
 interface Artifact {
@@ -26,12 +26,12 @@ interface Artifact {
 }
 
 interface ArtifactsProps {
-  projectId: string;
+  xagentId: string;
   onArtifactSelect: (artifact: Artifact) => void;
 }
 
-export function Artifacts({ projectId, onArtifactSelect }: ArtifactsProps) {
-  const { artifacts, isArtifactsLoading } = useProject(projectId);
+export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
+  const { artifacts, isLoadingArtifacts } = useXAgent(xagentId);
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
     new Set()
   );
@@ -150,9 +150,7 @@ export function Artifacts({ projectId, onArtifactSelect }: ArtifactsProps) {
     });
   };
 
-  const tree = buildTree(artifacts);
-
-  if (isArtifactsLoading) {
+  if (isLoadingArtifacts || !artifacts) {
     return (
       <div className="h-full flex items-center justify-center text-muted-foreground">
         <div className="text-center">
@@ -162,6 +160,8 @@ export function Artifacts({ projectId, onArtifactSelect }: ArtifactsProps) {
       </div>
     );
   }
+
+  const tree = buildTree(artifacts);
 
   if (artifacts.length === 0) {
     return (

@@ -8,7 +8,7 @@ import { FileText, Code, BookOpenCheck } from "lucide-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
-import { useProjectArtifact } from "@/hooks/use-project";
+import { useArtifact } from "@/hooks/use-xagent";
 
 interface Artifact {
   path: string;
@@ -32,24 +32,24 @@ interface ToolCall {
 interface ViewerProps {
   selectedArtifact: Artifact | null;
   selectedToolCall: ToolCall | null;
-  projectId: string;
+  xagentId: string;
 }
 
 export function Inspector({
   selectedArtifact,
   selectedToolCall,
-  projectId,
+  xagentId,
 }: ViewerProps) {
   // Use the hook for the selected artifact
-  const { content, isLoading, error } = useProjectArtifact({
-    projectId,
+  const artifactQuery = useArtifact({
+    xagentId,
     path: selectedArtifact?.path || "",
     enabled: !!selectedArtifact && !selectedArtifact.content,
   });
 
   // Determine what content to display
-  const artifactContent = selectedArtifact?.content || content || null;
-  const loadingContent = isLoading;
+  const artifactContent = selectedArtifact?.content || artifactQuery.data?.content || null;
+  const loadingContent = artifactQuery.isLoading;
 
   const getFileLanguage = (filename: string) => {
     const ext = filename.split(".").pop()?.toLowerCase();

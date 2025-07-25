@@ -1,25 +1,38 @@
+import { Bleed, Callout, Tabs, Steps } from "nextra/components";
+
 # The Vibe-X Philosophy
 
-**"Start-of-the-art with the art of state"**
-
-VibeX embodies a philosophy we call **Vibe-X**: delivering immediate productivity through intelligent defaults while maintaining complete transparency and customization capability.
+<Bleed large>
+  <div
+    className="bg-gradient-to-r from-blue-500 to-purple-500 dark:from-blue-600 dark:to-purple-600 text-white py-16 px-8 text-center rounded-2xl"
+  >
+    <div className="text-5xl font-bold mb-4" style={{ lineHeight: "1.4" }}>
+      "Start-of-the-art with the art of state"
+    </div>
+    <div className="text-xl max-w-3xl mx-auto">
+      VibeX embodies a philosophy we call <strong>Vibe-X</strong>: delivering
+      immediate productivity through intelligent defaults while maintaining
+      complete transparency and customization capability.
+    </div>
+  </div>
+</Bleed>
 
 ### Fast Start, Full Control
 
-**Batteries Included, Brain Engaged:**
+**🚀 Batteries Included, Brain Engaged**
 
 - XAgent as the single entry point - no complex API to learn
 - Ship with specialist agents pre-configured (planner, researcher, writer, reviewer)
 - Enable powerful multi-agent workflows with simple conversational commands
 - Provide a foundation that works out-of-the-box for common use cases
 
-**The Art of State:**
+**🎨 The Art of State**
 
 - XAgent maintains all state internally - no project objects to manage
 - Durable workspace with version control for session resumption
 - Clear separation between orchestration (XAgent) and domain expertise (specialist agents)
 
-**Complete Transparency:**
+**🔍 Complete Transparency**
 
 - Every decision, message, and artifact is observable through XAgent
 - No black boxes - you can see exactly how XAgent coordinates the team
@@ -29,14 +42,23 @@ VibeX embodies a philosophy we call **Vibe-X**: delivering immediate productivit
 
 ## 1. The Broken Promise of "Fire-and-Forget" AI
 
-The first wave of generative AI tools operated on a simple, seductive promise: describe a task, and a powerful model will deliver a finished result. This "magic wand" paradigm proved that modern LLMs could generate high-quality code, reports, and analyses. Yet for any professional engaged in complex, evolving work, the magic quickly faded, revealing a core set of frustrating limitations:
+The first wave of generative AI tools operated on a simple, seductive promise: describe a task, and a powerful model will deliver a finished result. This "magic wand" paradigm proved that modern LLMs could generate high-quality code, reports, and analyses. Yet for any professional engaged in complex, evolving work, **the magic quickly faded**.
 
-- **Statelessness:** Each interaction started from a blank slate, ignorant of past work.
-- **Opacity:** The AI worked in a black box, offering no visibility into its process until the final—often flawed—result was delivered.
-- **Rigidity:** There was no way to intervene, course-correct, or tweak requirements mid-flight without starting over.
-- **Unsustainable Economics:** Relying exclusively on the most powerful models made continuous use prohibitively expensive.
+The limitations revealed themselves:
 
-These tools treated work as a single transaction. But real work is a _process_—an iterative dialogue that unfolds over time. This fundamental disconnect is the problem VibeX was built to solve.
+**🔴 Statelessness**  
+Each interaction started from a blank slate, ignorant of past work. Every conversation was a new beginning. The AI had no memory of your project, your preferences, or your previous iterations. You were trapped in an endless cycle of re-explaining context.
+
+**🔴 Opacity**  
+The AI worked in a black box, offering no visibility into its process. You submitted your request and waited. No progress updates. No intermediate results. No ability to see if the AI was on the right track until the final—often flawed—result was delivered.
+
+**🔴 Rigidity**  
+There was no way to intervene, course-correct, or tweak requirements mid-flight. Made a small mistake in your prompt? Want to adjust based on early results? Too bad. Your only option was to start over from scratch, wasting time and tokens.
+
+**🔴 Unsustainable Economics**  
+Relying exclusively on the most powerful models made continuous use prohibitively expensive. Using GPT-4 or Claude for every task—from simple formatting to complex reasoning—burned through budgets. There was no intelligent routing based on task complexity.
+
+These tools treated work as a single transaction. But real work is a **process**—an iterative dialogue that unfolds over time. This fundamental disconnect is the problem VibeX was built to solve.
 
 ---
 
@@ -46,7 +68,11 @@ Two key developments pointed toward a more effective paradigm.
 
 First, Andrej Karpathy coined the term **"vibe coding,"** capturing a new mode of interaction:
 
-> "It's not really coding – I just see things, say things, run things, and copy-paste things, and it mostly works."
+<Callout type="info" emoji="💭">
+  "It's not really coding – I just see things, say things, run things, and copy-paste things, and it mostly works."
+  
+  — Andrej Karpathy
+</Callout>
 
 This captured a profound shift from rigid programming to a fluid, conversational collaboration with an AI. It was a glimpse of a future where intent could be translated into results without deep technical ceremony.
 
@@ -60,7 +86,46 @@ The lesson is clear: the next breakthrough isn't a bigger model, but a better **
 
 ## 3. Defining the Ideal Collaborator
 
-What is the ideal role for an AI system in professional work? Science fiction has given us powerful archetypes. We are not building a simple tool, nor an autonomous overlord. Instead, our vision is an AI that embodies the spirit of fiction's most effective collaborators, drawing inspiration from the witty omniscience of **J.A.R.V.I.S.**, the steadfast loyalty of **Alfred**, and the pragmatic competence of **TARS** from _Interstellar_.
+<Bleed large>
+  <div
+    className="bg-gray-50 dark:bg-gray-900 py-12 px-8 rounded-2xl"
+  >
+    <div className="text-3xl font-bold text-center mb-8" style={{ lineHeight: "1.5" }}>
+      What is the ideal role for an AI system in professional work?
+    </div>
+    <div className="text-lg text-center mb-12 max-w-3xl mx-auto">
+      Science fiction has given us powerful archetypes. We are not building a
+      simple tool, nor an autonomous overlord. Instead, our vision is an AI that
+      embodies the spirit of fiction's most effective collaborators:
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <div
+        className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm dark:shadow-gray-700/50"
+      >
+        <div className="font-bold text-xl mb-2">
+          J.A.R.V.I.S.
+        </div>
+        <div>Witty omniscience with perfect timing</div>
+      </div>
+      <div
+        className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm dark:shadow-gray-700/50"
+      >
+        <div className="font-bold text-xl mb-2">
+          Alfred
+        </div>
+        <div>Steadfast loyalty and anticipatory service</div>
+      </div>
+      <div
+        className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm dark:shadow-gray-700/50"
+      >
+        <div className="font-bold text-xl mb-2">
+          TARS
+        </div>
+        <div>Pragmatic competence with adjustable personality</div>
+      </div>
+    </div>
+  </div>
+</Bleed>
 
 These characters embody the perfect AI collaborator:
 
@@ -69,7 +134,7 @@ These characters embody the perfect AI collaborator:
 - **Transparent:** They can always explain what they are doing and why, providing clarity and building trust.
 - **Proactive yet Controllable:** They can anticipate needs and perform complex tasks, but the human can always intervene, tweak the plan, or hit the "stop" button.
 
-While their personalities differ—from a witty AI to a dutiful butler to a pragmatic robot—they share one defining trait: they make their human partners exponentially more effective. This is the "vibe" we are chasing. The Vibe-X philosophy is not just an abstract idea; it is a pragmatic engineering roadmap for building our own indispensable partner for creation.
+While their personalities differ—from a witty AI to a dutiful butler to a pragmatic robot—they share one defining trait: **they make their human partners exponentially more effective**. This is the "vibe" we are chasing. The Vibe-X philosophy is not just an abstract idea; it is a pragmatic engineering roadmap for building our own indispensable partner for creation.
 
 ---
 
@@ -77,24 +142,73 @@ While their personalities differ—from a witty AI to a dutiful butler to a prag
 
 Instead of building a generic framework, VibeX is optimized for the three fundamental workflows that encompass most professional knowledge work. Each has a distinct rhythm and requires a tailored collaborative experience.
 
-#### **A. Vibe-Writing: From Idea to Document**
-
-This workflow covers the creation of complex documents: research papers, technical documentation, market analyses, legal briefs. It's an iterative process of outlining, drafting, sourcing evidence, revising, and formatting. The human provides the core arguments and critical judgment, while agents assist with research, drafting, and ensuring consistency.
-
-#### **B. Vibe-Coding: From Requirement to Application**
-
-This is the classic software development lifecycle: analyzing requirements, scaffolding the architecture, implementing features, writing tests, and refactoring. The human acts as the architect and final arbiter of logic, while agents serve as tireless pair programmers who can generate boilerplate, implement functions from specs, and identify potential bugs.
-
-#### **C. Vibe-Operating: From Insight to Impact**
-
-This workflow represents a fundamental leap. While Vibe-Writing and Vibe-Coding primarily impact the digital assets _within_ the project taskspace, Vibe-Operating acts upon the surrounding world—both digital and physical. It closes the loop between insight and tangible impact by enabling the agent to operate on the user's behalf.
-
-This means the agent doesn't just report its findings; it _acts_ on them. The human provides the strategic intent and grants permissions, while the agent executes complex, multi-step tasks that affect real-world systems. This workflow transforms the AI from an analyst into a true operator. Examples span from digital operations to embodied AI:
-
-- **Digital Operations:** "Find the best flight to Tokyo, book it with my saved credentials, and add the itinerary to my calendar."
-- **Cloud & DevOps:** "Provision a new staging server on AWS, deploy the latest build from GitHub, and run the integration test suite."
-- **Scientific Research:** "Run a week-long simulation to train a reinforcement learning model for a robotic arm."
-- **Embodied AI:** "Execute the predefined sequence of commands to perform a dangerous chemical experiment in the remote lab."
+<Tabs items={['📝 Vibe-Writing', '💻 Vibe-Coding', '🚀 Vibe-Operating']}>
+  <Tabs.Tab>
+    ### From Idea to Document
+    
+    This workflow covers the creation of complex documents: research papers, technical documentation, market analyses, legal briefs. It's an iterative process of outlining, drafting, sourcing evidence, revising, and formatting.
+    
+    **Human Role:**
+    - Provides core arguments and critical judgment
+    - Sets the strategic direction and key insights
+    - Reviews and approves final content
+    
+    **Agent Role:**
+    - Assists with research and fact-finding
+    - Drafts initial content based on guidance
+    - Ensures consistency and formatting
+    
+    **Example Use Cases:**
+    - Academic research papers
+    - Technical documentation
+    - Market analysis reports
+    - Legal briefs and contracts
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ### From Requirement to Application
+    
+    This is the classic software development lifecycle: analyzing requirements, scaffolding the architecture, implementing features, writing tests, and refactoring.
+    
+    **Human Role:**
+    - Acts as the architect and system designer
+    - Makes critical technical decisions
+    - Reviews and approves implementations
+    
+    **Agent Role:**
+    - Serves as tireless pair programmer
+    - Generates boilerplate and repetitive code
+    - Implements functions from specifications
+    - Identifies potential bugs and edge cases
+    
+    **Example Use Cases:**
+    - Web application development
+    - API design and implementation
+    - Database schema creation
+    - Test suite development
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ### From Insight to Impact
+    
+    This workflow represents a fundamental leap. While Vibe-Writing and Vibe-Coding primarily impact the digital assets within the project, Vibe-Operating acts upon the surrounding world—both digital and physical. It closes the loop between insight and tangible impact by enabling the agent to operate on the user's behalf.
+    
+    **Human Role:**
+    - Provides strategic intent and permissions
+    - Sets boundaries and safety parameters
+    - Monitors and approves critical actions
+    
+    **Agent Role:**
+    - Executes complex, multi-step tasks
+    - Operates on real-world systems
+    - Provides feedback and status updates
+    - Handles routine operations autonomously
+    
+    **Example Use Cases:**
+    - **Digital Operations:** "Find the best flight to Tokyo, book it with my saved credentials, and add the itinerary to my calendar."
+    - **Cloud & DevOps:** "Provision a new staging server on AWS, deploy the latest build from GitHub, and run the integration test suite."
+    - **Scientific Research:** "Run a week-long simulation to train a reinforcement learning model for a robotic arm."
+    - **Embodied AI:** "Execute the predefined sequence of commands to perform a dangerous chemical experiment in the remote lab."
+  </Tabs.Tab>
+</Tabs>
 
 By recognizing these distinct patterns, VibeX provides tailored templates, prompts, and toolsets that feel native to the task at hand.
 
@@ -102,16 +216,17 @@ By recognizing these distinct patterns, VibeX provides tailored templates, promp
 
 ## 5. The Architectural Pillars of Vibe-X
 
-To power these workflows, the VibeX framework is built on three core architectural pillars.
+To power these workflows, the VibeX framework is built on four core architectural pillars.
 
-### **Pillar 1: Memory & Taskspace — The Persistent Brain**
+### **Pillar 1: Memory & Workspace — The Persistent Brain**
 
-A Vibe-X project relies on two complementary stores that provide a durable, shared context for both human and AI.
+A Vibe-X project relies on two complementary stores that provide a durable, shared context for both human and AI:
 
-1.  **The Taskspace:** This is the auditable, human-readable file system. It contains all project artifacts—source code, drafts, reports, logs—and serves as the "source of truth." It's designed to be versioned with Git and navigated with standard tools like VS Code.
-2.  **The Memory:** This is a high-performance semantic store (e.g., a vector database) that acts as the AI's "long-term memory." It contains distilled knowledge, key decisions, conversation history, and indexed references to taskspace artifacts.
+1. **📁 The Workspace:** This is the auditable, human-readable file system. It contains all project artifacts—source code, drafts, reports, logs—and serves as the "source of truth." It's designed to be versioned with Git and navigated with standard tools like VS Code.
 
-The workspace is where work _lives_. The memory is how XAgent _understands_ that work, allowing it to retrieve relevant context instantly without being overwhelmed by the entire project history. This duality enables true, resumable sessions - just call `XAgent.resume(agent_id)` and continue where you left off.
+2. **🧠 The Memory:** This is a high-performance semantic store (e.g., a vector database) that acts as the AI's "long-term memory." It contains distilled knowledge, key decisions, conversation history, and indexed references to workspace artifacts.
+
+The workspace is where work **lives**. The memory is how XAgent **understands** that work, allowing it to retrieve relevant context instantly without being overwhelmed by the entire project history. This duality enables true, resumable sessions - just call `XAgent.resume(agent_id)` and continue where you left off.
 
 ### **Pillar 2: The Transparent Feedback Loop — The Collaborative Nervous System**
 
@@ -136,52 +251,133 @@ This dynamic, cost-aware routing makes continuous, long-term AI collaboration ec
 
 ### **Pillar 4: XAgent as Primary Interface — The "Just Talk to X" Experience**
 
-To truly deliver on the Vibe-X philosophy, the framework must be immediately accessible. **XAgent** ("X" for short) is your primary interface to VibeX - the AI collaborator you interact with directly.
+✨ To truly deliver on the Vibe-X philosophy, the framework must be immediately accessible. **XAgent** ("X" for short) is your primary interface to VibeX - the AI collaborator you interact with directly.
 
-```python
-# This is all you need
-from vibex import XAgent
+<Tabs items={['Quick Start', 'What X Manages', 'The Genius']}>
+  <Tabs.Tab>
+    ```python
+    # This is all you need
+    from vibex import XAgent
 
-x = await XAgent.start("Build a documentation site")
-response = await x.chat("Make it searchable")
-```
+    x = await XAgent.start("Build a documentation site")
+    response = await x.chat("Make it searchable")
+    ```
 
-X manages everything internally:
-- **Team Coordination**: X automatically delegates to specialist agents
-- **State Management**: No project objects or complex APIs to manage
-- **Natural Interaction**: Just chat - X understands context and intent
+  </Tabs.Tab>
+  <Tabs.Tab>
+    X manages everything internally:
+    
+    - **Team Coordination**: X automatically delegates to specialist agents
+    - **State Management**: No project objects or complex APIs to manage  
+    - **Natural Interaction**: Just chat - X understands context and intent
+  </Tabs.Tab>
+  <Tabs.Tab>
+    The genius is in what you _don't_ see:
+    
+    - Projects ❌
+    - Tasks ❌
+    - Plans ❌
+    - Agents ❌
+    
+    You just talk to X, and X makes it happen. ✅
+  </Tabs.Tab>
+</Tabs>
 
-This embodies the principle of **"fast start, full control."** You're productive in seconds, not minutes. When you need specific behaviors, you can configure X's team through simple YAML files, never touching the orchestration code.
-
-The genius is in what you _don't_ see: projects, tasks, plans, and agents are all internal implementation details. You just talk to X, and X makes it happen.
+🚀 This embodies the principle of **"fast start, full control."** You're productive in seconds, not minutes. When you need specific behaviors, you can configure X's team through simple YAML files, never touching the orchestration code.
 
 ---
 
 ## 6. The Simplicity of X: Your AI Collaborator
 
-The ultimate expression of the Vibe-X philosophy is its interface: **X**. 
+<Bleed large>
+  <div
+    className="bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-white py-12 px-8 text-center rounded-2xl"
+  >
+    <div className="text-4xl font-bold mb-4" style={{ lineHeight: "1.4" }}>
+      ✨ The ultimate expression of the Vibe-X philosophy is its interface: X
+    </div>
+    <div className="text-xl max-w-3xl mx-auto">
+      Where other frameworks expose complex abstractions—projects,
+      orchestrators, task queues—VibeX gives you a single point of contact.
+    </div>
+  </div>
+</Bleed>
 
-Where other frameworks expose complex abstractions—projects, orchestrators, task queues—VibeX gives you a single point of contact. X is your AI collaborator, and like the best human collaborators, X handles the complexity so you don't have to.
+<Steps>
+### Start a collaboration
 
 ```python
-# Start a collaboration
 x = await XAgent.start("Build a web scraper")
+```
 
-# Work together
+### Work together
+
+```python
 await x.chat("It should handle pagination")
 await x.chat("Add rate limiting to be respectful")
+```
 
-# Resume anytime
+### Resume anytime
+
+```python
 x = await XAgent.resume("proj_abc123")  # Uses project ID
 await x.chat("Now make it output JSON")
 ```
 
-This radical simplicity—hiding projects, tasks, and plans as internal implementation details—transforms AI collaboration from a technical endeavor into a natural conversation. You don't manage a project; you work with X.
+</Steps>
+
+🎯 This radical simplicity—hiding projects, tasks, and plans as internal implementation details—transforms AI collaboration from a technical endeavor into a natural conversation. You don't manage a project; you work with X.
 
 ## 7. Conclusion: Beyond Automation, Towards Augmentation
 
-Vibe-X is a bet against pure automation. It is a framework founded on the belief that the most significant breakthroughs will come from **augmenting** human experts, not attempting to replace them. 
-
-By providing a persistent, transparent, and economically sound environment for collaboration—all through the simple interface of talking to X—VibeX empowers professionals to delegate the toil while retaining full creative and strategic control.
-
-It reframes AI from a magic wand into a tireless, knowledgeable, and indispensable partner in the process of creation. And that partner has a name: **X**.
+<Bleed large>
+  <div
+    className="bg-gradient-to-br from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 text-white py-16 px-8 text-center rounded-2xl"
+  >
+    <div className="text-4xl font-bold mb-8" style={{ lineHeight: "1.4" }}>
+      Vibe-X is a bet against pure automation
+    </div>
+    <div className="text-lg max-w-3xl mx-auto mb-8">
+      It is a framework founded on the belief that the most significant
+      breakthroughs will come from <strong>augmenting</strong> human experts,
+      not attempting to replace them.
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto my-8">
+      <div>
+        <div className="text-xl font-bold mb-2">
+          Persistent
+        </div>
+        <div>Your work continues across sessions</div>
+      </div>
+      <div>
+        <div className="text-xl font-bold mb-2">
+          Transparent
+        </div>
+        <div>See and control every decision</div>
+      </div>
+      <div>
+        <div className="text-xl font-bold mb-2">
+          Economical
+        </div>
+        <div>Smart routing keeps costs sustainable</div>
+      </div>
+    </div>
+    <div className="text-lg mt-8">
+      By providing this environment for collaboration—all through the simple
+      interface of talking to X—VibeX empowers professionals to delegate the
+      toil while retaining full creative and strategic control.
+    </div>
+    <div
+      className="mt-12 p-6 bg-white/15 dark:bg-white/20 backdrop-blur rounded-lg"
+    >
+      <div className="text-2xl font-bold mb-2" style={{ lineHeight: "1.6" }}>
+        🎯 It reframes AI from a magic wand into a tireless, knowledgeable, and
+        indispensable partner in the process of creation.
+      </div>
+      <div className="text-xl font-bold">
+        And that partner has a name:{" "}
+        <span className="text-3xl">X</span>
+      </div>
+    </div>
+  </div>
+</Bleed>

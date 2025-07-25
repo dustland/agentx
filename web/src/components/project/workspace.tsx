@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Activity, Folder, Monitor, Goal } from "lucide-react";
-import { useProject, useProjectPlan } from "@/hooks/use-project";
+import { useXAgent, usePlan } from "@/hooks/use-xagent";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
@@ -34,12 +34,12 @@ interface ToolCall {
 }
 
 interface WorkspaceProps {
-  projectId: string;
+  xagentId: string;
   onToolCallSelect?: (handler: (toolCall: ToolCall) => void) => void;
 }
 
-export function Workspace({ projectId, onToolCallSelect }: WorkspaceProps) {
-  const { plan, isLoading: isPlanLoading } = useProjectPlan(projectId);
+export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
+  const { plan, isLoading: isPlanLoading } = usePlan(xagentId);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -115,14 +115,14 @@ export function Workspace({ projectId, onToolCallSelect }: WorkspaceProps) {
           {/* Plan Tab */}
           {hasPlan && (
             <TabsContent value="plan" className="flex-1 m-0 min-h-0">
-              <Plan projectId={projectId} />
+              <Plan xagentId={xagentId} />
             </TabsContent>
           )}
 
           {/* Artifacts Tab */}
           <TabsContent value="artifacts" className="flex-1 m-0 min-h-0">
             <Artifacts
-              projectId={projectId}
+              xagentId={xagentId}
               onArtifactSelect={handleArtifactSelect}
             />
           </TabsContent>
@@ -132,18 +132,18 @@ export function Workspace({ projectId, onToolCallSelect }: WorkspaceProps) {
             <Inspector
               selectedArtifact={selectedArtifact}
               selectedToolCall={selectedToolCall}
-              projectId={projectId}
+              xagentId={xagentId}
             />
           </TabsContent>
 
           {/* Memory Tab */}
           <TabsContent value="memory" className="flex-1 m-0 min-h-0">
-            <Memory projectId={projectId} />
+            <Memory xagentId={xagentId} />
           </TabsContent>
 
           {/* Logs Tab */}
           <TabsContent value="logs" className="flex-1 m-0 min-h-0">
-            <Logs projectId={projectId} />
+            <Logs xagentId={xagentId} />
           </TabsContent>
         </Tabs>
       </Card>

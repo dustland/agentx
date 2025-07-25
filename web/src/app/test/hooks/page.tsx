@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useChat } from "@/hooks/use-chat";
-import { useProject } from "@/hooks/use-project";
+// useChat is now merged into useXAgent
+import { useXAgent } from "@/hooks/use-xagent";
 import { Loader2, Send, Zap, MessageSquare, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -27,11 +27,7 @@ export default function HooksTestPage() {
   const [streamEvents, setStreamEvents] = useState<any[]>([]);
 
   // Only use hooks when we have a valid projectId
-  const projectHook = useProject(projectId || "dummy-task-id");
-  const chatHook = useChat({
-    taskId: projectId || "dummy-task-id",
-    onError: (error) => console.error("Chat error:", error),
-  });
+  const xagentHook = useXAgent(projectId || "dummy-task-id");
 
   // Disable hooks when no projectId
   const isHooksActive = !!projectId;
@@ -47,19 +43,19 @@ export default function HooksTestPage() {
 
     return () => {
       console.log("[TEST] Cleaning up monitoring");
-      projectHook.stop();
+      // Cleanup is handled automatically by useXAgent hook
     };
-  }, [projectId, projectHook]);
+  }, [projectId, xagentHook]);
 
   // Track message changes for streaming events
   useEffect(() => {
     // Since useChat doesn't expose streaming messages directly,
     // we'll track changes in the messages array
-    if (chatHook.messages.length > 0) {
-      const lastMessage = chatHook.messages[chatHook.messages.length - 1];
+    if (xagentHook.messages.length > 0) {
+      const lastMessage = xagentHook.messages[xagentHook.messages.length - 1];
       console.log("[TEST] Messages updated, last message:", lastMessage);
     }
-  }, [chatHook.messages]);
+  }, [xagentHook.messages]);
 
   const createTestProject = async () => {
     setIsCreatingTask(true);
@@ -102,7 +98,7 @@ export default function HooksTestPage() {
     setStreamEvents([]);
 
     try {
-      await chatHook.handleSubmit(customMessage);
+      await xagentHook.handleSubmit(customMessage);
       console.log("[TEST] Message sent successfully");
     } catch (error) {
       console.error("[TEST] Error sending message:", error);
@@ -112,7 +108,7 @@ export default function HooksTestPage() {
   const StreamingVisualizer = () => {
     // Since we don't have direct access to streaming messages,
     // we'll show the loading state when messages are being sent
-    if (!chatHook.isLoading) return null;
+    if (!xagentHook.isLoading) return null;
 
     return (
       <div className="space-y-4">
@@ -208,15 +204,17 @@ export default function HooksTestPage() {
             .reduce((acc, e) => acc + e.data.chunk.length, 0) / chunkCount
         : 0;
 
-    console.log("[STATS] Messages:", chatHook.messages.length);
+    console.log("[STATS] Messages:", xagentHook.messages.length);
     console.log("[STATS] Stream events:", streamEvents.length);
-    console.log("[STATS] Is loading:", chatHook.isLoading);
+    console.log("[STATS] Is loading:", xagentHook.isLoading);
 
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold">{chatHook.messages.length}</div>
+            <div className="text-2xl font-bold">
+              {xagentHook.messages.length}
+            </div>
             <p className="text-xs text-muted-foreground">Total Messages</p>
           </CardContent>
         </Card>
@@ -237,7 +235,7 @@ export default function HooksTestPage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">
-              {chatHook.isLoading ? "Active" : "Idle"}
+              {xagentHook.isLoading ? "Active" : "Idle"}
             </div>
             <p className="text-xs text-muted-foreground">Stream Status</p>
           </CardContent>
@@ -340,7 +338,7 @@ export default function HooksTestPage() {
                 />
                 <Button
                   onClick={sendTestMessage}
-                  disabled={chatHook.isLoading || !customMessage.trim()}
+                  disabled={xagentHook.isLoading || !customMessage.trim()}
                 >
                   <Send className="h-4 w-4" />
                 </Button>
@@ -388,7 +386,7 @@ export default function HooksTestPage() {
               </CardHeader>
               <CardContent>
                 <StreamingVisualizer />
-                {!chatHook.isLoading && (
+                {!xagentHook.isLoading && (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     No active stream. Send a message to start streaming.
                   </p>
@@ -421,7 +419,7 @@ export default function HooksTestPage() {
             <CardContent>
               <ScrollArea className="h-[300px]">
                 <div className="space-y-2 pr-4">
-                  {chatHook.messages.map((message, idx) => (
+                  {xagentHook.messages.map((message, idx) => (
                     <div
                       key={message.id || idx}
                       className={cn(

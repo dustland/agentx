@@ -18,10 +18,10 @@ interface Memory {
 }
 
 interface MemoryProps {
-  projectId: string;
+  xagentId: string;
 }
 
-export function Memory({ projectId }: MemoryProps) {
+export function Memory({ xagentId }: MemoryProps) {
   // TODO: Implement useTaskMemory hook when memory functionality is needed
   const memories: Memory[] = [];
   const loadingMemories = false;

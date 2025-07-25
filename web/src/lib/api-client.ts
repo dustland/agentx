@@ -1,19 +1,19 @@
 import {
   CreateXAgentRequest,
-  TaskRun,
-  TaskRunListResponse,
+  XAgent,
+  XAgentListResponse,
   MemoryContent,
   MemorySearchRequest,
 } from "@/types/vibex";
 import { useMemo } from "react";
+import { useUser } from "@/contexts/user-context";
 
-export class VibeXAPIClient {
+export class VibexClient {
   private baseURL: string;
   private userId: string | null = null;
 
   constructor(
-    baseURL: string = process.env.NEXT_PUBLIC_API_BASE_URL ||
-      "http://localhost:7777"
+    baseURL: string = process.env.NEXT_PUBLIC_API_URL || "/api/vibex"
   ) {
     this.baseURL = baseURL;
   }
@@ -30,16 +30,14 @@ export class VibeXAPIClient {
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      "X-User-ID": this.userId || "guest", // Always include a user ID
       ...((options.headers as Record<string, string>) || {}),
     };
-
-    if (this.userId) {
-      headers["X-User-ID"] = this.userId;
-    }
 
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: "include", // Include cookies for authentication
     });
 
     if (!response.ok) {
@@ -70,36 +68,25 @@ export class VibeXAPIClient {
     goal: string,
     configPath: string,
     context?: object
-  ): Promise<TaskRun> {
+  ): Promise<XAgent> {
     const requestBody: CreateXAgentRequest = {
       goal: goal,
       config_path: configPath,
       context: context,
     };
-    return this.post<TaskRun>("/agents", requestBody);
+    return this.post<XAgent>("/agents", requestBody);
   }
 
-  async listXAgents(): Promise<TaskRunListResponse> {
-    return this.get<TaskRunListResponse>("/agents");
+  async listXAgents(): Promise<XAgentListResponse> {
+    return this.get<XAgentListResponse>("/agents");
   }
 
-  async getXAgent(agentId: string): Promise<TaskRun> {
-    return this.get<TaskRun>(`/agents/${agentId}`);
+  async getXAgent(agentId: string): Promise<XAgent> {
+    return this.get<XAgent>(`/agents/${agentId}`);
   }
 
   async deleteXAgent(agentId: string): Promise<{ message: string }> {
     return this.delete(`/agents/${agentId}`);
-  }
-
-  // Legacy aliases for backward compatibility
-  async getProject(projectId: string): Promise<TaskRun> {
-    return this.getXAgent(projectId);
-  }
-
-  async getProjectArtifacts(projectId: string): Promise<{ artifacts: any[] }> {
-    // This would need to be implemented to list all artifacts
-    // For now, return empty array
-    return { artifacts: [] };
   }
 
   // Chat
@@ -113,6 +100,12 @@ export class VibeXAPIClient {
   }
 
   // Agent Resources
+  async listArtifacts(agentId: string): Promise<any[]> {
+    // For now, return empty array since there's no list endpoint
+    // TODO: Implement proper artifacts listing endpoint
+    return [];
+  }
+
   async getArtifact(
     agentId: string,
     artifactPath: string
@@ -165,6 +158,14 @@ export class VibeXAPIClient {
 }
 
 // React hook for using the API client
-export function useAPI(): VibeXAPIClient {
-  return useMemo(() => new VibeXAPIClient(), []);
+export function useApi(): VibexClient {
+  const { user } = useUser();
+
+  return useMemo(() => {
+    const vibex = new VibexClient();
+    if (user?.id) {
+      vibex.setUserId(user.id);
+    }
+    return vibex;
+  }, [user?.id]);
 }

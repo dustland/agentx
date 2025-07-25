@@ -44,11 +44,16 @@ class XAgentService:
         logger.info(f"Creating XAgent{f' for user {user_id}' if user_id else ''} with goal: {goal}")
         
         try:
-            # Create XAgent instance - this creates the project internally
-            xagent = await XAgent.start(
+            # Use start_project function to create XAgent properly
+            from vibex.core.project import start_project
+            
+            project = await start_project(
                 goal=goal,
                 config_path=config_path,
             )
+            
+            # Get the XAgent from the project
+            xagent = project.x_agent
             
             # Store the active XAgent instance
             active_xagents[xagent.project_id] = xagent

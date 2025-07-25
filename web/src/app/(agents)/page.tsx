@@ -7,14 +7,14 @@ import { ChatInput } from "@/components/chat/input";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
 import { useAppStore } from "@/store/app";
-import { useAPI } from "@/lib/api-client";
+import { useApi } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const { setInitialMessage } = useAppStore();
-  const apiClient = useAPI();
+  const vibex = useApi();
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample goals with team-based configurations
@@ -72,7 +72,7 @@ export default function HomePage() {
         console.log("Creating XAgent with prompt:", prompt);
 
         // Create XAgent with the prompt as goal for autonomous execution
-        const response = await apiClient.createXAgent(
+        const response = await vibex.createXAgent(
           prompt,
           "examples/simple_chat/config/team.yaml",
           { source: "studio_homepage" }
@@ -109,7 +109,7 @@ export default function HomePage() {
         setIsCreating(false);
       }
     },
-    [apiClient, router, setInitialMessage]
+    [vibex, router, setInitialMessage]
   );
 
   const handleSampleGoalClick = (goal: any) => {
@@ -118,11 +118,11 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col overflow-y-auto">
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Hero Section - Center vertically in viewport */}
-        <div className="flex-1 flex items-center justify-center px-6">
+        <div className="flex-1 flex items-center justify-center px-6 py-12">
           <div className="w-full max-w-4xl">
             <div className="text-center space-y-4 mb-8">
               <h1 className="text-3xl font-medium text-foreground">
@@ -171,14 +171,14 @@ export default function HomePage() {
                     <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Button
                         size="sm"
-                        variant="secondary"
+                        variant="default"
                         className="h-7 px-3 text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSampleGoalClick(goal);
                         }}
                       >
-                        Start
+                        Start X
                       </Button>
                     </div>
                   </Card>

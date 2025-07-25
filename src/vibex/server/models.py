@@ -32,11 +32,11 @@ class CreateXAgentRequest(BaseModel):
     user_id: Optional[str] = Field(default=None, description="User ID for multi-tenant isolation")
 
 
-class TaskRunResponse(BaseModel):
-    """Response from task run operations (XAgent DTO)"""
-    agent_id: str = Field(description="The XAgent's project ID (XAgent represents one project)")
+class XAgentResponse(BaseModel):
+    """Response from XAgent operations"""
+    agent_id: str = Field(description="The XAgent's unique identifier")
     status: TaskStatus
-    goal: Optional[str] = Field(default=None, description="The task goal")
+    goal: Optional[str] = Field(default=None, description="The XAgent's goal")
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
@@ -44,7 +44,7 @@ class TaskRunResponse(BaseModel):
     user_id: Optional[str] = None
     config_path: Optional[str] = None
     context: Optional[Dict[str, Any]] = None
-    plan: Optional[Dict[str, Any]] = None  # Include plan data
+    plan: Optional[Dict[str, Any]] = None
 
 
 class TaskRunInfo(BaseModel):
@@ -60,9 +60,9 @@ class TaskRunInfo(BaseModel):
     plan: Optional[Dict[str, Any]] = None
 
 
-class TaskRunListResponse(BaseModel):
-    """Response for listing task runs"""
-    runs: List[TaskRunResponse]
+class XAgentListResponse(BaseModel):
+    """Response for listing XAgents"""
+    runs: List[XAgentResponse]
 
 
 class MemoryRequest(BaseModel):

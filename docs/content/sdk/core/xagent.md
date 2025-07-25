@@ -3,7 +3,7 @@ title: XAgent
 description: VibeX XAgent - The project's conversational representative
 ---
 
-_Module: [`vibex.xagent`](https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py)_
+_Module: [`vibex.core.xagent`](https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py)_
 
 The `XAgent` is the main entry point for interacting with the VibeX framework. It acts as a conversational representative for your projects, managing the agent team, and executing tasks based on your goals.
 

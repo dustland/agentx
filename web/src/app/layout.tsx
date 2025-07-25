@@ -23,7 +23,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
     other: [
       {
         rel: "icon",
@@ -36,10 +35,6 @@ export const metadata: Metadata = {
         type: "image/png",
         sizes: "16x16",
         url: "/favicon-16x16.png",
-      },
-      {
-        rel: "manifest",
-        url: "/site.webmanifest",
       },
     ],
   },

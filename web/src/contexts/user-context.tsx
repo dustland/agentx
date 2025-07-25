@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { User, getCurrentUser, loginUser, logoutUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { useAPI } from "@/lib/api-client";
+import { useApi } from "@/lib/api-client";
 
 interface UserContextType {
   user: User | null;
@@ -25,7 +25,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const apiClient = useAPI();
 
   const refreshUser = async () => {
     try {
@@ -33,6 +32,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(currentUser);
     } catch (error) {
       console.error("Failed to get current user:", error);
+      setUser(null);
+      // Don't redirect here - let middleware handle routing
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +61,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       await logoutUser();
       setUser(null);
-      router.push("/");
-      apiClient.clearUser();
+      router.push("/auth/login");
     } catch (error) {
       console.error("Failed to logout:", error);
     }

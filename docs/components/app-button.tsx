@@ -10,7 +10,7 @@ export default function TryAppButton() {
       href="https://app.vibex.co"
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center rounded-md gap-1 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-1 px-2 transition-colors"
+      className="flex items-center rounded-md gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-1.5 px-3 transition-colors"
     >
       <Image
         src="/logo.png"
@@ -19,7 +19,7 @@ export default function TryAppButton() {
         height={14}
         style={{ objectFit: "contain" }}
       />
-      <span className="font-bold">Try VibeX</span>
+      <span className="font-semibold">VibeX Now!</span>
     </Link>
   );
 }

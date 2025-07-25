@@ -124,7 +124,7 @@ export interface CreateXAgentRequest {
   user_id?: string;
 }
 
-export interface TaskRun {
+export interface XAgent {
   agent_id: string;
   status: TaskStatus;
   goal?: string;
@@ -138,8 +138,8 @@ export interface TaskRun {
   plan?: any;
 }
 
-export interface TaskRunListResponse {
-  runs: TaskRun[];
+export interface XAgentListResponse {
+  runs: XAgent[];
 }
 
 // API request/response types
@@ -272,6 +272,10 @@ export interface MemorySearchRequest {
   query: string;
   limit?: number;
 }
+
+// Backward compatibility aliases
+export type TaskRun = XAgent;
+export type TaskRunListResponse = XAgentListResponse;
 
 export interface MemorySearchResult {
   content: string;

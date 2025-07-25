@@ -1,0 +1,255 @@
+/* ===== API DOCUMENTATION STYLES ===== */
+
+/* API page identification - target pages under /api/ */
+[data-nextra-pathname^="/api/"] {
+  /* API-specific styles will be applied here */
+}
+
+/* API page headers */
+[data-nextra-pathname^="/api/"] h1 {
+  @apply text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2;
+  border-bottom: 2px solid theme('colors.blue.200');
+  padding-bottom: 0.5rem;
+}
+
+.dark [data-nextra-pathname^="/api/"] h1 {
+  border-bottom-color: theme('colors.blue.800');
+}
+
+/* Module path subtitle */
+[data-nextra-pathname^="/api/"] h1 + p em {
+  @apply text-sm text-gray-500 dark:text-gray-400 font-mono bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded;
+}
+
+/* API class headers */
+[data-nextra-pathname^="/api/"] h2 {
+  @apply text-2xl font-semibold text-slate-800 dark:text-slate-200 mt-8 mb-4;
+  border-left: 4px solid theme('colors.blue.500');
+  padding-left: 1rem;
+  background: linear-gradient(90deg, theme('colors.blue.50'), transparent);
+}
+
+.dark [data-nextra-pathname^="/api/"] h2 {
+  background: linear-gradient(90deg, theme('colors.blue.950'), transparent);
+}
+
+/* API method headers */
+[data-nextra-pathname^="/api/"] h3 {
+  @apply text-xl font-medium text-slate-700 dark:text-slate-300 mt-6 mb-3;
+  border-left: 3px solid theme('colors.green.500');
+  padding-left: 0.75rem;
+  background: linear-gradient(90deg, theme('colors.green.50'), transparent);
+}
+
+.dark [data-nextra-pathname^="/api/"] h3 {
+  background: linear-gradient(90deg, theme('colors.green.950'), transparent);
+}
+
+/* Function signature code blocks */
+[data-nextra-pathname^="/api/"] h3 + pre {
+  @apply mb-4 border-l-4 border-green-500;
+  background: theme('colors.slate.50') !important;
+}
+
+.dark [data-nextra-pathname^="/api/"] h3 + pre {
+  background: theme('colors.slate.900') !important;
+}
+
+/* API documentation paragraphs */
+[data-nextra-pathname^="/api/"] p {
+  @apply mb-4 leading-relaxed;
+}
+
+/* API navigation improvements */
+[data-nextra-pathname^="/api/"] .nextra-toc li a {
+  @apply text-sm;
+}
+
+[data-nextra-pathname^="/api/"] .nextra-toc li a:hover {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+/* API overview page cards */
+[data-nextra-pathname="/api"] h3 a {
+  @apply text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors;
+}
+
+/* Code highlighting for API docs */
+[data-nextra-pathname^="/api/"] code {
+  @apply bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-sm font-mono;
+}
+
+/* Inline code in API docs */
+[data-nextra-pathname^="/api/"] p code {
+  @apply bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-800;
+}
+
+/* API section spacing */
+[data-nextra-pathname^="/api/"] .nextra-content > div > div {
+  @apply space-y-6;
+}
+
+/* API breadcrumb styling */
+[data-nextra-pathname^="/api/"] .nextra-breadcrumb {
+  @apply text-sm text-gray-500 dark:text-gray-400 mb-6;
+}
+
+/* API content max width for better readability */
+[data-nextra-pathname^="/api/"] .nextra-content {
+  max-width: 1200px;
+}
+
+/* API method signature styling */
+[data-nextra-pathname^="/api/"] pre code {
+  @apply text-sm leading-relaxed;
+}
+
+/* API parameter descriptions */
+[data-nextra-pathname^="/api/"] p:has(+ pre) {
+  @apply mb-2;
+}
+
+/* Special styling for function/method names in headers */
+[data-nextra-pathname^="/api/"] h3 code {
+  @apply bg-transparent text-inherit p-0 border-0;
+}
+
+/* API overview grid layout */
+[data-nextra-pathname="/api"] .nextra-content h3 {
+  @apply mt-8 mb-3;
+}
+
+/* Table of contents for API pages */
+[data-nextra-pathname^="/api/"] .nextra-toc {
+  @apply border-l-2 border-blue-200 dark:border-blue-800;
+}
+
+/* API search highlighting */
+[data-nextra-pathname^="/api/"] mark {
+  @apply bg-yellow-200 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-100 px-1 rounded;
+}
+
+/* GitHub source links styling */
+[data-nextra-pathname^="/api/"] .source-link {
+  @apply text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 ml-2 transition-all duration-200 opacity-60 hover:opacity-100;
+  text-decoration: none !important;
+  font-size: 0.875rem;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+[data-nextra-pathname^="/api/"] .source-link:hover {
+  @apply bg-blue-50 dark:bg-blue-950 px-1 py-0.5 rounded;
+  transform: scale(1.1);
+}
+
+/* Module path GitHub links */
+[data-nextra-pathname^="/api/"] h1 + p a[href*="github.com"] {
+  @apply text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200;
+  text-decoration: none !important;
+}
+
+/* API Documentation Styling */
+.api-page h1 {
+  color: #2563eb;
+  border-bottom: 2px solid var(--nx-border-primary);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.api-page h2 {
+  color: #1e40af;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #2563eb;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.api-page h3 {
+  color: #059669;
+  padding: 0.5rem 0.75rem;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 0.375rem;
+  border-left: 3px solid #10b981;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.api-page .source-link {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  color: var(--nx-colors-gray-600);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.api-page .source-link:hover {
+  opacity: 1;
+  color: var(--nx-colors-primary-600);
+  transform: scale(1.05);
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+}
+
+.api-page .source-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.api-page pre {
+  background-color: var(--nx-colors-neutral-900);
+  border: 1px solid var(--nx-border-primary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.api-page code {
+  background-color: var(--nx-colors-neutral-100);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.api-page pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Dark theme adjustments */
+html[data-theme="dark"] .api-page h1 {
+  color: #60a5fa;
+  border-bottom-color: var(--nx-border-primary);
+}
+
+html[data-theme="dark"] .api-page h2 {
+  color: #93c5fd;
+  background: rgba(59, 130, 246, 0.15);
+  border-left-color: #60a5fa;
+}
+
+html[data-theme="dark"] .api-page h3 {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border-left-color: #34d399;
+}
+
+html[data-theme="dark"] .api-page code {
+  background-color: var(--nx-colors-neutral-800);
+}
+
+/* Hide GitHub icons from table of contents sidebar */
+nav .source-link,
+.nx-toc .source-link,
+[data-nextra-toc] .source-link,
+aside .source-link {
+  display: none !important;
+}

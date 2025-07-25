@@ -3,7 +3,7 @@ import tempfile
 import yaml
 from pathlib import Path
 from pydantic import ValidationError
-from vibex.xagent import XAgent
+from vibex.core.xagent import XAgent
 from vibex.core.agent import Agent
 from vibex.tool.registry import get_tool_registry
 from vibex.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError

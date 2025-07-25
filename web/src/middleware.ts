@@ -13,11 +13,15 @@ export function middleware(request: NextRequest) {
 
   // If accessing public route, allow access
   if (isPublicRoute) {
+    // If already authenticated and trying to access login/register, redirect to home
+    if (authToken?.value) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
     return NextResponse.next();
   }
 
   // If not authenticated and trying to access protected route, redirect to login
-  if (!authToken) {
+  if (!authToken?.value) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -38,5 +42,8 @@ export const config = {
      * - public files (images, etc.)
      */
     "/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$).*)",
+    // Also try simpler patterns
+    "/",
+    "/(agents)/:path*",
   ],
 };

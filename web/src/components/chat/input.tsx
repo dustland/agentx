@@ -114,7 +114,7 @@ export function ChatInput({
                 onClick={() => setMode(m as "agent" | "chat")}
                 className={`text-xs h-6 rounded-full transition-all border ${
                   mode === m
-                    ? "shadow-sm border-muted-foreground/20 bg-muted"
+                    ? "shadow-sm border-accent"
                     : "border-transparent bg-transparent text-muted-foreground"
                 }`}
               >

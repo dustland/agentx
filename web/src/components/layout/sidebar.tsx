@@ -38,7 +38,7 @@ import { useUser } from "@/contexts/user-context";
 import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { ThemeSwitcher } from "../theme-switcher";
-import { useProjects } from "@/hooks/use-project";
+import { useXAgents } from "@/hooks/use-xagent";
 import { useAppStore } from "@/store/app";
 import { Icons } from "../icons";
 
@@ -98,10 +98,10 @@ export function Sidebar({
   const router = useRouter();
   const { user, logout } = useUser();
   const {
-    tasks: xagentsResponse,
+    xagents: xagentsResponse,
     isLoading,
-    deleteProject: deleteXAgentMutation,
-  } = useProjects();
+    deleteXAgent: deleteXAgentMutation,
+  } = useXAgents();
   const { sidebarPinned, setSidebarPinned } = useAppStore();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
