@@ -16,11 +16,20 @@ from .message import (
     StreamComplete
 )
 from .tool import ToolCall, ToolResult
+from .project import Project
+from .plan import Plan
+from .task import Task, TaskStatus, FailurePolicy
+from .xagent import XAgent, XAgentResponse
+
+# High-level functions
+from .project import start_project, run_project
 
 __all__ = [
+    # Brain
     "Brain",
     "BrainMessage",
     "BrainResponse",
+    # Messages
     "TaskStep",
     "TextPart",
     "ToolCall",
@@ -35,7 +44,19 @@ __all__ = [
     "Artifact",
     "StreamChunk",
     "StreamError",
-    "StreamComplete"
+    "StreamComplete",
+    # Project and Planning
+    "Project",
+    "Plan",
+    "Task",
+    "TaskStatus",
+    "FailurePolicy",
+    # XAgent
+    "XAgent",
+    "XAgentResponse",
+    # High-level functions
+    "start_project",
+    "run_project"
 ]
 
 # Note: No model rebuilds needed since ToolCallPart is now self-contained

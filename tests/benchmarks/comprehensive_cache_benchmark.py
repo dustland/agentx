@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 
 from vibex.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
-from vibex.storage.cached_taskspace import CachedTaskspaceStorage
+# ProjectStorage removed - use ProjectStorage directly
+from vibex.storage.project import ProjectStorage
 from vibex.storage.factory import StorageFactory
 
 
@@ -41,12 +42,12 @@ async def benchmark_operation(name: str, func, iterations: int = 50) -> Dict[str
     }
 
 
-async def create_test_taskspace() -> Tuple[str, str]:
-    """Create a test taskspace with comprehensive data"""
+async def create_test_project_storage() -> Tuple[str, str]:
+    """Create a test project storage with comprehensive data"""
     temp_dir = tempfile.mkdtemp()
-    task_id = "benchmark-comprehensive"
-    taskspace_path = Path(temp_dir) / task_id
-    taskspace_path.mkdir(parents=True)
+    project_id = "benchmark-comprehensive"
+    project_path = Path(temp_dir) / project_id
+    project_path.mkdir(parents=True)
     
     # Create comprehensive test data
     
@@ -64,11 +65,11 @@ async def create_test_taskspace() -> Tuple[str, str]:
             for i in range(50)
         ]
     }
-    with open(taskspace_path / "plan.json", "w") as f:
+    with open(project_path / "plan.json", "w") as f:
         json.dump(plan_data, f)
     
     # 2. Message history (JSONL format)
-    messages_path = taskspace_path / "messages.jsonl"
+    messages_path = project_path / "messages.jsonl"
     with open(messages_path, "w") as f:
         for i in range(100):
             message = {
@@ -79,9 +80,9 @@ async def create_test_taskspace() -> Tuple[str, str]:
             f.write(json.dumps(message) + "\n")
     
     # 3. Artifacts (simple storage format)
-    artifacts_dir = taskspace_path / "artifacts"
+    artifacts_dir = project_path / "artifacts"
     artifacts_dir.mkdir()
-    (taskspace_path / ".vibex_simple_storage").touch()
+    (project_path / ".vibex_simple_storage").touch()
     
     for i in range(20):
         artifact_name = f"artifact_{i}.txt"
@@ -108,34 +109,34 @@ async def create_test_taskspace() -> Tuple[str, str]:
         "artifact_count": 20,
         "created_at": "2024-01-01T00:00:00Z"
     }
-    with open(taskspace_path / "summary.json", "w") as f:
+    with open(project_path / "summary.json", "w") as f:
         json.dump(summary, f)
     
-    return temp_dir, task_id
+    return temp_dir, project_id
 
 
 async def run_comprehensive_benchmarks():
     """Run comprehensive benchmarks on all cached operations"""
     
-    print("Creating test taskspace...")
-    temp_dir, task_id = await create_test_taskspace()
+    print("Creating test project_storage...")
+    temp_dir, project_id = await create_test_project_storage()
     
     try:
         # Create storage instances
-        base_storage = StorageFactory.create_taskspace_storage(
+        base_storage = StorageFactory.create_project_storage(
             base_path=Path(temp_dir),
-            task_id=task_id
+            project_id=project_id
         )
         
         # No cache
-        no_cache_storage = CachedTaskspaceStorage(base_storage, NoOpCacheBackend())
+        no_cache_storage = ProjectStorage(base_storage, NoOpCacheBackend())
         
         # Memory cache
         memory_cache = MemoryCacheBackend()
-        cached_storage = CachedTaskspaceStorage(base_storage, memory_cache)
+        cached_storage = ProjectStorage(base_storage, memory_cache)
         
         print("\n=== Comprehensive Storage Caching Benchmarks ===")
-        print(f"Task ID: {task_id}")
+        print(f"Project ID: {project_id}")
         print(f"Test data: 50 tasks, 100 messages, 20 artifacts")
         print(f"Iterations per test: 50")
         print()

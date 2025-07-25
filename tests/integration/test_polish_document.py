@@ -12,15 +12,15 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from vibex.builtin_tools.document import DocumentTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 async def test_polish_with_sections():
     """Test polishing a document with multiple sections like auto_writer output."""
-    # Create test taskspace
+    # Create test project_storage
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    doc_tool = DocumentTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    doc_tool = DocumentTool(taskspace_storage=project_storage)
     
     # Create a test document with multiple sections (like auto_writer output)
     test_content = """# Web Development Trends 2025 Report
@@ -179,7 +179,7 @@ Organizations must remain agile and adaptive, continuously evaluating new tools 
 """
     
     # Save test document
-    await taskspace.store_artifact('draft_report.md', test_content, 'text/markdown')
+    await project_storage.store_artifact('draft_report.md', test_content, 'text/markdown')
     
     print(f'📄 Test document created: {len(test_content)} characters')
     print(f'📊 Sections: {test_content.count("##")} major sections')
@@ -215,8 +215,8 @@ Organizations must remain agile and adaptive, continuously evaluating new tools 
 async def test_polish_timeout_handling():
     """Test that large documents don't timeout with the increased limit."""
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    doc_tool = DocumentTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    doc_tool = DocumentTool(taskspace_storage=project_storage)
     
     # Create a very large document that would timeout with 30s limit
     large_content = "# Large Test Document\n\n"
@@ -229,7 +229,7 @@ async def test_polish_timeout_handling():
         large_content += "- Important point about web development\n" * 10
         large_content += "\n"
     
-    await taskspace.store_artifact('large_draft.md', large_content, 'text/markdown')
+    await project_storage.store_artifact('large_draft.md', large_content, 'text/markdown')
     
     print(f'\n📄 Large document test: {len(large_content)} characters')
     print('🔧 Testing timeout handling...')

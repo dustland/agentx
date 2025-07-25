@@ -27,12 +27,12 @@ def generate_short_id(length: int = 8) -> str:
 
 class EventType(str, Enum):
     """Types of events in the system."""
-    # Task lifecycle events
-    TASK_STARTED = "task_started"
-    TASK_COMPLETED = "task_completed"
-    TASK_FAILED = "task_failed"
-    TASK_PAUSED = "task_paused"
-    TASK_RESUMED = "task_resumed"
+    # Project lifecycle events
+    PROJECT_STARTED = "project_started"
+    PROJECT_COMPLETED = "project_completed"
+    PROJECT_FAILED = "project_failed"
+    PROJECT_PAUSED = "project_paused"
+    PROJECT_RESUMED = "project_resumed"
 
     # Agent events
     AGENT_STARTED = "agent_started"
@@ -98,7 +98,7 @@ class Event(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
     # Event context
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     agent_name: Optional[str] = None
     tool_name: Optional[str] = None
 
@@ -117,7 +117,7 @@ class Event(BaseModel):
             "source": self.source,
             "data": self.data,
             "metadata": self.metadata,
-            "task_id": self.task_id,
+            "project_id": self.project_id,
             "agent_name": self.agent_name,
             "tool_name": self.tool_name,
             "priority": self.priority.value,
@@ -131,36 +131,36 @@ class Event(BaseModel):
 # SPECIFIC EVENT MODELS
 # ============================================================================
 
-class TaskEvent(Event):
-    """Task-related events."""
-    task_id: str
+class ProjectEvent(Event):
+    """Project-related events."""
+    project_id: str
     event_type: Literal[
-        EventType.TASK_STARTED,
-        EventType.TASK_COMPLETED,
-        EventType.TASK_FAILED,
-        EventType.TASK_PAUSED,
-        EventType.TASK_RESUMED
+        EventType.PROJECT_STARTED,
+        EventType.PROJECT_COMPLETED,
+        EventType.PROJECT_FAILED,
+        EventType.PROJECT_PAUSED,
+        EventType.PROJECT_RESUMED
     ]
 
 
-class TaskStartEvent(TaskEvent):
-    """Event emitted when a task starts."""
-    event_type: Literal[EventType.TASK_STARTED] = EventType.TASK_STARTED
-    task_config: Dict[str, Any] = Field(default_factory=dict)
+class ProjectStartEvent(ProjectEvent):
+    """Event emitted when a project starts."""
+    event_type: Literal[EventType.PROJECT_STARTED] = EventType.PROJECT_STARTED
+    project_config: Dict[str, Any] = Field(default_factory=dict)
     initial_prompt: Optional[str] = None
 
 
-class TaskCompleteEvent(TaskEvent):
-    """Event emitted when a task completes."""
-    event_type: Literal[EventType.TASK_COMPLETED] = EventType.TASK_COMPLETED
+class ProjectCompleteEvent(ProjectEvent):
+    """Event emitted when a project completes."""
+    event_type: Literal[EventType.PROJECT_COMPLETED] = EventType.PROJECT_COMPLETED
     result: Any = None
     execution_time_ms: float = 0.0
     total_rounds: int = 0
 
 
-class TaskFailEvent(TaskEvent):
-    """Event emitted when a task fails."""
-    event_type: Literal[EventType.TASK_FAILED] = EventType.TASK_FAILED
+class ProjectFailEvent(ProjectEvent):
+    """Event emitted when a project fails."""
+    event_type: Literal[EventType.PROJECT_FAILED] = EventType.PROJECT_FAILED
     error: str
     error_type: Optional[str] = None
     stack_trace: Optional[str] = None
@@ -381,7 +381,7 @@ class EventLogEntry(BaseModel):
 class EventAuditFilter(BaseModel):
     """Filter for event audit queries."""
     event_types: Optional[List[EventType]] = None
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     agent_name: Optional[str] = None
     tool_name: Optional[str] = None
     priority: Optional[EventPriority] = None
@@ -419,25 +419,25 @@ class EventBatch(BaseModel):
 # ============================================================================
 
 def create_event(event_type: EventType, source: str, data: Dict[str, Any] = None,
-                task_id: str = None, agent_name: str = None, tool_name: str = None,
+                project_id: str = None, agent_name: str = None, tool_name: str = None,
                 priority: EventPriority = EventPriority.NORMAL) -> Event:
     """Create a new event with the specified parameters."""
     return Event(
         event_type=event_type,
         source=source,
         data=data or {},
-        task_id=task_id,
+        project_id=project_id,
         agent_name=agent_name,
         tool_name=tool_name,
         priority=priority
     )
 
 
-def create_task_start_event(task_id: str, source: str, task_config: Dict[str, Any] = None,
-                           initial_prompt: str = None) -> TaskStartEvent:
-    """Create a task start event."""
-    return TaskStartEvent(
-        task_id=task_id,
+def create_project_start_event(project_id: str, source: str, task_config: Dict[str, Any] = None,
+                           initial_prompt: str = None) -> ProjectStartEvent:
+    """Create a project start event."""
+    return ProjectStartEvent(
+        project_id=project_id,
         source=source,
         task_config=task_config or {},
         initial_prompt=initial_prompt
@@ -445,7 +445,7 @@ def create_task_start_event(task_id: str, source: str, task_config: Dict[str, An
 
 
 def create_tool_call_event(tool_name: str, tool_call_id: str, source: str,
-                          args: Dict[str, Any] = None, task_id: str = None,
+                          args: Dict[str, Any] = None, project_id: str = None,
                           agent_name: str = None) -> ToolCallStartEvent:
     """Create a tool call start event."""
     return ToolCallStartEvent(
@@ -453,19 +453,19 @@ def create_tool_call_event(tool_name: str, tool_call_id: str, source: str,
         tool_call_id=tool_call_id,
         source=source,
         args=args or {},
-        task_id=task_id,
+        project_id=project_id,
         agent_name=agent_name
     )
 
 
 def create_agent_handoff_event(from_agent: str, to_agent: str, source: str,
-                              task_id: str = None, handoff_reason: str = None) -> AgentHandoffEvent:
+                              project_id: str = None, handoff_reason: str = None) -> AgentHandoffEvent:
     """Create an agent handoff event."""
     return AgentHandoffEvent(
         agent_name=from_agent,
         from_agent=from_agent,
         to_agent=to_agent,
         source=source,
-        task_id=task_id,
+        project_id=project_id,
         handoff_reason=handoff_reason
     )

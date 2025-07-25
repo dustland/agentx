@@ -55,7 +55,7 @@ class EventBus:
             return
 
         self._running = True
-        self._worker_task = asyncio.create_task(self._process_events())
+        self._worker_task = asyncio.create_project(self._process_events())
         logger.info(f"EventBus '{self.name}' started")
 
     async def stop(self) -> None:
@@ -238,7 +238,7 @@ class EventBus:
             loop = asyncio.get_event_loop()
             if loop.is_running():
                 # In async context, create task but return immediately
-                task = asyncio.create_task(self.publish(
+                task = asyncio.create_project(self.publish(
                     event_data, event_type, priority, source, correlation_id, tags
                 ))
                 return "pending"  # Return placeholder

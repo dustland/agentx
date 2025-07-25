@@ -16,56 +16,65 @@ def utc_now() -> datetime:
 
 
 class TaskStatus(str, Enum):
-    """Task status enumeration"""
+    """Task status enumeration - aligns with XAgent task statuses"""
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+    ERROR = "error"  # Additional status for error state
 
 
-class TaskRequest(BaseModel):
-    """Request to create and run a task"""
-    config_path: str = Field(description="Path to the task configuration file")
-    task_description: Optional[str] = Field(default="", description="Description of the task to execute")
-    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context for the task")
+class CreateXAgentRequest(BaseModel):
+    """Request to create and run an XAgent instance"""
+    config_path: str = Field(description="Path to the team configuration file")
+    goal: Optional[str] = Field(default="", description="Goal or mission for the XAgent to achieve")
+    context: Optional[Dict[str, Any]] = Field(default=None, description="Additional context for the XAgent")
     user_id: Optional[str] = Field(default=None, description="User ID for multi-tenant isolation")
 
 
-class TaskResponse(BaseModel):
-    """Response from task operations"""
-    task_id: str
+class TaskRunResponse(BaseModel):
+    """Response from task run operations (XAgent DTO)"""
+    agent_id: str = Field(description="The XAgent's project ID (XAgent represents one project)")
     status: TaskStatus
+    goal: Optional[str] = Field(default=None, description="The task goal")
     result: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     created_at: datetime = Field(default_factory=utc_now)
     completed_at: Optional[datetime] = None
     user_id: Optional[str] = None
+    config_path: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
+    plan: Optional[Dict[str, Any]] = None  # Include plan data
 
 
-class TaskInfo(BaseModel):
-    """Information about a task"""
-    task_id: str
+class TaskRunInfo(BaseModel):
+    """Detailed information about a task run"""
+    agent_id: str
     status: TaskStatus
     config_path: str
-    task_description: str
+    goal: str
     context: Optional[Dict[str, Any]] = None
     created_at: datetime
     completed_at: Optional[datetime] = None
     user_id: Optional[str] = None
+    plan: Optional[Dict[str, Any]] = None
+
+
+class TaskRunListResponse(BaseModel):
+    """Response for listing task runs"""
+    runs: List[TaskRunResponse]
 
 
 class MemoryRequest(BaseModel):
     """Request for memory operations"""
-    task_id: str
-    agent_id: Optional[str] = Field(default=None, description="Agent ID for agent-specific memory operations")
+    agent_id: str
     content: Optional[str] = Field(default=None, description="Content to add to memory")
     query: Optional[str] = Field(default=None, description="Query to search memory")
 
 
 class MemoryResponse(BaseModel):
     """Response from memory operations"""
-    task_id: str
-    agent_id: Optional[str] = None
+    agent_id: str
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
@@ -76,9 +85,9 @@ class HealthResponse(BaseModel):
     status: str = "healthy"
     timestamp: datetime = Field(default_factory=utc_now)
     version: str = "0.4.0"
-    active_tasks: int = 0
+    active_agents: int = 0
     service_name: str = "VibeX API"
-    service_type: str = "vibex-task-orchestration"
+    service_type: str = "vibex-agent-orchestration"
     api_endpoints: List[str] = Field(default_factory=lambda: [
-        "/tasks", "/tasks/{task_id}", "/tasks/{task_id}/memory", "/health", "/monitor"
+        "/agents", "/agents/{agent_id}", "/agents/{agent_id}/memory", "/health", "/monitor"
     ])

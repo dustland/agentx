@@ -1,0 +1,107 @@
+"""
+XAgent Service Layer
+
+Manages XAgent instances and provides the service interface for the REST API.
+XAgent is the primary interface - each instance represents exactly one project.
+"""
+
+from typing import Dict, Optional
+from pathlib import Path
+from datetime import datetime
+
+from vibex.core.xagent import XAgent
+from vibex.utils.logger import get_logger
+from vibex.core.exceptions import AgentNotFoundError
+
+logger = get_logger(__name__)
+
+# In-memory storage for active XAgent instances.
+# In a production environment, this would be replaced with a persistent store.
+active_xagents: Dict[str, XAgent] = {}
+
+
+class XAgentService:
+    """
+    Service for managing XAgent instances.
+    
+    XAgent is the primary interface to VibeX. Each XAgent instance represents
+    exactly one project and uses the project's ID as its identifier.
+    """
+
+    async def create(
+        self,
+        user_id: Optional[str] = None,
+        goal: str = "",
+        config_path: str = "",
+        context: Optional[dict] = None,
+    ) -> XAgent:
+        """
+        Creates a new XAgent instance.
+        
+        Returns the actual XAgent instance, not a DTO wrapper.
+        The XAgent manages its own project internally.
+        """
+        logger.info(f"Creating XAgent{f' for user {user_id}' if user_id else ''} with goal: {goal}")
+        
+        try:
+            # Create XAgent instance - this creates the project internally
+            xagent = await XAgent.start(
+                goal=goal,
+                config_path=config_path,
+            )
+            
+            # Store the active XAgent instance
+            active_xagents[xagent.project_id] = xagent
+            
+            logger.info(f"XAgent {xagent.project_id} created successfully.")
+            return xagent
+            
+        except Exception as e:
+            logger.error(f"Failed to create XAgent: {e}", exc_info=True)
+            raise
+
+    async def get(self, agent_id: str) -> XAgent:
+        """
+        Get an XAgent instance by ID.
+        
+        Returns the actual XAgent instance for direct interaction.
+        """
+        if agent_id not in active_xagents:
+            raise AgentNotFoundError(f"XAgent {agent_id} not found")
+        
+        return active_xagents[agent_id]
+
+    async def list_for_user(self, user_id: Optional[str] = None) -> list[XAgent]:
+        """
+        Get all XAgent instances for a specific user.
+        Note: This is a simplified in-memory implementation.
+        """
+        # In a real implementation, you would query a database here
+        # For now, return all active XAgents (user filtering not implemented)
+        return list(active_xagents.values())
+
+    async def delete(self, agent_id: str) -> bool:
+        """
+        Delete an XAgent instance.
+        """
+        if agent_id in active_xagents:
+            del active_xagents[agent_id]
+            logger.info(f"XAgent {agent_id} deleted")
+            return True
+        return False
+
+    def exists(self, agent_id: str) -> bool:
+        """
+        Check if an XAgent instance exists.
+        """
+        return agent_id in active_xagents
+
+
+# Dependency injection
+_xagent_service_instance = None
+
+def get_xagent_service() -> XAgentService:
+    global _xagent_service_instance
+    if _xagent_service_instance is None:
+        _xagent_service_instance = XAgentService()
+    return _xagent_service_instance

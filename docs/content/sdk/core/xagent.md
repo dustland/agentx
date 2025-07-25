@@ -1,143 +1,66 @@
-# Xagent
+---
+title: XAgent
+description: VibeX XAgent - The project's conversational representative
+---
 
-_Module: [`vibex.core.xagent`](https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py)_
+_Module: [`vibex.xagent`](https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py)_
 
-XAgent - The unified conversational interface for VibeX
+The `XAgent` is the main entry point for interacting with the VibeX framework. It acts as a conversational representative for your projects, managing the agent team, and executing tasks based on your goals.
 
-XAgent merges TaskExecutor and Orchestrator functionality into a single,
-user-friendly interface that users can chat with to manage complex multi-agent tasks.
-
-Key Features:
-
-- Rich message handling with attachments and multimedia
-- LLM-driven plan adjustment that preserves completed work
-- Single point of contact for all user interactions
-- Automatic taskspace and tool management
-
-API Design:
-
-- chat(message) - For user conversation, plan adjustments, and Q&A
-- step() - For autonomous task execution, moving the plan forward
-- start_task() creates a plan but doesn't execute it automatically
-
-## XAgentResponse <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L50" class="source-link" title="View source code">source</a>
-
-Response from XAgent chat interactions.
-
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L53" class="source-link" title="View source code">source</a>
+## Usage
 
 ```python
-def __init__(self, text: str, artifacts: Optional[List[Any]] = None, preserved_steps: Optional[List[str]] = None, regenerated_steps: Optional[List[str]] = None, plan_changes: Optional[Dict[str, Any]] = None, metadata: Optional[Dict[str, Any]] = None)
-```
+import asyncio
+from vibex import XAgent
 
-## XAgent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L70" class="source-link" title="View source code">source</a>
+async def main():
+    # Start a new project
+    x = await XAgent.start(
+        goal="Create a report on the latest AI trends.",
+        config_path="path/to/your/team.yaml"
+    )
 
-XAgent - The unified conversational interface for VibeX.
-
-XAgent combines TaskExecutor's execution context management with
-Orchestrator's agent coordination logic into a single, user-friendly
-interface that users can chat with naturally.
-
-Key capabilities:
-
-- Rich message handling (text, attachments, multimedia)
-- LLM-driven plan adjustment preserving completed work
-- Automatic taskspace and tool management
-- Conversational task management
-
-Usage Pattern:
-
-````python # Start a task (creates plan but doesn't execute)
-x = await start_task("Build a web app", "config/team.yaml")
-
-    # Execute the task autonomously
-    while not x.is_complete:
-        response = await x.step()  # Autonomous execution
+    # Autonomously execute the project plan
+    while not x.is_complete():
+        response = await x.step()
         print(response)
 
-    # Chat for refinements and adjustments
-    response = await x.chat("Make it more colorful")  # User conversation
-    print(response.text)
-    ```
+    # Chat for refinements
+    response = await x.chat("Add a section on ethical considerations.")
+    print(response)
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L100" class="source-link" title="View source code">source</a>
-
-```python
-def __init__(self, team_config: TeamConfig, task_id: Optional[str] = None, taskspace_dir: Optional[Path] = None, initial_prompt: Optional[str] = None, user_id: Optional[str] = None)
-````
-
-### chat <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L261" class="source-link" title="View source code">source</a>
-
-```python
-async def chat(self, message: Union[str, Message]) -> XAgentResponse
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-Send a conversational message to X and get a response.
+## XAgentResponse <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L50" class="source-link" title="View source code">source</a>
 
-This is the conversational interface that handles:
+The `XAgentResponse` object is returned from chat interactions and contains the agent's response, along with metadata about the execution.
 
-- User questions and clarifications
-- Plan adjustments and modifications
-- Rich messages with attachments
-- Preserving completed work while regenerating only necessary steps
+### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L53" class="source-link" title="View source code">source</a>
 
-This method is for USER INPUT and conversation, not for autonomous task execution.
-For autonomous task execution, use step() method instead.
+Initializes the `XAgentResponse`.
 
-**Args:**
-message: Either a simple text string or a rich Message with parts
+## XAgent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L70" class="source-link" title="View source code">source</a>
 
-**Returns:**
-XAgentResponse with text, artifacts, and execution details
+The main class for managing and interacting with VibeX projects.
 
-### execute <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L880" class="source-link" title="View source code">source</a>
+### start <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L100" class="source-link" title="View source code">source</a>
 
-```python
-async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]
-```
+A class method to start a new project. This is the recommended way to create an `XAgent` instance.
 
-Compatibility method for TaskExecutor.execute().
+### chat <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L261" class="source-link" title="View source code">source</a>
 
-### start <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L892" class="source-link" title="View source code">source</a>
+Send a conversational message to the `XAgent` to ask questions, provide feedback, or adjust the plan.
 
-```python
-async def start(self, prompt: str) -> None
-```
+### step <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L915" class="source-link" title="View source code">source</a>
 
-Compatibility method for TaskExecutor.start().
+Execute the next autonomous step in the project plan.
 
-### set_parallel_execution <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L896" class="source-link" title="View source code">source</a>
+### is_complete <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L896" class="source-link" title="View source code">source</a>
 
-```python
-def set_parallel_execution(self, enabled: bool = True, max_concurrent: int = 3) -> None
-```
+Check if the project is complete.
 
-Configure parallel execution settings.
+### register_tool <a href="https://github.com/dustland/vibex/blob/main/src/vibex/xagent.py#L908" class="source-link" title="View source code">source</a>
 
-**Args:**
-enabled: Whether to enable parallel execution
-max_concurrent: Maximum number of tasks to execute simultaneously
-
-### get_parallel_settings <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L908" class="source-link" title="View source code">source</a>
-
-```python
-def get_parallel_settings(self) -> Dict[str, Any]
-```
-
-Get current parallel execution settings.
-
-### step <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/xagent.py#L915" class="source-link" title="View source code">source</a>
-
-```python
-async def step(self) -> str
-```
-
-Execute one step of autonomous task execution.
-
-This method is for AUTONOMOUS TASK EXECUTION, not for user conversation.
-It moves the plan forward by executing the next available task.
-
-For user conversation and plan adjustments, use chat() method instead.
-
-**Returns:**
-str: Status message about the step execution
+Register a custom tool with the `XAgent`'s tool manager.

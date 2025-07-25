@@ -56,7 +56,7 @@ alwaysApply: false
 
 ## Examples
 
-- Alway set current directory to the example when run it, so that taskspace folder will be created within that example folder.
+- Alway set current directory to the example when run it, so that workspace folder will be created within that example folder.
 
 ## References
 

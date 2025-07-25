@@ -37,11 +37,11 @@ async def publish_event(
     Example:
         ```python
         from vibex.event import publish_event
-from .models import TaskStartEvent
+from .models import ProjectStartEvent
 
         event_id = await publish_event(
-            TaskStartEvent(
-                task_id="task123",
+            ProjectStartEvent(
+                project_id="proj123",
                 timestamp=datetime.now(),
                 initial_prompt="Hello world",
                 execution_mode="autonomous",
@@ -123,12 +123,12 @@ def subscribe_to_events(
         ```python
         from vibex.event import subscribe_to_events
 
-        def handle_task_events(event_data):
-            print(f"Task event: {event_data.type}")
+        def handle_project_events(event_data):
+            print(f"Project event: {event_data.type}")
 
         subscription_id = subscribe_to_events(
-            event_types=["event_task_start", "event_task_complete"],
-            handler=handle_task_events,
+            event_types=["event_project_start", "event_project_complete"],
+            handler=handle_project_events,
             priority=EventPriority.HIGH
         )
         ```
@@ -228,13 +228,13 @@ async def get_event_system_health() -> Dict[str, Any]:
 
 
 # Convenience functions for common event types
-async def publish_task_event(event_data: Any, task_id: str, **kwargs) -> str:
+async def publish_project_event(event_data: Any, project_id: str, **kwargs) -> str:
     """
-    Convenience function for publishing task-related events.
+    Convenience function for publishing project-related events.
 
     Args:
         event_data: Task event data
-        task_id: Task ID for correlation
+        project_id: Task ID for correlation
         **kwargs: Additional arguments passed to publish_event
 
     Returns:
@@ -243,33 +243,33 @@ async def publish_task_event(event_data: Any, task_id: str, **kwargs) -> str:
     return await publish_event(
         event_data=event_data,
         source="orchestrator",
-        correlation_id=task_id,
-        tags={"task_id": task_id},
+        correlation_id=project_id,
+        tags={"project_id": project_id},
         **kwargs
     )
 
 
-async def publish_agent_event(event_data: Any, agent_name: str, task_id: Optional[str] = None, **kwargs) -> str:
+async def publish_agent_event(event_data: Any, agent_name: str, project_id: Optional[str] = None, **kwargs) -> str:
     """
     Convenience function for publishing agent-related events.
 
     Args:
         event_data: Agent event data
         agent_name: Agent name
-        task_id: Optional task ID for correlation
+        project_id: Optional task ID for correlation
         **kwargs: Additional arguments passed to publish_event
 
     Returns:
         Event ID
     """
     tags = {"agent_name": agent_name}
-    if task_id:
-        tags["task_id"] = task_id
+    if project_id:
+        tags["project_id"] = project_id
 
     return await publish_event(
         event_data=event_data,
         source=f"agent:{agent_name}",
-        correlation_id=task_id,
+        correlation_id=project_id,
         tags=tags,
         **kwargs
     )

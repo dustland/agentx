@@ -12,7 +12,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from vibex.builtin_tools.research import ResearchTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 async def test_auto_writer_research_pattern():
@@ -21,10 +21,10 @@ async def test_auto_writer_research_pattern():
     print("This tests search_first=True with adaptive crawling")
     print("=" * 60)
     
-    # Create taskspace like auto_writer does
+    # Create project_storage like auto_writer does
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    research_tool = ResearchTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(base_path=temp_dir, project_id="test_research")
+    research_tool = ResearchTool(project_storage=project_storage)
     
     # Test the exact queries that auto_writer uses
     test_queries = [

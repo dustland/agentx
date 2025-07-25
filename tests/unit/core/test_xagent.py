@@ -7,10 +7,11 @@ import asyncio
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock
 
-from vibex.core.xagent import XAgent, XAgentResponse
+from vibex.core.plan import Plan, PlanItem
+from vibex.core.task import Task
+from vibex.xagent import XAgent, XAgentResponse
 from vibex.core.config import TeamConfig, AgentConfig, BrainConfig
 from vibex.core.message import Message, TextPart
-from vibex.core.plan import Plan, PlanItem
 
 
 @pytest.fixture
@@ -31,31 +32,31 @@ def mock_team_config():
 
 
 @pytest.fixture
-def mock_taskspace_path(tmp_path):
-    """Create a temporary taskspace path."""
-    return tmp_path / "test_taskspace"
+def mock_project_storage_path(tmp_path):
+    """Create a temporary project storage path."""
+    return tmp_path / "test_project"
 
 
 class TestXAgent:
     """Test XAgent functionality."""
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
-    def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    def test_xagent_initialization(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test XAgent initializes correctly."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
         # Act
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Assert
         assert x.task_id is not None
         assert x.team_config == mock_team_config
-        assert x.taskspace == mock_taskspace
+        assert x.project_storage == mock_project_storage
         assert "test_agent" in x.specialist_agents
         assert x.name == "X"
         assert not x.is_complete
@@ -63,17 +64,17 @@ class TestXAgent:
         mock_register_tools.assert_called_once()
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    async def test_chat_with_simple_text(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test chat with simple text message creates plan but doesn't execute automatically."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Mock the brain's response
         with patch.object(x.brain, 'generate_response') as mock_generate:
@@ -111,17 +112,17 @@ class TestXAgent:
                 assert x.plan.goal == "Test goal"
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    async def test_chat_with_message_object(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test chat with Message object."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         message = Message.user_message("Test with message object")
 
@@ -141,17 +142,17 @@ class TestXAgent:
             assert response.metadata.get("query_type") == "informational"
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    async def test_plan_adjustment_preserves_work(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test that plan adjustment preserves completed work."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Set up existing plan with completed tasks
         x.plan = Plan(
@@ -203,17 +204,17 @@ class TestXAgent:
                 assert response.plan_changes.get("adjustment_type") == "regenerate"
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    async def test_error_handling(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test error handling in chat method."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Mock brain to raise an exception
         with patch.object(x.brain, 'generate_response') as mock_generate:
@@ -228,16 +229,16 @@ class TestXAgent:
             assert "Test error" in response.metadata.get("error", "")
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
-    def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    def test_plan_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test plan summary generation."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Set up plan with mixed statuses
         x.plan = Plan(
@@ -257,16 +258,16 @@ class TestXAgent:
         assert "1/3 completed" in summary
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
-    def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    def test_conversation_summary_generation(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test conversation summary generation."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Add some conversation history
         x.conversation_history = [
@@ -285,24 +286,24 @@ class TestXAgent:
         assert "hi there!" in summary.lower()
 
     @patch('vibex.storage.factory.StorageFactory')
-    @patch('vibex.core.xagent.setup_task_file_logging')
+    @patch('vibex.xagent.setup_task_file_logging')
     @patch('vibex.tool.manager.ToolManager._register_builtin_tools')
     @pytest.mark.asyncio
-    async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_taskspace_path):
+    async def test_compatibility_methods(self, mock_register_tools, mock_setup_logging, mock_storage_factory, mock_team_config, mock_project_storage_path):
         """Test XAgent methods."""
         # Arrange
-        mock_taskspace = Mock()
-        mock_taskspace.get_taskspace_path.return_value = mock_taskspace_path
-        mock_storage_factory.create_taskspace_storage.return_value = mock_taskspace
+        mock_project_storage = Mock()
+        mock_project_storage.get_project_path.return_value = mock_project_storage_path
+        mock_storage_factory.create_project_storage.return_value = mock_project_storage
 
-        x = XAgent(team_config=mock_team_config, taskspace_dir=mock_taskspace_path)
+        x = XAgent(team_config=mock_team_config, project_dir=mock_project_storage_path)
 
         # Test is_complete property
         assert not x.is_complete
 
-        # Test taskspace access
-        taskspace_path = x.taskspace.get_taskspace_path()
-        assert taskspace_path == mock_taskspace_path
+        # Test project_storage access
+        project_path = x.project_storage.get_project_path()
+        assert project_path == mock_project_storage_path
 
         # Test task_id is set
         assert x.task_id is not None

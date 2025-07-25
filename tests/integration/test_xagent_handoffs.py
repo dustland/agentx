@@ -7,10 +7,12 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from pathlib import Path
 import json
 
+from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
+from vibex.core.message import Message
+from vibex.core.task import Task
 from vibex.core.xagent import XAgent
 from vibex.core.config import TeamConfig, AgentConfig, Handoff
-from vibex.core.plan import Plan, PlanItem
-from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
+from vibex.core.plan import Plan
 
 
 class TestXAgentHandoffs:
@@ -24,17 +26,17 @@ class TestXAgentHandoffs:
             agents=[
                 AgentConfig(
                     name="writer",
-                    description="Writes content",
+                    goal="Writes content",
                     tools=["file_write"]
                 ),
                 AgentConfig(
                     name="reviewer",
-                    description="Reviews content",
+                    goal="Reviews content",
                     tools=["file_read", "file_write"]
                 ),
                 AgentConfig(
                     name="editor",
-                    description="Edits content",
+                    goal="Edits content",
                     tools=["file_read", "file_write"]
                 )
             ],
@@ -56,9 +58,9 @@ class TestXAgentHandoffs:
 
     @pytest.fixture
     def mock_taskspace(self, tmp_path):
-        """Create a mock taskspace."""
+        """Create a mock project_storage."""
         taskspace_mock = Mock()
-        taskspace_mock.get_taskspace_path.return_value = tmp_path
+        taskspace_mock.get_project_storage_path.return_value = tmp_path
         taskspace_mock.list_files.return_value = ["draft.md", "notes.txt"]
         taskspace_mock.save_task_history = AsyncMock()
         return taskspace_mock
@@ -66,11 +68,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_xagent_initializes_handoff_evaluator(self, team_config_with_handoffs, mock_taskspace):
         """Test that XAgent properly initializes HandoffEvaluator when handoffs are configured."""
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent') as MockAgent:
+             patch('vibex.core.xagent.Brain'):
 
             # Mock agent creation
             mock_agents = {}
@@ -78,12 +80,12 @@ class TestXAgentHandoffs:
                 mock_agent = Mock()
                 mock_agent.name = agent_config.name
                 mock_agents[agent_config.name] = mock_agent
-                MockAgent.return_value = mock_agent
+                # MockAgent.return_value = mock_agent # This line was removed as per new_code
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_with_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             # Verify handoff evaluator was created
@@ -102,16 +104,16 @@ class TestXAgentHandoffs:
             handoffs=[]  # No handoffs
         )
 
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent'):
+             patch('vibex.core.xagent.Brain'):
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_no_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             # Verify no handoff evaluator was created
@@ -120,11 +122,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_execute_single_task_with_handoff(self, team_config_with_handoffs, mock_taskspace):
         """Test that executing a task evaluates and creates handoffs."""
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent') as MockAgent:
+             patch('vibex.core.xagent.Brain') as MockAgent:
 
             # Setup mock agents
             mock_writer = AsyncMock()
@@ -136,9 +138,9 @@ class TestXAgentHandoffs:
             MockAgent.side_effect = lambda *args, **kwargs: mock_writer
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_with_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             # Override specialist agents to use our mock
@@ -148,11 +150,11 @@ class TestXAgentHandoffs:
             test_plan = Plan(
                 goal="Write and review article",
                 tasks=[
-                    PlanItem(
+                    Task(
                         id="task_1",
                         name="Write draft",
-                        goal="Write the initial draft",
-                        agent="writer",
+                        description="Write the initial draft",
+                        assigned_to="writer",
                         status="pending"
                     )
                 ]
@@ -177,7 +179,7 @@ class TestXAgentHandoffs:
                 # Verify handoff task was added to plan
                 assert len(test_plan.tasks) == 2
                 handoff_task = test_plan.tasks[1]
-                assert handoff_task.agent == "reviewer"
+                assert handoff_task.assigned_to == "reviewer"
                 assert handoff_task.dependencies == ["task_1"]
                 assert "Continue work with reviewer" in handoff_task.name
 
@@ -187,11 +189,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_execute_single_task_no_handoff(self, team_config_with_handoffs, mock_taskspace):
         """Test task execution when no handoff occurs."""
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent') as MockAgent:
+             patch('vibex.core.xagent.Brain') as MockAgent:
 
             # Setup mock agent
             mock_writer = AsyncMock()
@@ -203,9 +205,9 @@ class TestXAgentHandoffs:
             MockAgent.side_effect = lambda *args, **kwargs: mock_writer
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_with_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             xagent.specialist_agents = {"writer": mock_writer}
@@ -214,11 +216,11 @@ class TestXAgentHandoffs:
             test_plan = Plan(
                 goal="Write article",
                 tasks=[
-                    PlanItem(
+                    Task(
                         id="task_1",
                         name="Write draft",
-                        goal="Write the initial draft",
-                        agent="writer",
+                        description="Write the initial draft",
+                        assigned_to="writer",
                         status="pending"
                     )
                 ]
@@ -242,11 +244,11 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_handoff_task_dependencies(self, team_config_with_handoffs, mock_taskspace):
         """Test that handoff tasks have proper dependencies."""
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent') as MockAgent:
+             patch('vibex.core.xagent.Brain') as MockAgent:
 
             mock_writer = AsyncMock()
             mock_writer.name = "writer"
@@ -255,9 +257,9 @@ class TestXAgentHandoffs:
             MockAgent.side_effect = lambda *args, **kwargs: mock_writer
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_with_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             xagent.specialist_agents = {"writer": mock_writer}
@@ -266,18 +268,18 @@ class TestXAgentHandoffs:
             test_plan = Plan(
                 goal="Complex workflow",
                 tasks=[
-                    PlanItem(
+                    Task(
                         id="task_1",
                         name="Research",
-                        goal="Research topic",
-                        agent="writer",
+                        description="Research topic",
+                        assigned_to="writer",
                         status="completed"
                     ),
-                    PlanItem(
+                    Task(
                         id="task_2",
                         name="Write draft",
-                        goal="Write based on research",
-                        agent="writer",
+                        description="Write based on research",
+                        assigned_to="writer",
                         dependencies=["task_1"],
                         status="pending"
                     )
@@ -302,14 +304,14 @@ class TestXAgentHandoffs:
     @pytest.mark.asyncio
     async def test_persist_plan_after_handoff(self, team_config_with_handoffs, mock_taskspace, tmp_path):
         """Test that plan is persisted after adding handoff task."""
-        with patch('vibex.core.xagent.Brain'), \
+        with patch('vibex.core.xagent.Agent'), \
              patch('vibex.core.xagent.ToolManager'), \
              patch('vibex.core.xagent.MessageQueue'), \
              patch('vibex.core.xagent.setup_task_file_logging'), \
-             patch('vibex.core.xagent.Agent') as MockAgent:
+             patch('vibex.core.xagent.Brain') as MockAgent:
 
-            # Setup taskspace to actually save files
-            mock_taskspace.get_taskspace_path.return_value = tmp_path
+            # Setup project_storage to actually save files
+            mock_taskspace.get_project_storage_path.return_value = tmp_path
 
             mock_writer = AsyncMock()
             mock_writer.name = "writer"
@@ -318,9 +320,9 @@ class TestXAgentHandoffs:
             MockAgent.side_effect = lambda *args, **kwargs: mock_writer
 
             xagent = XAgent(
-                task_id="test_task",
+                project_id="test_project",
                 team_config=team_config_with_handoffs,
-                taskspace_dir=mock_taskspace.get_taskspace_path()
+                workspace_dir=mock_taskspace.get_project_storage_path()
             )
 
             xagent.specialist_agents = {"writer": mock_writer}
@@ -328,11 +330,11 @@ class TestXAgentHandoffs:
             test_plan = Plan(
                 goal="Test workflow",
                 tasks=[
-                    PlanItem(
+                    Task(
                         id="task_1",
                         name="Write",
-                        goal="Write content",
-                        agent="writer",
+                        description="Write content",
+                        assigned_to="writer",
                         status="pending"
                     )
                 ]
@@ -348,7 +350,9 @@ class TestXAgentHandoffs:
                 await xagent._execute_single_task(test_plan.tasks[0])
 
                 # Verify plan was saved
-                plan_file = tmp_path / "plan.json"
+                # When workspace_dir is provided, ProjectStorage uses workspace_dir.parent / project_id
+                project_storage_path = xagent.project_storage.get_project_path()
+                plan_file = project_storage_path / "plan.json"
                 assert plan_file.exists()
 
                 # Load and verify saved plan
@@ -356,4 +360,4 @@ class TestXAgentHandoffs:
                     saved_plan_data = json.load(f)
 
                 assert len(saved_plan_data["tasks"]) == 2
-                assert saved_plan_data["tasks"][1]["agent"] == "reviewer"
+                assert saved_plan_data["tasks"][1]["assigned_to"] == "reviewer"

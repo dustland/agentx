@@ -11,7 +11,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from vibex.builtin_tools.research import ResearchTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 async def test_research_file_naming():
@@ -19,10 +19,10 @@ async def test_research_file_naming():
     print("🧪 TESTING RESEARCH FILE NAMING PATTERN")
     print("=" * 60)
     
-    # Create taskspace
+    # Create project_storage
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    research_tool = ResearchTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    research_tool = ResearchTool(taskspace_storage=project_storage)
     
     # Test research with a clear topic
     query = "frontend frameworks trends 2025"
@@ -52,8 +52,8 @@ async def test_research_file_naming():
                 else:
                     print(f"    ❌ Wrong pattern! Expected: research_frontend_frameworks_trends_XX.md")
         
-        # List all files in taskspace to see what was created
-        print("\n📂 All files in taskspace:")
+        # List all files in project_storage to see what was created
+        print("\n📂 All files in project_storage:")
         artifacts_dir = os.path.join(temp_dir, 'artifacts')
         if os.path.exists(artifacts_dir):
             for file in os.listdir(artifacts_dir):
@@ -71,8 +71,8 @@ async def test_multiple_topics():
     print("=" * 60)
     
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    research_tool = ResearchTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    research_tool = ResearchTool(taskspace_storage=project_storage)
     
     topics = [
         "AI integration development workflows",

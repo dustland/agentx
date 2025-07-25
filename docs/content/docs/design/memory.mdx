@@ -1,0 +1,86 @@
+---
+title: "The Persistent Workspace: Memory in Vibe-X"
+description: "Understanding the dual-component memory system in Vibe-X, combining a human-readable taskspace with an AI-friendly semantic memory."
+---
+
+# The Persistent Workspace: Memory in Vibe-X
+
+In VibeX, "memory" is more than just conversation history. It's a foundational pillar of the framework, designed to provide a durable, shared context for both human and AI collaborators. This enables the truly resumable and transparent sessions that are central to the Vibe-X philosophy.
+
+This system is built on a powerful, dual-component model: **The Taskspace** and **The Memory**.
+
+```mermaid
+graph TD
+    subgraph "Persistent Workspace"
+        Taskspace["Taskspace (File System)"]
+        Memory["Memory (Semantic Store)"]
+    end
+
+    subgraph "Collaborators"
+        User["Human User"]
+        Agent["AI Agent"]
+    end
+
+    User -- "Directly Interacts With" --> Taskspace
+    Agent -- "Reads & Writes To" --> Taskspace
+
+    Agent -- "Stores & Retrieves Knowledge From" --> Memory
+    Memory -- "Indexes & References" --> Taskspace
+
+    style User fill:#D6EAF8
+    style Taskspace fill:#E8F8F5
+    style Memory fill:#EBF5FB
+```
+
+## 1. The Taskspace: The Human's Source of Truth
+
+The **Taskspace** is the tangible, human-readable part of the project's memory. It's a standard directory on the file system that contains all the artifacts and auditable records of a project.
+
+**Key Characteristics:**
+
+- **Human-Readable & Navigable**: You can `cd` into it, open it in VS Code, and interact with the files just like any other project directory.
+- **Source of Truth**: It holds the definitive outputs of the project—the source code, the research documents, the generated reports.
+- **Version Controlled**: Every change to the artifacts within the Taskspace is automatically committed to a Git repository, providing a complete, auditable history of the project.
+- **Structured by Default**: VibeX provides a default structure, but it's flexible enough to accommodate any project's needs.
+
+**Example Directory Structure:**
+
+```
+.vibex/projects/proj_abc123/
+├── artifacts/            # All generated files (code, docs, etc.)
+│   ├── src/
+│   │   └── main.py
+│   └── report.md
+├── plan.md               # The human-readable plan
+├── history/
+│   └── messages.jsonl    # Full conversation log
+└── .git/                 # The version control repository
+```
+
+The Taskspace is designed for transparency and human oversight. It's where the work _lives_.
+
+## 2. The Memory: The AI's Long-Term Brain
+
+The **Memory** is the AI-friendly counterpart to the Taskspace. It's a high-performance semantic store (typically a vector database) that acts as the agent team's long-term, associative brain.
+
+**Key Characteristics:**
+
+- **Semantic Retrieval**: Instead of searching by keywords, agents can retrieve information from Memory based on conceptual meaning. For example, an agent can ask, "What were the key decisions made about the authentication system?"
+- **Distilled Knowledge**: The Memory doesn't store every byte of every file. Instead, it stores summaries, key decisions, conversation history, and indexed references back to the full artifacts in the Taskspace.
+- **Contextual Awareness**: It provides the agents with the necessary context to perform their tasks without being overwhelmed by the entire project history. It allows an agent to "remember" relevant past interactions and decisions.
+- **Performance-Optimized**: It's designed for fast lookups, which is crucial for keeping the AI's reasoning process efficient.
+
+The Memory is how the AI _understands_ the work that lives in the Taskspace.
+
+## 3. How They Work Together: The Collaborative Synergy
+
+The power of VibeX's memory system comes from the synergy between the Taskspace and the Memory. They are not independent silos; they work together in a continuous loop.
+
+1.  An **agent** might be tasked with writing a new chapter of a technical document.
+2.  It first queries the **Memory** to understand the context: "Summarize the previous chapter and find the key points about the database schema."
+3.  The **Memory** provides a concise summary and references to the relevant source files in the Taskspace (e.g., `artifacts/db_schema.sql`).
+4.  The agent then reads the full content of `db_schema.sql` from the **Taskspace**.
+5.  After drafting the new chapter, the agent writes the new file (`artifacts/chapter_3.md`) to the **Taskspace**.
+6.  Finally, it stores a summary of the new chapter and any key decisions made during the writing process back into the **Memory** for future reference.
+
+This dual system allows VibeX to get the best of both worlds: the full auditability and human accessibility of a file-based system, and the high-performance, intelligent retrieval of a semantic memory store. This is the architectural foundation that makes true, resumable, and context-aware collaborative sessions possible.

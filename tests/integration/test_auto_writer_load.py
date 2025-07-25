@@ -10,13 +10,15 @@ import sys
 import time
 from typing import List
 import tempfile
+from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from vibex.builtin_tools.web import WebTool
 from vibex.builtin_tools.research import ResearchTool
 from vibex.builtin_tools.file import FileTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
+from vibex.project import start_project, resume_project
 
 
 async def simulate_researcher_agent():
@@ -24,12 +26,12 @@ async def simulate_researcher_agent():
     print("\n🔬 SIMULATING RESEARCHER AGENT")
     print("=" * 60)
     
-    # Create tools with taskspace
+    # Create tools with project_storage
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    web_tool = WebTool(taskspace_storage=taskspace)
-    research_tool = ResearchTool(taskspace_storage=taskspace)
-    file_tool = FileTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    web_tool = WebTool(taskspace_storage=project_storage)
+    research_tool = ResearchTool(taskspace_storage=project_storage)
+    file_tool = FileTool(taskspace_storage=project_storage)
     
     # Heavy URLs like auto_writer uses
     heavy_urls = [
@@ -124,7 +126,7 @@ async def simulate_researcher_agent():
         print(f"\n💥 RESEARCH PHASE CRASHED: {type(e).__name__}: {str(e)}")
         raise
     
-    print("\n📋 Phase 3: File Operations (mimics taskspace saves)")
+    print("\n📋 Phase 3: File Operations (mimics project_storage saves)")
     print("Simulating file writes that happen during research...")
     
     # Simulate file operations
@@ -139,7 +141,7 @@ async def simulate_researcher_agent():
             print(f"  ❌ File write failed: {e}")
     
     print("\n✅ Researcher simulation complete")
-    return taskspace
+    return project_storage
 
 
 async def simulate_full_auto_writer_load():
@@ -154,7 +156,7 @@ async def simulate_full_auto_writer_load():
         
         try:
             # Each step involves heavy parallel operations
-            taskspace = await simulate_researcher_agent()
+            project_storage = await simulate_researcher_agent()
             
             # Brief pause between steps (like agent handoffs)
             await asyncio.sleep(1)
@@ -231,6 +233,47 @@ async def main():
     
     return 0
 
+
+async def test_auto_writer_load_and_resume():
+    """Test auto_writer load and resume functionality."""
+    # --- Setup ---
+    # Use a predefined project ID to ensure we can resume it
+    project_id = "test_auto_writer_load_resume"
+    config_path = Path(__file__).parent.parent.parent / "examples/auto_writer/config/team.yaml"
+
+    # --- Initial Run (to create a project to resume) ---
+    print(f"--- Creating initial project '{project_id}' ---")
+    initial_project = await start_project(
+        goal="This is a test project to be resumed.",
+        config_path=config_path,
+        project_id=project_id,
+    )
+    # Run one step to generate some state
+    await initial_project.step()
+    print("--- Initial project created. ---")
+
+    # --- Test Resumption ---
+    print(f"--- Resuming project '{project_id}' ---")
+    resumed_project = await resume_project(
+        project_id=project_id,
+        config_path=config_path,
+    )
+
+    # --- Verification ---
+    # 1. Check if the project ID is the same
+    assert resumed_project.project_id == project_id, "Resumed project should have the same ID."
+
+    # 2. Check if the initial goal is loaded correctly
+    assert "test project to be resumed" in resumed_project.initial_goal, "Initial goal not loaded correctly."
+
+    # 3. Check if the plan was loaded
+    assert resumed_project.plan is not None, "Plan should be loaded from the resumed project."
+    assert len(resumed_project.plan.tasks) > 0, "Plan should have tasks."
+    
+    # 4. Check if conversation history is loaded (at least the initial prompt)
+    assert len(resumed_project.history.messages) > 0, "Conversation history should not be empty."
+
+    print("✅ Auto-writer load and resume test passed!")
 
 if __name__ == "__main__":
     print("Starting heavy load test in 3 seconds...")

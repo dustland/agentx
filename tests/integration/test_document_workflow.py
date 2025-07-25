@@ -12,7 +12,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 from vibex.builtin_tools.document import DocumentTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 from vibex import start_task
 
 
@@ -20,26 +20,26 @@ class TestDocumentWorkflow:
     """Test the complete document workflow integration."""
 
     @pytest.fixture
-    async def temp_taskspace(self):
-        """Create a temporary taskspace for testing."""
+    async def temp_project_storage(self):
+        """Create a temporary project storage for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        taskspace = TaskspaceStorage(
+        project_storage = ProjectStorage(
             task_id="test_document_workflow",
-            taskspace_path=str(temp_dir)
+            project_path=str(temp_dir)
         )
         
-        yield taskspace
+        yield project_storage
         
         # Cleanup
         shutil.rmtree(temp_dir, ignore_errors=True)
 
     @pytest.fixture
-    def document_tool(self, temp_taskspace):
-        """Create DocumentTool with test taskspace."""
-        return DocumentTool(taskspace_storage=temp_taskspace)
+    def document_tool(self, temp_project_storage):
+        """Create DocumentTool with test project storage."""
+        return DocumentTool(project_storage=temp_project_storage)
 
     @pytest.mark.asyncio
-    async def test_section_merge_workflow(self, document_tool, temp_taskspace):
+    async def test_section_merge_workflow(self, document_tool, temp_project_storage):
         """Test section creation and merging workflow."""
         # Create test sections
         section1 = """# Section 1: Introduction
@@ -217,12 +217,12 @@ Container orchestration platforms simplify deployment.
                 step_count += 1
                 assert response is not None
 
-            # Verify taskspace was created
-            taskspace_path = Path(task.taskspace.get_taskspace_path())
-            assert taskspace_path.exists()
+            # Verify project_storage was created
+            project_path = Path(task.project_storage.get_project_storage_path())
+            assert project_path.exists()
 
             # Check if any artifacts were created
-            artifacts_path = taskspace_path / "artifacts"
+            artifacts_path = project_path / "artifacts"
             if artifacts_path.exists():
                 files = list(artifacts_path.glob("*.md"))
                 # We expect at least some research or planning files to be created

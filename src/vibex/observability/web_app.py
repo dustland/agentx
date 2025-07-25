@@ -68,7 +68,7 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
             "page_title": "Dashboard"
         })
 
-    @app.get("/tasks", response_class=HTMLResponse)
+    @app.get("/projects", response_class=HTMLResponse)
     async def tasks_page(request: Request, monitor: ObservabilityMonitor = Depends(get_monitor_dependency)):
         """Tasks page."""
         recent_tasks = monitor.get_recent_tasks(20)
@@ -135,10 +135,10 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
         """Get dashboard statistics for HTMX updates."""
         return monitor.get_dashboard_data()
 
-    @app.get("/api/task/{task_id}/conversation")
-    async def task_conversation(task_id: str, monitor: ObservabilityMonitor = Depends(get_monitor_dependency)):
+    @app.get("/api/task/{project_id}/conversation")
+    async def task_conversation(project_id: str, monitor: ObservabilityMonitor = Depends(get_monitor_dependency)):
         """Get conversation history for a task."""
-        conversation = monitor.get_task_conversation(task_id)
+        conversation = monitor.get_project_conversation(project_id)
         return {"conversation": conversation}
 
     @app.get("/api/events")
@@ -174,7 +174,7 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
         """Download artifact file."""
         from fastapi.responses import FileResponse
         try:
-            file_path = monitor.storage._get_taskspace_file_path(filename)
+            file_path = monitor.storage._get_projectspace_file_path(filename)
             if file_path.exists():
                 return FileResponse(
                     path=str(file_path),
@@ -186,35 +186,35 @@ def create_web_app(project_path: Optional[str] = None) -> FastAPI:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    @app.get("/api/messages/tasks")
+    @app.get("/api/messages/projects")
     async def get_messages_tasks(monitor: ObservabilityMonitor = Depends(get_monitor_dependency)):
         """Get all tasks for messages interface."""
         tasks = monitor.get_recent_tasks(100)  # Get more tasks for messages
         return {"tasks": tasks}
 
-    @app.get("/api/messages/conversation/{task_id}")
+    @app.get("/api/messages/conversation/{project_id}")
     async def get_messages_conversation(
-        task_id: str,
+        project_id: str,
         monitor: ObservabilityMonitor = Depends(get_monitor_dependency)
     ):
         """Get full conversation for a task."""
-        conversation = monitor.get_task_conversation(task_id)
-        task_summary = monitor.conversation_history.get_task_summary(task_id)
+        conversation = monitor.get_project_conversation(project_id)
+        task_summary = monitor.conversation_history.get_project_summary(project_id)
         return {
-            "task_id": task_id,
+            "project_id": project_id,
             "conversation": conversation,
             "message_count": len(conversation),
             "summary": task_summary
         }
 
-    @app.get("/api/task/{task_id}/summary")
-    async def get_task_summary(
-        task_id: str,
+    @app.get("/api/task/{project_id}/summary")
+    async def get_project_summary(
+        project_id: str,
         monitor: ObservabilityMonitor = Depends(get_monitor_dependency)
     ):
         """Get task summary information."""
-        summary = monitor.conversation_history.get_task_summary(task_id)
-        return {"task_id": task_id, "summary": summary}
+        summary = monitor.conversation_history.get_project_summary(project_id)
+        return {"project_id": project_id, "summary": summary}
 
     @app.get("/api/events/timerange")
     async def get_events_by_timerange(

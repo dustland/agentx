@@ -2,7 +2,7 @@
 Tests for FileTool builtin tool.
 
 These tests define the expected correct behavior for file operations
-within the VibeX framework's taskspace abstraction.
+within the VibeX framework's project_storage abstraction.
 """
 
 import pytest
@@ -10,8 +10,8 @@ import tempfile
 import asyncio
 from pathlib import Path
 from unittest.mock import Mock, patch, AsyncMock, MagicMock
-from vibex.builtin_tools.file import FileTool, create_file_tool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.builtin_tools.file import FileTool
+from vibex.storage.project import ProjectStorage
 from vibex.storage.git_storage import GitArtifactStorage
 from vibex.core.config import TaskConfig
 from vibex.storage.interfaces import StorageResult
@@ -21,7 +21,7 @@ class TestFileToolInitialization:
     """Test file tool initialization."""
 
     def test_file_tool_requires_taskspace_storage(self):
-        """FileTool should require taskspace storage."""
+        """FileTool should require project_storage storage."""
         with pytest.raises(TypeError):
             FileTool()
 
@@ -37,22 +37,22 @@ class TestFileToolWriteOperations:
 
     def setup_method(self):
         """Setup test environment."""
-        self.taskspace = Mock(spec=TaskspaceStorage)
-        self.taskspace.store_artifact = AsyncMock()
-        self.taskspace.get_taskspace_path = Mock(return_value="/test/taskspace")
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.project_storage = Mock(spec=ProjectStorage)
+        self.project_storage.store_artifact = AsyncMock()
+        self.project_storage.get_project_storage_path = Mock(return_value="/test/project_storage")
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     @pytest.mark.asyncio
     async def test_write_file_stores_as_artifact(self):
-        """write_file should store content as artifact through taskspace."""
+        """write_file should store content as artifact through project_storage."""
         # Setup
-        self.taskspace.store_artifact.return_value = StorageResult(success=True, path="artifacts/test.txt")
+        self.project_storage.store_artifact.return_value = StorageResult(success=True, path="artifacts/test.txt")
 
         # Execute
         result = await self.file_tool.write_file("test.txt", "Hello World")
 
         # Verify
-        self.taskspace.store_artifact.assert_called_once_with(
+        self.project_storage.store_artifact.assert_called_once_with(
             name="test.txt",
             content="Hello World",
             content_type="text/plain",
@@ -83,11 +83,11 @@ class TestFileToolWriteOperations:
         ]
 
         for filename, content, expected_type in test_cases:
-            self.taskspace.store_artifact.return_value = StorageResult(success=True, path=f"artifacts/{filename}")
+            self.project_storage.store_artifact.return_value = StorageResult(success=True, path=f"artifacts/{filename}")
 
             result = await self.file_tool.write_file(filename, content)
 
-            self.taskspace.store_artifact.assert_called_with(
+            self.project_storage.store_artifact.assert_called_with(
                 name=filename,
                 content=content,
                 content_type=expected_type,
@@ -105,7 +105,7 @@ class TestFileToolWriteOperations:
     @pytest.mark.asyncio
     async def test_write_file_handles_storage_errors(self):
         """write_file should handle storage errors gracefully."""
-        self.taskspace.store_artifact.side_effect = Exception("Storage failed")
+        self.project_storage.store_artifact.side_effect = Exception("Storage failed")
 
         result = await self.file_tool.write_file("test.txt", "content")
 
@@ -120,22 +120,22 @@ class TestFileToolReadOperations:
 
     def setup_method(self):
         """Setup test environment."""
-        self.taskspace = Mock(spec=TaskspaceStorage)
-        self.taskspace.get_artifact = AsyncMock()
-        self.taskspace.get_taskspace_path = Mock(return_value="/test/taskspace")
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.project_storage = Mock(spec=ProjectStorage)
+        self.project_storage.get_artifact = AsyncMock()
+        self.project_storage.get_project_storage_path = Mock(return_value="/test/project_storage")
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     @pytest.mark.asyncio
     async def test_read_file_retrieves_from_artifacts(self):
-        """read_file should retrieve content from artifacts through taskspace."""
+        """read_file should retrieve content from artifacts through project_storage."""
         # Setup
-        self.taskspace.get_artifact.return_value = "File content"
+        self.project_storage.get_artifact.return_value = "File content"
 
         # Execute
         result = await self.file_tool.read_file("test.txt")
 
         # Verify
-        self.taskspace.get_artifact.assert_called_once_with("test.txt", None)
+        self.project_storage.get_artifact.assert_called_once_with("test.txt", None)
         assert result.success is True
         assert "Contents of test.txt" in result.result and "📄" in result.result
         assert "File content" in result.result
@@ -146,7 +146,7 @@ class TestFileToolReadOperations:
     @pytest.mark.asyncio
     async def test_read_file_not_found(self):
         """read_file should handle file not found gracefully."""
-        self.taskspace.get_artifact.return_value = None
+        self.project_storage.get_artifact.return_value = None
 
         result = await self.file_tool.read_file("nonexistent.txt")
 
@@ -158,7 +158,7 @@ class TestFileToolReadOperations:
     @pytest.mark.asyncio
     async def test_read_file_handles_storage_errors(self):
         """read_file should handle storage errors gracefully."""
-        self.taskspace.get_artifact.side_effect = Exception("Storage error")
+        self.project_storage.get_artifact.side_effect = Exception("Storage error")
 
         result = await self.file_tool.read_file("test.txt")
 
@@ -173,16 +173,16 @@ class TestFileToolListOperations:
 
     def setup_method(self):
         """Setup test environment."""
-        self.taskspace = Mock(spec=TaskspaceStorage)
-        self.taskspace.list_artifacts = AsyncMock()
-        self.taskspace.get_taskspace_path = Mock(return_value="/test/taskspace")
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.project_storage = Mock(spec=ProjectStorage)
+        self.project_storage.list_artifacts = AsyncMock()
+        self.project_storage.get_project_storage_path = Mock(return_value="/test/project_storage")
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     @pytest.mark.asyncio
     async def test_list_files_returns_artifacts(self):
-        """list_files should return list of artifacts from taskspace."""
+        """list_files should return list of artifacts from project_storage."""
         # Setup
-        self.taskspace.list_artifacts.return_value = [
+        self.project_storage.list_artifacts.return_value = [
             {"name": "file1.txt", "size": 100, "created_at": "2024-01-01"},
             {"name": "file2.md", "size": 200, "created_at": "2024-01-02"}
         ]
@@ -191,7 +191,7 @@ class TestFileToolListOperations:
         result = await self.file_tool.list_files()
 
         # Verify
-        self.taskspace.list_artifacts.assert_called_once()
+        self.project_storage.list_artifacts.assert_called_once()
         assert result.success is True
         assert "Taskspace files" in result.result and "📂" in result.result
         assert "file1.txt" in result.result
@@ -203,8 +203,8 @@ class TestFileToolListOperations:
 
     @pytest.mark.asyncio
     async def test_list_files_empty_taskspace(self):
-        """list_files should handle empty taskspace gracefully."""
-        self.taskspace.list_artifacts.return_value = []
+        """list_files should handle empty project_storage gracefully."""
+        self.project_storage.list_artifacts.return_value = []
 
         result = await self.file_tool.list_files()
 
@@ -216,7 +216,7 @@ class TestFileToolListOperations:
     @pytest.mark.asyncio
     async def test_list_files_handles_storage_errors(self):
         """list_files should handle storage errors gracefully."""
-        self.taskspace.list_artifacts.side_effect = Exception("Storage error")
+        self.project_storage.list_artifacts.side_effect = Exception("Storage error")
 
         result = await self.file_tool.list_files()
 
@@ -231,21 +231,21 @@ class TestFileToolDirectoryOperations:
 
     def setup_method(self):
         """Setup test environment."""
-        self.taskspace = Mock(spec=TaskspaceStorage)
-        self.taskspace.file_storage = Mock()
-        self.taskspace.file_storage.create_directory = AsyncMock()
-        self.taskspace.file_storage.list_directory = AsyncMock()
-        self.taskspace.get_taskspace_path = Mock(return_value="/test/taskspace")
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.project_storage = Mock(spec=ProjectStorage)
+        self.project_storage.file_storage = Mock()
+        self.project_storage.file_storage.create_directory = AsyncMock()
+        self.project_storage.file_storage.list_directory = AsyncMock()
+        self.project_storage.get_project_storage_path = Mock(return_value="/test/project_storage")
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     @pytest.mark.asyncio
     async def test_create_directory_uses_taskspace(self):
-        """create_directory should use taskspace file storage."""
-        self.taskspace.file_storage.create_directory.return_value = StorageResult(success=True, path="reports")
+        """create_directory should use project_storage file storage."""
+        self.project_storage.file_storage.create_directory.return_value = StorageResult(success=True, path="reports")
 
         result = await self.file_tool.create_directory("reports")
 
-        self.taskspace.file_storage.create_directory.assert_called_once_with("reports")
+        self.project_storage.file_storage.create_directory.assert_called_once_with("reports")
         assert result.success is True
         assert "Successfully created directory" in result.result
         assert "reports" in result.result
@@ -254,18 +254,18 @@ class TestFileToolDirectoryOperations:
 
     @pytest.mark.asyncio
     async def test_list_directory_uses_taskspace(self):
-        """list_directory should use taskspace file storage."""
+        """list_directory should use project_storage file storage."""
         from vibex.storage.interfaces import FileInfo
         from datetime import datetime
 
-        self.taskspace.file_storage.list_directory.return_value = [
+        self.project_storage.file_storage.list_directory.return_value = [
             FileInfo("file1.txt", 100, datetime.now(), datetime.now()),
             FileInfo("subdir/", 0, datetime.now(), datetime.now())
         ]
 
         result = await self.file_tool.list_directory("reports")
 
-        self.taskspace.file_storage.list_directory.assert_called_once_with("reports")
+        self.project_storage.file_storage.list_directory.assert_called_once_with("reports")
         assert result.success is True
         assert "file1.txt" in result.result
         assert "subdir/" in result.result
@@ -274,20 +274,20 @@ class TestFileToolDirectoryOperations:
 
 
 class TestFileToolTaskspaceSummary:
-    """Test taskspace summary functionality."""
+    """Test project_storage summary functionality."""
 
     def setup_method(self):
         """Setup test environment."""
-        self.taskspace = Mock(spec=TaskspaceStorage)
-        self.taskspace.get_taskspace_summary = AsyncMock()
-        self.taskspace.get_taskspace_path = Mock(return_value="/test/taskspace")
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.project_storage = Mock(spec=ProjectStorage)
+        self.project_storage.get_project_storage_summary = AsyncMock()
+        self.project_storage.get_project_storage_path = Mock(return_value="/test/project_storage")
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     @pytest.mark.asyncio
-    async def test_get_taskspace_summary_delegates_to_taskspace(self):
-        """get_taskspace_summary should delegate to taskspace storage."""
+    async def test_get_project_storage_summary_delegates_to_taskspace(self):
+        """get_project_storage_summary should delegate to project_storage storage."""
         summary_data = {
-            "taskspace_path": "/test/taskspace",
+            "project_path": "/test/project_storage",
             "total_files": 5,
             "total_size_bytes": 1024,
             "total_artifacts": 3,
@@ -301,46 +301,47 @@ class TestFileToolTaskspaceSummary:
             ]
         }
 
-        self.taskspace.get_taskspace_summary.return_value = summary_data
+        self.project_storage.get_project_storage_summary.return_value = summary_data
 
-        result = await self.file_tool.get_taskspace_summary()
+        result = await self.file_tool.get_project_storage_summary()
 
-        self.taskspace.get_taskspace_summary.assert_called_once()
+        self.project_storage.get_project_storage_summary.assert_called_once()
         assert result.success is True
         assert "Taskspace Summary" in result.result and "📊" in result.result
-        assert "/test/taskspace" in result.result
+        assert "/test/project_storage" in result.result
         assert "total_files" in result.result
         assert result.metadata == summary_data
 
 
-class TestFileToolFactory:
-    """Test file tool factory functions."""
-
-    def test_create_file_tool_function_creates_correct_instance(self):
-        """create_file_tool should create FileTool with correct taskspace path."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = temp_dir
-
-            file_tool = create_file_tool(taskspace_path)
-
-            assert isinstance(file_tool, FileTool)
-            assert file_tool.taskspace is not None
-            assert str(file_tool.taskspace.get_taskspace_path()) == taskspace_path
-
-    def test_create_file_tool_function_with_task_config(self):
-        """create_file_tool should work with taskspace path."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = temp_dir
-
-            file_tool = create_file_tool(taskspace_path)
-
-            assert isinstance(file_tool, FileTool)
-            assert file_tool.taskspace is not None
-
-            # Should have required tool methods
-            assert hasattr(file_tool, 'write_file')
-            assert hasattr(file_tool, 'read_file')
-            assert hasattr(file_tool, 'list_files')
+# TestFileToolFactory class removed - create_file_tool function no longer exists
+# class TestFileToolFactory:
+#     """Test file tool factory functions."""
+#
+#     def test_create_file_tool_function_creates_correct_instance(self):
+#         """create_file_tool should create FileTool with correct project_storage path."""
+#         with tempfile.TemporaryDirectory() as temp_dir:
+#             project_path = temp_dir
+#
+#             file_tool = create_file_tool(project_path)
+#
+#             assert isinstance(file_tool, FileTool)
+#             assert file_tool.project_storage is not None
+#             assert str(file_tool.project_storage.get_project_storage_path()) == project_path
+#
+#     def test_create_file_tool_function_with_task_config(self):
+#         """create_file_tool should work with project_storage path."""
+#         with tempfile.TemporaryDirectory() as temp_dir:
+#             project_path = temp_dir
+#
+#             file_tool = create_file_tool(project_path)
+#
+#             assert isinstance(file_tool, FileTool)
+#             assert file_tool.project_storage is not None
+#
+#             # Should have required tool methods
+#             assert hasattr(file_tool, 'write_file')
+#             assert hasattr(file_tool, 'read_file')
+#             assert hasattr(file_tool, 'list_files')
 
 
 # Integration tests moved to tests/integration/test_file_tool_integration.py

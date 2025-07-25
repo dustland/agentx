@@ -1,14 +1,13 @@
 export default {
   index: {
-    display: 'hidden',
+    display: "hidden",
   },
-  'framework-comparison': 'Framework Comparison',
-  'vibe-x': 'Vibe-X',
-  'system-architecture': 'System Architecture',
-  'orchestration': 'Orchestration System',
-  'tool-execution': 'Tool Execution',
-  'communication': 'Agent Communication',
-  'multi-tenant-security': 'Multi-Tenant Security',
-  'memory-system': 'Memory System',
-  'taskspace': 'Taskspace System'
+  "vibe-x": "The Vibe-X Philosophy",
+  "system-architecture": "System Architecture",
+  "project-lifecycle": "The Collaborative Loop",
+  "framework-comparison": "Framework Comparison",
+  "communication": "Communication Model",
+  "memory": "Persistent Workspace & Memory",
+  "tool-execution": "Tool Execution & Security",
+  "security": "Security & Multi-Tenancy"
 }

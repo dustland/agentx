@@ -9,7 +9,7 @@ from pathlib import Path
 from vibex.core.agent import Agent
 from vibex.core.brain import Brain
 from vibex.core.config import AgentConfig
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 class TestWriterMerge:
@@ -32,10 +32,10 @@ class TestWriterMerge:
     
     @pytest.fixture
     def mock_taskspace(self, tmp_path):
-        """Create mock taskspace with section files."""
-        taskspace_dir = tmp_path / "test_taskspace"
-        taskspace_dir.mkdir()
-        artifacts_dir = taskspace_dir / "artifacts"
+        """Create mock project_storage with section files."""
+        project_dir = tmp_path / "test_taskspace"
+        project_dir.mkdir()
+        artifacts_dir = project_dir / "artifacts"
         artifacts_dir.mkdir()
         
         # Create test section files
@@ -49,11 +49,11 @@ class TestWriterMerge:
         for filename, content in section_files:
             (artifacts_dir / filename).write_text(content)
         
-        taskspace = TaskspaceStorage(
-            task_id="test_task",
-            taskspace_path=taskspace_dir
+        project_storage = ProjectStorage(
+            project_id="test_project",
+            project_path=project_dir
         )
-        return taskspace
+        return project_storage
     
     @pytest.mark.asyncio
     async def test_writer_discovers_section_files(self, writer_config, mock_taskspace):
@@ -71,7 +71,7 @@ class TestWriterMerge:
             # Create writer agent
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(taskspace=mock_taskspace)
+                task_config=Mock(project_storage=mock_taskspace)
             )
             
             # Mock list_files tool to return section files
@@ -114,7 +114,7 @@ class TestWriterMerge:
             # Create writer agent
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(taskspace=mock_taskspace)
+                task_config=Mock(project_storage=mock_taskspace)
             )
             
             # Track tool calls
@@ -183,7 +183,7 @@ class TestWriterMerge:
             
             writer = Agent(
                 config=writer_config,
-                task_config=Mock(taskspace=mock_taskspace)
+                task_config=Mock(project_storage=mock_taskspace)
             )
             
             processed_files = []

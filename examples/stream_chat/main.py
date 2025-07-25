@@ -4,8 +4,7 @@ import sys
 import argparse
 import time
 from pathlib import Path
-from vibex.core.xagent import XAgent
-from vibex.config.team_loader import load_team_config
+from vibex import VibeX
 from vibex.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -21,7 +20,7 @@ class Colors:
     END = '\033[0m'
     BOLD = '\033[1m'
 
-async def stream_response(x: XAgent, message: str, show_streaming: bool = False, auto_execute: bool = False):
+async def stream_response(x: VibeX, message: str, show_streaming: bool = False, auto_execute: bool = False):
     """Send a message and optionally show streaming progress."""
     if show_streaming:
         print(f"{Colors.CYAN}X: {Colors.END}", end='', flush=True)
@@ -32,31 +31,25 @@ async def stream_response(x: XAgent, message: str, show_streaming: bool = False,
         
         # Mock streaming display (since we can't directly access chunks from here)
         # In a real implementation, you'd hook into the streaming events
-        response = await x.chat(message)
-        
-        # Show the complete response
-        print(f"{Colors.YELLOW}{response.text}{Colors.END}")
+        response = ""
+        async for chunk in x.stream_chat(message):
+            print(f"{Colors.YELLOW}{chunk}{Colors.END}", end="", flush=True)
+            response += chunk
         
         elapsed = time.time() - start_time
-        print(f"{Colors.GREEN}✓ Response completed in {elapsed:.2f}s{Colors.END}")
+        print(f"\n{Colors.GREEN}✓ Response completed in {elapsed:.2f}s{Colors.END}")
     else:
         # Simple response without streaming visualization
         print(f"{Colors.CYAN}X: {Colors.END}", end='', flush=True)
         response = await x.chat(message)
-        print(response.text)
-    
-    # Show additional info if available
-    if response.preserved_steps:
-        print(f"  {Colors.MAGENTA}(Preserved {len(response.preserved_steps)} completed steps){Colors.END}")
-    if response.regenerated_steps:
-        print(f"  {Colors.MAGENTA}(Regenerated {len(response.regenerated_steps)} steps){Colors.END}")
+        print(response)
     
     # Auto-execute plan if created and auto_execute is True
-    if auto_execute and x.plan and response.metadata.get('execution_type') == 'plan_created':
+    if auto_execute and x.plan:
         print(f"\n{Colors.BLUE}🚀 Auto-executing plan...{Colors.END}\n")
         
         # Execute the plan step by step
-        while not x.is_complete:
+        while not x.is_complete():
             step_start = time.time()
             print(f"{Colors.YELLOW}Executing next step...{Colors.END}")
             
@@ -65,6 +58,9 @@ async def stream_response(x: XAgent, message: str, show_streaming: bool = False,
             # Clean up and display step result
             if step_result:
                 # Remove excessive newlines and format nicely
+                if isinstance(step_result, list):
+                    step_result = "\n".join(map(str, step_result))
+                
                 lines = step_result.strip().split('\n')
                 for line in lines:
                     if line.strip():
@@ -83,7 +79,7 @@ async def stream_response(x: XAgent, message: str, show_streaming: bool = False,
                 print(f"{Colors.GREEN}  (Step completed in {step_elapsed:.2f}s){Colors.END}\n")
             
             # Check if we should continue
-            if "All tasks completed successfully" in step_result or "Task execution halted" in step_result:
+            if isinstance(step_result, str) and ("All tasks completed successfully" in step_result or "Task execution halted" in step_result):
                 break
     
     return response
@@ -109,16 +105,28 @@ Examples:
   # Auto-execute with streaming
   python main.py --message "Write a blog post about AI" --stream --auto-execute
 
-  # Create a new task with custom ID
-  python main.py --task-id my-task-123 --message "Hello!"
+  # Create a new project with custom ID
+  python main.py --project_id my-project-123 --message "Hello!"
 
-  # Resume an existing task
-  python main.py --resume .vibex/tasks/abc123 --message "Continue our conversation"
+  # Resume an existing project
+  python main.py --project_id abc123 --message "Continue our conversation"
 """
     )
     
-    parser.add_argument('-m', '--message', 
-                        help='Single message to send (exits after response)')
+    parser.add_argument(
+        "-i",
+        "--project_id",
+        type=str,
+        default=None,
+        help="Resume an existing project with the given ID.",
+    )
+    parser.add_argument(
+        "-m",
+        "--message",
+        type=str,
+        default="Research the 'RAG vs Fine-tuning' debate and write a blog post.",
+        help="The message to send to the agent team.",
+    )
     parser.add_argument('-s', '--stream', 
                         action='store_true',
                         help='Show streaming progress (for single message mode)')
@@ -153,30 +161,27 @@ Examples:
     if not args.quiet:
         print(f"{Colors.BOLD}{Colors.CYAN}🤖 VibeX Simple Chat{Colors.END}")
         print(f"Config: {config_path}")
-        if args.task_id:
-            print(f"Task ID: {args.task_id}")
+        if args.project_id:
+            print(f"Project ID: {args.project_id}")
         if args.resume:
             print(f"Resuming from: {args.resume}")
         print()
 
-    # Initialize XAgent
+    # Initialize VibeX
     try:
-        team_config = load_team_config(str(config_path))
-        
-        kwargs = {'team_config': team_config}
-        if args.task_id:
-            kwargs['task_id'] = args.task_id
-        if args.resume:
-            kwargs['taskspace_dir'] = Path(args.resume)
-            
-        x = XAgent(**kwargs)
+        x = await VibeX.start(
+            project_id=args.project_id,
+            goal=args.message,
+            config_path=str(config_path),
+            workspace_dir=Path(args.resume) if args.resume else None,
+        )
         
         if not args.quiet:
-            print(f"{Colors.GREEN}✓ XAgent initialized (Task ID: {x.task_id}){Colors.END}")
+            print(f"{Colors.GREEN}✓ VibeX initialized (Project ID: {x.project_id}){Colors.END}")
             print()
         
     except Exception as e:
-        print(f"{Colors.RED}❌ Failed to initialize XAgent: {e}{Colors.END}")
+        print(f"{Colors.RED}❌ Failed to initialize VibeX: {e}{Colors.END}")
         logger.error(f"Initialization failed: {e}", exc_info=True)
         sys.exit(1)
 
@@ -189,8 +194,8 @@ Examples:
             await stream_response(x, args.message, args.stream, args.auto_execute)
             
             if not args.quiet:
-                print(f"\n{Colors.GREEN}✓ Task completed successfully{Colors.END}")
-                print(f"Task data saved to: .vibex/tasks/{x.task_id}/")
+                print(f"\n{Colors.GREEN}✓ Project completed successfully{Colors.END}")
+                print(f"Project data saved to: {x.workspace.get_path()}")
         except Exception as e:
             print(f"{Colors.RED}❌ Error: {e}{Colors.END}")
             logger.error(f"Chat failed: {e}", exc_info=True)
@@ -214,15 +219,15 @@ Examples:
                 elif user_input == '/help':
                     print(f"{Colors.CYAN}Available commands:{Colors.END}")
                     print("  /help    - Show this help")
-                    print("  /status  - Show current task status")
+                    print("  /status  - Show current project status")
                     print("  /plan    - Show current plan (if any)")
                     print("  /clear   - Clear screen")
                     print("  quit/q   - Exit the chat")
                     continue
                 elif user_input == '/status':
-                    print(f"Task ID: {x.task_id}")
+                    print(f"Project ID: {x.project_id}")
                     print(f"Has plan: {'Yes' if x.plan else 'No'}")
-                    print(f"Is complete: {'Yes' if x.is_complete else 'No'}")
+                    print(f"Is complete: {'Yes' if x.is_complete() else 'No'}")
                     continue
                 elif user_input == '/plan':
                     if x.plan:
@@ -252,7 +257,7 @@ Examples:
         
         if not args.quiet:
             print(f"\n{Colors.GREEN}Chat session ended.{Colors.END}")
-            print(f"Task data saved to: .vibex/tasks/{x.task_id}/")
+            print(f"Project data saved to: {x.workspace.get_path()}")
 
 if __name__ == "__main__":
     try:

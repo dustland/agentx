@@ -408,7 +408,7 @@ class SynthesisResult(BaseModel):
 
 class MemoryContext(BaseModel):
     """Context for memory retrieval and injection."""
-    task_id: str
+    project_id: str
     agent_name: str
     query: str
     max_memories: int = 10

@@ -1,299 +1,86 @@
-# Getting Started
+import { Callout } from "nextra/components";
+import { Link } from "nextra/components";
 
-VibeX is a Python framework for building multi-agent AI systems. Get started with these three progressive examples.
+# Getting Started with VibeX
+
+Welcome to VibeX! This guide will walk you through the basics of setting up your first multi-agent team.
 
 ## Installation
+
+First, make sure you have Python 3.8+ installed. Then, you can install VibeX using pip:
 
 ```bash
 pip install vibex
 ```
 
-## 1. Single Agent (Simple Chat)
+## Your First Agent Team
 
-Let's start with the simplest possible VibeX setup - a single chat agent.
+Let's create a simple agent team with a writer and a reviewer.
 
-### Configuration
+### 1. Configure Your Team
 
-Create `team.yaml`:
+Create a `team.yaml` file to define your agents:
 
 ```yaml
-name: "simple_chat"
-description: "A simple chat example with assistant"
-
+# team.yaml
 agents:
-  - name: "assistant"
-    description: "Helpful AI assistant"
-    prompt_template: "prompts/assistant.md"
-
-execution:
-  mode: "autonomous"
-  initial_agent: "assistant"
-  max_rounds: 10
-  timeout_seconds: 300
-
-memory:
-  enabled: false
+  - name: writer
+    description: "A professional writer who creates high-quality content."
+    prompt_file: "writer.md"
+  - name: reviewer
+    description: "A meticulous reviewer who checks for clarity and accuracy."
+    prompt_file: "reviewer.md"
 ```
 
-### Agent Prompt
+### 2. Create Agent Prompts
 
-Create `prompts/assistant.md`:
+Create the prompt files for your agents:
 
 ```markdown
-# Helpful Assistant
+# writer.md
 
-You are a helpful AI assistant. Your goals:
-
-- Answer questions clearly and accurately
-- Be friendly and professional
-- Use web search when you need current information
-- Remember important details from our conversation
-
-Always be helpful and honest about what you know and don't know.
+You are a professional writer. Your task is to create a well-structured and engaging article based on the user's request.
 ```
 
-### Python Code
+```markdown
+# reviewer.md
 
-Create `main.py`:
+You are a meticulous reviewer. Your task is to review the writer's work for clarity, accuracy, and overall quality. Provide feedback for improvement.
+```
+
+### 3. Run Your Team
+
+Now, you can use VibeX to run your agent team. Create a Python script:
 
 ```python
-#!/usr/bin/env python3
 import asyncio
-from pathlib import Path
-from vibex.core.xagent import XAgent
-from vibex.config.team_loader import load_team_config
+from vibex import XAgent
 
 async def main():
-    config_path = Path(__file__).parent / "config" / "team.yaml"
+    # Start a new project
+    x = await XAgent.start(
+        goal="Write a short blog post about the benefits of remote work.",
+        config_path="team.yaml"
+    )
 
-    print("Chat started! Type 'quit' or 'q' to exit.")
-
-    # Initialize XAgent for chat
-    print("Initializing X...")
-    team_config = load_team_config(str(config_path))
-    x = XAgent(team_config=team_config)
-
-    # Start the conversation loop
-    while True:
-        user_input = input("You: ").strip()
-        if user_input.lower() in ['quit', 'q']:
-            break
-
-        # Chat with X
-        print("X: ", end="", flush=True)
-        response = await x.chat(user_input)
-        print(response.text)
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Environment Setup
-
-Set your API key:
-
-```bash
-export DEEPSEEK_API_KEY="your-api-key-here"
-```
-
-### Run It
-
-```bash
-python main.py
-```
-
-🎉 **Result:** You now have a working chat agent! This demonstrates the core VibeX conversational interface.
-
----
-
-## 2. Multiple Agents with Tools (Auto Writer)
-
-Now let's see the real power of VibeX - multiple specialized agents working together with tools.
-
-### Configuration
-
-Create `team.yaml`:
-
-```yaml
-name: "AutoWriter Production Team"
-description: "A professional multi-agent system that produces superior, consulting-quality HTML reports"
-
-# Enhanced orchestrator for multi-agent coordination
-orchestrator:
-  max_rounds: 50
-  timeout: 1800
-
-# All agents are presets from VibeX framework
-agents:
-  - "researcher" # Gathers and synthesizes rigorous, evidence-based research
-  - "writer" # Transforms research into clear, persuasive narrative
-  - "web_designer" # Architects the final, interactive HTML experience
-  - "reviewer" # Provides final, uncompromising quality assurance
-
-# Define how agents hand off work to each other
-handoffs:
-  - from_agent: "researcher"
-    to_agent: "writer"
-    condition: "When research is complete and writing is needed"
-  - from_agent: "writer"
-    to_agent: "web_designer"
-    condition: "When the written content is complete and web design is needed"
-  - from_agent: "web_designer"
-    to_agent: "reviewer"
-    condition: "When the web page is complete and review is needed"
-```
-
-### Python Code
-
-Create `main.py`:
-
-```python
-#!/usr/bin/env python3
-import asyncio
-from pathlib import Path
-from vibex import start_task
-
-async def main():
-    # Get the absolute path to the configuration file
-    script_dir = Path(__file__).parent
-    config_path = script_dir / "config" / "team.yaml"
-
-    # The user's goal for the task
-    prompt = "Generate a comprehensive and visually stunning report on the key trends shaping web development in 2025. The report must be an interactive HTML page, covering topics like new frontend frameworks, backend technologies, AI integration in development, and modern UX/UI design paradigms. The final output must be professional, polished, and suitable for a C-suite audience."
-
-    print("🚀 AutoWriter - Starting comprehensive report generation...")
-    print(f"📋 Task: {prompt[:100]}...")
-    print("-" * 80)
-
-    # Start the task with XAgent - creates a conversational interface
-    x = await start_task(prompt, str(config_path))
-
-    print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
-    print("-" * 80)
-
-    # Execute the task autonomously
-    print("🤖 X: Starting the comprehensive report generation...")
-    while not x.is_complete:
+    # Autonomously execute the project
+    while not x.is_complete():
         response = await x.step()
-        print(f"🤖 X: {response[:200]}...")
-        print("-" * 40)
+        print(response)
 
-    print("\n✅ TASK COMPLETE")
-    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
-    print(f"📋 Task ID: {x.task_id}")
-
-    # Check for artifacts in the taskspace
-    taskspace_path = x.taskspace.get_taskspace_path()
-    artifacts_path = taskspace_path / "artifacts"
-
-    if artifacts_path.exists():
-        artifact_files = list(artifacts_path.glob("*"))
-        if artifact_files:
-            print(f"📄 Generated artifacts:")
-            for artifact in artifact_files:
-                print(f"   - {artifact.name}")
-
-    print(f"\n🔗 Full taskspace path: {taskspace_path}")
-    print("📁 Check the taskspace directory for the generated report and artifacts.")
-
-    # Demonstrate conversational interaction
-    print("\n💬 You can also chat with X to modify the report:")
-    print("   Example: await x.chat('Make the report more visual with charts')")
-    print("   Example: await x.chat('Add a section about security trends')")
+    print("Project completed!")
 
 if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### Run It
+<Callout type="info">
+  When you run this script, VibeX will orchestrate the writer and reviewer
+  agents to collaboratively create and refine the blog post.
+</Callout>
 
-```bash
-python main.py
-```
+## What's Next?
 
-🎉 **Result:** You now have a complete multi-agent system that:
-
-- **Researcher** gathers comprehensive information using web search
-- **Writer** creates compelling content from research
-- **Web Designer** builds professional HTML with interactive features
-- **Reviewer** ensures quality and polish
-- **Orchestrator** coordinates the entire workflow automatically
-
-The agents work together seamlessly, each using their specialized tools and capabilities.
-
----
-
-## 3. What's More
-
-Now that you've seen both single and multi-agent systems, here are your next steps:
-
-### 🎯 Choose Your Path
-
-**For Beginners:**
-
-- [Bootstrap Tutorial](./tutorials/0-bootstrap) - Use the project wizard to create custom workflows
-- [Configuration Guide](./tutorials/4-configuration) - Learn how to organize complex projects
-
-**For Builders:**
-
-- [Custom Tools Tutorial](./tutorials/3-custom-tools) - Create your own agent capabilities
-- [Multi-Agent Tutorial](./tutorials/2-multi-agent) - Design complex team workflows
-
-**For Advanced Users:**
-
-- [System Architecture](./design/system-architecture) - Understand how VibeX works internally
-- [API Reference](./api/core) - Complete technical documentation
-
-### 🚀 Working Examples
-
-All examples are in the [examples directory](https://github.com/dustland/vibex/tree/main/examples):
-
-- **simple_chat**: The single agent example above
-- **auto_writer**: The multi-agent example above
-- **simple_research**: Research workflow with web search
-- **tool_chat**: Agent with custom weather tools
-- **simple_team**: Writer/reviewer collaboration
-
-### 🛠️ Project Ideas
-
-**Single Agent Projects:**
-
-- Personal research assistant
-- Code review bot
-- Content summarizer
-- Q&A system
-
-**Multi-Agent Projects:**
-
-- Content creation pipeline (research → write → edit → publish)
-- Software development team (plan → code → test → deploy)
-- Business analysis workflow (research → analyze → report → present)
-- Customer support system (classify → resolve → escalate)
-
-### 🎯 Quick Start Commands
-
-```bash
-# Create a new project with the wizard
-vibex init
-
-# Clone and run examples
-git clone https://github.com/dustland/vibex.git
-cd vibex/examples/simple_chat
-python main.py
-
-# Or try the multi-agent example
-cd ../auto_writer
-python main.py
-```
-
-### 🤝 Get Help
-
-- **Documentation**: [API Reference](./api/core)
-- **Examples**: [Working Examples](https://github.com/dustland/vibex/tree/main/examples)
-- **Community**: [GitHub Discussions](https://github.com/dustland/vibex/discussions)
-- **Issues**: [GitHub Issues](https://github.com/dustland/vibex/issues)
-
----
-
-**Ready to build something amazing?** Start with the [Bootstrap Tutorial](./tutorials/0-bootstrap) to create your first custom multi-agent system! 🚀
+- **Explore the Core Concepts**: Learn about Agents, Tools, and the VibeX architecture in the [Design Principles](/docs/design/design-principles) section.
+- **Build Custom Tools**: Extend your agents' capabilities by creating your own [custom tools](/docs/reference/tools).
+- **Check out the Examples**: See more advanced use cases in the `examples` directory of the VibeX repository.

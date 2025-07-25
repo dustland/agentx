@@ -13,42 +13,43 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChat } from "@/hooks/use-chat";
-import { useTask } from "@/hooks/use-task";
+import { useProject } from "@/hooks/use-project";
 import { Loader2, Send, Zap, MessageSquare, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function HooksTestPage() {
-  const [taskId, setTaskId] = useState<string>("");
+  const [projectId, setProjectId] = useState<string>("");
   const [customMessage, setCustomMessage] = useState<string>(
     "Tell me a joke about programming in exactly 3 sentences."
   );
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [streamEvents, setStreamEvents] = useState<any[]>([]);
 
-  // Only use hooks when we have a valid taskId
-  const taskHook = useTask(taskId || "dummy-task-id");
+  // Only use hooks when we have a valid projectId
+  const projectHook = useProject(projectId || "dummy-task-id");
   const chatHook = useChat({
-    taskId: taskId || "dummy-task-id",
+    taskId: projectId || "dummy-task-id",
     onError: (error) => console.error("Chat error:", error),
   });
 
-  // Disable hooks when no taskId
-  const isHooksActive = !!taskId;
+  // Disable hooks when no projectId
+  const isHooksActive = !!projectId;
 
   // Track streaming events from chat hook
   useEffect(() => {
-    if (!taskId || taskId === "dummy-task-id") return;
+    if (!projectId || projectId === "dummy-task-id") return;
 
-    console.log("[TEST] Setting up monitoring for task:", taskId);
+    console.log("[TEST] Setting up monitoring for project:", projectId);
 
     // The useTask hook already handles subscriptions internally
     // We can track messages and streaming state through the chat hook
-    
+
     return () => {
       console.log("[TEST] Cleaning up monitoring");
-      taskHook.stop();
+      projectHook.stop();
     };
-  }, [taskId, taskHook]);
+  }, [projectId, projectHook]);
 
   // Track message changes for streaming events
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function HooksTestPage() {
     }
   }, [chatHook.messages]);
 
-  const createTestTask = async () => {
+  const createTestProject = async () => {
     setIsCreatingTask(true);
     try {
       // Directly call the backend API with a test user ID
@@ -82,11 +83,11 @@ export default function HooksTestPage() {
       }
 
       const data = await response.json();
-      setTaskId(data.task_id);
+      setProjectId(data.task_id);
       setStreamEvents([]);
     } catch (error) {
       console.error("Failed to create task:", error);
-      alert(
+      toast(
         "Failed to create task. Please make sure the backend is running on http://localhost:7770"
       );
     } finally {
@@ -95,9 +96,9 @@ export default function HooksTestPage() {
   };
 
   const sendTestMessage = async () => {
-    if (!taskId || !customMessage.trim()) return;
+    if (!projectId || !customMessage.trim()) return;
     console.log("[TEST] Sending message:", customMessage);
-    console.log("[TEST] Task ID:", taskId);
+    console.log("[TEST] Project ID:", projectId);
     setStreamEvents([]);
 
     try {
@@ -258,7 +259,7 @@ export default function HooksTestPage() {
       </div>
 
       {/* Setup */}
-      {!taskId && (
+      {!projectId && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Setup Test Environment</CardTitle>
@@ -268,7 +269,7 @@ export default function HooksTestPage() {
           </CardHeader>
           <CardContent>
             <Button
-              onClick={createTestTask}
+              onClick={createTestProject}
               disabled={isCreatingTask}
               size="lg"
               className="w-full"
@@ -289,21 +290,21 @@ export default function HooksTestPage() {
         </Card>
       )}
 
-      {taskId && (
+      {projectId && (
         <>
           {/* Current Task Info */}
           <div className="mb-6 flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div>
               <span className="text-sm text-muted-foreground">
-                Test Task ID:{" "}
+                Test Project ID:{" "}
               </span>
-              <code className="font-mono text-sm">{taskId}</code>
+              <code className="font-mono text-sm">{projectId}</code>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
-                setTaskId("");
+                setProjectId("");
                 setStreamEvents([]);
               }}
             >
@@ -350,9 +351,7 @@ export default function HooksTestPage() {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    setCustomMessage(
-                      "Tell me a short joke about debugging."
-                    )
+                    setCustomMessage("Tell me a short joke about debugging.")
                   }
                 >
                   Joke

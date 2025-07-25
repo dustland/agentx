@@ -153,11 +153,11 @@ class OrchestratorConfig(BaseModel):
             timeout=120       # Reasonable timeout for complex planning
         )
 
-class TaskConfig(BaseModel):
-    """Task-specific configuration for execution control."""
+class ProjectConfig(BaseModel):
+    """Project-specific configuration for execution control."""
     mode: str = "autonomous"  # "autonomous", "step_through"
     max_rounds: int = 10  # Maximum conversation rounds - default to 10 for most use cases
-    timeout_seconds: int = 300  # Task timeout
+    timeout_seconds: int = 300  # Project timeout
     initial_agent: Optional[str] = None  # Initial agent to start with
     step_through_enabled: bool = False
     max_steps: Optional[int] = None
@@ -179,14 +179,14 @@ class TeamConfig(BaseModel):
     """Configuration for a team of agents."""
     name: str
     description: str = ""
-    output_dir: str = ".vibex/tasks"
+    output_dir: str = ".vibex/projects"
     agents: List[AgentConfig] = Field(default_factory=list)
     handoffs: List[Handoff] = Field(default_factory=list)
     collaboration_patterns: List[CollaborationPattern] = Field(default_factory=list)
     tools: List[ToolConfig] = Field(default_factory=list)
     guardrail_policies: List[GuardrailPolicy] = Field(default_factory=list)
     memory: MemoryConfig = Field(default_factory=MemoryConfig)
-    execution: TaskConfig = Field(default_factory=TaskConfig)
+    execution: ProjectConfig = Field(default_factory=ProjectConfig)
     orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
     deployment_config: Dict[str, Any] = Field(default_factory=dict)
 

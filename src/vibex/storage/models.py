@@ -95,7 +95,7 @@ class Artifact(BaseModel):
     version: int = 1
 
     # Context metadata
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     agent_name: Optional[str] = None
     tool_name: Optional[str] = None
 
@@ -118,7 +118,7 @@ class Artifact(BaseModel):
             "updated_at": self.updated_at.isoformat(),
             "created_by": self.created_by,
             "version": self.version,
-            "task_id": self.task_id,
+            "project_id": self.project_id,
             "agent_name": self.agent_name,
             "tool_name": self.tool_name,
             "metadata": self.metadata,
@@ -219,9 +219,9 @@ class StorageBackend(ABC):
 # WORKSPACE MODELS
 # ============================================================================
 
-class TaskspaceConfig(BaseModel):
-    """Configuration for a taskspace."""
-    taskspace_id: str = Field(default_factory=lambda: f"ws_{generate_short_id()}")
+class ProjectConfig(BaseModel):
+    """Configuration for a project workspace."""
+    project_id: str = Field(default_factory=lambda: f"proj_{generate_short_id()}")
     name: str
     path: str
     description: Optional[str] = None
@@ -230,7 +230,7 @@ class TaskspaceConfig(BaseModel):
     backend: StorageBackendType = StorageBackendType.LOCAL
     backend_config: Dict[str, Any] = Field(default_factory=dict)
 
-    # Taskspace settings
+    # Project settings
     auto_commit: bool = True
     auto_sync: bool = False
     max_size_mb: Optional[int] = None
@@ -246,9 +246,9 @@ class TaskspaceConfig(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class TaskspaceState(BaseModel):
-    """Current state of a taskspace."""
-    taskspace_id: str
+class ProjectState(BaseModel):
+    """Current state of a project workspace."""
+    project_id: str
     total_artifacts: int = 0
     total_size_bytes: int = 0
     last_activity: Optional[datetime] = None
@@ -386,7 +386,7 @@ class StorageOperation(BaseModel):
     content_size: int = 0
 
     # Context
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     agent_name: Optional[str] = None
     tool_name: Optional[str] = None
 
@@ -480,7 +480,7 @@ class StorageConfig(BaseModel):
     config: Dict[str, Any] = Field(default_factory=dict)
 
     # General settings
-    taskspace_path: str = "./.vibex/tasks"
+    project_base_path: str = "./.vibex/projects"
     max_file_size_mb: int = 100
     allowed_extensions: Optional[List[str]] = None
     blocked_extensions: List[str] = Field(default_factory=lambda: ['.exe', '.bat', '.sh'])
@@ -522,7 +522,7 @@ class SearchQuery(BaseModel):
     tags: Optional[List[str]] = None
 
     # Context filters
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     agent_name: Optional[str] = None
     created_by: Optional[str] = None
 
@@ -551,7 +551,7 @@ class SearchResult(BaseModel):
 
 def create_artifact(name: str, path: str, artifact_type: ArtifactType,
                    content_size: int = 0, created_by: str = None,
-                   task_id: str = None, agent_name: str = None,
+                   project_id: str = None, agent_name: str = None,
                    metadata: Dict[str, Any] = None) -> Artifact:
     """Create a new artifact with the specified parameters."""
     return Artifact(
@@ -560,7 +560,7 @@ def create_artifact(name: str, path: str, artifact_type: ArtifactType,
         artifact_type=artifact_type,
         size_bytes=content_size,
         created_by=created_by,
-        task_id=task_id,
+        project_id=project_id,
         agent_name=agent_name,
         metadata=metadata or {}
     )

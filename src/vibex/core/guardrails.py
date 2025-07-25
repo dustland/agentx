@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 class GuardrailContext:
     """Context information for guardrail checks."""
     agent_name: str
-    task_id: Optional[str] = None
+    project_id: Optional[str] = None
     step_id: Optional[str] = None
     content_type: str = "text"  # "text", "tool_call", "tool_result"
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -483,7 +483,7 @@ def get_guardrail_engine() -> GuardrailEngine:
 
 async def check_content_safety(content: str, agent_name: str,
                              policy_names: Optional[List[str]] = None,
-                             task_id: Optional[str] = None,
+                             project_id: Optional[str] = None,
                              step_id: Optional[str] = None) -> GuardrailPart:
     """
     Convenience function to check content safety.
@@ -492,7 +492,7 @@ async def check_content_safety(content: str, agent_name: str,
         content: Content to check
         agent_name: Name of the agent
         policy_names: Specific policies to check
-        task_id: Optional task ID
+        project_id: Optional task ID
         step_id: Optional step ID
 
     Returns:
@@ -501,7 +501,7 @@ async def check_content_safety(content: str, agent_name: str,
     engine = get_guardrail_engine()
     context = GuardrailContext(
         agent_name=agent_name,
-        task_id=task_id,
+        project_id=project_id,
         step_id=step_id
     )
 

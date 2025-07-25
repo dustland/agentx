@@ -12,7 +12,7 @@ import litellm
 # This allows importing vibex module from the source code
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from vibex import start_task
+from vibex import VibeX
 from weather_tool import WeatherTool
 
 
@@ -35,15 +35,19 @@ async def main():
     config_path = Path(__file__).parent / "config" / "team.yaml"
 
     try:
-        # Start task with XAgent - creates a conversational interface
-        x = await start_task(user_prompt, config_path)
+        # Start task with VibeX - creates a conversational interface
+        x = await VibeX.start(
+            project_id="tool_chat_project",
+            goal=user_prompt,
+            config_path=str(config_path),
+        )
 
         # Register custom weather tool
         weather_tool = WeatherTool()
-        x.tool_manager.register_tool(weather_tool)
+        x.register_tool(weather_tool)
 
         # Debug: Check what tools are registered
-        print(f"🔧 Registered tools: {x.tool_manager.list_tools()}")
+        print(f"🔧 Registered tools: {x.list_tools()}")
 
         # Get the agent to check tool schemas
         agent = list(x.specialist_agents.values())[0]
@@ -54,7 +58,7 @@ async def main():
         print()
 
         # Execute the task autonomously first
-        while not x.is_complete:
+        while not x.is_complete():
             response = await x.step()
             print(f"🤖 X: {response}")
             print("-" * 60)
@@ -69,7 +73,7 @@ async def main():
         for question in follow_ups:
             print(f"💬 User: {question}")
             response = await x.chat(question)
-            print(f"🤖 X: {response.text}")
+            print(f"🤖 X: {response}")
 
             if response.preserved_steps:
                 print(f"   ✅ Preserved {len(response.preserved_steps)} completed tool calls")

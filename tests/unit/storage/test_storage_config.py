@@ -4,7 +4,8 @@ Unit tests for storage configuration singleton
 
 import pytest
 from vibex.storage.config import StorageConfig, storage_config
-from vibex.storage.cache_backends import MemoryCacheBackend, NoOpCacheBackend
+from vibex.storage.providers.cache.memory import MemoryCacheProvider
+from vibex.storage.providers.cache.noop import NoOpCacheProvider
 
 
 def test_storage_config_singleton():
@@ -25,7 +26,7 @@ def test_storage_config_configure():
     assert storage_config.cache_backend is None
     
     # Configure with cache backend
-    cache_backend = MemoryCacheBackend()
+    cache_backend = MemoryCacheProvider()
     storage_config.set_cache_backend(cache_backend)
     
     assert storage_config.is_caching_enabled
@@ -40,7 +41,7 @@ def test_storage_config_configure():
 def test_storage_config_reset():
     """Test resetting storage config"""
     # Configure
-    cache_backend = MemoryCacheBackend()
+    cache_backend = MemoryCacheProvider()
     storage_config.set_cache_backend(cache_backend)
     
     # Reset
@@ -55,7 +56,8 @@ def test_storage_config_reset():
 async def test_storage_factory_uses_config():
     """Test that StorageFactory uses the configured cache backend"""
     from vibex.storage.factory import StorageFactory
-    from vibex.storage.cached_taskspace import CachedTaskspaceStorage
+    # CachedProjectStorage removed - use ProjectStorage directly
+    from vibex.storage.project import ProjectStorage
     import tempfile
     import shutil
     
@@ -65,29 +67,29 @@ async def test_storage_factory_uses_config():
     try:
         # Reset and configure storage
         storage_config.reset()
-        cache_backend = MemoryCacheBackend()
+        cache_backend = MemoryCacheProvider()
         storage_config.set_cache_backend(cache_backend)
         
-        # Create taskspace storage
-        taskspace = StorageFactory.create_taskspace_storage(
+        # Create project storage
+        project_storage = StorageFactory.create_project_storage(
             base_path=temp_dir,
-            task_id="test-task"
+            project_id="test-project"
         )
         
         # Should be wrapped with caching
-        assert isinstance(taskspace, CachedTaskspaceStorage)
+        assert isinstance(project_storage, ProjectStorage)
         
         # Reset and create again
         storage_config.reset()
         
-        # Create taskspace storage without caching
-        taskspace2 = StorageFactory.create_taskspace_storage(
+        # Create project storage without caching
+        project_storage2 = StorageFactory.create_project_storage(
             base_path=temp_dir,
-            task_id="test-task-2"
+            project_id="test-project-2"
         )
         
-        # Should not be wrapped
-        assert not isinstance(taskspace2, CachedTaskspaceStorage)
+        # Should be ProjectStorage instance
+        assert isinstance(project_storage2, ProjectStorage)
         
     finally:
         # Cleanup

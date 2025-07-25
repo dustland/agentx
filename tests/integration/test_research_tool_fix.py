@@ -11,7 +11,7 @@ import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from vibex.builtin_tools.research import ResearchTool
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 async def test_research_content_extraction():
@@ -19,10 +19,10 @@ async def test_research_content_extraction():
     print("🧪 TESTING RESEARCH CONTENT EXTRACTION")
     print("=" * 60)
     
-    # Create taskspace
+    # Create project_storage
     temp_dir = tempfile.mkdtemp()
-    taskspace = TaskspaceStorage(taskspace_path=temp_dir)
-    research_tool = ResearchTool(taskspace_storage=taskspace)
+    project_storage = ProjectStorage(project_path=temp_dir)
+    research_tool = ResearchTool(project_storage=project_storage)
     
     # Test with a simple query
     query = "React framework features 2025"
@@ -47,7 +47,7 @@ async def test_research_content_extraction():
             print(f"\n📄 Checking content of: {first_file}")
             
             # Read the file
-            content = await taskspace.get_artifact(first_file)
+            content = await project_storage.get_artifact(first_file)
             
             # Check for the problematic patterns
             has_no_content = "No content available" in content

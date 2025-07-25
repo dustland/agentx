@@ -9,7 +9,7 @@ from pathlib import Path
 from vibex.core.agent import Agent
 from vibex.core.brain import Brain
 from vibex.core.config import AgentConfig
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 class TestReviewerPolish:
@@ -32,10 +32,10 @@ class TestReviewerPolish:
     
     @pytest.fixture
     def mock_taskspace_with_draft(self, tmp_path):
-        """Create mock taskspace with a draft document."""
-        taskspace_dir = tmp_path / "test_taskspace"
-        taskspace_dir.mkdir()
-        artifacts_dir = taskspace_dir / "artifacts"
+        """Create mock project_storage with a draft document."""
+        project_dir = tmp_path / "test_taskspace"
+        project_dir.mkdir()
+        artifacts_dir = project_dir / "artifacts"
         artifacts_dir.mkdir()
         
         # Create draft with issues to polish
@@ -69,11 +69,11 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
         
         (artifacts_dir / "draft_report.md").write_text(draft_content)
         
-        taskspace = TaskspaceStorage(
+        project_storage = ProjectStorage(
             task_id="test_task",
-            taskspace_path=taskspace_dir
+            project_path=project_dir
         )
-        return taskspace
+        return project_storage
     
     @pytest.mark.asyncio
     async def test_reviewer_identifies_draft_for_polishing(self, reviewer_config, mock_taskspace_with_draft):
@@ -84,7 +84,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(taskspace=mock_taskspace_with_draft)
+                task_config=Mock(project_storage=mock_taskspace_with_draft)
             )
             
             # Track tool calls
@@ -129,7 +129,7 @@ Both databases are good choices. PostgreSQL is better for complex applications. 
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(taskspace=mock_taskspace_with_draft)
+                task_config=Mock(project_storage=mock_taskspace_with_draft)
             )
             
             # Expected polished content (with improvements)
@@ -215,7 +215,7 @@ Both databases continue to evolve, with active communities ensuring long-term vi
             
             reviewer = Agent(
                 config=reviewer_config,
-                task_config=Mock(taskspace=mock_taskspace_with_draft)
+                task_config=Mock(project_storage=mock_taskspace_with_draft)
             )
             
             reviewer.tool_manager = Mock()

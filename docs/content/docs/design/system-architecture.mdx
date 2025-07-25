@@ -1,491 +1,293 @@
 # VibeX System Architecture
 
-## 1. Executive Summary
+VibeX is an extensible framework for building, running, and observing multi-agent systems. It provides the foundational infrastructure for teams of AI agents to collaborate on complex tasks, enabling them to plan, execute, use tools, and manage long-term memory within isolated, persistent project environments.
 
-VibeX is an open-source backbone for building secure, observable, and fully autonomous multi-agent systems. A lightweight micro-kernel orchestrates specialised agents, turning a single user request into a coordinated workflow that spans tool execution, memory retrieval, and artifact management—all within isolated, version-controlled taskspaces. Every decision, message, and side effect is captured as a structured event, providing complete auditability and real-time insight into system behaviour.
+## Core Concepts
 
-## 2. Vision & Principles
+At the heart of VibeX are a few key concepts that work together to enable sophisticated multi-agent collaboration.
 
-### 2.1 Project Vision
+### 1. Project
 
-VibeX enables organisations to decompose complex goals into collaborative **Teams** of agents, each focusing on a well-defined role. A stateful **Orchestrator** governs the workflow, assigns tasks to agents, and executes tools on the agents' behalf, while a **Task Executor** drives the lifecycle of the task itself. The result is a flexible framework that elevates individual agent capabilities into a cohesive, self-optimising system that can learn, adapt, and scale with minimal human intervention.
+A **Project** is the primary unit of work in VibeX. It encapsulates everything needed to achieve a high-level goal, from the initial user request to the final generated artifacts. Each project is a self-contained environment with its own:
 
-### 2.2 Architectural Principles
+- **Isolated Workspace**: A dedicated directory for storing all project-related files, including configurations, logs, and generated artifacts. This ensures that projects do not interfere with one another.
+- **State**: The current status of the project, including the execution plan, task progress, and conversation history.
+- **Team Configuration**: A definition of the agents and tools available to the project.
+- **Version Control**: Automatic versioning of all artifacts, enabling traceability and rollback capabilities.
 
-The architecture rests on the following foundational principles:
+### 2. XAgent: The Primary Interface
 
-- **Separation of Concerns**: Each subsystem has a single, well-defined responsibility, which reduces coupling and simplifies maintenance.
-- **Orchestrator-Driven Orchestration**: A stateful Orchestrator governs coordination, planning, and task assignment.
-- **Agent Autonomy**: Agents manage their own reasoning loops and private Brains, delegating only cross-cutting concerns upward.
-- **Event-Driven Coordination**: Asynchronous, structured events enable scalable, loosely-coupled communication among subsystems.
-- **Configuration-Driven Behaviour**: Teams, agents, and workflows are defined declaratively, allowing rapid iteration without code changes.
-- **Security by Design**: All external interactions pass through audited, policy-enforced channels; least-privilege boundaries are maintained throughout.
-- **Taskspace Isolation**: Every task executes in its own version-controlled taskspace, ensuring reproducibility and clean separation of artifacts.
+**XAgent** is the primary interface to VibeX. Each XAgent instance represents exactly one project and uses the project's ID as its identifier. This 1:1 relationship means when you interact with an XAgent, you're interacting with its project. The XAgent is responsible for:
 
-## 3. System Architecture Overview
+- **Project Representation**: Acting as the conversational interface for a specific project
+- **Understanding User Intent**: Interpreting user requests and translating them into actionable plans
+- **Planning and Decomposition**: Breaking down complex goals into a series of smaller, manageable tasks
+- **Task Delegation**: Assigning tasks to the appropriate specialist agents based on their capabilities
+- **Communication**: Relaying progress and results back to the user in a clear, conversational manner
 
-```mermaid
-graph TD
-    CLI["CLI Interface"]
-    API["REST / WebSocket API"]
-    TE["TaskExecutor"]
-    LEAD["Lead<br/>(Project Manager)"]
-    AGENTS["Specialist Agents<br/>(planner, researcher, writer, etc.)"]
-    BRAIN["Agent Brain"]
-    TM["Tool Manager"]
-    WORKSPACE["Taskspace<br/>(plan.md, artifacts)"]
-    PLAT["Platform Services"]
-    LLM["LLM Providers"]
-    TOOLS["Builtin Tools"]
-    API_EXT["External APIs"]
-    MCP["MCP"]
+Think of the XAgent as your AI collaborator. When you create an XAgent with `XAgent.start()`, it creates a project internally. When you resume with `XAgent.resume(project_id)`, you're reconnecting with that project's XAgent.
 
-    CLI --> TE
-    API --> TE
-    TE --> LEAD
-    TE --> TM
-    LEAD --> AGENTS
-    LEAD --> WORKSPACE
-    LEAD -.-> TM
-    AGENTS --> BRAIN
-    AGENTS -.-> TM
-    BRAIN --> LLM
-    TM --> TOOLS
-    TM --> MCP
-    MCP --> API_EXT
-    TE --> PLAT
-```
+### 3. Agent: The Specialist
 
-The VibeX architecture follows a **clean dependency inversion principle** with four distinct layers:
+An **Agent** is a specialized entity designed to perform a specific type of work. Each agent has a defined role (e.g., researcher, writer, coder) and a set of tools it can use to accomplish its tasks. Key characteristics of agents include:
 
-- **Consumer Modules**: User-facing interfaces that depend on core in a single direction. Includes CLI tools, REST/WebSocket APIs, and observability dashboards. These modules can freely import from core without creating circular dependencies.
+- **Domain Expertise**: Agents are configured with prompts and tools that make them experts in a particular domain.
+- **Task-Oriented**: They receive specific, well-defined tasks from the XAgent and focus on completing them.
+- **LLM Connection (Brain)**: Each agent has an internal `Brain` that connects it to Large Language Models (LLMs). This component handles all aspects of LLM interaction, including API calls, response streaming, and cost tracking, abstracting away the complexity of different providers.
+- **Statelessness**: Agents do not maintain memory between tasks. This design choice keeps them focused, scalable, and predictable. All necessary context is provided by the framework at runtime.
 
-- **Core Framework**: The central layer containing `TaskExecutor`, `Orchestrator`, `Agent`, and `Brain` components. Core imports FROM subsystems rather than the other way around, implementing true dependency inversion.
+### 4. Plan and Task: The Blueprint for Execution
 
-- **Self-Contained Subsystems**: Independent modules that never import from core, each with their own `models.py` for data types. Includes `tool/`, `memory/`, `event/`, `config/`, `storage/`, and `builtin_tools/`. This design eliminates circular imports and enables independent development and testing.
+A **Plan** is the structured blueprint that outlines how a project's goal will be achieved. It consists of a series of **Tasks**, where each task represents a discrete unit of work.
 
-- **External Systems**: All external dependencies such as LLM providers, vector databases, Git repositories, and third-party APIs.
+- **Hierarchical Structure**: Plans can be hierarchical, with tasks and sub-tasks that can be executed sequentially or in parallel.
+- **Task Dependencies**: The framework supports defining dependencies between tasks, ensuring that work is performed in the correct order.
+- **Dynamic Adaptation**: Plans are not static. The XAgent can modify the plan based on new information or user feedback, allowing the system to adapt to changing requirements.
+- **Artifact Association**: Each task is associated with the artifacts it produces, creating a clear lineage from the plan to the final output.
 
-### 3.1 Architectural Benefits
+## System Architecture
 
-This clean separation provides several key advantages:
-
-- **No Circular Dependencies**: Subsystems are self-contained and never import from core, eliminating import cycles and dependency hell.
-- **Independent Development**: Teams can work on subsystems without needing deep core knowledge or causing integration conflicts.
-- **Easier Testing**: Each subsystem can be tested in isolation with minimal mocking requirements.
-- **Pluggable Architecture**: Subsystems can be swapped or extended without modifying core components.
-- **Clear Boundaries**: The dependency flow is unidirectional and predictable, making the codebase easier to understand and maintain.
-
-### 3.2 Implementation Dependency Structure
-
-While the conceptual object model above shows how components relate functionally, the implementation follows a clean dependency architecture where subsystems are self-contained and core components import FROM subsystems (dependency inversion):
+VibeX is designed with a layered architecture to ensure a clear separation of concerns, promote modularity, and facilitate extensibility. This design allows different parts of the system to evolve independently and enables developers to customize or replace components without affecting the entire application.
 
 ```mermaid
 graph TD
-    subgraph "Consumer Modules (OK to depend on core)"
-        CLI["cli/<br/>• main.py<br/>• tools.py<br/>• debug.py"]
-        API["server/<br/>• api.py<br/>• models.py"]
-        OBS["observability/<br/>• monitor.py<br/>• web_app.py"]
+    subgraph "User Interaction Layer"
+        CLI["CLI (Command-Line Interface)"]
+        WebApp["Web Application (UI)"]
+        API["REST & WebSocket APIs"]
     end
 
-    subgraph "Core Framework"
-        TE["core/<br/>• task.py (TaskExecutor)<br/>• orchestrator.py<br/>• agent.py<br/>• brain.py"]
+    subgraph "Core Orchestration Layer"
+        Project["Project"]
+        XAgent["XAgent (Orchestrator)"]
+        TaskExecutor["Task Executor"]
+        Agent["Agent (Specialist)"]
     end
 
-    subgraph "Self-Contained Subsystems"
-        TOOL["tool/<br/>• models.py<br/>• registry.py<br/>• executor.py<br/>• manager.py"]
-        MEM["memory/<br/>• models.py<br/>• backend.py<br/>• factory.py<br/>• synthesis_engine.py"]
-        EVENT["event/<br/>• models.py<br/>• bus.py<br/>• api.py<br/>• subscribers.py"]
-        CONFIG["config/<br/>• models.py<br/>• team_loader.py<br/>• agent_loader.py"]
-        STORAGE["storage/<br/>• models.py<br/>• backends.py<br/>• git_storage.py<br/>• taskspace.py"]
-        BUILTIN["builtin_tools/<br/>• models.py<br/>• storage_tools.py<br/>• web_tools.py<br/>• memory_tools.py"]
+    subgraph "Platform Services Layer"
+        ToolManager["Tool Manager"]
+        ContextManager["Context Manager (Memory)"]
+        StorageManager["Storage Manager (Workspace)"]
+        EventManager["Event Manager (Observability)"]
+        ConfigManager["Config Manager"]
     end
 
-    subgraph "External Systems"
-        LLM["LLM Providers<br/>• OpenAI<br/>• Anthropic<br/>• DeepSeek"]
-        VDB["Vector DBs<br/>• mem0<br/>• Chroma<br/>• Pinecone"]
-        GIT["Git<br/>• Taskspace versioning<br/>• Artifact storage"]
-        EXT_API["External APIs<br/>• Web search<br/>• Third-party services"]
+    subgraph "External Integration Layer"
+        LLM["LLM Providers (OpenAI, Anthropic)"]
+        VectorDB["Vector Databases (Chroma, Pinecone)"]
+        Git["Git (Version Control)"]
+        ExternalTools["External APIs & Services"]
     end
 
-    %% Consumer modules depend on core (single direction)
-    CLI --> TE
-    API --> TE
-    OBS --> TE
+    %% Detailed Connections
+    CLI --> Project
+    WebApp --> API
+    API --> Project
 
-    %% Core imports FROM subsystems (dependency inversion)
-    TE --> TOOL
-    TE --> MEM
-    TE --> EVENT
-    TE --> CONFIG
-    TE --> STORAGE
-    TE --> BUILTIN
+    Project -- manages --> XAgent
+    XAgent -- creates --> Plan
+    XAgent -- delegates to --> TaskExecutor
+    TaskExecutor -- assigns to --> Agent
 
-    %% External system connections
-    TE --> LLM
-    MEM --> VDB
-    STORAGE --> GIT
-    TOOL --> EXT_API
+    Agent -- connects to --> LLM
+    Agent -- uses --> ToolManager
+    Agent -- uses --> ContextManager
 
-    %% Styling
-    classDef consumer stroke:#333,stroke-width:2px
-    classDef core stroke:#333,stroke-width:3px
-    classDef subsystem stroke:#333,stroke-width:2px
-    classDef external stroke:#333,stroke-width:2px
+    ToolManager --> ExternalTools
+    ContextManager --> VectorDB
+    StorageManager -- manages --> Git
 
-    class CLI,API,OBS consumer
-    class TE core
-    class TOOL,MEM,EVENT,CONFIG,STORAGE,BUILTIN subsystem
-    class LLM,VDB,GIT,EXT_API external
+    EventManager -- hooks into --> CoreOrchestrationLayer
+    ConfigManager -- configures --> CoreOrchestrationLayer
 ```
 
-**Key Architectural Principles:**
+### 1. User Interaction Layer
 
-- **Dependency Inversion**: Core framework imports FROM subsystems, not the other way around
-- **Self-Contained Subsystems**: Each subsystem has its own models.py and doesn't import from core
-- **Single Source of Truth**: Each data model has one canonical definition in its subsystem
-- **Clean Boundaries**: Clear separation between framework core and implementation details
+This is the topmost layer, providing the interfaces for users to interact with the VibeX framework.
 
-## 4. Collaboration Model
+- **Web Application (UI)**: A rich, browser-based interface for managing projects, interacting with agents, and observing real-time progress.
+- **REST & WebSocket APIs**: A set of well-defined API endpoints for programmatic control. The REST API handles state management, while WebSockets provide real-time event streaming.
+- **Command-Line Interface (CLI)**: A powerful tool for developers and power users to manage projects, run tasks, and debug the system from the terminal.
 
-In VibeX, a **Team** of collaborating agents is the primary mechanism for executing complex tasks. The core runtime consists of three key components that work in concert to manage the task lifecycle.
+### 2. Core Orchestration Layer
 
-### 4.1 Key Roles
+This layer contains the central logic for managing the lifecycle of projects and coordinating the work of agents.
 
-**Orchestration Logic (Built into XAgent)**
+- **Project**: The main container that encapsulates all state, configuration, and resources for a given task.
+- **XAgent**: The orchestrator responsible for planning, delegating, and communicating with the user.
+- **Task Executor**: The runtime engine that manages the execution of individual tasks, including preparing the necessary context for agents and handling errors.
+- **Agent**: The specialist that performs the actual work using its configured tools and intelligence.
 
-- **Stateful:** Maintains task progress in `plan.json` and taskspace files
-- **Intelligent Routing:** Decides which specialist agent handles each step
-- **Persistent:** Survives across multiple turns and can resume interrupted tasks
-- **LLM-Powered:** Uses Brain for intelligent decision making
+### 3. Platform Services Layer
 
-**Specialist Agents (The Workers)**
+This layer provides a suite of essential services that support the core orchestration layer. These services are designed to be pluggable, allowing for customization and extension.
 
-- **Stateless:** No memory between invocations
-- **Focused:** Each agent has one clear expertise (defined by prompt file)
-- **Reusable:** Same agent can be used by different Orchestrators for different tasks
-- **Standard Library:** Framework provides common agents (planner, researcher, writer, reviewer)
+- **Tool Manager**: Securely provides agents with access to tools, handling execution, parameter validation, and permissions.
+- **Context Manager (Memory)**: Provides agents with access to long-term memory, enabling them to recall information from previous conversations, documents, and task results.
+- **Storage Manager (Workspace)**: Manages the persistent storage of project workspaces, including artifacts, logs, and version history.
+- **Event Manager (Observability)**: Captures and broadcasts events throughout the system, providing a comprehensive audit trail and enabling real-time monitoring.
+- **Config Manager**: Loads and provides access to system-wide and project-specific configurations.
 
-**XAgent (The Unified Interface)**
+### 4. External Integration Layer
 
-- **Conversational Interface:** Single point of contact for all user interactions
-- **Lifecycle Manager:** Handles taskspace setup, tool management, streaming
-- **Orchestration Logic:** Built-in intelligent routing and task coordination
-- **Stateful:** Maintains conversation history and task state
+This is the lowest layer, responsible for interacting with external services and data sources.
 
-### 4.2 Execution Modes
+- **LLM Providers**: Integrations with third-party LLM providers like OpenAI, Anthropic, and Google.
+- **Vector Databases**: Connectors for various vector databases used by the Context Manager for long-term memory.
+- **Git**: Integration with Git for automatic version control of all project artifacts.
+- **External APIs & Services**: Any other external tools or services that agents might need to interact with to complete their tasks.
 
-VibeX supports two primary modes of execution, offering a trade-off between autonomy and control.
+## Data and Communication Flow
 
-**1. Autonomous Execution (`execute_task`)**
+Understanding how data moves through VibeX is key to understanding the system's behavior. The following sections describe the project lifecycle and the real-time streaming capabilities of the framework.
 
-This "fire-and-forget" mode is ideal for production. A client submits a task and waits for a final result, while the `Task Executor` runs the entire multi-agent collaboration, driven by the `Orchestrator`.
+### Project Lifecycle
+
+The following diagram illustrates the typical lifecycle of a project, from the initial user request to the final completion.
 
 ```mermaid
 sequenceDiagram
-    participant C as Client
-    participant TX as TaskExecutor
-    participant L as Orchestrator
-    participant AG as Agent
-
-    C->>TX: execute task with prompt
-    TX->>L: invoke with initial prompt
-    L->>L: create_plan()
-    L-->>TX: Plan created, ready for first step
-
-    loop Autonomous Loop (driven by TaskExecutor)
-        TX->>L: invoke Orchestrator for next step
-        L->>L: read_plan_and_find_next_task()
-        L->>AG: assign specific micro-task
-        AG-->>L: return task result
-        L->>L: update_plan_with_result()
-        L-->>TX: Step complete, ready for next turn
-    end
-
-    TX-->>C: final result
-```
-
-**2. Interactive Execution (`start_task` & `step`)**
-
-For debugging or human-in-the-loop workflows, a client can call `start_task` to get a `Task` object, then repeatedly call `step()` to advance the execution one turn at a time. This mode is more aligned with traditional agentic frameworks.
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant TX as TaskExecutor
-    participant L as Orchestrator
-    participant AG as Agent
-
-    C->>TX: start task with prompt
-    TX-->>C: task object
-
-    loop Interactive Steps
-        C->>TX: call task.step()
-        TX->>L: invoke Orchestrator for one step
-        L->>AG: assign micro-task
-        AG-->>L: return task result
-        L-->>TX: return step result
-        TX-->>C: step result
-    end
-```
-
-### 4.3 Orchestrator vs Specialist Agents: A Key Distinction
-
-The VibeX architecture makes a crucial distinction between two types of intelligence:
-
-**The Orchestrator (Project Manager)**
-
-- A stateful Python class that owns the entire workflow
-- Orchestrates the task from start to finish
-- Creates plans by delegating to specialist agents
-- Routes work to the best-suited specialist for each step
-- Tracks progress and maintains state in `plan.md`
-
-**Specialist Agents (Workers)**
-
-- Stateless, single-purpose experts defined by prompt files
-- Each has one clear responsibility (planning, research, writing, etc.)
-- Invoked by the Orchestrator to perform specific micro-tasks
-- Return results and forget - no state management
-
-**Example Flow:**
-
-1. Orchestrator receives: "Write a report on AI trends"
-2. Orchestrator delegates to Planner Agent: "Create a step-by-step plan"
-3. Planner creates `plan.md` with checklist
-4. Orchestrator reads plan, assigns "Research AI trends" to Researcher Agent
-5. Orchestrator assigns "Write introduction" to Writer Agent
-6. Orchestrator continues until all steps complete
-
-This separation ensures that complex orchestration logic lives in robust Python code, while domain expertise lives in easily-editable prompts.
-
-## 5. Agent Internals
-
-While the `Task Executor` manages the high-level conversation flow between agents, each `Agent` is responsible for its own internal reasoning process. This process involves hydrating a prompt template with runtime context, executing a "monologue" with its private Brain, and optionally streaming its response back to the client.
-
-### 5.1 Prompt Templating
-
-An agent's core behavior and persona are defined by its system prompt, which is typically loaded from a Jinja2 template file. Before the `Task Executor` invokes an agent, it injects dynamic context into this template. This ensures the agent is fully aware of the current state of the task. Common context variables include:
-
-- The full conversation history.
-- A list of available tools and their JSON schemas.
-- The initial task objective and any user-provided parameters.
-- Summaries or references to artifacts in the taskspace.
-
-This just-in-time templating allows agents to be both powerful and reusable, adapting their behavior to the specific needs of each task.
-
-### 5.2 Internal Monologue and Tool-Calling Loop
-
-When an agent is invoked by the `Task Executor`, it enters a sophisticated internal loop to produce the most informed output possible. This loop includes a crucial self-correction mechanism for tool usage.
-
-1.  **Initial Reasoning**: The `Agent` passes the prompt to its `Brain` (LLM), which generates an initial response that may include one or more desired tool calls.
-2.  **Direct Tool Execution**: The `Agent` executes tool calls directly through the `ToolManager` provided by the Task Executor. This eliminates the need for inter-component communication and provides faster, more secure tool execution.
-3.  **Validation and Self-Correction**: The `ToolManager` validates the calls against the registered tool schemas and security policies.
-    - If a call is invalid, the `ToolManager` immediately returns a structured validation error. The `Agent` then passes this error back to the `Brain`, which attempts to generate a corrected tool call. This loop continues until the call is valid.
-4.  **Secure Execution**: Once a tool call is valid, the `ToolManager` executes it securely through its integrated `ToolExecutor`, which runs tools in a secure sandbox when necessary.
-5.  **Result Integration**: The results are returned directly to the `Agent`, which gives them to the `Brain`. The `Brain` uses this new information to generate its final, grounded response for the turn.
-6.  **Final Response**: The `Agent` returns its final response to the `Task Executor`, completing its turn.
-
-This streamlined process ensures that agents can autonomously use tools with minimal overhead, correct their own mistakes, and ground their reasoning in real-world information before finalizing their output.
-
-```mermaid
-sequenceDiagram
-    participant TaskExecutor
-    participant Agent
-    participant Brain
+    actor User
+    participant WebApp
+    participant API
+    participant Project
+    participant XAgent
+    participant PlannerAgent
+    participant SpecialistAgent
     participant ToolManager
 
-    TaskExecutor->>Agent: invoke
-    Agent->>Brain: generate response
-    Brain-->>Agent: draft response with tool call
-    Agent->>ToolManager: execute tool calls
+    User->>WebApp: 1. Submits prompt ("Build a web app")
+    WebApp->>API: 2. POST /projects (prompt)
+    API->>Project: 3. Creates Project instance
+    Project->>XAgent: 4. Initializes with prompt
+    XAgent->>PlannerAgent: 5. Analyzes prompt, creates plan
+    PlannerAgent-->>XAgent: 6. Returns structured plan
+    XAgent-->>Project: 7. Stores plan
+    Project-->>API: 8. Returns project_id
+    API-->>WebApp: 9. Responds with project_id
+    WebApp-->>User: 10. Displays project workspace
 
-    alt Invalid Tool Call
-        ToolManager-->>Agent: validation error
-        Agent->>Brain: correct tool call
-        Brain-->>Agent: corrected tool call
-        Agent->>ToolManager: retry tool call
+    loop For each task in plan
+        XAgent->>Project: 11. Gets next available task
+        Project-->>XAgent: 12. Returns task details
+        XAgent->>SpecialistAgent: 13. Assigns task
+        SpecialistAgent->>ToolManager: 14. Invokes tool (e.g., write_file)
+        ToolManager-->>SpecialistAgent: 15. Returns tool output
+        SpecialistAgent-->>XAgent: 16. Reports task completion
+        XAgent->>Project: 17. Updates task status & stores artifacts
     end
 
-    ToolManager->>ToolManager: secure execution
-    ToolManager-->>Agent: tool results
-    Agent->>Brain: generate final response
-    Brain-->>Agent: final response
-    Agent-->>TaskExecutor: return final response
+    User->>WebApp: 18. Monitors progress in real-time
 ```
 
-### 5.3 End-to-End Streaming
+**Lifecycle Stages:**
 
-To provide maximum transparency and a highly responsive user experience, VibeX is designed for **end-to-end streaming**. This is more than just streaming the final answer; it means that every significant piece of text generated during the task lifecycle is yielded back to the client in real-time.
+1.  **Initiation**: A user submits a high-level goal through a client interface (e.g., the Web App).
+2.  **Project Creation**: The system creates a new `Project` instance with an isolated workspace and an `XAgent`.
+3.  **Planning**: The `XAgent` collaborates with a `PlannerAgent` to break down the goal into a structured `Plan` of `Tasks`.
+4.  **Execution**: The `XAgent` iterates through the plan, assigning each task to the appropriate `SpecialistAgent`.
+5.  **Tool Use**: `SpecialistAgents` use tools via the `ToolManager` to perform their work, generating artifacts and results.
+6.  **State Updates**: As tasks are completed, the `Project` state is continuously updated, and all generated artifacts are saved to the workspace.
+7.  **Completion**: Once all tasks are finished, the project is marked as complete, with a full history and all artifacts available for review.
 
-This is achieved by making streaming the default behavior at every layer of the stack:
+### Real-Time Streaming
 
-- **Brain**: The `Brain` streams token-by-token output directly from the underlying LLM provider.
-- **Agent**: The `Agent` streams its internal monologue, including its reasoning process and its decision to call tools.
-- **Task Executor**: The `Task Executor` orchestrates these streams, interleaving agent monologues with tool execution status messages and final outputs.
+VibeX is designed for real-time interaction. The framework uses WebSockets to stream events, logs, and data as they are generated, providing a transparent and interactive user experience.
 
-This architecture allows a developer or user to watch the entire multi-agent collaboration unfold in real-time, offering unparalleled insight for debugging, monitoring, and human-in-the-loop interaction. It transforms the "black box" of agent reasoning into a transparent, observable process.
+- **Event Streaming**: Every action in the system—from task creation to tool execution—is broadcast as a structured event. This allows the UI to display real-time progress indicators, logs, and notifications.
+- **LLM Token Streaming**: When an agent communicates with an LLM, the response is streamed token by token. This means users see text appearing in real-time, just as it's being generated by the model.
+- **Artifact Streaming**: For large files, the content can be streamed to the client, allowing users to preview documents or view log files as they are being written.
 
-## 6. State and Context Management
+This streaming-first approach eliminates black boxes and provides complete transparency into the inner workings of the system.
 
-VibeX is designed around the core principle that agents should operate on a rich, durable, and easily accessible context. This is achieved through two tightly integrated components: the **Taskspace** and the **Memory System**.
+## Cross-Cutting Concerns
 
-### 6.1 Taskspace: A Durable Foundation
+Several important concerns apply across the entire VibeX framework. These are handled by dedicated components to ensure consistency, security, and performance.
 
-The **Taskspace** is the stateful heart of every task. It is a version-controlled directory that provides the foundation for iterative development, task resumption, and human-in-the-loop collaboration. By persisting every message, artifact, and state change to the taskspace, VibeX guarantees full auditability and allows tasks to be paused, inspected, modified, and resumed at any point.
+### 1. Configuration Management
 
-**Multi-Tenant Architecture**: All taskspaces are user-scoped with the structure `taskspace/{user_id}/{task_id}/` to provide organizational separation between users. See the [Multi-Tenant Architecture](/design/multi-tenant-security) documentation for details on user isolation patterns and required authentication for secure deployments.
+VibeX uses a flexible, file-based configuration system to define the behavior of agents, teams, and the overall environment. This allows you to define complex multi-agent systems without writing extensive code.
 
-Every taskspace contains:
+- **Declarative Configuration**: Key aspects of the system, such as agents, teams, and tool permissions, are defined in simple YAML files.
+- **Hierarchical Structure**: Configuration is applied in a hierarchical manner, with project-specific settings overriding global defaults.
+- **Dynamic Loading**: Configurations are loaded at runtime, allowing for changes without requiring a system restart.
 
-- A complete, append-only log of the conversation history (`history.jsonl`).
-- A version-controlled `artifacts` directory where all agent outputs (code, documents, data) are stored.
-- A `state.json` file capturing the latest state of the Task Executor and all agents.
-
-This robust state management is what enables developers to treat tasks not as ephemeral processes, but as durable, long-running workflows that can be debugged, refined, and improved over time.
-
-### 6.2 Memory: Intelligent Context Retrieval
-
-The **Memory** acts as the intelligent, unified gateway for retrieving contextual data from the Taskspace. It is more than a simple wrapper around a vector database; it is the sole entry point for agents to perform intelligent data fetching, ensuring they have the most relevant information without exceeding token limits.
-
-**User Isolation**: Memory storage is scoped to prevent cross-user access, ensuring that agents can only retrieve contextual information from their own user's taskspaces and memory stores.
-
-Its responsibilities are twofold:
-
-1.  **Context Ingestion**: It automatically captures and indexes conversational history, agent-generated artifacts, and other designated data sources from the Taskspace into a long-term, searchable store.
-2.  **Intelligent Retrieval**: It provides a simple query interface for agents to retrieve contextually relevant information. The system handles the complexity of searching across different data types and uses semantic ranking to return only the most salient facts.
-
-By abstracting away the complexities of data storage and retrieval, the Memory System allows agents to remain focused on reasoning, while ensuring their prompts are always grounded with high-quality, relevant context from the Taskspace.
-
-### 6.3 Example Scenario: Context-Aware Writing
-
-To illustrate how these components work together, consider a `Writer` agent tasked with drafting a report. A `Researcher` agent has already run, populating the `Taskspace` with dozens of source documents.
-
-1.  **Initial State**: The `Taskspace` contains all source documents as artifacts (e.g., `source_01.txt`, `source_02.txt`, etc.). The `Memory System` has indexed the content of each of these sources. The main report is still empty.
-2.  **Writing the First Section**: The `Writer` is tasked with "Write the introduction." It queries the `Memory System`: _"Find sources relevant to the overall topic."_ The `Memory System` returns the most relevant source documents. The `Writer` uses them to draft the introduction, which is then saved back to the `Taskspace` as `report_v1.md`.
-3.  **Preventing Redundancy**: When the `Writer` is next tasked with "Write the 'History of AI' section," it performs a more sophisticated query: _"Find sources related to 'the history of AI' that are not already referenced in `report_v1.md`."_
-4.  **Intelligent Retrieval**: The `Memory System` understands this query. It performs a semantic search for "history of AI" across all source documents, but it also performs a negative semantic search, filtering out any sources whose content closely matches what is already in `report_v1.md`.
-5.  **Grounded Response**: The `Memory System` returns a fresh, relevant, and unused set of sources. The `Writer` can now draft the new section with confidence, knowing it is not repeating information.
-
-This scenario demonstrates how the combination of a durable `Taskspace` and an intelligent `Memory System` enables agents to perform complex, stateful tasks that would be impossible with a simple conversational context window.
-
-### 6.3 Standard Agents Library
-
-VibeX ships with a curated library of specialist agents in `src/vibex/agents/`:
-
-**Core Workflow Agents:**
-
-- `planner.md` - Creates step-by-step plans as markdown checklists
-- `researcher.md` - Conducts web research and synthesizes findings
-- `writer.md` - Transforms research into well-structured documents
-- `reviewer.md` - Reviews documents and provides constructive feedback
-
-**Using Standard Agents:**
+**Example Team Configuration:**
 
 ```yaml
-# In your team.yaml
+# config/team.yaml
 agents:
-  - "planner"
-  - "researcher"
-  - "writer"
-  - "reviewer"
+  - name: researcher
+    role: "Expert at finding and synthesizing information from the web."
+    model: gpt-4-turbo
+    tools: [web_search, read_file]
 
-lead: default # Uses the built-in Orchestrator class
+  - name: writer
+    role: "A professional writer who specializes in creating clear and concise documentation."
+    model: claude-3-opus
+    tools: [write_file, read_file]
+
+project:
+  parallel_tasks: 3
+  timeout: 3600
 ```
 
-**The Default Orchestrator Workflow:**
+### 2. Extensibility
 
-1. Delegates planning to the `planner` agent
-2. Uses LLM-based routing to assign each step to the best specialist
-3. Coordinates handoffs between research → writing → review phases
-4. Maintains progress in `plan.md` for full transparency
+The VibeX framework is designed to be highly extensible, allowing developers to add new capabilities with minimal effort.
 
-This gives you a powerful multi-agent system with zero custom code.
+- **Custom Agents**: New agents can be created by defining their role, capabilities, and personality in a configuration file. No custom code is required for simple agents.
+- **Custom Tools**: Adding new tools is as simple as decorating a Python function. The framework handles the necessary boilerplate for argument validation, execution, and error handling.
 
-## 7. Platform Services
+  ```python
+  @tool("analyze_csv")
+  def analyze_csv(file_path: str) -> dict:
+      """
+      Performs a statistical analysis of the data in a CSV file.
+      """
+      # Your implementation here
+      ...
+      return {"mean": 42.0, "std_dev": 5.7}
+  ```
 
-Platform Services provide common capabilities that sit outside the tight execution loop yet remain essential to every task. They are deployed as shared, multi-tenant components and accessed via well-defined APIs, allowing the core runtime to stay lightweight while still benefiting from robust storage, configuration, and monitoring facilities.
+- **Pluggable Backends**: Key components like storage, memory, and LLM providers can be swapped out with custom implementations, allowing for integration with a wide variety of external services.
 
-### 7.1 Configuration System
+### 3. Security and Multi-Tenancy
 
-The Configuration System is the single source of truth for teams, agents, tools, and runtime policies. It loads declarative YAML files, validates them against versioned schemas, and exposes the resulting objects to the Task Executor at startup.
+Security is a fundamental design principle of VibeX. The framework includes several features to ensure that projects run in a secure and isolated manner.
 
-### 7.2 Event Bus
+- **Project Isolation**: Each project is confined to its own workspace, preventing any interference with other projects. File system access is strictly limited to the project's directory.
+- **Tool Sandboxing**: The `ToolManager` acts as a security layer, validating all tool calls and ensuring that agents only have access to the tools they are permitted to use.
+- **Access Control**: In a multi-tenant environment, VibeX can be configured to enforce user-based access control, ensuring that users can only access their own projects.
+- **Audit Logging**: The `EventManager` captures a complete and immutable log of all actions taken within the system, providing a comprehensive audit trail for security and debugging purposes.
 
-All significant actions in the framework emit structured events that flow through the Event Bus. This design decouples producers from consumers, enabling real-time monitoring, auditing, and external integrations without burdening the hot code-path.
+### 4. Performance and Scalability
 
-### 7.3 Memory System Infrastructure
+VibeX is architected to handle demanding, long-running tasks and can be scaled to support a large number of concurrent projects.
 
-While Section 6 described the Memory System from a business logic perspective, this section focuses on its infrastructure implementation. The Memory System uses a pluggable backend architecture that abstracts away the complexities of different memory storage implementations.
+- **Asynchronous Architecture**: The entire framework is built on Python's `asyncio`, enabling high-performance, non-blocking I/O for all operations.
+- **Parallel Execution**: The `TaskExecutor` can run multiple tasks concurrently, significantly speeding up the overall project completion time.
+- **Stateless Agents**: Because agents are stateless, the system can be scaled horizontally by simply adding more agent worker processes.
+- **Caching**: VibeX includes a multi-layer caching system that can cache LLM responses, tool outputs, and context queries to reduce latency and cost.
 
-**Implementation Architecture**:
+## API Layer
 
-- **Memory Backend Interface**: A standardized interface that allows different memory providers (mem0, vector databases, etc.) to be plugged in seamlessly
-- **mem0 Integration**: The default backend leverages mem0 for intelligent memory management, providing automatic memory extraction, storage, and retrieval
-- **Vector Database Support**: Direct integration with vector databases for semantic search capabilities
-- **Memory Factory Pattern**: A factory that instantiates the appropriate memory backend based on configuration
+The framework provides both programmatic and server APIs:
 
-**Key Infrastructure Features**:
+### Programmatic API
+XAgent serves as the primary interface for all framework interactions:
 
-- **Automatic Indexing**: Background processes that continuously index new content from taskspaces
-- **Scalable Storage**: Support for both local and distributed memory storage backends
-- **Memory Lifecycle Management**: Automatic cleanup, archival, and optimization of stored memories
-- **Provider Abstraction**: Clean separation between the memory interface and underlying storage technology
+- `XAgent.start()`: Create and start a new project, returns XAgent instance
+- `XAgent.resume()`: Resume an existing project by ID
+- `XAgent.list_projects()`: List all available projects
+- `await x.chat()`: Direct conversational interaction
+- `await x.execute()`: Autonomous execution
+- `x.project`: Access underlying project when needed
 
-This infrastructure design ensures that the Memory System can scale from development environments using local storage to production deployments using enterprise-grade vector databases, all without changing the business logic layer.
+### Server API (REST + SSE)
+- `/agents`: Create and list XAgent instances
+- `/agents/{project_id}/chat`: Conversational interface with XAgent (using project ID)
+- `/agents/{project_id}/events`: Real-time event stream from XAgent
+- `/agents/{project_id}/artifacts`: Access files created by XAgent
 
-### 7.4 Observability
-
-The Observability service provides real-time insight into the inner workings of the VibeX framework. It subscribes to the `Event Bus` to receive a live stream of all system events—from task creation to agent handoffs to tool executions. This data is then exposed through a built-in web dashboard, allowing developers to:
-
-- Visually trace the entire lifecycle of a task.
-- Inspect the contents of any agent's taskspace, including conversation history and artifacts.
-- Debug complex multi-agent interactions in real-time.
-
-By making the system transparent by default, the Observability service dramatically reduces the time required to build, test, and refine sophisticated agent-based workflows.
-
-## 8. Tool Management Architecture
-
-The VibeX framework uses a unified **ToolManager** architecture that provides task-level tool isolation and streamlined execution. Each Task Executor creates its own ToolManager instance, ensuring that tool registrations and executions are isolated between different tasks.
-
-### 8.1 ToolManager Components
-
-The ToolManager combines three key components:
-
-- **ToolRegistry**: Manages tool definitions, schemas, and discovery. Handles tool registration and provides JSON schemas for LLM consumption.
-- **ToolExecutor**: Handles secure tool execution with validation, security policies, performance monitoring, and sandbox isolation.
-- **Task Isolation**: Each task gets its own ToolManager instance, preventing tool conflicts and enabling task-specific tool configurations.
-
-### 8.2 Benefits of the New Architecture
-
-- **Simplified Agent Interface**: Agents execute tools directly via the Task Executor's ToolManager, reducing complexity and improving performance.
-- **Enhanced Security**: Tool execution happens within the Task Executor's controlled environment with comprehensive security policies and validation.
-- **Better Performance**: Direct tool execution eliminates inter-component communication overhead.
-- **Task Isolation**: Each task maintains its own tool registry, enabling custom tool configurations per task.
-
-## 9. Builtin Tools
-
-Builtin Tools extend VibeX with first-class capabilities without requiring users to write custom plugins. They are registered automatically at startup and are available to any agent subject to security policy. These tools are designed to be general-purpose and cover the most common needs of autonomous agents.
-
-Key builtin tools include:
-
-- **Storage Tools**: Clean file operations that use the storage layer, providing secure taskspace-scoped file management with proper isolation and version control. Includes `read_file`, `write_file`, `list_directory`, `delete_file`, and other essential file operations.
-- **Web Tools**: Advanced web capabilities including `web_search`, `extract_content` for web scraping, and `automate_browser` for AI-driven browser automation using natural language instructions.
-- **Memory Tools**: Direct interface to the Memory system for storing and retrieving contextual information across task sessions.
-- **Context Tools**: Tools for managing and updating task context variables, allowing agents to maintain and share state information.
-- **Planning Tools**: Sophisticated task planning and execution tracking tools that help agents break down complex tasks into manageable phases.
-- **Search Tools**: Web search capabilities using multiple search engines (Google, Bing, DuckDuckGo) with configurable parameters.
-
-By providing these foundational capabilities, VibeX ensures that developers can build powerful and effective agent teams from day one.
-
-## 10. Extensibility
-
-VibeX is designed as a production-ready backbone, which means it must be extensible at every layer.
-
-- **Adding LLM Providers**: The `Brain` component uses a provider model that allows new LLMs to be integrated by implementing a simple, common interface.
-- **Custom Tools**: Developers can add their own tools by decorating Python functions. These are registered with the task's ToolManager and exposed to agents in the same way as standard tools.
-- **MCP Tools & API Integration**: For complex integrations, the framework supports Multi-Container Platform (MCP) tools, which run in secure sandboxes, allowing safe interaction with enterprise APIs and SaaS platforms.
-
-## 11. The Future of VibeX
-
-VibeX will continue to evolve along three pillars: performance, interoperability, and safety. Upcoming priorities include native support for streaming multimodal models, tighter integration with external knowledge graphs to improve grounding, and progressive guardrail policies that adapt to organisational compliance requirements. We also plan to continue enhancing the default **Orchestrator** and **Standard Agent** library to make the framework even more powerful out of the box.
+Note: The `{project_id}` in agent endpoints is the same as the project ID - each XAgent shares its project's identifier.

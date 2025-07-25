@@ -35,7 +35,7 @@ async function testSSEStreaming() {
     // Step 1: Create task
     log('1. Creating task...', colors.cyan);
     
-    const createResponse = await fetch(`${API_BASE_URL}/tasks`, {
+    const createResponse = await fetch(`${API_BASE_URL}/projects`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ async function testSSEStreaming() {
     // Step 2: Connect to SSE FIRST
     log('\n2. Connecting to SSE stream...', colors.cyan);
     
-    const eventSource = new EventSource(`${API_BASE_URL}/tasks/${task.task_id}/stream?user_id=${USER_ID}`);
+    const eventSource = new EventSource(`${API_BASE_URL}/projects/${task.task_id}/stream?user_id=${USER_ID}`);
     
     const receivedEvents = [];
     let connectionEstablished = false;
@@ -135,7 +135,7 @@ async function testSSEStreaming() {
     // Step 3: Send message AFTER SSE is connected
     log('\n3. Sending chat message...', colors.cyan);
     
-    const chatResponse = await fetch(`${API_BASE_URL}/tasks/${task.task_id}/chat`, {
+    const chatResponse = await fetch(`${API_BASE_URL}/projects/${task.task_id}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

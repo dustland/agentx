@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import { Providers } from "@/components/common/providers";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +46,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#3b82f6",
 };
 
@@ -56,14 +58,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>{`
-          :root {
-            --header-height: 57px;
-          }
-        `}</style>
-      </head>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

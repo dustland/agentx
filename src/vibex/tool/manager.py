@@ -24,53 +24,53 @@ class ToolManager:
     instance to prevent tool conflicts between tasks.
     """
 
-    def __init__(self, task_id: str = "default", taskspace_path: Optional[str] = None):
+    def __init__(self, project_id: str = "default", workspace_path: Optional[str] = None):
         """
         Initialize tool manager with task isolation.
 
         Args:
-            task_id: Unique identifier for this task (for logging/debugging)
-            taskspace_path: Path to task-specific taskspace (for file tools)
+            project_id: Unique identifier for this task (for logging/debugging)
+            workspace_path: Path to project-specific workspace (for file tools)
         """
-        self.task_id = task_id
-        self.taskspace_path = taskspace_path
+        self.project_id = project_id
+        self.workspace_path = workspace_path
         self.registry = ToolRegistry()
 
-        # Register task-specific builtin tools if taskspace_path is provided
-        if taskspace_path:
-            self._register_builtin_tools(taskspace_path)
+        # Register project-specific builtin tools if workspace_path is provided
+        if workspace_path:
+            self._register_builtin_tools(workspace_path)
 
         self.executor = ToolExecutor(registry=self.registry)
 
-        logger.debug(f"ToolManager initialized for task {task_id} with taskspace: {taskspace_path}")
+        logger.debug(f"ToolManager initialized for project {project_id} with workspace: {workspace_path}")
 
-    def _register_builtin_tools(self, taskspace_path: str):
-        """Register builtin tools with correct taskspace path."""
+    def _register_builtin_tools(self, workspace_path: str):
+        """Register builtin tools with correct workspace path."""
         from ..builtin_tools import register_builtin_tools
-        from ..storage.factory import TaskspaceFactory
+        from ..storage.factory import ProjectStorageFactory
         from pathlib import Path
 
-        # Extract task_id from taskspace_path (assuming format: base_path/task_id)
-        path = Path(taskspace_path)
-        task_id = path.name
+        # Extract project_id from workspace_path (assuming format: base_path/project_id)
+        path = Path(workspace_path)
+        project_id = path.name
         base_path = path.parent
 
-        # Create single taskspace storage instance for all tools using preferred method
-        taskspace_storage = TaskspaceFactory.create_taskspace(
+        # Create single project storage instance for all tools using preferred method
+        project_storage = ProjectStorageFactory.create_project_storage(
             base_path=base_path,
-            task_id=task_id
+            project_id=project_id
         )
 
         # Register all builtin tools using the centralized function
-        register_builtin_tools(self.registry, taskspace_storage=taskspace_storage)
+        register_builtin_tools(self.registry, project_storage=project_storage)
 
-        logger.info(f"Registered builtin tools for taskspace: {taskspace_path}")
+        logger.info(f"Registered builtin tools for workspace: {workspace_path}")
 
     # Registry methods (delegation)
     def register_tool(self, tool: Tool) -> None:
         """Register a tool with this task's registry."""
         self.registry.register_tool(tool)
-        logger.debug(f"Registered tool {tool.__class__.__name__} with task {self.task_id}")
+        logger.debug(f"Registered tool {tool.__class__.__name__} with task {self.project_id}")
 
     def list_tools(self) -> List[str]:
         """Get list of all registered tool names."""
@@ -118,10 +118,10 @@ class ToolManager:
         """Clear all registered tools (useful for testing)."""
         self.registry.clear()
         self.executor.clear_history()
-        logger.debug(f"Cleared all tools for task {self.task_id}")
+        logger.debug(f"Cleared all tools for task {self.project_id}")
 
     def __str__(self) -> str:
-        return f"ToolManager(task_id='{self.task_id}', tools={self.get_tool_count()})"
+        return f"ToolManager(project_id='{self.project_id}', tools={self.get_tool_count()})"
 
     def __repr__(self) -> str:
         return self.__str__()

@@ -183,15 +183,15 @@ class TestWebToolCrawl4AI:
 
     @pytest.mark.asyncio
     async def test_extract_urls_taskspace_integration(self):
-        """Test taskspace storage integration."""
+        """Test project_storage storage integration."""
         test_url = "https://example.com"
         test_content = "# Test Content\nThis is test content."
         
-        # Mock taskspace
+        # Mock project_storage
         mock_taskspace = AsyncMock()
         mock_taskspace.store_artifact = AsyncMock(return_value=Mock(success=True))
         
-        self.web_tool.taskspace = mock_taskspace
+        self.web_tool.project_storage = mock_taskspace
         
         # Mock crawler
         mock_result = Mock()
@@ -210,7 +210,7 @@ class TestWebToolCrawl4AI:
             result = await self.web_tool.extract_urls(test_url)
             
             assert result.success is True
-            # Verify taskspace was called
+            # Verify project_storage was called
             mock_taskspace.store_artifact.assert_called_once()
             
             # Check the stored content includes metadata

@@ -28,11 +28,11 @@ class ContextTool(Tool):
     - File-based persistence with backup
     """
 
-    def __init__(self, context_file: str = "context.json", taskspace_path: str = "./.vibex/tasks"):
+    def __init__(self, context_file: str = "context.json", project_path: str = "./.vibex/projects"):
         super().__init__()
-        self.taskspace_path = Path(taskspace_path).resolve()
-        self.taskspace_path.mkdir(parents=True, exist_ok=True)
-        self.context_file = self.taskspace_path / context_file
+        self.project_path = Path(project_path).resolve()
+        self.project_path.mkdir(parents=True, exist_ok=True)
+        self.context_file = self.project_path / context_file
         self.context_data = self._load_context()
 
     def _load_context(self) -> Dict[str, Any]:

@@ -2,7 +2,7 @@
 VibeX Observability Monitor
 
 Read-only observability system that monitors VibeX project data:
-- Reads taskspace data from {project_path}/.vibex/tasks/
+- Reads taskspace data from {project_path}/.vibex/projects/
 - Reads configuration from {project_path}/config/
 - Provides web interface for viewing project data
 - Does NOT create or modify any files
@@ -27,7 +27,7 @@ class ProjectStorage:
         self.taskspace_dir = self.project_path / ".vibex" / "tasks"
         self.config_dir = self.project_path / "config"
 
-    def _get_taskspace_file_path(self, filename: str) -> Path:
+    def _get_projectspace_file_path(self, filename: str) -> Path:
         """Get full path for a taskspace data file."""
         if not filename.endswith('.json'):
             filename += '.json'
@@ -39,7 +39,7 @@ class ProjectStorage:
 
     def read_taskspace_file(self, filename: str) -> Dict[str, Any]:
         """Read data from taskspace file."""
-        file_path = self._get_taskspace_file_path(filename)
+        file_path = self._get_projectspace_file_path(filename)
 
         if not file_path.exists():
             return {}
@@ -74,15 +74,15 @@ class ProjectStorage:
 
     def taskspace_file_exists(self, filename: str) -> bool:
         """Check if taskspace file exists."""
-        return self._get_taskspace_file_path(filename).exists()
+        return self._get_projectspace_file_path(filename).exists()
 
     def config_file_exists(self, filename: str) -> bool:
         """Check if config file exists."""
         return self._get_config_file_path(filename).exists()
 
-    def get_taskspace_file_info(self, filename: str) -> Dict[str, Any]:
+    def get_projectspace_file_info(self, filename: str) -> Dict[str, Any]:
         """Get taskspace file information."""
-        file_path = self._get_taskspace_file_path(filename)
+        file_path = self._get_projectspace_file_path(filename)
         if not file_path.exists():
             return {"exists": False}
 
@@ -146,10 +146,10 @@ class ConversationHistory:
         self.storage = storage
         self.filename = "conversations"
 
-    def get_conversation(self, task_id: str) -> List[Dict[str, Any]]:
+    def get_conversation(self, project_id: str) -> List[Dict[str, Any]]:
         """Get conversation for a task."""
         data = self.storage.read_taskspace_file(self.filename)
-        return data.get("tasks", {}).get(task_id, [])
+        return data.get("tasks", {}).get(project_id, [])
 
     def get_recent_tasks(self, limit: int = 10) -> List[str]:
         """Get list of recent task IDs."""
@@ -158,26 +158,26 @@ class ConversationHistory:
 
         # Sort by last message timestamp
         task_times = []
-        for task_id, messages in tasks.items():
+        for project_id, messages in tasks.items():
             if messages:
                 last_msg = messages[-1]
                 timestamp = last_msg.get('timestamp', '1970-01-01T00:00:00')
-                task_times.append((timestamp, task_id))
+                task_times.append((timestamp, project_id))
 
         task_times.sort(reverse=True)
-        return [task_id for _, task_id in task_times[:limit]]
+        return [project_id for _, project_id in task_times[:limit]]
 
-    def get_task_summary(self, task_id: str) -> Dict[str, Any]:
+    def get_project_summary(self, project_id: str) -> Dict[str, Any]:
         """Get summary of a task."""
-        messages = self.get_conversation(task_id)
+        messages = self.get_conversation(project_id)
         if not messages:
-            return {"task_id": task_id, "message_count": 0}
+            return {"project_id": project_id, "message_count": 0}
 
         first_msg = messages[0]
         last_msg = messages[-1]
 
         return {
-            "task_id": task_id,
+            "project_id": project_id,
             "message_count": len(messages),
             "started_at": first_msg.get('timestamp'),
             "last_activity": last_msg.get('timestamp'),
@@ -262,7 +262,7 @@ class ArtifactsViewer:
 
         for filename in taskspace_files:
             try:
-                file_info = self.storage.get_taskspace_file_info(filename)
+                file_info = self.storage.get_projectspace_file_info(filename)
                 files.append({
                     "name": filename,
                     "path": filename,
@@ -289,7 +289,7 @@ class ArtifactsViewer:
     def get_file_content(self, filename: str) -> Dict[str, Any]:
         """Get file content and metadata."""
         try:
-            file_info = self.storage.get_taskspace_file_info(filename)
+            file_info = self.storage.get_projectspace_file_info(filename)
             is_text = self._is_text_file(filename)
 
             if is_text:
@@ -302,7 +302,7 @@ class ArtifactsViewer:
                         content = json.dumps(content_dict, indent=2, ensure_ascii=False)
                     else:
                         # For other text files, read raw content
-                        file_path = self.storage._get_taskspace_file_path(filename)
+                        file_path = self.storage._get_projectspace_file_path(filename)
                         with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read()
 
@@ -503,9 +503,9 @@ class ObservabilityMonitor:
             return {"error": str(e)}
 
     # Conversation methods
-    def get_task_conversation(self, task_id: str) -> List[Dict[str, Any]]:
+    def get_project_conversation(self, project_id: str) -> List[Dict[str, Any]]:
         """Get conversation for a specific task."""
-        return self.conversation_history.get_conversation(task_id)
+        return self.conversation_history.get_conversation(project_id)
 
     def get_recent_tasks(self, limit: int = 10) -> List[str]:
         """Get recent task IDs."""
@@ -556,9 +556,9 @@ class ObservabilityMonitor:
             "storage": {
                 "taskspace_dir": str(self.storage.taskspace_dir),
                 "config_dir": str(self.storage.config_dir),
-                "conversations_file": str(self.storage._get_taskspace_file_path("conversations")),
-                "events_file": str(self.storage._get_taskspace_file_path("events")),
-                "memory_file": str(self.storage._get_taskspace_file_path("memory"))
+                "conversations_file": str(self.storage._get_projectspace_file_path("conversations")),
+                "events_file": str(self.storage._get_projectspace_file_path("events")),
+                "memory_file": str(self.storage._get_projectspace_file_path("memory"))
             },
             "project_status": self.get_project_status()
         }

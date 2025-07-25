@@ -13,7 +13,7 @@ export interface Task {
 
 export interface Message {
   id: string
-  task_id: string
+  project_id: string
   agent: string
   content: string
   timestamp: string
@@ -53,30 +53,30 @@ class ApiClient {
     return response.json()
   }
 
-  // Task operations
-  async createTask(data: { objective: string; team_config: string }) {
-    return this.fetch('/tasks', {
+  // Project operations
+  async createProject(data: { objective: string; team_config: string }) {
+    return this.fetch('/projects', {
       method: 'POST',
       body: JSON.stringify(data),
     })
   }
 
-  async getTask(taskId: string) {
-    return this.fetch(`/tasks/${taskId}`)
+  async getProject(projectId: string) {
+    return this.fetch(`/projects/${projectId}`)
   }
 
-  async listTasks(params?: { limit?: number; offset?: number }) {
+  async listProjects(params?: { limit?: number; offset?: number }) {
     const query = new URLSearchParams(params as any).toString()
-    return this.fetch(`/tasks?${query}`)
+    return this.fetch(`/projects?${query}`)
   }
 
   // Message operations
-  async getMessages(taskId: string) {
-    return this.fetch(`/tasks/${taskId}/messages`)
+  async getMessages(projectId: string) {
+    return this.fetch(`/projects/${projectId}/messages`)
   }
 
-  streamMessages(taskId: string, onMessage: (message: Message) => void) {
-    const eventSource = new EventSource(`${API_URL}/tasks/${taskId}/messages/stream`)
+  streamMessages(projectId: string, onMessage: (message: Message) => void) {
+    const eventSource = new EventSource(`${API_URL}/projects/${projectId}/messages/stream`)
     
     eventSource.onmessage = (event) => {
       const message = JSON.parse(event.data)
@@ -91,12 +91,12 @@ class ApiClient {
   }
 
   // Artifact operations
-  async getArtifacts(taskId: string) {
-    return this.fetch(`/tasks/${taskId}/artifacts`)
+  async getArtifacts(projectId: string) {
+    return this.fetch(`/projects/${projectId}/artifacts`)
   }
 
-  async downloadArtifact(taskId: string, artifactName: string) {
-    const response = await fetch(`${API_URL}/tasks/${taskId}/artifacts/${artifactName}`)
+  async downloadArtifact(projectId: string, artifactName: string) {
+    const response = await fetch(`${API_URL}/projects/${projectId}/artifacts/${artifactName}`)
     return response.blob()
   }
 

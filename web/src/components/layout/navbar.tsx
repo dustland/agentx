@@ -11,7 +11,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeSwitcher } from "@/components/common/theme-switcher";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,7 +32,7 @@ export function Navbar({ className }: NavbarProps) {
       isActive: pathname === "/",
     },
     {
-      label: "Tasks",
+      label: "Projects",
       icon: Workflow,
       href: "/tasks",
       isActive:

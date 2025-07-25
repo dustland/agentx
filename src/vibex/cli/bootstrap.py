@@ -231,8 +231,8 @@ async def main():
             if x is None:
                 print("\\n🚀 Starting your AI team...")
                 x = await start_task(user_input, str(config_path))
-                print(f"📋 Task ID: {{x.task_id}}")
-                print(f"📁 Taskspace: {{x.taskspace.get_taskspace_path()}}")
+                print(f"📋 Task ID: {{x.project_id}}")
+                print(f"📁 Taskspace: {{x.taskspace.get_projectspace_path()}}")
                 print()
 
             # Chat with X
@@ -250,7 +250,7 @@ async def main():
         print("\\n\\n👋 Session ended. Your work is saved in the taskspace!")
 
     if x:
-        print(f"\\n📁 Check your results in: {{x.taskspace.get_taskspace_path()}}")
+        print(f"\\n📁 Check your results in: {{x.taskspace.get_projectspace_path()}}")
 
 
 if __name__ == "__main__":

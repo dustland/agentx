@@ -13,7 +13,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
-from vibex import start_task
+from vibex import VibeX
 
 
 async def main():
@@ -27,16 +27,20 @@ async def main():
     print("🎬 Starting collaboration...\n")
 
     try:
-        # Start task with XAgent - creates a conversational interface
-        x = await start_task(prompt, config_path)
+        # Start task with VibeX - creates a conversational interface
+        x = await VibeX.start(
+            project_id="simple_team_project",
+            goal=prompt,
+            config_path=config_path,
+        )
 
-        print(f"📋 Task ID: {x.task_id}")
-        print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
+        print(f"📋 Project ID: {x.project_id}")
+        print(f"📁 Workspace: {x.workspace.get_path()}")
         print("-" * 60)
 
         # Execute the team collaboration autonomously
         print("🤖 X: Starting writer + reviewer collaboration...")
-        while not x.is_complete:
+        while not x.is_complete():
             response = await x.step()
             print(f"🤖 X: {response}")
             print("-" * 60)
@@ -51,15 +55,12 @@ async def main():
         for question in follow_ups:
             print(f"💬 User: {question}")
             response = await x.chat(question)
-            print(f"🤖 X: {response.text}")
-
-            if response.preserved_steps:
-                print(f"   ✅ Preserved {len(response.preserved_steps)} completed steps")
+            print(f"🤖 X: {response}")
 
             print("-" * 60)
 
         print("✅ Team collaboration completed!")
-        print(f"📁 Check taskspace for collaboration artifacts: {x.taskspace.get_taskspace_path()}")
+        print(f"📁 Check workspace for collaboration artifacts: {x.workspace.get_path()}")
 
         # Demonstrate conversational team capabilities
         print("\n💬 You can continue chatting with the team:")

@@ -12,10 +12,11 @@ import shutil
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
-from vibex.core.plan import Plan, PlanItem
+from vibex.core.plan import Plan
+from vibex.core.task import Task
 from vibex.core.xagent import XAgent
 from vibex.core.config import TeamConfig, AgentConfig, BrainConfig
-from vibex.storage.taskspace import TaskspaceStorage
+from vibex.storage.project import ProjectStorage
 
 
 class TestParallelExecution:
@@ -23,14 +24,18 @@ class TestParallelExecution:
 
     @pytest.fixture
     async def temp_taskspace(self):
-        """Create a temporary taskspace for testing."""
+        """Create a temporary project_storage for testing."""
         temp_dir = Path(tempfile.mkdtemp())
-        taskspace = TaskspaceStorage(
-            task_id="test_parallel_execution",
-            taskspace_path=str(temp_dir)
+        from vibex.storage.backends import LocalFileStorage
+        file_storage = LocalFileStorage(str(temp_dir))
+        project_storage = ProjectStorage(
+            base_path=str(temp_dir.parent),
+            project_id="test_parallel_execution",
+            file_storage=file_storage,
+            use_git_artifacts=False
         )
         
-        yield taskspace
+        yield project_storage
         
         # Cleanup
         shutil.rmtree(temp_dir, ignore_errors=True)
@@ -73,7 +78,7 @@ class TestParallelExecution:
         plan = Plan(
             goal="Test parallel execution",
             tasks=[
-                PlanItem(
+                Task(
                     id="task1",
                     name="Research Flask",
                     goal="Research Flask framework",
@@ -81,7 +86,7 @@ class TestParallelExecution:
                     dependencies=[],
                     status="pending"
                 ),
-                PlanItem(
+                Task(
                     id="task2", 
                     name="Research FastAPI",
                     goal="Research FastAPI framework",
@@ -89,7 +94,7 @@ class TestParallelExecution:
                     dependencies=[],
                     status="pending"
                 ),
-                PlanItem(
+                Task(
                     id="task3",
                     name="Write introduction",
                     goal="Write document introduction", 
@@ -97,7 +102,7 @@ class TestParallelExecution:
                     dependencies=["task1", "task2"],  # Depends on research tasks
                     status="pending"
                 ),
-                PlanItem(
+                Task(
                     id="task4",
                     name="Research Django",
                     goal="Research Django framework",
@@ -141,7 +146,7 @@ class TestParallelExecution:
         """Test the parallel execution logic without actual LLM calls."""
         
         # Create XAgent with mocked components
-        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+        with patch('vibex.xagent.load_team_config', return_value=mock_team_config):
             with patch('vibex.core.agent.Agent') as MockAgent:
                 # Setup mock agents
                 mock_researcher = AsyncMock()
@@ -155,7 +160,7 @@ class TestParallelExecution:
                 # Initialize XAgent
                 xagent = XAgent(
                     task_id="test_parallel",
-                    taskspace=temp_taskspace,
+                    project_storage=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
@@ -163,7 +168,7 @@ class TestParallelExecution:
                 xagent.plan = Plan(
                     goal="Test parallel research",
                     tasks=[
-                        PlanItem(
+                        Task(
                             id="research_flask",
                             name="Research Flask",
                             goal="Research Flask framework",
@@ -171,7 +176,7 @@ class TestParallelExecution:
                             dependencies=[],
                             status="pending"
                         ),
-                        PlanItem(
+                        Task(
                             id="research_fastapi", 
                             name="Research FastAPI",
                             goal="Research FastAPI framework",
@@ -179,7 +184,7 @@ class TestParallelExecution:
                             dependencies=[],
                             status="pending"
                         ),
-                        PlanItem(
+                        Task(
                             id="research_django",
                             name="Research Django", 
                             goal="Research Django framework",
@@ -219,7 +224,7 @@ class TestParallelExecution:
     async def test_fallback_to_sequential(self, temp_taskspace, mock_team_config):
         """Test that parallel execution falls back to sequential when only one task available."""
         
-        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+        with patch('vibex.xagent.load_team_config', return_value=mock_team_config):
             with patch('vibex.core.agent.Agent') as MockAgent:
                 mock_researcher = AsyncMock()
                 mock_researcher.generate_response = AsyncMock(return_value=AsyncMock(content="Research completed"))
@@ -227,7 +232,7 @@ class TestParallelExecution:
                 
                 xagent = XAgent(
                     task_id="test_sequential_fallback",
-                    taskspace=temp_taskspace,
+                    project_storage=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
@@ -235,7 +240,7 @@ class TestParallelExecution:
                 xagent.plan = Plan(
                     goal="Test sequential fallback",
                     tasks=[
-                        PlanItem(
+                        Task(
                             id="single_task",
                             name="Single research task",
                             goal="Research one topic",
@@ -262,7 +267,7 @@ class TestParallelExecution:
     async def test_error_handling_in_parallel(self, temp_taskspace, mock_team_config):
         """Test error handling during parallel execution."""
         
-        with patch('vibex.core.xagent.load_team_config', return_value=mock_team_config):
+        with patch('vibex.xagent.load_team_config', return_value=mock_team_config):
             with patch('vibex.core.agent.Agent') as MockAgent:
                 # Setup one successful and one failing agent
                 mock_researcher = AsyncMock()
@@ -279,7 +284,7 @@ class TestParallelExecution:
                 
                 xagent = XAgent(
                     task_id="test_error_handling", 
-                    taskspace=temp_taskspace,
+                    project_storage=temp_taskspace,
                     team_config=mock_team_config
                 )
                 
@@ -287,7 +292,7 @@ class TestParallelExecution:
                 xagent.plan = Plan(
                     goal="Test error handling",
                     tasks=[
-                        PlanItem(
+                        Task(
                             id="task_success",
                             name="Successful task",
                             goal="This should succeed",
@@ -296,7 +301,7 @@ class TestParallelExecution:
                             status="pending",
                             on_failure="proceed"
                         ),
-                        PlanItem(
+                        Task(
                             id="task_failure",
                             name="Failing task", 
                             goal="This should fail",

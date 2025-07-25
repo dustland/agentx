@@ -25,7 +25,7 @@ class StreamChunk(BaseModel):
 class TaskStartEvent(BaseModel):
     """Task execution started."""
     type: Literal["event_task_start"] = "event_task_start"
-    task_id: str
+    project_id: str
     timestamp: datetime
     initial_prompt: str
     execution_mode: str
@@ -34,7 +34,7 @@ class TaskStartEvent(BaseModel):
 class TaskCompleteEvent(BaseModel):
     """Task execution completed."""
     type: Literal["event_task_complete"] = "event_task_complete"
-    task_id: str
+    project_id: str
     timestamp: datetime
     final_status: Literal["success", "error", "cancelled"]
     summary: Optional[str] = None
@@ -45,7 +45,7 @@ class TaskCompleteEvent(BaseModel):
 class TaskPausedEvent(BaseModel):
     """Task execution paused."""
     type: Literal["event_task_paused"] = "event_task_paused"
-    task_id: str
+    project_id: str
     timestamp: datetime
     reason: str  # "step_mode", "breakpoint", "user_request", "hitl_intervention"
     context: Dict[str, Any] = Field(default_factory=dict)
@@ -53,7 +53,7 @@ class TaskPausedEvent(BaseModel):
 class TaskResumedEvent(BaseModel):
     """Task execution resumed."""
     type: Literal["event_task_resumed"] = "event_task_resumed"
-    task_id: str
+    project_id: str
     timestamp: datetime
     reason: str
     context: Dict[str, Any] = Field(default_factory=dict)

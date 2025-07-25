@@ -1,5 +1,4 @@
 export default {
-  "index": "Overview",
   "core": "Core",
   "builtin_tools": "Builtin Tools",
   "cli": "CLI",

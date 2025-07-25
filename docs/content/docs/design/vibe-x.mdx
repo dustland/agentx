@@ -8,21 +8,22 @@ VibeX embodies a philosophy we call **Vibe-X**: delivering immediate productivit
 
 **Batteries Included, Brain Engaged:**
 
-- Ship with a complete standard library: default `Lead` + specialist agents (planner, researcher, writer, reviewer)
-- Enable powerful multi-agent workflows with zero custom code
+- XAgent as the single entry point - no complex API to learn
+- Ship with specialist agents pre-configured (planner, researcher, writer, reviewer)
+- Enable powerful multi-agent workflows with simple conversational commands
 - Provide a foundation that works out-of-the-box for common use cases
 
 **The Art of State:**
 
-- Stateful Lead maintains progress in `plan.md` for full transparency
-- Durable taskspace with version control for task resumption
-- Clear separation between orchestration logic (Python) and domain expertise (prompts)
+- XAgent maintains all state internally - no project objects to manage
+- Durable workspace with version control for session resumption
+- Clear separation between orchestration (XAgent) and domain expertise (specialist agents)
 
 **Complete Transparency:**
 
-- Every decision, message, and artifact is observable and debuggable
-- No black boxes - you can see exactly how the Lead routes tasks
-- Full control to customize or replace any component when needed
+- Every decision, message, and artifact is observable through XAgent
+- No black boxes - you can see exactly how XAgent coordinates the team
+- Full control through natural language - guide the work as it happens
 
 ---
 
@@ -110,7 +111,7 @@ A Vibe-X project relies on two complementary stores that provide a durable, shar
 1.  **The Taskspace:** This is the auditable, human-readable file system. It contains all project artifacts—source code, drafts, reports, logs—and serves as the "source of truth." It's designed to be versioned with Git and navigated with standard tools like VS Code.
 2.  **The Memory:** This is a high-performance semantic store (e.g., a vector database) that acts as the AI's "long-term memory." It contains distilled knowledge, key decisions, conversation history, and indexed references to taskspace artifacts.
 
-The taskspace is where work _lives_. The memory is how the AI _understands_ that work, allowing it to retrieve relevant context instantly without being overwhelmed by the entire project history. This duality enables true, resumable sessions.
+The workspace is where work _lives_. The memory is how XAgent _understands_ that work, allowing it to retrieve relevant context instantly without being overwhelmed by the entire project history. This duality enables true, resumable sessions - just call `XAgent.resume(agent_id)` and continue where you left off.
 
 ### **Pillar 2: The Transparent Feedback Loop — The Collaborative Nervous System**
 
@@ -133,18 +134,54 @@ A professional-grade framework cannot ignore economics. Vibe-X is architected ar
 
 This dynamic, cost-aware routing makes continuous, long-term AI collaboration economically viable, transforming it from a novelty into a sustainable business process.
 
-### **Pillar 4: The Default Lead & Standard Agents — The "Batteries-Included" Workflow**
+### **Pillar 4: XAgent as Primary Interface — The "Just Talk to X" Experience**
 
-To truly accelerate development, a framework must do more than just provide patterns; it must provide a working implementation of those patterns. The default **`Lead`** is a pre-built, intelligent orchestrator that ships with VibeX. It is designed to manage a standard library of **Standard Agents** (`Planner`, `Researcher`, `Writer`, `Coder`, etc.).
+To truly deliver on the Vibe-X philosophy, the framework must be immediately accessible. **XAgent** ("X" for short) is your primary interface to VibeX - the AI collaborator you interact with directly.
 
-This enables developers to bootstrap a capable, multi-agent system with minimal configuration, often without writing a single prompt. A user can simply specify `lead: default` in their configuration to get an intelligent workflow manager out of the box.
+```python
+# This is all you need
+from vibex import XAgent
 
-This embodies the principle of **"fast start, full control."** Developers can be productive in minutes using the default system. When their needs become more specific, they can seamlessly "eject" from the standard library, either by providing a custom prompt for a single agent or by implementing their own specialized Lead (e.g., `class MyLead(BaseLead)`) to handle unique, domain-specific logic.
+x = await XAgent.start("Build a documentation site")
+response = await x.chat("Make it searchable")
+```
+
+X manages everything internally:
+- **Team Coordination**: X automatically delegates to specialist agents
+- **State Management**: No project objects or complex APIs to manage
+- **Natural Interaction**: Just chat - X understands context and intent
+
+This embodies the principle of **"fast start, full control."** You're productive in seconds, not minutes. When you need specific behaviors, you can configure X's team through simple YAML files, never touching the orchestration code.
+
+The genius is in what you _don't_ see: projects, tasks, plans, and agents are all internal implementation details. You just talk to X, and X makes it happen.
 
 ---
 
-## 6. Conclusion: Beyond Automation, Towards Augmentation
+## 6. The Simplicity of X: Your AI Collaborator
 
-Vibe-X is a bet against pure automation. It is a framework founded on the belief that the most significant breakthroughs will come from **augmenting** human experts, not attempting to replace them. By providing a persistent, transparent, and economically sound environment for collaboration, VibeX empowers professionals to delegate the toil while retaining full creative and strategic control.
+The ultimate expression of the Vibe-X philosophy is its interface: **X**. 
 
-It reframes AI from a magic wand into a tireless, knowledgeable, and indispensable partner in the process of creation.
+Where other frameworks expose complex abstractions—projects, orchestrators, task queues—VibeX gives you a single point of contact. X is your AI collaborator, and like the best human collaborators, X handles the complexity so you don't have to.
+
+```python
+# Start a collaboration
+x = await XAgent.start("Build a web scraper")
+
+# Work together
+await x.chat("It should handle pagination")
+await x.chat("Add rate limiting to be respectful")
+
+# Resume anytime
+x = await XAgent.resume("proj_abc123")  # Uses project ID
+await x.chat("Now make it output JSON")
+```
+
+This radical simplicity—hiding projects, tasks, and plans as internal implementation details—transforms AI collaboration from a technical endeavor into a natural conversation. You don't manage a project; you work with X.
+
+## 7. Conclusion: Beyond Automation, Towards Augmentation
+
+Vibe-X is a bet against pure automation. It is a framework founded on the belief that the most significant breakthroughs will come from **augmenting** human experts, not attempting to replace them. 
+
+By providing a persistent, transparent, and economically sound environment for collaboration—all through the simple interface of talking to X—VibeX empowers professionals to delegate the toil while retaining full creative and strategic control.
+
+It reframes AI from a magic wand into a tireless, knowledgeable, and indispensable partner in the process of creation. And that partner has a name: **X**.

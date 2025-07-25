@@ -30,7 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ThemeSwitcher } from "@/components/common/theme-switcher";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import {
   ChevronRight,
   Settings,

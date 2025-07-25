@@ -36,10 +36,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useUser } from "@/contexts/user-context";
 import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
-import { UserAvatar } from "@/components/ui/user-avatar";
-import { ThemeSwitcher } from "../common/theme-switcher";
-import { useTasks } from "@/hooks/use-task";
+import { UserAvatar } from "@/components/user-avatar";
+import { ThemeSwitcher } from "../theme-switcher";
+import { useProjects } from "@/hooks/use-project";
 import { useAppStore } from "@/store/app";
+import { Icons } from "../icons";
 
 interface SidebarProps {
   className?: string;
@@ -79,13 +80,13 @@ const getStatusColor = (status: string) => {
 
 const getTimeAgo = (date: Date): string => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  
+
   if (seconds < 60) return "just now";
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
 export function Sidebar({
@@ -96,17 +97,21 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useUser();
-  const { tasks: tasksResponse, isLoading, deleteTask: deleteTaskMutation } = useTasks();
+  const {
+    tasks: xagentsResponse,
+    isLoading,
+    deleteProject: deleteXAgentMutation,
+  } = useProjects();
   const { sidebarPinned, setSidebarPinned } = useAppStore();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
-  
-  const tasks = tasksResponse.map((task: any) => ({
-    id: task.task_id,
-    status: task.status,
-    task_description: task.task_description,
-    config_path: task.config_path,
-    created_at: task.created_at,
+
+  const xagents = xagentsResponse.map((xagent: any) => ({
+    id: xagent.agent_id,
+    status: xagent.status,
+    goal: xagent.goal,
+    config_path: xagent.config_path,
+    created_at: xagent.created_at,
   }));
 
   // Sync with isFloating prop
@@ -116,19 +121,19 @@ export function Sidebar({
     }
   }, [sidebarPinned, isFloating, onFloatingChange]);
 
-  const currentTaskId = pathname.match(/\/x\/([^\/]+)/)?.[1];
+  const currentAgentId = pathname.match(/\/agent\/([^\/]+)/)?.[1];
 
-  const filteredTasks = tasks.filter((task) => {
+  const filteredXAgents = xagents.filter((xagent: any) => {
     if (statusFilter === "all") return true;
-    return task.status === statusFilter;
+    return xagent.status === statusFilter;
   });
 
-  // Count tasks by status
+  // Count XAgents by status
   const statusCounts = {
-    all: tasks.length,
-    running: tasks.filter((t) => t.status === "running").length,
-    completed: tasks.filter((t) => t.status === "completed").length,
-    failed: tasks.filter((t) => t.status === "error").length,
+    all: xagents.length,
+    running: xagents.filter((x: any) => x.status === "running").length,
+    completed: xagents.filter((x: any) => x.status === "completed").length,
+    failed: xagents.filter((x: any) => x.status === "error").length,
   };
 
   // Only notify parent when user manually changes the pin state
@@ -196,16 +201,6 @@ export function Sidebar({
               </Button>
             </div>
           </div>
-
-          <Button
-            className="w-full gap-2"
-            size="sm"
-            variant="outline"
-            onClick={() => router.push("/")}
-          >
-            <Plus className="h-4 w-4" />
-            New Task
-          </Button>
         </div>
 
         {/* Status Filters */}
@@ -243,52 +238,54 @@ export function Sidebar({
           </ToggleGroup>
         </div>
 
-        {/* Task List */}
+        {/* Project List */}
         <ScrollArea className="flex-1 min-h-0">
           <div className="p-2 space-y-1">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mb-2" />
                 <p className="text-xs text-muted-foreground">
-                  Loading tasks...
+                  Loading XAgents...
                 </p>
               </div>
-            ) : filteredTasks.length === 0 ? (
+            ) : filteredXAgents.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
                   <AlertCircle className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-medium mb-1">No tasks found</p>
+                <p className="text-sm font-medium mb-1">No XAgents found</p>
                 <p className="text-xs opacity-75">
-                  Create a new task to get started
+                  Create a new XAgent to get started
                 </p>
               </div>
             ) : (
-              filteredTasks.map((task, index) => {
-                const isActive = currentTaskId === task.id;
-                const createdAt = task.created_at ? new Date(task.created_at) : null;
+              filteredXAgents.map((xagent: any, index: number) => {
+                const isActive = currentAgentId === xagent.id;
+                const createdAt = xagent.created_at
+                  ? new Date(xagent.created_at)
+                  : null;
                 const timeAgo = createdAt ? getTimeAgo(createdAt) : null;
 
                 return (
                   <div
-                    key={task.id}
+                    key={xagent.id}
                     className={cn(
                       "group relative rounded-lg cursor-pointer transition-all duration-200",
                       "border hover:shadow-sm",
-                      isActive 
-                        ? "bg-accent border-accent-foreground/20 shadow-sm" 
+                      isActive
+                        ? "bg-accent border-accent-foreground/20 shadow-sm"
                         : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                     )}
-                    onClick={() => router.push(`/x/${task.id}`)}
+                    onClick={() => router.push(`/agent/${xagent.id}`)}
                   >
                     {/* Status indicator bar */}
                     <div
                       className={cn(
                         "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                        task.status === "running" && "bg-blue-500",
-                        task.status === "completed" && "bg-green-500",
-                        task.status === "error" && "bg-red-500",
-                        task.status === "pending" && "bg-yellow-500"
+                        xagent.status === "running" && "bg-blue-500",
+                        xagent.status === "completed" && "bg-green-500",
+                        xagent.status === "error" && "bg-red-500",
+                        xagent.status === "pending" && "bg-yellow-500"
                       )}
                     />
 
@@ -296,11 +293,15 @@ export function Sidebar({
                       {/* Header with title and actions */}
                       <div className="flex items-start justify-between gap-2 mb-1.5">
                         <div className="flex-1 min-w-0">
-                          <h4 className={cn(
-                            "font-medium text-sm leading-tight line-clamp-2",
-                            isActive ? "text-accent-foreground" : "text-foreground"
-                          )}>
-                            {task.task_description || "Untitled Task"}
+                          <h4
+                            className={cn(
+                              "font-medium text-sm leading-tight line-clamp-2",
+                              isActive
+                                ? "text-accent-foreground"
+                                : "text-foreground"
+                            )}
+                          >
+                            {xagent.goal || "Untitled XAgent"}
                           </h4>
                         </div>
 
@@ -333,10 +334,10 @@ export function Sidebar({
                               className="text-destructive"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                deleteTaskMutation.mutate(task.id, {
+                                deleteXAgentMutation.mutate(xagent.id, {
                                   onSuccess: () => {
-                                    // If we deleted the current task, redirect to homepage
-                                    if (currentTaskId === task.id) {
+                                    // If we deleted the current XAgent, redirect to homepage
+                                    if (currentAgentId === xagent.id) {
                                       router.push("/");
                                     }
                                   },
@@ -353,22 +354,28 @@ export function Sidebar({
                       {/* Metadata */}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          {getStatusIcon(task.status)}
-                          <span className="capitalize">{task.status}</span>
+                          {getStatusIcon(xagent.status)}
+                          <span className="capitalize">{xagent.status}</span>
                         </div>
-                        
+
                         {timeAgo && (
                           <>
                             <span className="opacity-40">•</span>
                             <span>{timeAgo}</span>
                           </>
                         )}
-                        
-                        {task.config_path && (
+
+                        {xagent.config_path && (
                           <>
                             <span className="opacity-40">•</span>
-                            <span className="truncate max-w-[80px]" title={task.config_path}>
-                              {task.config_path.split('/').pop()?.replace(/\.(yaml|yml)$/, '')}
+                            <span
+                              className="truncate max-w-[80px]"
+                              title={xagent.config_path}
+                            >
+                              {xagent.config_path
+                                .split("/")
+                                .pop()
+                                ?.replace(/\.(yaml|yml)$/, "")}
                             </span>
                           </>
                         )}
@@ -427,7 +434,7 @@ export function Sidebar({
                         rel="noopener noreferrer"
                         className="flex items-center"
                       >
-                        <Github className="h-4 w-4 mr-2" />
+                        <Icons.github className="h-4 w-4 mr-2" />
                         GitHub
                         <ExternalLink className="h-3 w-3 ml-auto" />
                       </Link>

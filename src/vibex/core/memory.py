@@ -98,7 +98,7 @@ class Memory:
             if loop.is_running():
                 logger.warning("save() called in async context, use save_async() instead")
                 # Create task but can't wait for it in sync context
-                task = asyncio.create_task(self.save_async(content, metadata, importance))
+                task = asyncio.create_project(self.save_async(content, metadata, importance))
                 return "pending"  # Return placeholder
             else:
                 return loop.run_until_complete(self.save_async(content, metadata, importance))

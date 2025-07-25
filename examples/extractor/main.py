@@ -7,7 +7,7 @@ that solve the reliability issues with previous extraction methods.
 """
 
 import asyncio
-from vibex import start_task
+from vibex import VibeX
 
 async def main():
     """Run a content extraction demonstration."""
@@ -31,19 +31,20 @@ Keep it simple and focused on demonstrating reliable extraction."""
     print(f"🎯 Extraction Test: Testing Crawl4AI capabilities...")
     print("-" * 70)
 
-    # Start the extraction test with XAgent
-    x = await start_task(
-        prompt=extraction_prompt,
+    # Start the extraction test with VibeX
+    x = await VibeX.start(
+        project_id="content_extractor_project",
+        goal=extraction_prompt,
         config_path="config/team.yaml"
     )
 
-    print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
+    print(f"📋 Project ID: {x.project_id}")
+    print(f"📁 Workspace: {x.workspace.get_path()}")
     print("-" * 70)
 
     # Execute the extraction test
     print("🤖 X: Starting Crawl4AI extraction tests...")
-    while not x.is_complete:
+    while not x.is_complete():
         response = await x.step()
         print(f"🔧 Extraction Step:\n{response}\n")
         print("-" * 70)
@@ -58,11 +59,11 @@ Keep it simple and focused on demonstrating reliable extraction."""
         print(f"🧪 Test Scenario: {scenario}")
         response = await x.chat(scenario)
 
-        print(f"🔍 Extraction Result:\n{response.text}\n")
+        print(f"🔍 Extraction Result:\n{response}\n")
         print("-" * 70)
 
     print("✅ Extraction testing completed!")
-    print(f"📁 Check taskspace for extracted content: {x.taskspace.get_taskspace_path()}")
+    print(f"📁 Check workspace for extracted content: {x.workspace.get_path()}")
 
     # Show the power of the new system
     print("\n🚀 Crawl4AI Extraction System Features Demonstrated:")

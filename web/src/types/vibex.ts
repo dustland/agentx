@@ -73,12 +73,12 @@ export interface Tool {
   };
 }
 
-// Task-related types
-export interface Task {
-  task_id: string;
-  status: TaskStatus;
+// Project-related types
+export interface Project {
+  project_id: string;
+  status: ProjectStatus;
   config_path: string;
-  task_description?: string;
+  description?: string;
   created_at: string;
   updated_at?: string;
   completed_at?: string;
@@ -86,19 +86,71 @@ export interface Task {
   result?: Record<string, any>;
   user_id?: string;
   context?: Record<string, any>;
+  plan?: Plan;
 }
 
-export type TaskStatus = "pending" | "running" | "completed" | "error";
+export type ProjectStatus = "pending" | "running" | "completed" | "error";
+
+// Plan and Task types (tasks are execution units within a plan)
+export interface Plan {
+  goal: string;
+  tasks: Task[];
+  created_at?: string;
+  updated_at?: string;
+  version: number;
+}
+
+export interface Task {
+  id: string;
+  name: string;
+  description?: string;
+  status: TaskStatus;
+  dependencies: string[];
+  result?: string;
+  assigned_to?: string;
+}
+
+export type TaskStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "error";
+
+export interface CreateXAgentRequest {
+  goal: string;
+  config_path: string;
+  context?: object;
+  user_id?: string;
+}
+
+export interface TaskRun {
+  agent_id: string;
+  status: TaskStatus;
+  goal?: string;
+  result?: any;
+  error?: string;
+  created_at?: string;
+  completed_at?: string;
+  user_id?: string;
+  config_path?: string;
+  context?: any;
+  plan?: any;
+}
+
+export interface TaskRunListResponse {
+  runs: TaskRun[];
+}
 
 // API request/response types
-export interface CreateTaskRequest {
+export interface CreateProjectRequest {
+  goal: string;
   config_path: string;
-  task_description?: string;
   context?: Record<string, any>;
 }
 
-export interface TaskListResponse {
-  tasks: Task[];
+export interface ProjectListResponse {
+  projects: Project[];
   total: number;
 }
 
@@ -122,7 +174,8 @@ export type StreamEventType =
   | "tool_call_start"
   | "tool_call_result"
   | "agent_status"
-  | "task_update"
+  | "project_update"
+  | "task_progress" // Progress of individual tasks within the project
   | "artifact_created"
   | "artifact_updated"
   | "memory_updated"
@@ -166,10 +219,17 @@ export interface AgentStatusEvent {
   message?: string;
 }
 
-export interface TaskUpdateEvent {
-  status: TaskStatus;
+export interface ProjectUpdateEvent {
+  status: ProjectStatus;
   message?: string;
   progress?: number;
+}
+
+export interface TaskProgressEvent {
+  task_id: string;
+  task_name: string;
+  status: TaskStatus;
+  message?: string;
 }
 
 export interface StreamChunkEvent {
@@ -200,10 +260,15 @@ export interface ArtifactContent {
 // Memory types
 export interface MemoryContent {
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: {
+    timestamp?: string;
+    source?: string;
+    [key: string]: any;
+  };
 }
 
 export interface MemorySearchRequest {
+  agent_id: string;
   query: string;
   limit?: number;
 }

@@ -35,10 +35,10 @@ class SearchTool(Tool):
     Simple and reliable - uses best practices as defaults.
     """
 
-    def __init__(self, api_key: Optional[str] = None, taskspace_storage=None):
+    def __init__(self, api_key: Optional[str] = None, project_storage=None):
         super().__init__("search")
         self.api_key = api_key
-        self.taskspace = taskspace_storage
+        self.project_storage = project_storage
         self._backend = None
         self._init_backend()
 

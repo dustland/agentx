@@ -72,7 +72,7 @@ export const SendButton = React.forwardRef<HTMLButtonElement, SendButtonProps>(
           isDisabled
             ? "bg-secondary text-muted-foreground cursor-not-allowed hover:bg-secondary border border-border shadow-sm"
             : isLoading
-            ? "bg-background text-foreground hover:bg-background shadow-sm border border-border"
+            ? "bg-background text-foreground hover:bg-background shadow-sm border-none"
             : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md",
           className
         )}

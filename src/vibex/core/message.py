@@ -3,9 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional, Union, Literal, TYPE_CHECKING
 from ..utils.id import generate_short_id
-
-if TYPE_CHECKING:
-    from .tool import ToolCall
+from vibex.utils.logger import get_logger
 
 # This file defines the core data structures for the VibeX framework,
 # as specified in design document 03-data-and-events.md.
@@ -31,14 +29,22 @@ class Artifact(BaseModel):
 
 # --- TaskStep and its Parts ---
 
-class TextPart(BaseModel):
+class MessagePart(BaseModel):
+    """
+    A union of all possible content types that can be part of a message.
+    This allows for rich, multi-modal messages (e.g., text with images).
+
+    """
+    pass
+
+class TextPart(MessagePart):
     """Text content part with language and confidence support."""
     type: Literal["text"] = "text"
     text: str
     language: Optional[str] = None  # For multilingual support
     confidence: Optional[float] = None  # LLM confidence score
 
-class ToolCallPart(BaseModel):
+class ToolCallPart(MessagePart):
     """Tool call request part - conversation representation."""
     type: Literal["tool_call"] = "tool_call"
     tool_call_id: str
@@ -46,7 +52,7 @@ class ToolCallPart(BaseModel):
     args: Dict[str, Any]
     expected_output_type: Optional[str] = None
 
-class ToolResultPart(BaseModel):
+class ToolResultPart(MessagePart):
     """Tool execution result part."""
     type: Literal["tool_result"] = "tool_result"
     tool_call_id: str
@@ -54,12 +60,12 @@ class ToolResultPart(BaseModel):
     result: Any
     is_error: bool = False
 
-class ArtifactPart(BaseModel):
+class ArtifactPart(MessagePart):
     """Artifact reference part."""
     type: Literal["artifact"] = "artifact"
     artifact: Artifact
 
-class ImagePart(BaseModel):
+class ImagePart(MessagePart):
     """Image content part with metadata."""
     type: Literal["image"] = "image"
     image_url: str  # Can be data URL or artifact reference
@@ -67,7 +73,7 @@ class ImagePart(BaseModel):
     dimensions: Optional[Dict[str, int]] = None  # width, height
     format: Optional[str] = None  # png, jpg, etc.
 
-class AudioPart(BaseModel):
+class AudioPart(MessagePart):
     """Audio content part with metadata."""
     type: Literal["audio"] = "audio"
     audio_url: str  # Can be data URL or artifact reference
@@ -83,7 +89,7 @@ class MemoryReference(BaseModel):
     relevance_score: Optional[float] = None
     retrieval_query: Optional[str] = None
 
-class MemoryPart(BaseModel):
+class MemoryPart(MessagePart):
     """Memory operation part."""
     type: Literal["memory"] = "memory"
     operation: str  # "store", "retrieve", "search", "consolidate"
@@ -99,20 +105,11 @@ class GuardrailCheck(BaseModel):
     policy_violated: Optional[str] = None
     severity: Optional[str] = None  # "low", "medium", "high", "critical"
 
-class GuardrailPart(BaseModel):
+class GuardrailPart(MessagePart):
     """Guardrail check results part."""
     type: Literal["guardrail"] = "guardrail"
     checks: List[GuardrailCheck]
     overall_status: str  # "passed", "failed", "warning"
-
-ConversationPart = Union[TextPart, ToolCallPart, ToolResultPart]
-
-class TaskStep(BaseModel):
-    """A single step in a task's conversation history."""
-    step_id: str = Field(default_factory=lambda: f"step_{datetime.now().timestamp()}")
-    agent_name: str
-    parts: List[ConversationPart]
-    timestamp: datetime = Field(default_factory=datetime.now)
 
 # --- Standard Chat Message Format (compatible with Vercel AI SDK) ---
 
@@ -125,11 +122,11 @@ class Message(BaseModel):
     id: str = Field(default_factory=generate_short_id)
     role: Literal["system", "user", "assistant", "tool"] = "user"
     content: str = ""  # Backward compatibility - text content
-    parts: List[ConversationPart] = Field(default_factory=list)  # Modern structured content
+    parts: List[MessagePart] = Field(default_factory=list)  # Modern structured content
     timestamp: datetime = Field(default_factory=datetime.now)
 
     @classmethod
-    def user_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+    def user_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create a user message."""
         return cls(
             role="user",
@@ -138,7 +135,7 @@ class Message(BaseModel):
         )
 
     @classmethod
-    def assistant_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+    def assistant_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create an assistant message."""
         return cls(
             role="assistant",
@@ -147,7 +144,7 @@ class Message(BaseModel):
         )
 
     @classmethod
-    def system_message(cls, content: str, parts: Optional[List[ConversationPart]] = None) -> "Message":
+    def system_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create a system message."""
         return cls(
             role="system",
@@ -158,6 +155,33 @@ class Message(BaseModel):
 class UserMessage(Message):
     """User message - alias for Message with role='user'."""
     role: Literal["user"] = "user"
+
+class TaskStep(BaseModel):
+    """
+    Represents a single execution step taken by an agent within a task.
+    
+    A TaskStep contains the actions performed by an agent, including tool calls,
+    their results, and any other content generated during task execution.
+    """
+    id: str = Field(default_factory=generate_short_id)
+    agent_name: str = Field(description="Name of the agent that performed this step")
+    parts: List[MessagePart] = Field(default_factory=list, description="Content parts of this step")
+    timestamp: datetime = Field(default_factory=datetime.now)
+    task_id: Optional[str] = Field(None, description="ID of the task this step belongs to")
+    
+    def to_message(self) -> Message:
+        """Convert TaskStep to a Message for unified chat history."""
+        # Combine all text parts for content
+        text_parts = [part.text for part in self.parts if isinstance(part, TextPart)]
+        content = " ".join(text_parts) if text_parts else ""
+        
+        return Message(
+            id=self.id,
+            role="assistant",
+            content=content,
+            parts=self.parts,
+            timestamp=self.timestamp
+        )
 
 class MessageQueue(BaseModel):
     """Queue for managing message flow in tasks."""
@@ -178,9 +202,9 @@ class MessageQueue(BaseModel):
         """Clear all messages from the queue."""
         self.messages.clear()
 
-class TaskHistory(BaseModel):
-    """Task execution history with messages and metadata."""
-    task_id: str
+class ConversationHistory(BaseModel):
+    """Project conversation history with messages and metadata."""
+    project_id: str
     messages: List[Message] = Field(default_factory=list)
     steps: List[TaskStep] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)

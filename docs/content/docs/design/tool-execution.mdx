@@ -1,12 +1,14 @@
-# Tool Call and Execution
+# Tool Architecture & Execution
 
 ## 1. Overview and Core Principles
 
-This document details the architecture for defining, executing, and managing tools within VibeX. It is designed to be secure, robust, and extensible. The core principles are:
+The tool architecture is a cornerstone of the VibeX framework, designed to safely provide agents with the capabilities they need to perform meaningful work. It directly supports the Vibe-X philosophy by enabling a secure, observable, and extensible system where a human expert can confidently delegate tasks to an AI partner.
 
-- **Security First**: Untrusted code (LLM-generated shell commands) must never execute directly on the host machine. All tool execution is centralized and sandboxed.
-- **Robust Self-Correction**: LLM-generated tool calls can be malformed. The system must be able to detect this, provide corrective feedback to the LLM, and allow it to fix its own mistakes.
-- **Structured and Extensible**: All tools are strongly-typed and their schemas are automatically generated. The system is designed to easily accommodate new types of tools, including custom user-defined functions and external integrations.
+The core principles are:
+
+- **Security First**: Untrusted, LLM-generated code or commands must never execute directly on a host machine. All tool execution is centralized, validated, and sandboxed.
+- **Robust Self-Correction**: LLM-generated tool calls can be malformed. The system is designed to detect this, provide clear, corrective feedback to the agent's `Brain`, and enable the agent to fix its own mistakes.
+- **Extensible by Design**: The framework is built to be easily extended. Adding new tools is a simple, decorator-based process, and the architecture supports advanced integrations like the Model Context Protocol (MCP).
 
 ## 2. Tool Definition and Registration
 
@@ -58,92 +60,76 @@ Tools are made available to agents via a central `ToolRegistry`.
 
 ## 3. The Tool Call Lifecycle
 
-The following diagram and steps describe the end-to-end flow of a tool call, from the `Lead`'s instruction to the final result.
+The following diagram and steps describe the end-to-end flow of a tool call, from the `XAgent`'s task assignment to the final result.
 
 ```mermaid
 graph TD
-    subgraph "Orchestration"
-        LEAD[Lead]
-    end
+    XAgent -- "1. Assign Task" --> AgentBrain
 
     subgraph "Agent"
-        A["Brain (LLM)"]
-        B["Agent Core"]
+        AgentBrain["Brain (LLM)"]
+        AgentCore["Core Logic"]
     end
 
-    subgraph "Task Executor"
-        TM["ToolManager"]
+    subgraph "Framework"
+        ToolManager
     end
 
-    subgraph "Execution"
-        TOOL["Tool<br/>(e.g., Python function)"]
+    subgraph "Execution Environment"
+        Tool["Tool (e.g., Python function)"]
     end
 
-    LEAD -- "1. Assign micro-task<br/>(e.g., 'Write content to file')" --> A
-    A -- "2. Generate tool call" --> B
-    B -- "3. Execute via ToolManager" --> TM
+    AgentBrain -- "2. Generate Tool Call" --> AgentCore
+    AgentCore -- "3. Request Execution" --> ToolManager
 
     alt 4a. Validation Fails
-        TM -- "Validation Error" --> B
-        B -- "Error context" --> A
-        A -- "Corrected tool call" --> B
-        B -- "Retry execution" --> TM
+        ToolManager -- "Validation Error" --> AgentCore
+        AgentCore -- "Error Context" --> AgentBrain
+        AgentBrain -- "Corrected Tool Call" --> AgentCore
+        AgentCore -- "Retry Request" --> ToolManager
     end
 
-    TM -- "4b. Validation Succeeds" --> TOOL
-    TOOL -- "5. Return result" --> TM
-    TM -- "6. Return structured result" --> B
-    B -- "7. Return completed task to Lead" --> LEAD
+    ToolManager -- "4b. Validation Succeeds" --> Tool
+    Tool -- "5. Return Result" --> ToolManager
+    ToolManager -- "6. Return Structured Result" --> AgentCore
+    AgentCore -- "7. Report Task Completion" --> XAgent
 ```
 
 **Step-by-Step Flow:**
 
-1.  **Task Assignment (Lead)**: The process begins when the `Lead` agent, following its master plan, assigns a single, specific task to a specialist `Agent` (e.g., "Write 'hello world' to `hello.txt`").
+1.  **Task Assignment (`XAgent`)**: The process begins when the `XAgent`, following the project's plan, assigns a specific task to a specialist `Agent` (e.g., "Write 'hello world' to `hello.txt`").
 
-2.  **Tool Call Generation (Agent Brain)**: The `Agent`'s `Brain` (LLM) receives the simple instruction. Since the task directly maps to a tool, it generates the corresponding tool call (e.g., `write_file(path='hello.txt', content='hello world')`).
+2.  **Tool Call Generation (`Agent`'s `Brain`)**: The `Agent`'s `Brain` (its integrated LLM) receives the instruction. It determines that the task can be accomplished with a tool and generates the corresponding structured tool call (e.g., `write_file(path='hello.txt', content='hello world')`).
 
-3.  **Direct Execution (Agent Core)**: The `Agent`'s core logic parses the tool call and passes it to the `ToolManager` for execution.
+3.  **Execution Request (`Agent`'s Core Logic)**: The `Agent`'s core logic receives the generated tool call and passes it to the `ToolManager` for secure execution.
 
-4.  **Validation (ToolManager)**: The `ToolManager` validates the call against the tool's registered schema.
+4.  **Validation (`ToolManager`)**: The `ToolManager` validates the call against the tool's registered schema.
 
-    - **If Validation Fails**: The `ToolManager` returns a structured error to the `Agent`. The `Agent` passes the error back to its `Brain`, which generates a corrected call. This simple, powerful self-correction loop is a core feature of the framework.
+    - **If Validation Fails**: The `ToolManager` returns a structured error to the `Agent`. The `Agent`'s `Brain` receives the error context and generates a corrected call. This self-correction loop is a key feature of the framework's robustness.
     - **If Validation Succeeds**: The `ToolManager` proceeds to execution.
 
-5.  **Secure Execution (ToolExecutor)**: The `ToolManager`'s internal `ToolExecutor` securely runs the tool. For a Python function, it is called directly. For a shell command, it is run inside a secure sandbox.
+5.  **Secure Execution (`ToolManager`)**: The `ToolManager` securely runs the tool. Python functions are called directly, while shell commands are executed inside a secure sandbox.
 
-6.  **Result Capturing**: The `ToolExecutor` captures the return value or output of the tool and packages it into a structured `ToolResult` object, which is passed back to the `Agent`.
+6.  **Result Capturing**: The `ToolManager` captures the tool's output and packages it into a structured `ToolResult` object, which is returned to the `Agent`.
 
-7.  **Task Completion**: The `Agent` has now completed its assigned micro-task. It returns the `ToolResult` to the `Lead`, which then updates its master plan and decides on the next step in the overall workflow.
+7.  **Task Completion**: The `Agent` has now completed its assigned task. It reports the `ToolResult` back to the `XAgent`, which updates the project plan and proceeds to the next step in the workflow.
 
 ## 4. Security Architecture: The Sandbox
 
 Executing arbitrary, LLM-generated shell commands is a major security risk. VibeX mitigates this by using a sandboxed execution environment with user-scoped isolation.
 
-**User-Scoped Execution**: All tool executions are scoped to the user's taskspace directory, preventing access to other users' data. Tools can only read from and write to `taskspace/{user_id}/{task_id}/` directories, ensuring complete data isolation in multi-tenant deployments.
+**Project-Scoped Execution**: All tool executions are scoped to the project's workspace directory, preventing access to other projects' data. Tools can only read from and write to `.vibex/projects/{project_id}/` directories, ensuring complete data isolation.
 
 - **Technology**: The default implementation uses **Docker containers**. Each shell tool execution spins up a new, short-lived container.
 - **Isolation**:
   - **Network**: Containers run with networking disabled by default (`--net=none`) to prevent exfiltration of data or attacks on the local network. Tools that explicitly need network access must be granted it.
-  - **Filesystem**: The container is only granted access to the current task's user-scoped taskspace directory (`/app/taskspace/{user_id}/{task_id}`). It cannot read from or write to any other part of the host filesystem or other users' taskspaces.
+  - **Filesystem**: The container is only granted access to the current project's workspace directory (`/app/.vibex/projects/{project_id}`). It cannot read from or write to any other part of the host filesystem or other projects' workspaces.
   - **Permissions**: The process inside the container runs as a non-root user to limit its privileges even within the sandbox.
 
 ## 5. Extensibility
 
-### 5.1. Custom and Built-in Tools
+The tool architecture is designed for extension. VibeX supports a rich ecosystem of built-in tools, custom user-defined tools, and integrations with emerging standards like MCP.
 
-- **Built-in Tools**: VibeX provides a core set of safe tools for file I/O, search, etc., located in `src/vibex/builtin_tools/`.
-- **Custom Tools**: Users can easily define their own tools in their project's codebase. As long as the file is imported and the functions are decorated with `@register_tool`, they will be available to the agents.
-
-### 5.2. MCP (Multi-Agent Communication Protocol) Integration
-
-The tool architecture is extensible to other protocols. An MCP tool could be implemented as a special Python function:
-
-```python
-@register_tool
-def send_mcp_message(recipient_agent: str, message_body: str):
-    """Sends a message to another agent using the MCP protocol."""
-    # Logic to connect to MCP broker and send message
-    # ...
-```
-
-To the `Orchestrator` and `Agent`, this is just another tool. The implementation details are abstracted away.
+- **Built-in Tools**: VibeX provides a core set of safe, pre-built tools for common tasks like file I/O, web search, and memory access, located in `src/vibex/builtin_tools/`.
+- **Custom Tools**: Users can easily define their own tools by decorating Python functions with `@register_tool`. As long as the file containing the tool is imported, it will be automatically discovered and made available to agents.
+- **MCP (Model Context Protocol) Integration**: VibeX is designed to be a first-class citizen in the growing ecosystem of standardized AI tools. The `ToolManager` can seamlessly integrate with external, MCP-compliant tool servers, allowing agents to access a vast library of third-party capabilities without requiring custom code.

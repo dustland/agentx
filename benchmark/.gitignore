@@ -1,6 +1,5 @@
 # Benchmark results and outputs
 results/
-taskspace/
 
 # Python cache files
 __pycache__/

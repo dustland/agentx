@@ -22,12 +22,12 @@ class DebugSession:
 
     def __init__(self, xagent: XAgent):
         self.xagent = xagent
-        self.task_id = xagent.task_id
+        self.project_id = xagent.project_id
         self.running = True
 
     async def start(self):
         """Start the interactive debugging session."""
-        print(f"🐛 VibeX Debug Session - Task: {self.task_id}")
+        print(f"🐛 VibeX Debug Session - Task: {self.project_id}")
         print("=" * 60)
 
         # Show initial state
@@ -102,7 +102,7 @@ class DebugSession:
     async def _show_status(self):
         """Show current task status."""
         try:
-            print(f"📊 Task Status: {self.task_id}")
+            print(f"📊 Task Status: {self.project_id}")
             print(f"  Complete: {self.xagent.is_complete}")
             print(f"  History Length: {len(self.xagent.history.messages)}")
             print(f"  Current Plan: {'Yes' if self.xagent.plan else 'No'}")
@@ -112,7 +112,7 @@ class DebugSession:
                 total = len(self.xagent.plan.tasks)
                 print(f"  Plan Progress: {completed}/{total} tasks completed")
 
-            taskspace_path = self.xagent.taskspace.get_taskspace_path()
+            taskspace_path = self.xagent.taskspace.get_projectspace_path()
             artifacts = list(taskspace_path.glob("**/*"))
             print(f"  Taskspace Files: {len([f for f in artifacts if f.is_file()])}")
         except Exception as e:
@@ -122,10 +122,10 @@ class DebugSession:
         """Show detailed task state inspection."""
         try:
             state = {
-                "task_id": self.task_id,
+                "project_id": self.project_id,
                 "is_complete": self.xagent.is_complete,
                 "specialist_agents": list(self.xagent.specialist_agents.keys()),
-                "taskspace_path": str(self.xagent.taskspace.get_taskspace_path()),
+                "taskspace_path": str(self.xagent.taskspace.get_projectspace_path()),
                 "plan_initialized": self.xagent._plan_initialized,
                 "conversation_history_length": len(self.xagent.conversation_history),
                 "message_history_length": len(self.xagent.history.messages),
@@ -212,7 +212,7 @@ class DebugSession:
     async def _list_taskspace(self):
         """List files in the taskspace."""
         try:
-            taskspace_path = self.xagent.taskspace.get_taskspace_path()
+            taskspace_path = self.xagent.taskspace.get_projectspace_path()
             print(f"📁 Taskspace: {taskspace_path}")
 
             # List all files recursively
@@ -260,30 +260,30 @@ class DebugSession:
         print("  quit           - Exit debug session")
 
 
-async def debug_task(team_config_path: str, task_id: Optional[str] = None, taskspace_dir: Optional[str] = None):
+async def debug_task(team_config_path: str, project_id: Optional[str] = None, workspace_dir: Optional[str] = None):
     """Start a debugging session for a task."""
     try:
         # Check if we're loading an existing task
-        if taskspace_dir:
-            taskspace_path = Path(taskspace_dir)
-            if not taskspace_path.exists():
-                print(f"❌ Taskspace not found: {taskspace_dir}")
+        if workspace_dir:
+            workspace_path = Path(workspace_dir)
+            if not workspace_path.exists():
+                print(f"❌ Workspace not found: {workspace_dir}")
                 return
 
-            # Create XAgent with existing taskspace
+            # Create XAgent with existing workspace
             xagent = XAgent(
                 team_config=team_config_path,
-                task_id=task_id,
-                taskspace_dir=taskspace_path
+                project_id=project_id,
+                workspace_dir=workspace_path
             )
-            print(f"📂 Loaded task from taskspace: {taskspace_path}")
+            print(f"📂 Loaded task from workspace: {workspace_path}")
         else:
             # Create new XAgent
             xagent = XAgent(
                 team_config=team_config_path,
-                task_id=task_id
+                project_id=project_id
             )
-            print(f"🆕 Created new task: {xagent.task_id}")
+            print(f"🆕 Created new task: {xagent.project_id}")
 
         # Start debug session
         debug_session = DebugSession(xagent)
@@ -298,11 +298,11 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: python -m vibex.cli.debug <team_config_path> [task_id] [taskspace_dir]")
+        print("Usage: python -m vibex.cli.debug <team_config_path> [project_id] [workspace_dir]")
         sys.exit(1)
 
     team_config_path = sys.argv[1]
-    task_id = sys.argv[2] if len(sys.argv) > 2 else None
-    taskspace_dir = sys.argv[3] if len(sys.argv) > 3 else None
+    project_id = sys.argv[2] if len(sys.argv) > 2 else None
+    workspace_dir = sys.argv[3] if len(sys.argv) > 3 else None
 
-    asyncio.run(debug_task(team_config_path, task_id, taskspace_dir))
+    asyncio.run(debug_task(team_config_path, project_id, workspace_dir))

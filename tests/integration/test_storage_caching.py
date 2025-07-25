@@ -12,19 +12,19 @@ from unittest.mock import Mock, AsyncMock
 import pytest
 
 from vibex.storage.providers.cache import MemoryCacheProvider, NoOpCacheProvider
-from vibex.storage import TaskspaceFactory
+from vibex.storage.factory import ProjectStorageFactory
 from vibex.storage import storage_config
 
 
 @pytest.fixture
-async def temp_taskspace():
-    """Create a temporary taskspace with test data"""
+async def temp_project_storage():
+    """Create a temporary project storage with test data"""
     temp_dir = tempfile.mkdtemp()
     task_id = "test-task-123"
     
-    # Create taskspace structure
-    taskspace_path = Path(temp_dir) / task_id
-    taskspace_path.mkdir(parents=True)
+    # Create project storage structure
+    project_path = Path(temp_dir) / task_id
+    project_path.mkdir(parents=True)
     
     # Create test plan
     plan_data = {
@@ -37,11 +37,11 @@ async def temp_taskspace():
     }
     
     import json
-    with open(taskspace_path / "plan.json", "w") as f:
+    with open(project_path / "plan.json", "w") as f:
         json.dump(plan_data, f)
     
     # For simple storage, create artifacts with version suffix
-    artifacts_dir = taskspace_path / "artifacts"
+    artifacts_dir = project_path / "artifacts"
     artifacts_dir.mkdir()
     
     # Simple storage format: name_version.data
@@ -57,18 +57,18 @@ async def temp_taskspace():
 
 
 @pytest.mark.asyncio
-async def test_cache_performance(temp_taskspace):
+async def test_cache_performance(temp_project_storage):
     """Test that caching improves performance"""
-    temp_dir, task_id = temp_taskspace
+    temp_dir, task_id = temp_project_storage
     
     # Create storage with and without cache
-    base_storage = TaskspaceFactory.create_taskspace(
+    base_storage = ProjectStorageFactory.create_project_storage(
         base_path=Path(temp_dir),
         task_id=task_id,
         cache_provider=None
     )
     
-    cached_storage = TaskspaceFactory.create_taskspace(
+    cached_storage = ProjectStorageFactory.create_project_storage(
         base_path=Path(temp_dir),
         task_id=f"{task_id}_cached",
         cache_provider="memory"
@@ -94,11 +94,11 @@ async def test_cache_performance(temp_taskspace):
 
 
 @pytest.mark.asyncio
-async def test_cache_invalidation(temp_taskspace):
+async def test_cache_invalidation(temp_project_storage):
     """Test that cache is properly invalidated on writes"""
-    temp_dir, task_id = temp_taskspace
+    temp_dir, task_id = temp_project_storage
     
-    cached_storage = TaskspaceFactory.create_taskspace(
+    cached_storage = ProjectStorageFactory.create_project_storage(
         base_path=Path(temp_dir),
         task_id=task_id,
         cache_provider="memory"
@@ -121,15 +121,15 @@ async def test_cache_invalidation(temp_taskspace):
     assert result2["goal"] != original_goal
 
 
-# Removed task status extraction test as it's not part of core TaskspaceStorage
+# Removed task status extraction test as it's not part of core ProjectStorage
 
 
 @pytest.mark.asyncio
-async def test_artifact_caching(temp_taskspace):
+async def test_artifact_caching(temp_project_storage):
     """Test artifact list caching"""
-    temp_dir, task_id = temp_taskspace
+    temp_dir, task_id = temp_project_storage
     
-    cached_storage = TaskspaceFactory.create_taskspace(
+    cached_storage = ProjectStorageFactory.create_project_storage(
         base_path=Path(temp_dir),
         task_id=task_id,
         cache_provider="memory"

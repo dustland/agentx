@@ -10,7 +10,7 @@ import asyncio
 from pathlib import Path
 from datetime import datetime
 import time
-from vibex import start_task
+from vibex import VibeX
 
 async def main():
     """
@@ -46,32 +46,39 @@ async def main():
     start_time = time.time()
     start_datetime = datetime.now()
 
-    # Start the task with XAgent - creates a conversational interface
-    x = await start_task(prompt, str(config_path))
+    # Start the project with VibeX
+    x = await VibeX.start(
+        project_id="auto_writer_project",
+        goal=prompt,
+        config_path=str(config_path),
+    )
     
     # Configure parallel execution for faster processing
     x.set_parallel_execution(enabled=True, max_concurrent=4)
     
-    print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
+    print(f"📋 Project ID: {x.project_id}")
+    print(f"📁 Project Space: {x.workspace.get_path()}")
     print(f"⚡ Parallel execution: {x.get_parallel_settings()}")
     print("-" * 80)
 
-    # Execute the task autonomously with parallel execution
+    # Execute the project autonomously with parallel execution
     print("🤖 X: Starting the comprehensive report generation...")
     step_count = 0
-    while not x.is_complete and step_count < 15:  # Safety limit
+    while not x.is_complete() and step_count < 15:  # Safety limit
         response = await x.step()
         step_count += 1
         
         # Show parallel execution info
-        parallel_count = response.count("✅")
+        parallel_count = 0
+        if isinstance(response, list):
+            parallel_count = len(response)
+
         if parallel_count > 1:
             print(f"🔥 Step {step_count}: Executed {parallel_count} tasks in parallel")
         else:
             print(f"🔄 Step {step_count}: Sequential execution")
             
-        print(f"🤖 X: {response[:200]}...")
+        print(f"🤖 X: {str(response)[:200]}...")
         print("-" * 40)
 
     # Record end time
@@ -79,18 +86,18 @@ async def main():
     end_datetime = datetime.now()
     total_duration = end_time - start_time
 
-    # Check for artifacts in the taskspace
-    taskspace_path = x.taskspace.get_taskspace_path()
-    artifacts_path = taskspace_path / "artifacts"
+    # Check for artifacts in the workspace
+    workspace_path = x.workspace.get_path()
+    artifacts_path = workspace_path / "artifacts"
     artifact_files = list(artifacts_path.glob("*")) if artifacts_path.exists() else []
     artifact_count = len(artifact_files)
 
     # Print comprehensive execution summary
     print("\n" + "=" * 80)
-    print("✅ TASK COMPLETE - EXECUTION SUMMARY")
+    print("✅ PROJECT COMPLETE - EXECUTION SUMMARY")
     print("=" * 80)
-    print(f"📋 Task ID: {x.task_id}")
-    print(f"📁 Taskspace: {taskspace_path}")
+    print(f"📋 Project ID: {x.project_id}")
+    print(f"📁 Workspace: {workspace_path}")
     print("-" * 80)
     print(f"📅 Start Time: {start_datetime.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"📅 End Time: {end_datetime.strftime('%Y-%m-%d %H:%M:%S')}")

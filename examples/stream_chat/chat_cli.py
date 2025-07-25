@@ -15,40 +15,49 @@ logging.disable(logging.CRITICAL)
 import warnings
 warnings.filterwarnings("ignore")
 
-from vibex.core.xagent import XAgent
-from vibex.config.team_loader import load_team_config
+from vibex import VibeX
 
-async def chat(message: str, task_id: str = None):
-    """Send a message and return the response."""
-    config_path = Path(__file__).parent / "config" / "team.yaml"
+# A simple async function to handle the chat logic
+async def chat(message: str, project_id: str = None, goal: str = None):
+    """
+    Starts a VibeX session and sends a message.
+    If project_id is provided, it resumes that project.
+    """
+    config_path = "config/team.yaml"
     
-    try:
-        team_config = load_team_config(str(config_path))
-        kwargs = {'team_config': team_config}
-        if task_id:
-            kwargs['task_id'] = task_id
+    # The VibeX.start method handles setup and teardown
+    x = await VibeX.start(
+        project_id=project_id,
+        goal=goal,
+        config_path=config_path,
+    )
+        
+    # Stream the response from the agent team
+    async for chunk in x.stream_chat(message):
+        # Print each chunk as it arrives
+        print(chunk, end="", flush=True)
             
-        x = XAgent(**kwargs)
-        response = await x.chat(message)
-        return response.text
-    except Exception as e:
-        return f"Error: {str(e)}"
+    print() # Newline after the stream is complete
+    return x.project_id
 
-def main():
+
+async def main():
     if len(sys.argv) < 2:
-        print("Usage: chat_cli.py <message> [task_id]", file=sys.stderr)
+        print("Usage: chat_cli.py <message> [project_id]", file=sys.stderr)
         sys.exit(1)
-    
+        
     message = sys.argv[1]
-    task_id = sys.argv[2] if len(sys.argv) > 2 else None
+    project_id = sys.argv[2] if len(sys.argv) > 2 else None
+    goal = message if not project_id else None
+
+    # Run the chat function
+    new_project_id = await chat(message, project_id, goal)
     
-    # Run async function and get result
-    try:
-        result = asyncio.run(chat(message, task_id))
-        print(result)
-    except Exception as e:
-        print(f"Error: {str(e)}", file=sys.stderr)
-        sys.exit(1)
+    if not project_id:
+        print(f"\nNew project started with ID: {new_project_id}", file=sys.stderr)
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nExiting chat.", file=sys.stderr)

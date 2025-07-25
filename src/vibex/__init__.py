@@ -5,32 +5,27 @@ A flexible framework for building AI agent teams with:
 - Autonomous agents with private LLM interactions
 - Centralized tool execution for security and monitoring
 - Built-in storage, memory, and search capabilities
-- Team coordination and task management
+- Team coordination and project management
 """
-
-# Main API - what users need to get started
-from .core.task import execute_task, start_task
 
 # Tool creation - for custom tools
 from .core.tool import Tool, tool
 
-# No configuration loading needed - users pass config paths to start_task/execute_task
+# No configuration loading needed - users pass config paths to start_project/run_project
 
 # Logging utilities
 from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 
 # Core classes for advanced usage
 from vibex.core.agent import Agent
-from vibex.core.task import Task
-from vibex.core.xagent import XAgent
+from .core.xagent import XAgent
 
 __version__ = "0.27.23"
 
 __all__ = [
-    # Main API - primary entry points
-    "execute_task",
-    "start_task",
-
+    # Main API - primary entry points (v2.0)
+    "XAgent",
+    
     # Tool creation - for custom tools
     "Tool",
     "tool",
@@ -42,8 +37,6 @@ __all__ = [
 
     # Core classes
     "Agent",
-    "Task",
-    "XAgent",
 ]
 
 # Load environment variables automatically on import

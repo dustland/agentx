@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { ChatMessage } from "@/types/chat";
 import { nanoid } from "nanoid";
-import { useTask } from "./use-task";
+import { useProject } from "./use-project";
 
 interface UseChatOptions {
   taskId: string;
@@ -11,13 +11,13 @@ interface UseChatOptions {
 /**
  * Simplified chat hook focused on chat functionality
  */
-export function useChat({ taskId, onError }: UseChatOptions) {
+export function useChat({ projectId, onError }: UseChatOptions) {
   const [input, setInput] = useState("");
   const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>(
     []
   );
 
-  // Get everything we need from useTask
+  // Get everything we need from useProject
   const {
     task,
     messages: rawMessages,
@@ -25,7 +25,7 @@ export function useChat({ taskId, onError }: UseChatOptions) {
     stop,
     isLoading,
     isMessagesLoading,
-  } = useTask(taskId);
+  } = useProject(projectId);
 
   // Transform raw messages to ChatMessage format
   const messages: ChatMessage[] = useMemo(

@@ -1,0 +1,93 @@
+---
+title: "Security & Multi-Tenancy in Vibe-X"
+description: "Understanding the layered security model in Vibe-X, from project workspace isolation to secure tool execution and multi-tenancy."
+---
+
+# Security & Multi-Tenancy in Vibe-X
+
+The VibeX framework is architected with a security-first mindset, designed to support both single-user experimentation and secure, multi-tenant production deployments. The core principle is **Isolation by Default**: every project operates within a completely separate, sandboxed environment.
+
+This document outlines the layered security model that makes this possible.
+
+```mermaid
+graph TD
+    subgraph "User"
+        direction LR
+        User["Authenticated User"]
+    end
+
+    subgraph "Security Layers"
+        direction TB
+        L1["Layer 1: API & Access Control"]
+        L2["Layer 2: Workspace Isolation"]
+        L3["Layer 3: Secure Tool Execution"]
+        L4["Layer 4: Auditability & Observability"]
+    end
+
+    subgraph "Project Resources"
+        direction LR
+        Workspace["Project Workspace"]
+        Tools["Tools"]
+        Events["Event Log"]
+    end
+
+    User -- "Requests Access" --> L1
+    L1 -- "Enforces Permissions For" --> L2
+    L2 -- "Contains" --> Workspace
+    L2 -- "Protects" --> L3
+    L3 -- "Manages" --> Tools
+    L4 -- "Records Everything From" --> L1
+    L4 -- "Records Everything From" --> L2
+    L4 -- "Records Everything From" --> L3
+    L4 -- "Generates" --> Events
+
+    style User fill:#D6EAF8
+    style L1 fill:#E8F8F5
+    style L2 fill:#EBF5FB
+    style L3 fill:#FDF2E9
+    style L4 fill:#FEF9E7
+```
+
+## The Four Layers of Security
+
+VibeX's security model is composed of four distinct layers that work together to protect the system and its users.
+
+### 1. Layer 1: API & Access Control
+
+All interactions with the VibeX framework are mediated by a secure API layer.
+
+- **Authentication**: The API layer is responsible for verifying the identity of the user. In a production environment, this is typically handled via JWTs, API keys, or other standard authentication mechanisms. The core framework remains agnostic to the specific method used.
+- **Authorization**: Once a user is authenticated, the API layer ensures they are only able to access the projects and resources they are authorized to use. A request from `user_A` to access a project owned by `user_B` will be rejected at this outermost layer.
+- **User-Scoped Operations**: Every API endpoint is implicitly scoped to the authenticated user. A call to `GET /projects` will only ever return the projects owned by the currently logged-in user.
+
+### 2. Layer 2: Workspace Isolation
+
+This is the most fundamental security boundary in VibeX. Every project is encapsulated within its own **Persistent Workspace**, which is completely isolated from all other projects.
+
+- **File System Isolation (Taskspace)**: Each project has its own dedicated directory on the file system. Agents operating within one project have no ability to read, write, or even be aware of the existence of files in another project's workspace. Path traversal attacks are mitigated by resolving all file paths relative to the project's root directory.
+- **Memory Isolation (Semantic Store)**: The AI's long-term, semantic memory is also strictly partitioned by project. An agent's query to the `ContextManager` will only ever search for information within the context of the current project.
+- **State Isolation**: All project state, including the plan, conversation history, and execution status, is stored within the project's isolated workspace.
+
+This strict separation ensures that even if an agent behaves unexpectedly, the potential impact is confined to its own sandboxed environment.
+
+### 3. Layer 3: Secure Tool Execution
+
+Agents in VibeX do not have direct access to system resources. All interactions with the outside world are mediated by the **ToolManager**, which acts as a security-aware sandbox.
+
+- **Declarative Permissions**: The specific tools that an agent is allowed to use are explicitly defined in the project's configuration. An agent cannot invoke a tool that it has not been granted permission to use.
+- **Parameter Validation**: Before executing any tool, the `ToolManager` validates the arguments provided by the agent against the tool's defined schema. This prevents malformed calls and a class of potential injection attacks.
+- **Sandboxed Execution**: For tools that execute code or shell commands, the framework is designed to run them in a secure, sandboxed environment (e.g., a Docker container) to prevent them from affecting the host system.
+
+### 4. Layer 4: Auditability & Observability
+
+A secure system must be auditable. The **EventManager** provides a complete, immutable log of every significant action taken within the VibeX framework.
+
+- **Comprehensive Event Trail**: Every API request, every agent decision, every tool call, and every file modification is captured as a structured event.
+- **Real-Time Monitoring**: This event stream can be monitored in real-time to detect anomalous behavior or potential security threats.
+- **Forensic Analysis**: In the event of a security incident, the detailed event log provides a powerful tool for forensic analysis, allowing administrators to trace the exact sequence of actions that occurred.
+
+## Multi-Tenancy in Practice
+
+These four layers work in concert to enable secure multi-tenancy. When a user creates a project, it is tied to their identity at the API layer. From that point on, all other security mechanisms—from workspace isolation to tool permissions—are enforced within the context of that project.
+
+This layered approach ensures that VibeX can be deployed with confidence in shared environments, providing the robust isolation required for production applications while maintaining the flexibility and power of the underlying framework.

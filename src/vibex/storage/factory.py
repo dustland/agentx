@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .interfaces import FileStorage, CacheBackend
 from .backends import LocalFileStorage
-from .taskspace import TaskspaceStorage
+from .project import ProjectStorage
 from .providers.cache import MemoryCacheProvider, NoOpCacheProvider
 from .providers.storage import FileStorageProvider
 from ..utils.logger import get_logger
@@ -17,9 +17,9 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-class TaskspaceFactory:
+class ProjectStorageFactory:
     """
-    Factory for creating taskspace storage with two layers of providers:
+    Factory for creating project storage with two layers of providers:
     
     1. Storage Providers: Handle actual data persistence (file, S3, Azure, etc.)
     2. Cache Providers: Handle performance optimization (memory, Redis, etc.)
@@ -85,7 +85,7 @@ class TaskspaceFactory:
     @classmethod
     def register_cache_provider(cls, name: str, provider: CacheBackend):
         """
-        Register a cache provider for use in taskspace storage.
+        Register a cache provider for use in project storage.
         
         Args:
             name: Name to register the provider under
@@ -134,52 +134,52 @@ class TaskspaceFactory:
         return storage
 
     @classmethod
-    def create_taskspace(
+    def create_project_storage(
         cls,
         base_path: Union[str, Path],
-        task_id: str,
+        project_id: str,
         use_git_artifacts: bool = True,
         storage_provider: str = "file",
         cache_provider: Optional[str] = None
-    ) -> TaskspaceStorage:
+    ) -> ProjectStorage:
         """
-        Create a taskspace storage for business logic.
+        Create a project storage for business logic.
 
         Handles business concepts like artifacts, messages, execution plans
         using configurable storage and cache providers.
 
         Args:
-            base_path: Base path for taskspaces
-            task_id: Task ID for taskspace isolation
+            base_path: Base path for project storage
+            project_id: Project ID for storage isolation
             use_git_artifacts: Whether to use Git for artifact versioning
             storage_provider: Name of storage provider to use (default: "file")
             cache_provider: Name of cache provider to use (default: None for no caching)
 
         Returns:
-            TaskspaceStorage instance with specified storage and cache providers
+            ProjectStorage instance with specified storage and cache providers
         """
         # Get cache backend if specified
         cache_backend = cls.get_cache_provider(cache_provider)
         
-        # Create taskspace storage with computed path
-        # Always use simple task_id path - user mapping handled by service layer
-        taskspace_path = Path(base_path) / task_id
+        # Create project storage with computed path
+        # Always use simple project_id path - user mapping handled by service layer
+        project_path = Path(base_path) / project_id
         
-        # Create the filesystem abstraction for the computed taskspace path
-        file_storage = cls.create_file_storage(taskspace_path, provider=storage_provider)
+        # Create the filesystem abstraction for the computed project path
+        file_storage = cls.create_file_storage(project_path, provider=storage_provider)
         
-        # Create the final taskspace with proper file_storage
-        taskspace = TaskspaceStorage(
+        # Create the final project storage with proper file_storage
+        project_storage = ProjectStorage(
             base_path=base_path,
-            task_id=task_id,
+            project_id=project_id,
             file_storage=file_storage,
             use_git_artifacts=use_git_artifacts,
             cache_backend=cache_backend
         )
         
-        logger.info(f"Created taskspace storage: {taskspace.taskspace_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
+        logger.info(f"Created project storage: {project_storage.project_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
         
-        return taskspace
+        return project_storage
 
 
 

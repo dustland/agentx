@@ -1,19 +1,21 @@
 """
-XAgent - The unified conversational interface for VibeX
+XAgent - The project's conversational representative
 
-XAgent merges TaskExecutor and Orchestrator functionality into a single,
-user-friendly interface that users can chat with to manage complex multi-agent tasks.
+X is the interface between users and their projects. Each project has an X agent
+that acts as its representative. When you need to interact with a project, you
+talk to X. XAgent merges TaskExecutor and Orchestrator functionality into a 
+single, user-friendly interface.
 
 Key Features:
+- Acts as the project's representative for all interactions
 - Rich message handling with attachments and multimedia
 - LLM-driven plan adjustment that preserves completed work
 - Single point of contact for all user interactions
-- Automatic taskspace and tool management
+- Automatic workspace and tool management
 
 API Design:
-- chat(message) - For user conversation, plan adjustments, and Q&A
-- step() - For autonomous task execution, moving the plan forward
-- start_task() creates a plan but doesn't execute it automatically
+- chat(message) - Talk to X about the project (adjustments, Q&A, etc.)
+- step() - Let X autonomously execute the next project step
 """
 
 from __future__ import annotations
@@ -29,9 +31,10 @@ from vibex.core.brain import Brain
 from vibex.core.config import TeamConfig, BrainConfig, AgentConfig
 from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
 from vibex.core.message import (
-    MessageQueue, TaskHistory, Message, TaskStep, TextPart,
+    MessageQueue, ConversationHistory, Message, TaskStep, TextPart,
 )
-from vibex.core.plan import Plan, PlanItem, TaskStatus
+from vibex.core.plan import Plan
+from vibex.core.task import Task, TaskStatus
 from vibex.tool.manager import ToolManager
 from vibex.utils.id import generate_short_id
 from vibex.utils.logger import (
@@ -76,51 +79,53 @@ class XAgentResponse:
 
 class XAgent(Agent):
     """
-    XAgent - The unified conversational interface for VibeX.
+    XAgent - The project's conversational representative.
 
-    XAgent combines TaskExecutor's execution context management with
-    Orchestrator's agent coordination logic into a single, user-friendly
-    interface that users can chat with naturally.
+    XAgent (X) acts as the interface between users and their projects. When you
+    need to interact with a project, you talk to its X agent. X combines 
+    TaskExecutor's execution context management with Orchestrator's agent 
+    coordination logic into a single, user-friendly interface.
 
     Key capabilities:
+    - Acts as the project's representative for all interactions
     - Rich message handling (text, attachments, multimedia)
     - LLM-driven plan adjustment preserving completed work
-    - Automatic taskspace and tool management
-    - Conversational task management
+    - Automatic workspace and tool management
+    - Conversational project management
 
     Usage Pattern:
         ```python
-        # Start a task (creates plan but doesn't execute)
-        x = await start_task("Build a web app", "config/team.yaml")
+        # Start a project
+        x = await XAgent.start("Build a web app", "config/team.yaml")
 
-        # Execute the task autonomously
-        while not x.is_complete:
+        # Execute the project autonomously
+        while not x.is_complete():
             response = await x.step()  # Autonomous execution
             print(response)
 
         # Chat for refinements and adjustments
         response = await x.chat("Make it more colorful")  # User conversation
-        print(response.text)
+        print(response)
         ```
     """
 
     def __init__(
         self,
         team_config: TeamConfig,
-        task_id: Optional[str] = None,
-        taskspace_dir: Optional[Path] = None,
+        project_id: Optional[str] = None,
+        workspace_dir: Optional[Path] = None,
         initial_prompt: Optional[str] = None,
     ):
-        # Generate unique task ID
-        self.task_id = task_id or generate_short_id()
+        # Generate unique project ID
+        self.project_id = project_id or generate_short_id()
 
         # Accept only TeamConfig objects
         if not isinstance(team_config, TeamConfig):
             raise TypeError(f"team_config must be a TeamConfig object, got {type(team_config)}")
         self.team_config = team_config
 
-        # Initialize taskspace storage with appropriate caching
-        from vibex.storage import TaskspaceFactory
+        # Initialize project storage storage with appropriate caching
+        from vibex.storage import ProjectStorageFactory
         
         # Determine cache provider based on environment
         cache_provider = None
@@ -129,41 +134,41 @@ class XAgent(Agent):
         elif os.getenv("ENABLE_MEMORY_CACHE", "false").lower() == "true":
             cache_provider = "memory"
         
-        if taskspace_dir:
-            # Use explicit taskspace directory
-            # Note: When taskspace_dir is provided, we use it directly
-            # This is for resuming existing tasks
-            from ..storage.taskspace import TaskspaceStorage
+        if workspace_dir:
+            # Use explicit project storage directory
+            # Note: When workspace_dir is provided, we use it directly
+            # This is for resuming existing projects
+            from ..storage.project import ProjectStorage
             from ..storage.backends import LocalFileStorage
-            storage = LocalFileStorage(taskspace_dir)
-            cache_backend = TaskspaceFactory.get_cache_provider(cache_provider)
-            self.taskspace = TaskspaceStorage(
-                base_path=taskspace_dir.parent if isinstance(taskspace_dir, Path) else Path(taskspace_dir).parent,
-                task_id=self.task_id,
+            storage = LocalFileStorage(workspace_dir)
+            cache_backend = ProjectStorageFactory.get_cache_provider(cache_provider)
+            self.project_storage = ProjectStorage(
+                base_path=workspace_dir.parent if isinstance(workspace_dir, Path) else Path(workspace_dir).parent,
+                project_id=self.project_id,
                 file_storage=storage,
                 use_git_artifacts=True,
                 cache_backend=cache_backend
             )
         else:
-            # Use standard taskspace: task_data/{task_id}
-            self.taskspace = TaskspaceFactory.create_taskspace(
-                base_path=Path("./.vibex/tasks"),
-                task_id=self.task_id,
+            # Use standard project storage: project_data/{project_id}
+            self.project_storage = ProjectStorageFactory.create_project_storage(
+                base_path=Path("./.vibex/projects"),
+                project_id=self.project_id,
                 cache_provider=cache_provider
             )
         self._setup_task_logging()
 
-        logger.info(f"Initializing XAgent for task: {self.task_id}")
+        logger.info(f"Initializing XAgent for project: {self.project_id}")
 
         # Initialize components
         self.tool_manager = self._initialize_tools()
         self.message_queue = MessageQueue()
         self.specialist_agents = self._initialize_specialist_agents()
-        self.history = TaskHistory(task_id=self.task_id)
+        self.history = ConversationHistory(project_id=self.project_id)
         
         # Initialize chat history storage
         from ..storage.chat_history import chat_history_manager
-        self.chat_storage = chat_history_manager.get_storage(str(self.taskspace.taskspace_path))
+        self.chat_storage = chat_history_manager.get_storage(str(self.project_storage.project_path))
 
         # Initialize XAgent's own brain for orchestration decisions
         orchestrator_brain_config = self._get_orchestrator_brain_config()
@@ -177,9 +182,9 @@ class XAgent(Agent):
         # Override brain with orchestrator-specific configuration
         self.brain = Brain.from_config(orchestrator_brain_config)
 
-        # Task state
+        # Project state
         self.plan: Optional[Plan] = None
-        self.is_complete: bool = False
+        self.is_complete_flag: bool = False
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
         self._plan_initialized = False
@@ -199,17 +204,17 @@ class XAgent(Agent):
         logger.info("✅ XAgent initialized and ready for conversation")
 
     def _setup_task_logging(self) -> None:
-        """Sets up file-based logging for the task."""
-        log_dir = self.taskspace.get_taskspace_path() / "logs"
+        """Sets up file-based logging for the project."""
+        log_dir = self.project_storage.get_project_path() / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
-        log_file_path = log_dir / "task.log"
+        log_file_path = log_dir / "project.log"
         setup_task_file_logging(str(log_file_path))
 
     def _initialize_tools(self) -> ToolManager:
         """Initializes the ToolManager and registers builtin tools."""
         tool_manager = ToolManager(
-            task_id=self.task_id,
-            taskspace_path=str(self.taskspace.get_taskspace_path())
+            project_id=self.project_id,
+            workspace_path=str(self.project_storage.get_project_path())
         )
         logger.info("ToolManager initialized.")
         return tool_manager
@@ -266,13 +271,13 @@ class XAgent(Agent):
         self.initial_prompt = prompt
 
         # Try to load existing plan
-        plan_path = self.taskspace.get_taskspace_path() / "plan.json"
+        plan_path = self.project_storage.get_project_path() / "plan.json"
         if plan_path.exists():
             try:
                 with open(plan_path, 'r') as f:
                     plan_data = json.load(f)
                 self.plan = Plan(**plan_data)
-                logger.info("Loaded existing plan from taskspace")
+                logger.info("Loaded existing plan from project storage")
             except Exception as e:
                 logger.warning(f"Failed to load existing plan: {e}")
 
@@ -292,13 +297,13 @@ class XAgent(Agent):
             self._plan_initialized = True
         # Otherwise, try to load existing plan
         elif not self.plan:
-            plan_path = self.taskspace.get_taskspace_path() / "plan.json"
+            plan_path = self.project_storage.get_project_path() / "plan.json"
             if plan_path.exists():
                 try:
                     with open(plan_path, 'r') as f:
                         plan_data = json.load(f)
                     self.plan = Plan(**plan_data)
-                    logger.info("Loaded existing plan from taskspace")
+                    logger.info("Loaded existing plan from project storage")
                     self._plan_initialized = True
                 except Exception as e:
                     logger.warning(f"Failed to load existing plan: {e}")
@@ -313,8 +318,8 @@ class XAgent(Agent):
         - Rich messages with attachments
         - Preserving completed work while regenerating only necessary steps
 
-        This method is for USER INPUT and conversation, not for autonomous task execution.
-        For autonomous task execution, use step() method instead.
+        This method is for USER INPUT and conversation, not for autonomous project execution.
+        For autonomous project execution, use step() method instead.
 
         Args:
             message: Either a simple text string or a rich Message with parts
@@ -336,12 +341,29 @@ class XAgent(Agent):
         # Persist message to chat history
         import asyncio
         if hasattr(self, 'chat_storage'):
-            asyncio.create_task(self.chat_storage.save_message(self.task_id, message))
+            asyncio.create_task(self.chat_storage.save_message(self.project_id, message))
 
         logger.info(f"XAgent received chat message: {message.content[:100]}...")
 
         response = None
         try:
+            # Handle empty message - means "figure out what to do next"
+            if not message.content.strip():
+                logger.info("Empty message received - X will figure out what to do next")
+                # If we have a plan, execute the next pending task
+                if self.plan and any(task.status == "pending" for task in self.plan.tasks):
+                    response_text = await self.step()
+                    response = XAgentResponse(
+                        text=response_text,
+                        metadata={"empty_message": True}
+                    )
+                # If no plan or all tasks complete, ask for direction
+                else:
+                    return XAgentResponse(
+                        text="I'm ready to help! What would you like me to work on? Please provide a specific task or goal.",
+                        metadata={"empty_message": True, "has_plan": bool(self.plan)}
+                    )
+            
             # In chat mode, always respond directly without plan
             if mode == "chat":
                 response = await self._handle_chat_mode(message)
@@ -387,7 +409,7 @@ class XAgent(Agent):
             
             # Persist to storage
             if hasattr(self, 'chat_storage'):
-                asyncio.create_task(self.chat_storage.save_message(self.task_id, assistant_message))
+                asyncio.create_task(self.chat_storage.save_message(self.project_id, assistant_message))
             
             # Add messages to response
             response.user_message = message
@@ -405,7 +427,7 @@ class XAgent(Agent):
         message_id = generate_short_id()
         accumulated_text = ""
         
-        logger.info(f"[STREAMING] Starting streaming response for task {self.task_id} with message_id {message_id}")
+        logger.info(f"[STREAMING] Starting streaming response for task {self.project_id} with message_id {message_id}")
         
         try:
             # Import streaming function (avoid circular import)
@@ -429,7 +451,7 @@ class XAgent(Agent):
                         # Send streaming chunk via SSE using consistent message_id
                         try:
                             await send_stream_chunk(
-                                task_id=self.task_id,
+                                project_id=self.project_id,
                                 chunk=chunk_text,
                                 message_id=message_id,
                                 is_final=False
@@ -454,7 +476,7 @@ class XAgent(Agent):
                     
                     try:
                         await send_stream_chunk(
-                            task_id=self.task_id,
+                            project_id=self.project_id,
                             chunk="",
                             message_id=message_id,
                             is_final=True,
@@ -467,7 +489,7 @@ class XAgent(Agent):
             # Send final chunk to indicate streaming is complete
             try:
                 await send_stream_chunk(
-                    task_id=self.task_id,
+                    project_id=self.project_id,
                     chunk="",
                     message_id=message_id,
                     is_final=True
@@ -482,7 +504,7 @@ class XAgent(Agent):
             try:
                 from ..server.streaming import send_stream_chunk
                 await send_stream_chunk(
-                    task_id=self.task_id,
+                    project_id=self.project_id,
                     chunk="",
                     message_id=message_id,
                     is_final=True,
@@ -534,14 +556,14 @@ Respond with a JSON object:
   "is_new_task": boolean,
   "affected_tasks": ["list of task IDs that need regeneration"],
   "preserved_tasks": ["list of task IDs to preserve"],
-  "adjustment_type": "regenerate|add_tasks|modify_goals|style_change",
+  "adjustment_type": "regenerate|add_projects|modify_goals|style_change",
   "reasoning": "explanation of the analysis"
 }}
 """
 
         response = await self.brain.generate_response(
             messages=[{"role": "user", "content": analysis_prompt}],
-            system_prompt=self.build_system_prompt({"task_id": self.task_id}),
+            system_prompt=self.build_system_prompt({"project_id": self.project_id}),
             json_mode=True
         )
 
@@ -620,7 +642,7 @@ Please provide a helpful, informative response based on the current state of the
         # Stream the response
         response_text, message_id = await self._stream_full_response(
             messages=[{"role": "user", "content": context_prompt}],
-            system_prompt=self.build_system_prompt({"task_id": self.task_id})
+            system_prompt=self.build_system_prompt({"project_id": self.project_id})
         )
 
         return XAgentResponse(
@@ -662,7 +684,7 @@ suggest they be more specific about what changes they want.
         # Stream the response
         response_text, message_id = await self._stream_full_response(
             messages=[{"role": "user", "content": context_prompt}],
-            system_prompt=self.build_system_prompt({"task_id": self.task_id})
+            system_prompt=self.build_system_prompt({"project_id": self.project_id})
         )
 
         return XAgentResponse(
@@ -688,7 +710,7 @@ Please provide a direct, helpful response to the user's message.
         # Stream the response
         response_text, message_id = await self._stream_full_response(
             messages=[{"role": "user", "content": context_prompt}],
-            system_prompt=self.build_system_prompt({"task_id": self.task_id})
+            system_prompt=self.build_system_prompt({"project_id": self.project_id})
         )
 
         return XAgentResponse(
@@ -733,7 +755,7 @@ Respond with a JSON object following this schema:
 
         response = await self.brain.generate_response(
             messages=[{"role": "user", "content": planning_prompt}],
-            system_prompt=self.build_system_prompt({"task_id": self.task_id}),
+            system_prompt=self.build_system_prompt({"project_id": self.project_id}),
             json_mode=True
         )
 
@@ -751,16 +773,16 @@ Respond with a JSON object following this schema:
             logger.info(f"Generated plan with {len(plan.tasks)} tasks")
 
             # Save document outline if provided
-            if document_outline and self.taskspace:
+            if document_outline and self.project_storage:
                 try:
-                    await self.taskspace.store_artifact(
+                    await self.project_storage.store_artifact(
                         name="document_outline.md",
                         content=document_outline,
                         content_type="text/markdown",
                         metadata={"created_by": "XAgent", "purpose": "document_structure"},
-                        commit_message="Created document outline for task execution"
+                        commit_message="Created document outline for project execution"
                     )
-                    logger.info("Saved document outline to taskspace")
+                    logger.info("Saved document outline to project storage")
                 except Exception as e:
                     logger.warning(f"Failed to save document outline: {e}")
 
@@ -771,7 +793,7 @@ Respond with a JSON object following this schema:
             return Plan(
                 goal=goal,
                 tasks=[
-                    PlanItem(
+                    Task(
                         id="task_1",
                         name="Complete the requested task",
                         goal=goal,
@@ -790,14 +812,14 @@ Respond with a JSON object following this schema:
 
         # Check if plan is already complete
         if self.plan.is_complete():
-            self.is_complete = True
+            self.is_complete_flag = True
             return "🎉 All tasks completed successfully!"
 
         # Find next actionable task
         next_task = self.plan.get_next_actionable_task()
         if not next_task:
             if self.plan.has_failed_tasks():
-                self.is_complete = True
+                self.is_complete_flag = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
@@ -815,7 +837,7 @@ Respond with a JSON object following this schema:
             try:
                 from ..server.streaming import send_task_update
                 await send_task_update(
-                    task_id=self.task_id,
+                    project_id=self.project_id,
                     status="completed",
                     result={"task": next_task.name, "result": result}
                 )
@@ -825,11 +847,11 @@ Respond with a JSON object following this schema:
 
             # Check if this was the last task
             if self.plan.is_complete():
-                self.is_complete = True
+                self.is_complete_flag = True
                 try:
                     from ..server.streaming import send_task_update
                     await send_task_update(
-                        task_id=self.task_id,
+                        project_id=self.project_id,
                         status="completed",
                         result={"message": "All tasks completed successfully!"}
                     )
@@ -848,7 +870,7 @@ Respond with a JSON object following this schema:
             try:
                 from ..server.streaming import send_task_update
                 await send_task_update(
-                    task_id=self.task_id,
+                    project_id=self.project_id,
                     status="failed",
                     result={"error": str(e), "task": next_task.name}
                 )
@@ -857,7 +879,7 @@ Respond with a JSON object following this schema:
                 pass
 
             if next_task.on_failure == "halt":
-                self.is_complete = True
+                self.is_complete_flag = True
                 return f"❌ {next_task.name}: Failed - {e}\n\nTask execution halted."
             else:
                 return f"⚠️ {next_task.name}: Failed but continuing - {e}"
@@ -877,7 +899,7 @@ Respond with a JSON object following this schema:
             if "Task execution halted" in step_result:
                 break
             # Break if task is complete
-            if self.is_complete:
+            if self.is_complete():
                 break
 
         return "\n".join(results)
@@ -897,7 +919,7 @@ Respond with a JSON object following this schema:
 
         # Check if plan is already complete
         if self.plan.is_complete():
-            self.is_complete = True
+            self.is_complete_flag = True
             return "🎉 All tasks completed successfully!"
 
         # Find all actionable tasks for parallel execution
@@ -905,7 +927,7 @@ Respond with a JSON object following this schema:
         
         if not actionable_tasks:
             if self.plan.has_failed_tasks():
-                self.is_complete = True
+                self.is_complete_flag = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
@@ -960,12 +982,12 @@ Respond with a JSON object following this schema:
             
             # Check if this completed all tasks
             if self.plan.is_complete():
-                self.is_complete = True
+                self.is_complete_flag = True
                 completion_messages.append("🎉 All tasks completed successfully!")
             
             # If we had halt failures, mark as complete
             if failed_tasks and any(task.on_failure == "halt" for task in failed_tasks):
-                self.is_complete = True
+                self.is_complete_flag = True
                 completion_messages.append("Task execution halted due to critical failure.")
             
             return "\n".join(completion_messages)
@@ -978,31 +1000,31 @@ Respond with a JSON object following this schema:
             await self._persist_plan()
             return f"❌ Parallel execution failed: {e}"
 
-    async def _execute_single_task(self, task: PlanItem) -> str:
+    async def _execute_single_task(self, task: Task) -> str:
         """Execute a single task using the appropriate specialist agent."""
         # Get the assigned agent
-        if task.agent is None:
+        if task.assigned_to is None:
             raise ValueError("Task has no assigned agent")
-        agent = self.specialist_agents.get(task.agent)
+        agent = self.specialist_agents.get(task.assigned_to)
         if not agent:
-            raise ValueError(f"Agent '{task.agent}' not found")
+            raise ValueError(f"Agent '{task.assigned_to}' not found")
 
         # Send task start event
         try:
             from ..server.streaming import send_agent_status, send_message_object
-            from ..core.message import Message
+            from vibex.core.message import Message
             await send_agent_status(
-                task_id=self.task_id,
-                agent_id=task.agent,
+                project_id=self.project_id,
+                agent_id=task.assigned_to,
                 status="starting",
                 progress=0
             )
             
             # Send task briefing as system message
-            system_message = Message.system_message(f"Starting task: {task.name} - {task.goal}")
-            await send_message_object(self.task_id, system_message)
+            system_message = Message.system_message(f"Starting task: {task.name} - {task.description}")
+            await send_message_object(self.project_id, system_message)
             # Persist the message
-            await self.chat_storage.save_message(self.task_id, system_message)
+            await self.chat_storage.save_message(self.project_id, system_message)
         except ImportError:
             # Streaming not available in this context
             pass
@@ -1017,16 +1039,16 @@ Respond with a JSON object following this schema:
                 "content": f"""You are being assigned a specific task as part of a larger plan.
 
 TASK: {task.name}
-GOAL: {task.goal}
+GOAL: {task.description}
 
-Complete this specific task using your available tools. Save any outputs that other agents might need as files in the taskspace.
+Complete this specific task using your available tools. Save any outputs that other agents might need as files in the project storage.
 
 Original user request: {self.initial_prompt or "No initial prompt provided"}{outline_reference}
 """
             },
             {
                 "role": "user",
-                "content": f"Please complete this task: {task.goal}"
+                "content": f"Please complete this task: {task.description}"
             }
         ]
 
@@ -1038,16 +1060,16 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         # Send agent response as message
         try:
             from ..server.streaming import send_message_object
-            from ..core.message import Message
+            from vibex.core.message import Message
             agent_message = Message.assistant_message(response)
-            await send_message_object(self.task_id, agent_message)
+            await send_message_object(self.project_id, agent_message)
             # Persist the message
-            await self.chat_storage.save_message(self.task_id, agent_message)
+            await self.chat_storage.save_message(self.project_id, agent_message)
             
             # Send task completion status
             completion_message = Message.system_message(f"Completed task: {task.name}")
-            await send_message_object(self.task_id, completion_message)
-            await self.chat_storage.save_message(self.task_id, completion_message)
+            await send_message_object(self.project_id, completion_message)
+            await self.chat_storage.save_message(self.project_id, completion_message)
         except ImportError:
             # Streaming not available in this context
             pass
@@ -1063,27 +1085,26 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                     "timestamp": msg.timestamp.isoformat() if msg.timestamp else None
                 })
 
-            if task.agent is None:
+            if task.assigned_to is None:
                 raise ValueError("Task has no assigned agent for handoff")
             context = HandoffContext(
-                current_agent=task.agent,
+                current_agent=task.assigned_to,
                 task_result=response,
-                task_goal=task.goal,
+                task_goal=task.description,
                 conversation_history=conversation_dicts,
-                taskspace_files=[f["name"] for f in await self.taskspace.list_artifacts()]
+                taskspace_files=[f["name"] for f in await self.project_storage.list_artifacts()]
             )
 
             next_agent = await self.handoff_evaluator.evaluate_handoffs(context)
-            if next_agent and next_agent != task.agent:
+            if next_agent and next_agent != task.assigned_to:
                 # Create a follow-up task for the handoff
-                handoff_task = PlanItem(
+                handoff_task = Task(
                     id=f"handoff_{task.id}_{next_agent}",
                     name=f"Continue work with {next_agent}",
-                    goal=f"Continue the work from {task.agent} based on: {task.goal}",
-                    agent=next_agent,
+                    description=f"Continue the work from {task.assigned_to} based on: {task.description}",
+                    assigned_to=next_agent,
                     dependencies=[task.id],
-                    status="pending",
-                    on_failure="halt"
+                    status="pending"
                 )
 
                 # Add to plan dynamically
@@ -1091,22 +1112,22 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                     self.plan.tasks.append(handoff_task)
                     await self._persist_plan()
 
-                    logger.info(f"Handoff task created: {task.agent} -> {next_agent}")
+                    logger.info(f"Handoff task created: {task.assigned_to} -> {next_agent}")
                     response += f"\n\n🤝 Handing off to {next_agent} for continuation."
 
         return response
 
     async def _persist_plan(self) -> None:
-        """Persist the current plan to taskspace."""
+        """Persist the current plan to project storage."""
         if not self.plan:
             return
 
-        plan_path = self.taskspace.get_taskspace_path() / "plan.json"
+        plan_path = self.project_storage.get_project_path() / "plan.json"
         try:
             import json
             with open(plan_path, 'w') as f:
                 json.dump(self.plan.model_dump(), f, indent=2)
-            logger.debug("Plan persisted to taskspace")
+            logger.debug("Plan persisted to project storage")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
 
@@ -1141,9 +1162,9 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         return "\n".join(summary)
 
     def _get_artifacts_summary(self) -> str:
-        """Get a summary of available artifacts in taskspace."""
+        """Get a summary of available artifacts in project storage."""
         try:
-            artifacts_dir = self.taskspace.get_taskspace_path() / "artifacts"
+            artifacts_dir = self.project_storage.get_project_path() / "artifacts"
             if not artifacts_dir.exists():
                 return "No artifacts available"
 
@@ -1156,11 +1177,11 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             return "Unable to check artifacts"
 
     # Compatibility methods for existing TaskExecutor interface
-    async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[TaskStep, None]:
+    async def execute(self, prompt: str, stream: bool = False) -> AsyncGenerator[Task, None]:
         """Compatibility method for TaskExecutor.execute()."""
         response = await self.chat(prompt)
 
-        # Create a TaskStep message
+        # Create a Task message
         message = TaskStep(
             agent_name="X",
             parts=[TextPart(text=response.text)]
@@ -1170,9 +1191,15 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         # Persist step to chat history
         import asyncio
         if hasattr(self, 'chat_storage'):
-            asyncio.create_task(self.chat_storage.save_step(self.task_id, message))
+            asyncio.create_task(self.chat_storage.save_step(self.project_id, message))
         
         yield message
+
+    def is_complete(self) -> bool:
+        """Check if the project is complete."""
+        if self.plan:
+            return self.plan.is_complete()
+        return self.is_complete_flag
 
     async def start(self, prompt: str) -> None:
         """Compatibility method for TaskExecutor.start()."""
@@ -1199,7 +1226,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
 
     async def step(self) -> str:
         """
-        Execute one step of autonomous task execution.
+        Execute one step of autonomous project execution.
 
         This method is for AUTONOMOUS TASK EXECUTION, not for user conversation.
         It moves the plan forward by executing the next available task.
@@ -1209,7 +1236,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         Returns:
             str: Status message about the step execution
         """
-        if self.is_complete:
+        if self.is_complete():
             return "Task completed"
 
         # Ensure plan is initialized if we have an initial prompt
@@ -1223,5 +1250,4 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         if self.parallel_execution:
             return await self._execute_parallel_step(self.max_concurrent_tasks)
         else:
-            return await self._execute_single_step()
-
+            return await self._execute_single_step() 

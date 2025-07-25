@@ -88,7 +88,7 @@ def get_web_path() -> Path:
 @click.option('--no-api', is_flag=True, help='Don\'t start the API server')
 @click.option('--open', '-o', is_flag=True, help='Open web interface in browser')
 def web(ctx, port: int, api_port: int, no_api: bool, open: bool):
-    """VibeX Web - Unified interface for task execution and observability.
+    """VibeX Web - Unified interface for project execution and observability.
     
     If no subcommand is given, starts the web interface (equivalent to 'start' command).
     """

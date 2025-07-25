@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from ..core.message import Message, TaskHistory, TaskStep, StreamChunk
+from ..core.message import Message, ConversationHistory, TaskStep, StreamChunk
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -24,14 +24,14 @@ logger = get_logger(__name__)
 class ChatHistoryStorage:
     """Manages chat history persistence for tasks."""
     
-    def __init__(self, taskspace_path: str):
-        self.taskspace_path = Path(taskspace_path)
+    def __init__(self, project_path: str):
+        self.project_path = Path(project_path)
         # History folder at same level as artifacts/ and logs/
-        self.history_dir = self.taskspace_path / "history"
+        self.history_dir = self.project_path / "history"
         self.history_file = self.history_dir / "messages.jsonl"
         self.temp_streaming_messages: Dict[str, Dict] = {}  # Track incomplete streaming messages
         
-    async def save_message(self, task_id: str, message: Message) -> None:
+    async def save_message(self, project_id: str, message: Message) -> None:
         """Save a complete message to persistent storage."""
         try:
             # Ensure history directory exists
@@ -51,39 +51,39 @@ class ChatHistoryStorage:
             with open(self.history_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(message_record) + "\n")
                 
-            logger.debug(f"Saved message {message.id} for task {task_id}")
+            logger.debug(f"Saved message {message.id} for task {project_id}")
             
         except Exception as e:
-            logger.error(f"Failed to save message {message.id} for task {task_id}: {e}")
+            logger.error(f"Failed to save message {message.id} for task {project_id}: {e}")
             
-    async def save_step(self, task_id: str, step: TaskStep) -> None:
+    async def save_step(self, project_id: str, step: TaskStep) -> None:
         """Save a task step as an assistant message to maintain unified chat history."""
         try:
-            # Convert TaskStep to Message format for unified storage
+            # Convert Task to Message format for unified storage
             # Extract text content from parts
             content = ""
-            for part in step.parts:
+            for part in task.parts:
                 if hasattr(part, 'text'):
                     content += part.text
                 elif hasattr(part, 'content'):
                     content += str(part.content)
             
-            # Create message from step
-            step_message = Message(
-                id=step.step_id,
+            # Create message from task
+            task_message = Message(
+                id=task.step_id,
                 role="assistant",
                 content=content,
-                parts=step.parts,  # Preserve original parts structure
-                timestamp=step.timestamp
+                parts=task.parts,  # Preserve original parts structure
+                timestamp=task.timestamp
             )
             
             # Save as regular message
-            await self.save_message(task_id, step_message)
+            await self.save_message(project_id, task_message)
             
         except Exception as e:
-            logger.error(f"Failed to save step {step.step_id} for task {task_id}: {e}")
+            logger.error(f"Failed to save task {task.step_id} for project {project_id}: {e}")
     
-    async def handle_streaming_chunk(self, task_id: str, chunk: StreamChunk) -> None:
+    async def handle_streaming_chunk(self, project_id: str, chunk: StreamChunk) -> None:
         """Handle streaming message chunks - accumulate but don't persist until complete."""
         step_id = chunk.step_id
         
@@ -94,7 +94,7 @@ class ChatHistoryStorage:
                 "content": "",
                 "chunks": [],
                 "start_time": chunk.timestamp,
-                "task_id": task_id
+                "project_id": project_id
             }
         
         # Accumulate content
@@ -107,9 +107,9 @@ class ChatHistoryStorage:
         
         # If this is the final chunk, create and save the complete message
         if chunk.is_final:
-            await self._finalize_streaming_message(task_id, step_id)
+            await self._finalize_streaming_message(project_id, step_id)
     
-    async def _finalize_streaming_message(self, task_id: str, step_id: str) -> None:
+    async def _finalize_streaming_message(self, project_id: str, step_id: str) -> None:
         """Convert accumulated streaming chunks into a final message and persist it."""
         if step_id not in self.temp_streaming_messages:
             logger.warning(f"No streaming message found for step {step_id}")
@@ -124,19 +124,19 @@ class ChatHistoryStorage:
         final_message.id = step_id  # Use step_id as message_id for consistency
         
         # Save the complete message
-        await self.save_message(task_id, final_message)
+        await self.save_message(project_id, final_message)
         
         # Clean up streaming data
         del self.temp_streaming_messages[step_id]
         
         logger.debug(f"Finalized streaming message for step {step_id}")
     
-    async def load_history(self, task_id: str) -> TaskHistory:
+    async def load_history(self, project_id: str) -> ConversationHistory:
         """Load chat history from persistent storage."""
-        history = TaskHistory(task_id=task_id)
+        history = ConversationHistory(project_id=project_id)
         
         if not self.history_file.exists():
-            logger.debug(f"No chat history file found for task {task_id}")
+            logger.debug(f"No chat history file found for task {project_id}")
             return history
         
         try:
@@ -171,32 +171,32 @@ class ChatHistoryStorage:
                     )
                     history.add_message(message)
             
-            logger.info(f"Loaded chat history for task {task_id}: {len(history.messages)} messages")
+            logger.info(f"Loaded chat history for task {project_id}: {len(history.messages)} messages")
             
         except Exception as e:
-            logger.error(f"Failed to load chat history for task {task_id}: {e}")
+            logger.error(f"Failed to load chat history for task {project_id}: {e}")
         
         return history
     
-    async def clear_history(self, task_id: str) -> None:
+    async def clear_history(self, project_id: str) -> None:
         """Clear chat history for a task by removing the entire history file."""
         try:
             if self.history_file.exists():
                 # For task-specific history files, simply remove the entire file
                 # Since each task has its own history directory structure
                 self.history_file.unlink()
-                logger.info(f"Cleared chat history file for task {task_id}")
+                logger.info(f"Cleared chat history file for task {project_id}")
             
             # Clear any temporary streaming messages for this task
             to_remove = [step_id for step_id, data in self.temp_streaming_messages.items() 
-                        if data.get("task_id") == task_id]
+                        if data.get("project_id") == project_id]
             for step_id in to_remove:
                 del self.temp_streaming_messages[step_id]
                 
         except Exception as e:
-            logger.error(f"Failed to clear chat history for task {task_id}: {e}")
+            logger.error(f"Failed to clear chat history for task {project_id}: {e}")
     
-    def get_active_streaming_messages(self, task_id: str) -> List[Dict]:
+    def get_active_streaming_messages(self, project_id: str) -> List[Dict]:
         """Get currently active streaming messages for a task."""
         return [
             {
@@ -207,7 +207,7 @@ class ChatHistoryStorage:
                 "start_time": data["start_time"].isoformat()
             }
             for step_id, data in self.temp_streaming_messages.items()
-            if data.get("task_id") == task_id
+            if data.get("project_id") == project_id
         ]
 
 
@@ -217,26 +217,26 @@ class ChatHistoryManager:
     def __init__(self):
         self._storage_instances: Dict[str, ChatHistoryStorage] = {}
     
-    def get_storage(self, taskspace_path: str) -> ChatHistoryStorage:
-        """Get or create a chat history storage instance for a taskspace."""
-        if taskspace_path not in self._storage_instances:
-            self._storage_instances[taskspace_path] = ChatHistoryStorage(taskspace_path)
-        return self._storage_instances[taskspace_path]
+    def get_storage(self, project_path: str) -> ChatHistoryStorage:
+        """Get or create a chat history storage instance for a project."""
+        if project_path not in self._storage_instances:
+            self._storage_instances[project_path] = ChatHistoryStorage(project_path)
+        return self._storage_instances[project_path]
     
-    async def save_message(self, task_id: str, taskspace_path: str, message: Message) -> None:
+    async def save_message(self, project_id: str, project_path: str, message: Message) -> None:
         """Save a message using the appropriate storage instance."""
-        storage = self.get_storage(taskspace_path)
-        await storage.save_message(task_id, message)
+        storage = self.get_storage(project_path)
+        await storage.save_message(project_id, message)
     
-    async def save_step(self, task_id: str, taskspace_path: str, step: TaskStep) -> None:
-        """Save a step using the appropriate storage instance."""
-        storage = self.get_storage(taskspace_path)
-        await storage.save_step(task_id, step)
+    async def save_step(self, project_id: str, project_path: str, step: TaskStep) -> None:
+        """Save a task step using the appropriate storage instance."""
+        storage = self.get_storage(project_path)
+        await storage.save_step(project_id, step)
     
-    async def load_history(self, task_id: str, taskspace_path: str) -> TaskHistory:
+    async def load_history(self, project_id: str, project_path: str) -> ConversationHistory:
         """Load history using the appropriate storage instance."""
-        storage = self.get_storage(taskspace_path)
-        return await storage.load_history(task_id)
+        storage = self.get_storage(project_path)
+        return await storage.load_history(project_id)
 
 
 # Global chat history manager

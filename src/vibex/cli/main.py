@@ -77,7 +77,7 @@ def main():
         elif args.command == "debug":
             import asyncio
             from .debug import debug_task
-            asyncio.run(debug_task(args.team_config, args.task_id))
+            asyncio.run(debug_task(args.team_config, args.project_id))
             return 0
 
         elif args.command == "web":

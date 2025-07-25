@@ -101,7 +101,7 @@ async def main():
     x.set_parallel_execution(enabled=True, max_concurrent=4)
 
     print(f"Task ID: {x.task_id}")
-    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
 
     # Execute tasks with parallel processing
     while not x.is_complete:
@@ -140,7 +140,7 @@ async def main():
     x.set_parallel_execution(enabled=True, max_concurrent=3)
 
     print(f"Task ID: {x.task_id}")
-    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
 
     # Execute tasks in parallel (e.g., API design + DB schema + tests)
     while not x.is_complete:
@@ -176,7 +176,7 @@ async def main():
     )
 
     print(f"Task ID: {x.task_id}")
-    print(f"Taskspace: {x.taskspace.get_taskspace_path()}")
+    print(f"Workspace: {x.workspace.get_workspace_path()}")
 
     # Execute the initial task
     while not x.is_complete:

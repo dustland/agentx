@@ -70,10 +70,10 @@ def start():
             """Get monitor status."""
             return monitor.get_dashboard_data()
 
-        @app.get("/monitor/tasks/{task_id}/conversation")
-        async def get_task_conversation(task_id: str):
+        @app.get("/monitor/projects/{project_id}/conversation")
+        async def get_project_conversation(project_id: str):
             """Get conversation history for a task."""
-            return monitor.get_task_conversation(task_id)
+            return monitor.get_project_conversation(project_id)
 
         @app.get("/monitor/events")
         async def get_events(event_type: str = None, limit: int = 100):
@@ -161,9 +161,9 @@ def monitor(project_path: Optional[str] = None):
                     tasks = monitor.get_recent_tasks(10)
                     if tasks:
                         print(f"Recent tasks ({len(tasks)}):")
-                        for task_id in tasks:
-                            history = monitor.get_task_conversation(task_id)
-                            print(f"  • {task_id}: {len(history)} messages")
+                        for project_id in tasks:
+                            history = monitor.get_project_conversation(project_id)
+                            print(f"  • {project_id}: {len(history)} messages")
                     else:
                         print("No tasks found")
                 elif cmd == "memory":
@@ -204,8 +204,8 @@ def monitor(project_path: Optional[str] = None):
                     # Export all data
                     data = {
                         "dashboard": monitor.get_dashboard_data(),
-                        "tasks": {task_id: monitor.get_task_conversation(task_id)
-                                 for task_id in monitor.get_recent_tasks(50)},
+                        "tasks": {project_id: monitor.get_project_conversation(project_id)
+                                 for project_id in monitor.get_recent_tasks(50)},
                         "memory_categories": {cat: monitor.get_memory_by_category(cat)
                                             for cat in monitor.get_memory_categories()},
                         "exported_at": datetime.now().isoformat()
@@ -302,7 +302,7 @@ def docs(regenerate: bool = True):
 
     # Check if the API docs generation script exists
     scripts_dir = Path("scripts")
-    generate_script = scripts_dir / "generate_api_docs.py"
+    generate_script = scripts_dir / "generate_sdk_docs.py"
 
     if not generate_script.exists():
         print(f"❌ API docs generator not found: {generate_script}")
@@ -315,7 +315,7 @@ def docs(regenerate: bool = True):
 
             if result.returncode == 0:
                 print("✅ API documentation generated successfully")
-                print("📂 Documentation available at: docs/content/api/")
+                print("📂 Documentation available at: docs/content/sdk/")
                 print()
                 print("💡 Next steps:")
                 print("  • To build the docs site: cd docs && pnpm build")
@@ -326,7 +326,7 @@ def docs(regenerate: bool = True):
                 return 1
         else:
             print("📖 API documentation is up to date")
-            print("📂 Location: docs/content/api/")
+            print("📂 Location: docs/content/sdk/")
             return 0
 
     except Exception as e:

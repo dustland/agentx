@@ -7,45 +7,42 @@ hand off work based on conditions without explicit handoff tools.
 """
 
 import asyncio
-from vibex import start_task
+from vibex import VibeX
+from pathlib import Path
 
 async def main():
-    """Run a handoff demonstration."""
-
-    print("🤝 Handoff Demo Example")
-    print("=" * 60)
-    print("This demo shows how agents automatically hand off work")
-    print("based on conditions defined in the team configuration.")
-    print("-" * 60)
-
-    # Task that will trigger handoffs
-    task_prompt = """
-    Create a technical blog post about quantum computing:
-    1. Research the topic and create an outline
-    2. Write a draft based on the outline
-    3. Review the draft for technical accuracy
-    4. Edit for clarity and style
-    5. Create a final version
-    """
-
-    print(f"📋 Task: {task_prompt.strip()}")
-    print("-" * 60)
-
-    # Start the task with handoff-enabled team
-    x = await start_task(
-        prompt=task_prompt,
-        config_path="config/handoff_team.yaml"
+    """Main function to run the handoff demo."""
+    # Load the team configuration from the YAML file
+    config_path = Path(__file__).parent / "config/handoff_team.yaml"
+    
+    # Initialize VibeX with the specified configuration
+    # The VibeX context manager handles session setup and cleanup
+    x = await VibeX.start(
+        project_id="handoff_demo_project",
+        goal="Research the 'Jobs to be Done' framework and create a summary document.",
+        config_path=str(config_path),
     )
+        
+    # Enable parallel execution for the agents
+    x.set_parallel_execution(enabled=True)
 
-    print(f"🆔 Task ID: {x.task_id}")
-    print(f"📁 Taskspace: {x.taskspace.get_taskspace_path()}")
-    print("-" * 60)
+    # Print out the project details
+    print_header()
+    print(f"🆔 Project ID: {x.project_id}")
+    print(f"📁 Workspace: {x.workspace.get_path()}")
+    print("-" * 80)
+    
+    # The initial user query that starts the process
+    initial_query = "Research the 'Jobs to be Done' framework and create a summary document."
+    
+    # Start the process by sending the initial query to the agent team
+    await x.start(initial_query)
 
     # Execute the task - handoffs will happen automatically
     print("🚀 Starting execution with automatic handoffs...\n")
 
     step_count = 0
-    while not x.is_complete and step_count < 20:
+    while not x.is_complete() and step_count < 20:
         response = await x.step()
         step_count += 1
 
@@ -53,32 +50,49 @@ async def main():
         print(f"{response}")
 
         # Check if a handoff occurred
-        if "Handing off to" in response:
+        if isinstance(response, str) and "Handing off to" in response:
             print("✨ HANDOFF DETECTED! Work is being transferred to the next agent.")
 
         print("-" * 60)
 
-    if x.is_complete:
+    if x.is_complete():
         print("✅ Task completed successfully!")
     else:
         print(f"⚠️ Task stopped after {step_count} steps")
 
-    # Show the final plan to see all tasks including handoffs
-    if x.plan:
-        print("\n📊 Final Execution Plan:")
-        for i, task in enumerate(x.plan.tasks, 1):
-            status_emoji = {
-                "completed": "✅",
-                "failed": "❌",
-                "in_progress": "🔄",
-                "pending": "⏳"
-            }.get(task.status, "❓")
+        # Show the final plan to see all tasks including handoffs
+        if x.plan:
+            print("\n📊 Final Execution Plan:")
+            for i, task in enumerate(x.plan.tasks, 1):
+                status_emoji = {
+                    "completed": "✅",
+                    "failed": "❌",
+                    "in_progress": "🔄",
+                    "pending": "⏳"
+                }.get(task.status, "❓")
 
-            print(f"{i}. {status_emoji} [{task.agent}] {task.name}")
-            if task.id.startswith("handoff_"):
-                print(f"   ↳ (Automatic handoff based on conditions)")
+                print(f"{i}. {status_emoji} [{task.agent}] {task.name}")
+                if task.id.startswith("handoff_"):
+                    print(f"   ↳ (Automatic handoff based on conditions)")
 
-    print(f"\n📁 Check the taskspace for outputs: {x.taskspace.get_taskspace_path()}")
+        print("\n" + "=" * 80)
+        print("✅ HANDOFF DEMO COMPLETE")
+        print("=" * 80)
+        print(f"🆔 Project ID: {x.project_id}")
+        print(f"📁 Final artifacts are in: {x.workspace.get_path() / 'artifacts'}")
+        print("-" * 80)
+        
+        # You can now inspect the 'artifacts' folder in the generated workspace
+
+def print_header():
+    """Prints the header for the demo."""
+    print("=" * 80)
+    print("🚀 VibeX - Automatic Agent Handoff Demo")
+    print("=" * 80)
+    print("This example shows how agents can autonomously hand off work based on predefined conditions.")
+    print("No explicit 'handoff' tool is used; the system manages it seamlessly.")
+    print("-" * 80)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

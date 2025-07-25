@@ -40,14 +40,14 @@ class GitArtifactStorage:
     - Meaningful commit messages
     """
 
-    def __init__(self, base_path: Union[str, Path], task_id: str):
+    def __init__(self, base_path: Union[str, Path], project_id: str):
         if not GIT_AVAILABLE:
             raise ImportError("GitPython is required for Git-based artifact storage")
 
-        # Single API: base_path + task_id for taskspace isolation
-        self.taskspace_path = Path(base_path) / task_id
+        # Single API: base_path + project_id for project isolation
+        self.project_path = Path(base_path) / project_id
 
-        self.artifacts_path = self.taskspace_path / "artifacts"
+        self.artifacts_path = self.project_path / "artifacts"
         self.artifacts_path.mkdir(parents=True, exist_ok=True)
 
         # Thread pool for Git operations (Git operations are not async)
@@ -135,7 +135,7 @@ class GitArtifactStorage:
 
             return StorageResult(
                 success=True,
-                path=str(artifact_path.relative_to(self.taskspace_path)),
+                path=str(artifact_path.relative_to(self.project_path)),
                 size=len(content) if isinstance(content, (str, bytes)) else 0,
                 data={"commit_hash": commit_hash, "version": commit_hash[:8]},
                 metadata={"git_commit": commit_hash, "content_type": content_type}

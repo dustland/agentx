@@ -203,7 +203,7 @@ def _add_debug_parser(subparsers) -> None:
         help="Path to team configuration file"
     )
     debug_parser.add_argument(
-        "task_id",
+        "project_id",
         help="Task ID to debug"
     )
 
@@ -212,7 +212,7 @@ def _add_web_parser(subparsers) -> None:
     """Add the web command parser."""
     web_parser = subparsers.add_parser(
         "web",
-        help="VibeX Web - Web UI for task execution and observability",
+        help="VibeX Web - Web UI for project execution and observability",
         description="Launch and manage the VibeX Web interface"
     )
     

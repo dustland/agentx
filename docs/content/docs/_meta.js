@@ -1,7 +1,11 @@
 export default {
+  index: {
+    title: "Docs",
+    display: "hidden",
+  },
   "getting-started": "Getting Started",
-  glossary: "Glossary",
   tutorials: "Tutorials",
   design: "Design",
-  reference: "Reference"
+  reference: "Reference",
+  glossary: "Glossary"
 }

@@ -2,7 +2,7 @@
 
 ## 1. Core Principles
 
-The communication architecture in VibeX is designed to be robust, extensible, and streamable, drawing inspiration from modern standards like the Vercel AI SDK. The core principles are:
+The communication architecture in VibeX is a critical component that enables the transparent, real-time feedback loop at the heart of the Vibe-X philosophy. It is designed to be robust, extensible, and streamable, drawing inspiration from modern standards like the Vercel AI SDK. The core principles are:
 
 - **Message-Oriented**: The fundamental unit of communication is a `Message`. All interactions, whether from a user, an agent, or a tool, are encapsulated in this structure.
 - **Composable Parts**: A `Message` is composed of a list of `Part` objects. This allows for rich, multi-modal content and a clear separation of concerns (e.g., text, tool calls, and tool results all have their own part type).
@@ -182,7 +182,7 @@ This flow demonstrates how `ToolErrorPart` enables the agent to fix its own mist
 }
 ```
 
-**2. The `TaskExecutor` returns a `ToolErrorPart`:**
+**2. The VibeX Framework returns a `ToolErrorPart`:**
 Instead of executing the tool, the system provides a structured validation error.
 
 ```json
@@ -240,7 +240,7 @@ sequenceDiagram
     participant Client
     participant VibeX
     participant Agent
-    participant ToolExecutor
+    participant ToolManager
 
     Client->>VibeX: POST /chat with User Message
 
@@ -251,8 +251,8 @@ sequenceDiagram
     VibeX-->>Client: Stream Packet with ToolCallPart
     Note over Client: UI displays tool call status
 
-    VibeX->>ToolExecutor: execute tool call
-    ToolExecutor-->>VibeX: result
+    VibeX->>ToolManager: execute tool call
+    ToolManager-->>VibeX: result
 
     VibeX-->>Client: Stream Packet with ToolResultPart
     Note over Client: UI displays tool success

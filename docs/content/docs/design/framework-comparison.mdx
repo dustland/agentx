@@ -1,21 +1,24 @@
-# Framework Comparison: Why VibeX?
+# Framework Comparison: The Vibe-X Difference
 
-After two years of building production systems with AutoGen/AG2, we created VibeX to address fundamental architectural limitations and evolving needs in multi-agent systems. This document compares VibeX with other popular frameworks and explains our design decisions.
+This document compares VibeX with other popular multi-agent frameworks and explains the design decisions that make VibeX uniquely suited for building applications that **augment human experts** through a transparent, collaborative process.
+
+While other frameworks focus on chaining LLM calls, VibeX is architected to power the **"Vibe-X Collaborative Loop"**: a stateful, observable, and interruptible workflow where users and AI agents work together.
 
 ## Quick Comparison Table
 
-| Feature              | VibeX                        | AG2/AutoGen          | CrewAI             | LangGraph        | LlamaIndex        |
-| -------------------- | ---------------------------- | -------------------- | ------------------ | ---------------- | ----------------- |
-| **Configuration**    | YAML-based, no code required | Python code          | Python/YAML hybrid | Python code      | Python code       |
-| **Agent Presets**    | ✅ Built-in optimized agents | ❌ Manual setup      | ✅ Role templates  | ❌ Manual setup  | ❌ Manual setup   |
-| **Event System**     | ✅ Comprehensive event bus   | ❌ Limited callbacks | ❌ Basic events    | ✅ State-based   | ❌ Limited        |
-| **Tool Ecosystem**   | ✅ Built-in + MCP support    | ⚠️ Basic tools       | ✅ Good selection  | ⚠️ Basic tools   | ✅ Good selection |
-| **Memory System**    | ✅ Semantic + conversation   | ⚠️ Basic context     | ✅ Short/long term | ⚠️ State-based   | ✅ Index-based    |
-| **Handoff Control**  | ✅ Natural language rules    | ⚠️ Code-based        | ⚠️ Sequential      | ✅ State machine | ❌ Manual         |
-| **Production Ready** | ✅ REST API, monitoring      | ⚠️ Library only      | ⚠️ Library only    | ⚠️ Library only  | ⚠️ Library only   |
-| **Orchestration**    | ✅ X (unified interface)     | ⚠️ GroupChat         | ✅ Process-based   | ✅ Graph-based   | ❌ Manual         |
+| Feature              | VibeX                                | AG2/AutoGen          | CrewAI             | LangGraph        | LlamaIndex        |
+| -------------------- | ------------------------------------ | -------------------- | ------------------ | ---------------- | ----------------- |
+| **Core Philosophy**  | Human-in-the-Loop Augmentation       | Agentic Automation   | Task Automation    | State Machines   | Data RAG          |
+| **Orchestration**    | Collaborative & Plan-Driven (XAgent) | GroupChat            | Process-based      | Graph-based      | Manual            |
+| **Configuration**    | YAML-based, no-code required         | Python code          | Python/YAML hybrid | Python code      | Python code       |
+| **Agent Presets**    | ✅ Built-in optimized agents         | ❌ Manual setup      | ✅ Role templates  | ❌ Manual setup  | ❌ Manual setup   |
+| **Event System**     | ✅ Comprehensive & Real-time         | ❌ Limited callbacks | ❌ Basic events    | ✅ State-based   | ❌ Limited        |
+| **Tool Ecosystem**   | ✅ Built-in + MCP support            | ⚠️ Basic tools       | ✅ Good selection  | ⚠️ Basic tools   | ✅ Good selection |
+| **Memory System**    | ✅ Semantic + Conversation History   | ⚠️ Basic context     | ✅ Short/long term | ⚠️ State-based   | ✅ Index-based    |
+| **Handoff Control**  | ✅ Natural language rules            | ⚠️ Code-based        | ⚠️ Sequential      | ✅ State machine | ❌ Manual         |
+| **Production Ready** | ✅ REST API, Monitoring, Workspaces  | ⚠️ Library only      | ⚠️ Library only    | ⚠️ Library only  | ⚠️ Library only   |
 
-## Why We Built VibeX
+## Why We Built VibeX: Key Differentiators
 
 ### 1. Configuration Without Code
 
@@ -192,7 +195,7 @@ While AG2 uses basic conversation history, VibeX implements:
 **Complete vs. Minimal:**
 Unlike frameworks that provide minimal tools, VibeX includes:
 
-- **File Operations**: Full taskspace management
+- **File Operations**: Full workspace management
 - **Web Tools**: Search, scraping, content extraction
 - **Development**: Code execution, git operations
 - **Memory**: Context management, semantic search
@@ -207,7 +210,7 @@ Most frameworks offer limited visibility into agent decisions.
 
 - Structured logging
 - Event stream access
-- Task execution traces
+- Project execution traces
 - Decision explanations
 - Performance metrics
 
@@ -263,37 +266,19 @@ Most frameworks offer limited visibility into agent decisions.
 
 VibeX represents a fundamental shift in how we think about multi-agent systems:
 
-1. **Configuration over Code**: Define what, not how
-2. **Natural over Programmatic**: Use language, not logic
-3. **Events over Callbacks**: Reactive, not procedural
-4. **Framework over Library**: Complete, not partial
-5. **Standards over Custom**: MCP, not proprietary
+1. **Configuration over Code**: Define _what_, not _how_.
+2. **Natural Language over Logic**: Steer workflows with conversation.
+3. **Events over Callbacks**: Build reactive, observable systems.
+4. **Framework over Library**: Get a complete, production-ready solution.
+5. **Augmentation over Automation**: Empower users, don't replace them.
 
 ## When to Choose VibeX
 
-**Choose VibeX when you need:**
+**Choose VibeX when you need to build:**
 
-- Rapid prototyping without coding
-- Production deployment with monitoring
-- Complex agent coordination
-- Comprehensive tool ecosystem
-- Event-driven integrations
-- Natural language workflows
+- **Developer Experience**: YAML configuration, rich presets, and natural language control.
+- **Production Readiness**: A complete framework with a REST API, monitoring, and isolated workspaces.
+- **Future-Proof Standards**: Support for the Model Context Protocol (MCP) and a fully event-driven architecture.
+- **A True Collaborative Partner**: The `XAgent` orchestrator and a stateful, semantic memory system.
 
-**Consider alternatives when:**
-
-- You need fine-grained programmatic control
-- You're building a simple single-agent system
-- You require specific language bindings (not Python)
-- You have existing LangGraph state machines
-
-## Conclusion
-
-VibeX isn't just another multi-agent framework—it's a reimagining of how AI agent systems should be built and deployed. By learning from two years of AutoGen/AG2 production experience, we've created a framework that prioritizes:
-
-- **Developer Experience**: YAML configuration, presets, and natural language
-- **Production Readiness**: REST API, monitoring, and deployment tools
-- **Future Standards**: MCP support and event-driven architecture
-- **Practical Innovation**: X orchestrator and semantic memory
-
-The result is a framework that makes complex multi-agent systems accessible to everyone, not just AI engineers.
+The result is a framework that makes complex multi-agent systems accessible and practical for real-world applications that augment, rather than replace, human expertise.

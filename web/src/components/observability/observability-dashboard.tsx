@@ -14,10 +14,10 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from "lucide-react";
-import { TaskMetrics } from "@/components/task/task-metrics";
+import { ProjectMetrics } from "@/components/project/project-metrics";
 import { AgentPerformance } from "@/components/agent/agent-performance";
 import { SystemHealth } from "@/components/observability/system-health";
-import { RecentTasks } from "@/components/task/recent-tasks";
+import { RecentProjects } from "@/components/project/recent-projects";
 import { useObservability } from "@/hooks/use-observability";
 
 export function ObservabilityDashboard() {
@@ -98,7 +98,7 @@ export function ObservabilityDashboard() {
         </TabsList>
 
         <TabsContent value="tasks" className="space-y-4 mt-4">
-          <RecentTasks />
+          <RecentProjects />
         </TabsContent>
 
         <TabsContent value="agents" className="space-y-4 mt-4">
@@ -106,7 +106,7 @@ export function ObservabilityDashboard() {
         </TabsContent>
 
         <TabsContent value="metrics" className="space-y-4 mt-4">
-          <TaskMetrics />
+          <ProjectMetrics />
         </TabsContent>
 
         <TabsContent value="health" className="space-y-4 mt-4">

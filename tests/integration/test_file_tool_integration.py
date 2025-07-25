@@ -6,7 +6,7 @@ import pytest
 import tempfile
 from pathlib import Path
 
-from vibex.storage import TaskspaceStorage
+from vibex.storage import ProjectStorage
 from vibex.storage.git_storage import GitArtifactStorage
 from vibex.builtin_tools.file import FileTool
 
@@ -22,12 +22,12 @@ class TestFileToolIntegration:
             base_path=self.temp_dir,
             task_id=self.task_id
         )
-        self.taskspace = TaskspaceStorage(
+        self.project_storage = ProjectStorage(
             task_id=self.task_id,
             base_path=self.temp_dir,
             file_storage=self.artifact_storage
         )
-        self.file_tool = FileTool(taskspace_storage=self.taskspace)
+        self.file_tool = FileTool(taskspace_storage=self.project_storage)
 
     def teardown_method(self):
         """Clean up test environment."""
@@ -54,8 +54,8 @@ class TestFileToolIntegration:
         assert "Taskspace files" in list_result.result and "📂" in list_result.result
         assert "test_report.md" in list_result.result
 
-        # Get taskspace summary
-        summary_result = await self.file_tool.get_taskspace_summary()
+        # Get project_storage summary
+        summary_result = await self.file_tool.get_project_storage_summary()
         assert summary_result.success is True
         assert "Taskspace Summary" in summary_result.result and "📊" in summary_result.result
 
@@ -81,12 +81,12 @@ class TestFileToolIntegration:
 
     @pytest.mark.asyncio
     async def test_taskspace_isolation_integration(self):
-        """Test that file operations are isolated to taskspace."""
+        """Test that file operations are isolated to project_storage."""
         # Create a file
         await self.file_tool.write_file("isolated.txt", "isolated content")
 
-        # Create a second taskspace/file tool
-        taskspace2 = TaskspaceStorage(
+        # Create a second project_storage/file tool
+        taskspace2 = ProjectStorage(
             task_id="other_task",
             base_path=self.temp_dir,
             file_storage=GitArtifactStorage(
@@ -96,7 +96,7 @@ class TestFileToolIntegration:
         )
         file_tool2 = FileTool(taskspace_storage=taskspace2)
 
-        # Write different file in second taskspace
+        # Write different file in second project_storage
         await file_tool2.write_file("other.txt", "other content")
 
         # Verify isolation

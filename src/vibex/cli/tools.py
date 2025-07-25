@@ -96,14 +96,14 @@ def _register_builtin_tools(with_taskspace: bool = True):
     """Register built-in tools for CLI commands."""
     registry = ToolRegistry()
     if with_taskspace:
-        from ..storage.factory import TaskspaceFactory
+        from ..storage.factory import ProjectStorageFactory
         from pathlib import Path
-        # For CLI, create a default taskspace
-        taskspace_storage = TaskspaceFactory.create_taskspace(
-            base_path=Path("./.vibex/tasks"),
-            task_id="cli_default"
+        # For CLI, create a default project storage
+        project_storage = ProjectStorageFactory.create_project_storage(
+            base_path=Path("./.vibex/projects"),
+            project_id="cli_default"
         )
-        register_builtin_tools(registry, taskspace_storage=taskspace_storage, memory_system=None)
+        register_builtin_tools(registry, taskspace_storage=project_storage, memory_system=None)
     else:
         register_builtin_tools(registry, taskspace_storage=None, memory_system=None)
 

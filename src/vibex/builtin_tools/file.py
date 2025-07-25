@@ -7,28 +7,28 @@ import mimetypes
 from pathlib import Path
 from typing import Annotated, Optional, Dict, Any
 from vibex.core.tool import tool, Tool, ToolResult
-from vibex.storage.taskspace import TaskspaceStorage
-from vibex.storage.factory import TaskspaceFactory
+from vibex.storage.project import ProjectStorage
+from vibex.storage.factory import ProjectStorageFactory
 from vibex.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 
 class FileTool(Tool):
-    """File tool that works with taskspace artifacts and provides simple file operations."""
+    """File tool that works with project artifacts and provides simple file operations."""
 
-    def __init__(self, taskspace_storage: TaskspaceStorage):
+    def __init__(self, project_storage: ProjectStorage):
         super().__init__()
 
         # Validate required parameter
-        if taskspace_storage is None:
-            raise TypeError("FileTool requires a TaskspaceStorage instance, got None")
+        if project_storage is None:
+            raise TypeError("FileTool requires a ProjectStorage instance, got None")
 
-        if not hasattr(taskspace_storage, 'get_taskspace_path'):
-            raise TypeError(f"FileTool requires a TaskspaceStorage instance, got {type(taskspace_storage)}")
+        if not hasattr(project_storage, 'get_project_path'):
+            raise TypeError(f"FileTool requires a ProjectStorage instance, got {type(project_storage)}")
 
-        self.taskspace = taskspace_storage
-        logger.info(f"FileTool initialized with taskspace: {self.taskspace.get_taskspace_path()}")
+        self.project_storage = project_storage
+        logger.info(f"FileTool initialized with project storage: {self.project_storage.get_project_path()}")
 
     @tool(description="Write content to a file")
     async def write_file(
@@ -36,7 +36,7 @@ class FileTool(Tool):
         filename: Annotated[str, "Name of the file (e.g., 'report.html', 'requirements.md')"],
         content: Annotated[str, "Content to write to the file"]
     ) -> ToolResult:
-        """Write content to file as a taskspace artifact with versioning."""
+        """Write content to file as a project artifact with versioning."""
         try:
             # Store as artifact with metadata
             metadata = {
@@ -45,7 +45,7 @@ class FileTool(Tool):
                 "tool": "file_tool"
             }
 
-            result = await self.taskspace.store_artifact(
+            result = await self.project_storage.store_artifact(
                 name=filename,
                 content=content,
                 content_type=metadata["content_type"],
@@ -157,9 +157,9 @@ class FileTool(Tool):
         filename: Annotated[str, "Name of the file to read"],
         version: Annotated[Optional[str], "Specific version to read (optional, defaults to latest)"] = None
     ) -> ToolResult:
-        """Read file contents from taskspace artifacts."""
+        """Read file contents from project artifacts."""
         try:
-            content = await self.taskspace.get_artifact(filename, version)
+            content = await self.project_storage.get_artifact(filename, version)
 
             if content is None:
                 return ToolResult(
@@ -188,16 +188,16 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="List all files in the taskspace")
+    @tool(description="List all files in the project")
     async def list_files(self) -> ToolResult:
-        """List all file artifacts in the taskspace."""
+        """List all file artifacts in the project."""
         try:
-            artifacts = await self.taskspace.list_artifacts()
+            artifacts = await self.project_storage.list_artifacts()
 
             if not artifacts:
                 return ToolResult(
                     success=True,
-                    result="📂 Taskspace files:\n\nNo files found in taskspace.",
+                    result="📂 Project files:\n\nNo files found in project.",
                     metadata={"files": [], "count": 0}
                 )
 
@@ -235,7 +235,7 @@ class FileTool(Tool):
             logger.info(f"Listed {len(files_by_name)} file artifacts")
             return ToolResult(
                 success=True,
-                result=f"📂 Taskspace files:\n\n" + "\n".join(file_list),
+                result=f"📂 Project files:\n\n" + "\n".join(file_list),
                 metadata={
                     "files": files_metadata,
                     "count": len(files_by_name)
@@ -250,18 +250,18 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="Check if a file exists in the taskspace")
+    @tool(description="Check if a file exists in the project")
     async def file_exists(
         self,
         filename: Annotated[str, "Name of the file to check"]
     ) -> ToolResult:
-        """Check if a file artifact exists in the taskspace."""
+        """Check if a file artifact exists in the project."""
         try:
-            content = await self.taskspace.get_artifact(filename)
+            content = await self.project_storage.get_artifact(filename)
 
             if content is not None:
                 # Get artifact metadata
-                artifacts = await self.taskspace.list_artifacts()
+                artifacts = await self.project_storage.list_artifacts()
                 file_artifacts = [a for a in artifacts if a["name"] == filename]
 
                 if file_artifacts:
@@ -308,15 +308,15 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="Delete a file from the taskspace")
+    @tool(description="Delete a file from the project")
     async def delete_file(
         self,
         filename: Annotated[str, "Name of the file to delete"],
         version: Annotated[Optional[str], "Specific version to delete (optional, deletes all versions if not specified)"] = None
     ) -> ToolResult:
-        """Delete a file artifact from the taskspace."""
+        """Delete a file artifact from the project."""
         try:
-            result = await self.taskspace.delete_artifact(filename, version)
+            result = await self.project_storage.delete_artifact(filename, version)
 
             if result.success:
                 if version:
@@ -355,7 +355,7 @@ class FileTool(Tool):
     ) -> ToolResult:
         """Get version history of a file artifact."""
         try:
-            versions = await self.taskspace.get_artifact_versions(filename)
+            versions = await self.project_storage.get_artifact_versions(filename)
 
             if not versions:
                 return ToolResult(
@@ -365,7 +365,7 @@ class FileTool(Tool):
                 )
 
             # Get detailed info for each version
-            artifacts = await self.taskspace.list_artifacts()
+            artifacts = await self.project_storage.list_artifacts()
             file_artifacts = [a for a in artifacts if a["name"] == filename]
 
             if not file_artifacts:
@@ -411,30 +411,30 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="Get taskspace summary with file statistics")
-    async def get_taskspace_summary(self) -> ToolResult:
-        """Get a summary of the taskspace contents."""
+    @tool(description="Get project summary with file statistics")
+    async def get_project_summary(self) -> ToolResult:
+        """Get a summary of the project contents."""
         try:
-            summary = await self.taskspace.get_taskspace_summary()
+            summary = await self.project_storage.get_project_summary()
 
             if isinstance(summary, dict) and "error" in summary:
                 return ToolResult(
                     success=False,
-                    result=f"❌ Error getting taskspace summary: {summary['error']}",
+                    result=f"❌ Error getting project summary: {summary['error']}",
                     error=summary['error']
                 )
 
             # Format the summary nicely
             if isinstance(summary, dict):
-                lines = ["📊 Taskspace Summary:\n"]
+                lines = ["📊 Project Summary:\n"]
                 for key, value in summary.items():
                     if key != "error":
                         lines.append(f"  {key}: {value}")
                 result_text = "\n".join(lines)
             else:
-                result_text = f"📊 Taskspace Summary:\n\n{summary}"
+                result_text = f"📊 Project Summary:\n\n{summary}"
 
-            logger.info("Retrieved taskspace summary")
+            logger.info("Retrieved project summary")
             return ToolResult(
                 success=True,
                 result=result_text,
@@ -442,21 +442,21 @@ class FileTool(Tool):
             )
 
         except Exception as e:
-            logger.error(f"Error getting taskspace summary: {e}")
+            logger.error(f"Error getting project summary: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error getting taskspace summary: {str(e)}",
+                result=f"❌ Error getting project summary: {str(e)}",
                 error=str(e)
             )
 
-    @tool(description="Create a directory in the taskspace")
+    @tool(description="Create a directory in the project")
     async def create_directory(
         self,
         path: Annotated[str, "Directory path to create (e.g., 'reports', 'data/sources')"]
     ) -> ToolResult:
-        """Create a directory in the taskspace using the underlying file storage."""
+        """Create a directory in the project using the underlying file storage."""
         try:
-            result = await self.taskspace.file_storage.create_directory(path)
+            result = await self.project_storage.file_storage.create_directory(path)
 
             if result.success:
                 if result.metadata and result.metadata.get("already_exists"):
@@ -488,20 +488,20 @@ class FileTool(Tool):
                 error=str(e)
             )
 
-    @tool(description="List contents of a directory in the taskspace")
+    @tool(description="List contents of a directory in the project")
     async def list_directory(
         self,
-        path: Annotated[str, "Directory path to list (defaults to taskspace root)"] = ""
+        path: Annotated[str, "Directory path to list (defaults to project root)"] = ""
     ) -> ToolResult:
-        """List the contents of a directory in the taskspace."""
+        """List the contents of a directory in the project."""
         try:
             # Use empty string for root, or the specified path
             directory_path = path if path else ""
 
-            files = await self.taskspace.file_storage.list_directory(directory_path)
+            files = await self.project_storage.file_storage.list_directory(directory_path)
 
             if not files:
-                display_path = directory_path if directory_path else "taskspace root"
+                display_path = directory_path if directory_path else "project root"
                 return ToolResult(
                     success=True,
                     result=f"📂 Directory '{display_path}' is empty",
@@ -527,7 +527,7 @@ class FileTool(Tool):
                         "size": file_info.size
                     })
 
-            display_path = directory_path if directory_path else "taskspace root"
+            display_path = directory_path if directory_path else "project root"
             logger.info(f"Listed directory: {display_path}")
             return ToolResult(
                 success=True,

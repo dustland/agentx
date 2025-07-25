@@ -1,12 +1,12 @@
 """
 VibeX Server
 
-Simple REST API for task execution and memory management.
+Simple REST API for project execution and memory management.
 """
 
 from .api import create_app, app
 from .models import (
-    TaskRequest, TaskResponse, TaskStatus, TaskInfo,
+    ProjectRequest, ProjectResponse, TaskStatus, TaskInfo,
     MemoryRequest, MemoryResponse, HealthResponse
 )
 from .redis_cache import RedisCacheBackend
@@ -14,8 +14,8 @@ from .redis_cache import RedisCacheBackend
 __all__ = [
     "create_app",
     "app",
-    "TaskRequest",
-    "TaskResponse",
+    "ProjectRequest",
+    "ProjectResponse",
     "TaskStatus",
     "TaskInfo",
     "MemoryRequest",

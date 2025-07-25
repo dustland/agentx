@@ -22,7 +22,7 @@ class TestGitStorageExtensionHandling:
     def git_storage(self):
         """Create GitArtifactStorage for testing."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = Path(temp_dir) / "test_git_taskspace"
+            project_path = Path(temp_dir) / "test_git_taskspace"
             # Mock GitPython to avoid actual git operations in unit tests
             with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('vibex.storage.git_storage.Repo') as mock_repo:
@@ -33,7 +33,7 @@ class TestGitStorageExtensionHandling:
                 mock_repo_instance.config_writer.return_value.__exit__ = lambda *args: None
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
-                storage = GitArtifactStorage(taskspace_path)
+                storage = GitArtifactStorage(project_path)
                 storage.repo = mock_repo_instance  # Use the mock
                 yield storage
 
@@ -135,9 +135,9 @@ class TestGitStorageIntegrationWithFileTool:
 
     @pytest.fixture
     def taskspace_with_git(self):
-        """Create taskspace storage with Git artifacts enabled."""
+        """Create project_storage storage with Git artifacts enabled."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = Path(temp_dir) / "test_taskspace"
+            project_path = Path(temp_dir) / "test_taskspace"
 
             # Mock GitPython for testing
             with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
@@ -149,7 +149,7 @@ class TestGitStorageIntegrationWithFileTool:
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
                 from vibex.storage.factory import StorageFactory
-                storage = StorageFactory.create_taskspace_storage(taskspace_path, use_git_artifacts=True)
+                storage = StorageFactory.create_project_storage_storage(project_path, use_git_artifacts=True)
                 storage.artifact_storage.repo = mock_repo_instance  # Use mock
                 yield storage
 
@@ -197,7 +197,7 @@ class TestGitStorageErrorScenarios:
     def git_storage(self):
         """Create GitArtifactStorage for testing."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = Path(temp_dir) / "test_git_taskspace"
+            project_path = Path(temp_dir) / "test_git_taskspace"
             with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('vibex.storage.git_storage.Repo') as mock_repo:
 
@@ -206,7 +206,7 @@ class TestGitStorageErrorScenarios:
                 mock_repo_instance.config_writer.return_value.__exit__ = lambda *args: None
                 mock_repo_instance.config_writer.return_value.set_value = lambda *args: None
 
-                storage = GitArtifactStorage(taskspace_path)
+                storage = GitArtifactStorage(project_path)
                 storage.repo = mock_repo_instance
                 yield storage
 
@@ -426,13 +426,13 @@ if __name__ == "__main__":
     async def run_extension_test():
         """Quick test for extension handling."""
         with tempfile.TemporaryDirectory() as temp_dir:
-            taskspace_path = Path(temp_dir) / "test_taskspace"
+            project_path = Path(temp_dir) / "test_taskspace"
 
             # Test the extension logic directly
             with patch('vibex.storage.git_storage.GIT_AVAILABLE', True), \
                  patch('vibex.storage.git_storage.Repo'):
 
-                storage = GitArtifactStorage(taskspace_path)
+                storage = GitArtifactStorage(project_path)
 
                 # Test cases
                 test_cases = [

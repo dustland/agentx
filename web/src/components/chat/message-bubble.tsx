@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, RotateCcw, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { TypingIndicator } from "../common/typing-indicator";
+import { TypingIndicator } from "../typing-indicator";
 
 interface MessageBubbleProps {
   message: {
