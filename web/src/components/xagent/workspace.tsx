@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Activity, Folder, Monitor, Goal } from "lucide-react";
-import { useXAgent, usePlan } from "@/hooks/use-xagent";
+import { useXAgent } from "@/hooks/use-xagent";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
 import { Inspector } from "./inspector";
 import { Logs } from "./logs";
 import { Memory } from "./memory";
-import { Plan } from "./plan";
+import { Summary } from "./summary";
 
 interface Artifact {
   path: string;
@@ -39,7 +39,6 @@ interface WorkspaceProps {
 }
 
 export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
-  const { plan, isLoading: isPlanLoading } = usePlan(xagentId);
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -47,7 +46,6 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
     null
   );
   const [activeTab, setActiveTab] = useState("plan");
-  const initialTabSetRef = useRef(false);
 
   // Set up tool call selection handler
   useEffect(() => {
@@ -64,19 +62,6 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
     setActiveTab("inspector");
   };
 
-  // Check for plan existence and set default tab
-  useEffect(() => {
-    const hasPlan = !!plan;
-
-    // Set plan as default tab if it exists and we haven't set initial tab yet
-    if (hasPlan && !initialTabSetRef.current && !isPlanLoading) {
-      setActiveTab("plan");
-      initialTabSetRef.current = true;
-    }
-  }, [plan, isPlanLoading]);
-
-  const hasPlan = !!plan;
-
   return (
     <div className="h-full flex flex-col px-2 py-3">
       <Card className="h-full flex flex-col rounded-xl">
@@ -89,7 +74,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
             <TabsList className="h-7 text-xs">
               <TabsTrigger value="plan" className="text-xs gap-1 py-1">
                 <Goal className="h-3 w-3 mr-1" />
-                Plan
+                Summary
               </TabsTrigger>
               <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
                 <Folder className="h-3 w-3 mr-1" />
@@ -110,9 +95,9 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
             </TabsList>
           </CardHeader>
 
-          {/* Plan Tab */}
+          {/* Summary Tab */}
           <TabsContent value="plan" className="flex-1 m-0 min-h-0">
-            <Plan xagentId={xagentId} />
+            <Summary xagentId={xagentId} />
           </TabsContent>
 
           {/* Artifacts Tab */}
@@ -139,7 +124,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
 
           {/* Logs Tab */}
           <TabsContent value="logs" className="flex-1 m-0 min-h-0">
-            <Logs xagentId={xagentId} />
+            {activeTab === "logs" && <Logs xagentId={xagentId} />}
           </TabsContent>
         </Tabs>
       </Card>

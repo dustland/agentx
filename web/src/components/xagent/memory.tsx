@@ -28,27 +28,23 @@ export function Memory({ xagentId }: MemoryProps) {
 
   if (loadingMemories) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Brain className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
-          <p>Loading memories...</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Brain}
+        title="Loading memories..."
+        isLoading={true}
+        size="md"
+      />
     );
   }
 
   if (memories.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Brain className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>No memories stored yet</p>
-          <p className="text-xs mt-2">
-            Memories will appear as agents store information during task
-            execution
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Brain}
+        title="No memories stored yet"
+        description="Memories will appear as agents store information during task execution"
+        size="md"
+      />
     );
   }
 

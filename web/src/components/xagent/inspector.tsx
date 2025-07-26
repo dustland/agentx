@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Code, BookOpenCheck } from "lucide-react";
+import { FileText, Code, BookOpenCheck, Monitor } from "lucide-react";
+import { EmptyState } from "./empty-state";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
@@ -48,7 +49,8 @@ export function Inspector({
   });
 
   // Determine what content to display
-  const artifactContent = selectedArtifact?.content || artifactQuery.data?.content || null;
+  const artifactContent =
+    selectedArtifact?.content || artifactQuery.data?.content || null;
   const loadingContent = artifactQuery.isLoading;
 
   const getFileLanguage = (filename: string) => {
@@ -85,24 +87,24 @@ export function Inspector({
   // Loading state
   if (selectedArtifact && loadingContent) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <FileText className="w-6 h-6 mx-auto mb-2 opacity-50 animate-pulse" />
-          <p>Loading content...</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={FileText}
+        title="Loading content..."
+        isLoading={true}
+        size="md"
+      />
     );
   }
 
   // Empty state
   if (!selectedToolCall && !selectedArtifact) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <BookOpenCheck className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>Select an artifact or tool call to view details</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Monitor}
+        title="Nothing selected"
+        description="Select an artifact or tool call to view details"
+        size="md"
+      />
     );
   }
 

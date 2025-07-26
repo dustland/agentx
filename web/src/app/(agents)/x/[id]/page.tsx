@@ -8,7 +8,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { useXAgent, usePlan } from "@/hooks/use-xagent";
+import { useXAgent } from "@/hooks/use-xagent";
 import { useAppStore } from "@/store/app";
 
 export default function XAgentPage({
@@ -21,6 +21,7 @@ export default function XAgentPage({
 
   // Use the XAgent hook for all functionality
   const {
+    xagent,
     messages,
     input,
     isLoading,
@@ -30,9 +31,6 @@ export default function XAgentPage({
     setInput,
     isSendingMessage,
   } = useXAgent(id);
-
-  // Use the plan hook to check if plan exists
-  const { plan } = usePlan(id);
 
   // Stop function for cancelling ongoing operations
   const handleStop = useCallback(() => {
@@ -83,7 +81,7 @@ export default function XAgentPage({
             onSendMessage={handleSendMessage}
             onStop={handleStop}
             isLoading={isLoading}
-            allowEmptyMessage={!!plan}
+            allowEmptyMessage={!!xagent?.plan}
           />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />

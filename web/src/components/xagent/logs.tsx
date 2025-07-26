@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// Removed ScrollArea import - using plain div for better scroll control
 import { Button } from "@/components/ui/button";
 import {
   Activity,
@@ -9,10 +9,11 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Inbox,
   Terminal,
   FileStack,
+  ScrollText,
 } from "lucide-react";
+import { EmptyState } from "./empty-state";
 import { AlertCircle, AlertTriangle, Info, Search } from "lucide-react";
 import {
   Tooltip,
@@ -30,7 +31,10 @@ export function Logs({ xagentId }: LogsProps) {
   const [tailMode, setTailMode] = useState(true);
   const [offset, setOffset] = useState(0);
   const [autoScrollLogs, setAutoScrollLogs] = useState(true);
+  const [displayLimit, setDisplayLimit] = useState(100); // Limit displayed logs
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const limit = 100;
 
   const {
@@ -41,7 +45,33 @@ export function Logs({ xagentId }: LogsProps) {
   } = useLogs(xagentId, {
     level: undefined,
     limit,
+    enabled: true, // Only load when component is mounted
   });
+
+  // Handle initial load completion - set a small delay to make tab switch feel instant
+  useEffect(() => {
+    if (!loadingLogs && logs && logs.length > 0 && isInitialLoad) {
+      // Very short delay to allow tab switch, then show logs
+      const timer = setTimeout(() => {
+        setIsInitialLoad(false);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [loadingLogs, logs, isInitialLoad]);
+
+  // Reset display limit when switching to tail mode to show recent logs
+  useEffect(() => {
+    if (tailMode) {
+      setDisplayLimit(100); // Reset to default when entering tail mode
+    }
+  }, [tailMode]);
+
+  // Limit displayed logs to prevent DOM bloat - but always show logs after initial load
+  const displayedLogs = logs
+    ? tailMode
+      ? logs.slice(-displayLimit) // Show last N logs in tail mode
+      : logs.slice(offset, offset + displayLimit) // Show paginated logs
+    : [];
 
   const loadLogs = (newOffset?: number, newTailMode?: boolean) => {
     const useTail = newTailMode !== undefined ? newTailMode : tailMode;
@@ -54,25 +84,70 @@ export function Logs({ xagentId }: LogsProps) {
     refetch();
   };
 
-  // Auto-refresh logs every 2 seconds only in tail mode
+  // Auto-refresh logs every 3 seconds only in tail mode
   useEffect(() => {
-    if (tailMode) {
-      const interval = setInterval(() => refetch(), 2000);
-      return () => clearInterval(interval);
+    if (tailMode && !isInitialLoad) {
+      intervalRef.current = setInterval(() => {
+        refetch();
+      }, 3000); // Reduced frequency to prevent lag
+    } else {
+      // Clear interval when tail mode is disabled or during initial load
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     }
-  }, [tailMode, refetch]);
 
-  // Auto-scroll to bottom when new logs arrive or when first loading in tail mode
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [tailMode, refetch, isInitialLoad]);
+
+  // Cleanup interval on unmount
   useEffect(() => {
-    if (autoScrollLogs && scrollRef.current && tailMode) {
-      // Use setTimeout to ensure the content has been rendered
-      setTimeout(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-      }, 50);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // Auto-scroll to bottom in tail mode
+  useEffect(() => {
+    if (
+      autoScrollLogs &&
+      scrollRef.current &&
+      tailMode &&
+      !isInitialLoad &&
+      displayedLogs.length > 0
+    ) {
+      const element = scrollRef.current;
+      // Small delay to ensure DOM is updated, then scroll
+      const timer = setTimeout(() => {
+        element.scrollTop = element.scrollHeight;
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [logs, autoScrollLogs, tailMode]);
+  }, [displayedLogs, autoScrollLogs, tailMode, isInitialLoad]);
+
+  // Initial scroll to bottom when first loading in tail mode
+  useEffect(() => {
+    if (
+      tailMode &&
+      !isInitialLoad &&
+      autoScrollLogs &&
+      scrollRef.current &&
+      displayedLogs.length > 0
+    ) {
+      const element = scrollRef.current;
+      // Ensure we scroll to bottom on first render
+      setTimeout(() => {
+        element.scrollTop = element.scrollHeight;
+      }, 200);
+    }
+  }, [isInitialLoad, tailMode]); // Only run when initial load completes
 
   const parseLogEntry = (log: string) => {
     // Match pattern: YYYY-MM-DD HH:MM:SS - logger.name - LEVEL - message
@@ -101,25 +176,26 @@ export function Logs({ xagentId }: LogsProps) {
     };
   };
 
-  if (loadingLogs || !logs) {
+  // Show loading immediately for instant tab switching
+  if (isInitialLoad || loadingLogs || !logs) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50 animate-pulse" />
-          <p>Loading logs...</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={ScrollText}
+        title="Loading logs..."
+        isLoading={true}
+        size="md"
+      />
     );
   }
 
   if (!logs || (logs.length === 0 && !loadingLogs)) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>No logs available</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={ScrollText}
+        title="No logs available"
+        description="Logs will appear here when agents start working"
+        size="md"
+      />
     );
   }
 
@@ -136,7 +212,7 @@ export function Logs({ xagentId }: LogsProps) {
                   setTailMode(!tailMode);
                   loadLogs(0, !tailMode);
                 }}
-                className={`h-8 w-8 bg-background/80 backdrop-blur-sm border ${
+                className={`h-6 w-6 bg-background/80 backdrop-blur-sm border ${
                   tailMode ? "text-primary border-primary" : ""
                 }`}
               >
@@ -162,7 +238,7 @@ export function Logs({ xagentId }: LogsProps) {
                 loadLogs(newOffset, false);
               }}
               disabled={offset === 0 || loadingLogs}
-              className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
+              className="h-6 w-6 bg-background/80 backdrop-blur-sm border"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -177,7 +253,7 @@ export function Logs({ xagentId }: LogsProps) {
                 loadLogs(newOffset, false);
               }}
               disabled={!hasMore || loadingLogs}
-              className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
+              className="h-6 w-6 bg-background/80 backdrop-blur-sm border"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -190,7 +266,7 @@ export function Logs({ xagentId }: LogsProps) {
                 size="icon"
                 variant="ghost"
                 onClick={() => setAutoScrollLogs(!autoScrollLogs)}
-                className={`h-8 w-8 bg-background/80 backdrop-blur-sm border ${
+                className={`h-6 w-6 bg-background/80 backdrop-blur-sm border ${
                   autoScrollLogs ? "text-primary border-primary" : ""
                 }`}
               >
@@ -207,16 +283,31 @@ export function Logs({ xagentId }: LogsProps) {
           variant="ghost"
           onClick={() => refetch()}
           disabled={loadingLogs}
-          className="h-8 w-8 bg-background/80 backdrop-blur-sm border"
+          className="h-6 w-6 bg-background/80 backdrop-blur-sm border"
         >
           <RefreshCwIcon
             className={`h-4 w-4 ${loadingLogs ? "animate-spin" : ""}`}
           />
         </Button>
       </div>
-      <ScrollArea className="h-full" ref={scrollRef}>
+      <div className="h-full overflow-y-auto overflow-x-hidden" ref={scrollRef}>
         <div className="p-4 space-y-1">
-          {(logs || []).map((log, idx) => {
+          {/* Show truncation warning if logs are limited */}
+          {logs && logs.length > displayLimit && tailMode && (
+            <div className="text-xs text-muted-foreground text-center py-2 border-b mb-2">
+              Showing last {displayedLogs.length} of {logs.length} logs
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDisplayLimit((prev) => prev + 100)}
+                className="ml-2 h-6 text-xs"
+              >
+                Load +100 more
+              </Button>
+            </div>
+          )}
+
+          {displayedLogs.map((log, idx) => {
             const parsed = parseLogEntry(log);
             const isError = parsed.level === "ERROR";
             const isWarning =
@@ -274,7 +365,7 @@ export function Logs({ xagentId }: LogsProps) {
             );
           })}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

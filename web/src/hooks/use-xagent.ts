@@ -13,7 +13,6 @@ export const xagentKeys = {
   detail: (id: string) => [...xagentKeys.all, id] as const,
   messages: (id: string) => [...xagentKeys.detail(id), "messages"] as const,
   artifacts: (id: string) => [...xagentKeys.detail(id), "artifacts"] as const,
-  plan: (id: string) => [...xagentKeys.detail(id), "plan"] as const,
   logs: (id: string, options?: any) =>
     [...xagentKeys.detail(id), "logs", options] as const,
   memory: (id: string, query: string, limit: number) =>
@@ -132,9 +131,6 @@ export function useXAgent(xagentId: string) {
           queryClient.invalidateQueries({
             queryKey: xagentKeys.artifacts(xagentId),
           });
-          queryClient.invalidateQueries({
-            queryKey: xagentKeys.plan(xagentId),
-          });
         }
       },
       (error) => {
@@ -247,66 +243,20 @@ export function useXAgent(xagentId: string) {
 }
 
 /**
- * Hook for XAgent plan data
- */
-export function usePlan(xagentId: string) {
-  const vibex = useApi();
-  const queryClient = useQueryClient();
-  const sseCleanupRef = useRef<(() => void) | null>(null);
-
-  const planQuery = useQuery({
-    queryKey: xagentKeys.plan(xagentId),
-    queryFn: () => vibex.getPlan(xagentId),
-    enabled: !!xagentId && xagentId !== "dummy-task-id",
-  });
-
-  // Subscribe to real-time updates for plan changes
-  useEffect(() => {
-    if (!xagentId || xagentId === "dummy-task-id") return;
-
-    const cleanup = vibex.subscribeToXAgentUpdates(
-      xagentId,
-      (data) => {
-        console.log("[usePlan] Received SSE data:", data);
-
-        // Invalidate plan query on updates
-        queryClient.invalidateQueries({
-          queryKey: xagentKeys.plan(xagentId),
-        });
-      },
-      (error) => {
-        console.error("[usePlan] SSE error:", error);
-      }
-    );
-
-    sseCleanupRef.current = () => cleanup?.close();
-    return () => {
-      if (cleanup) cleanup.close();
-    };
-  }, [xagentId, vibex, queryClient]);
-
-  return {
-    plan: planQuery.data,
-    isLoading: planQuery.isLoading,
-    error: planQuery.error,
-    refetch: planQuery.refetch,
-  };
-}
-
-/**
  * Hook for XAgent logs
  */
 export function useLogs(
   xagentId: string,
-  options: { level?: string; limit?: number } = {}
+  options: { level?: string; limit?: number; enabled?: boolean } = {}
 ) {
   const vibex = useApi();
 
   const query = useQuery({
     queryKey: xagentKeys.logs(xagentId, options),
     queryFn: () => vibex.getLogs(xagentId),
-    enabled: !!xagentId && xagentId !== "dummy-task-id",
-    refetchInterval: 5000, // Refetch every 5 seconds for live logs
+    enabled:
+      (options.enabled ?? true) && !!xagentId && xagentId !== "dummy-task-id",
+    staleTime: 2000, // Cache for 2 seconds to prevent excessive requests
   });
 
   return {

@@ -11,7 +11,9 @@ import {
   FolderIcon,
   ChevronRightIcon,
   Inbox,
+  Folder,
 } from "lucide-react";
+import { EmptyState } from "./empty-state";
 import { useXAgent } from "@/hooks/use-xagent";
 import { formatBytes } from "@/lib/utils";
 
@@ -152,12 +154,12 @@ export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
 
   if (isLoadingArtifacts || !artifacts) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>Loading artifacts...</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Folder}
+        title="Loading artifacts..."
+        isLoading={true}
+        size="md"
+      />
     );
   }
 
@@ -165,15 +167,12 @@ export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
 
   if (artifacts.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-muted-foreground">
-        <div className="text-center">
-          <Inbox className="w-12 h-12 mx-auto mb-2 opacity-50" />
-          <p>No artifacts created yet</p>
-          <p className="text-xs mt-1">
-            Files will appear here when agents create them
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={Inbox}
+        title="No artifacts created yet"
+        description="Files will appear here when agents create them"
+        size="md"
+      />
     );
   }
 
