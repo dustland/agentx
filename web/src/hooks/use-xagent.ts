@@ -104,9 +104,15 @@ export function useXAgent(xagentId: string) {
     });
 
     // Convert back to array and sort by timestamp
-    return Array.from(messageMap.values()).sort(
+    const result = Array.from(messageMap.values()).sort(
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
+    
+    console.log("[useXAgent] Combined messages:", result);
+    console.log("[useXAgent] Streaming messages count:", streamingMessages.size);
+    console.log("[useXAgent] Real messages count:", messages.length);
+    
+    return result;
   }, [messages, optimisticMessages, streamingMessages]);
 
   const artifactsQuery = useQuery({
@@ -123,10 +129,19 @@ export function useXAgent(xagentId: string) {
       xagentId,
       (data) => {
         console.log("[useXAgent] Received SSE data:", data);
+        console.log("[useXAgent] Event type:", data.event);
+        console.log("[useXAgent] Event data:", data.data);
 
         if (data.event === "stream_chunk") {
           // Handle streaming message chunks
-          const chunkData = data.data || data;
+          // The data.data is a JSON string that needs to be parsed
+          let chunkData;
+          try {
+            chunkData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          } catch (e) {
+            console.error("[useXAgent] Failed to parse chunk data:", e);
+            return;
+          }
           const messageId = `streaming-${chunkData.message_id || Date.now()}`;
 
           setStreamingMessages((prev) => {
@@ -135,23 +150,27 @@ export function useXAgent(xagentId: string) {
 
             if (existing) {
               // Append to existing streaming message
-              updated.set(messageId, {
+              const newMessage = {
                 ...existing,
                 content: existing.content + (chunkData.chunk || ""),
-                status: chunkData.is_final ? "complete" : "streaming",
-              });
+                status: (chunkData.is_final ? "complete" : "streaming") as "complete" | "streaming",
+              };
+              console.log("[useXAgent] Updating streaming message:", newMessage);
+              updated.set(messageId, newMessage);
             } else {
               // Create new streaming message
-              updated.set(messageId, {
+              const newMessage = {
                 id: messageId,
-                role: "assistant",
+                role: "assistant" as const,
                 content: chunkData.chunk || "",
                 timestamp: new Date(chunkData.timestamp || Date.now()),
-                status: chunkData.is_final ? "complete" : "streaming",
+                status: (chunkData.is_final ? "complete" : "streaming") as "complete" | "streaming",
                 metadata: {
                   messageId: chunkData.message_id,
                 } as any,
-              });
+              };
+              console.log("[useXAgent] Creating new streaming message:", newMessage);
+              updated.set(messageId, newMessage);
             }
 
             return updated;
@@ -173,7 +192,13 @@ export function useXAgent(xagentId: string) {
           }
         } else if (data.event === "message") {
           // Handle complete message events
-          const messageData = data.data || data;
+          let messageData;
+          try {
+            messageData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          } catch (e) {
+            console.error("[useXAgent] Failed to parse message data:", e);
+            return;
+          }
           queryClient.invalidateQueries({
             queryKey: xagentKeys.messages(xagentId),
           });
