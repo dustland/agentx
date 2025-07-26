@@ -155,6 +155,11 @@ export class VibexClient {
   async searchMemory(request: MemorySearchRequest): Promise<MemoryContent[]> {
     return this.post<MemoryContent[]>("/memory/search", request);
   }
+
+  // System Health
+  async getSystemHealth(): Promise<any> {
+    return this.get("/health");
+  }
 }
 
 // React hook for using the API client

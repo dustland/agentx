@@ -8,6 +8,7 @@ All business logic is delegated to XAgent instances.
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import asyncio
+import importlib.metadata
 
 from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,9 +56,15 @@ def create_app() -> FastAPI:
         # Get agent count for health info
         active_agents = len(await xagent_service.list_for_user("_health_check"))
         
+        # Get version from package metadata
+        try:
+            version = importlib.metadata.version("vibex")
+        except Exception:
+            version = "unknown"
+        
         return {
             "status": "healthy",
-            "version": "2.0.0",
+            "version": version,
             "timestamp": datetime.now().isoformat(),
             "service_type": "vibex-agent-orchestration",
             "service_name": "VibeX API",

@@ -7083,7 +7083,7 @@ wheels = [
 
 [[package]]
 name = "vibex"
-version = "0.27.23"
+version = "0.28.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
