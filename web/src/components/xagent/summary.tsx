@@ -34,8 +34,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface PlanTask {
   id: string;
-  name: string;
-  goal: string;
+  action: string;
   agent: string;
   dependencies: string[];
   status: "pending" | "in_progress" | "completed" | "failed";
@@ -43,7 +42,6 @@ interface PlanTask {
 }
 
 interface PlanData {
-  goal: string;
   tasks: PlanTask[];
 }
 
@@ -210,13 +208,6 @@ export function Summary({ xagentId }: SummaryProps) {
             {planData ? (
               <Card>
                 <CardContent className="pt-6 space-y-6">
-                  {/* Plan Goal */}
-                  <div className="space-y-2">
-                    <span className="text-sm font-medium">Objective</span>
-                    <p className="text-sm text-muted-foreground leading-relaxed bg-muted/30 p-3 rounded-md">
-                      {planData.goal}
-                    </p>
-                  </div>
 
                   {/* Task Statistics */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -292,7 +283,7 @@ export function Summary({ xagentId }: SummaryProps) {
                               </div>
                               <div className="flex-1 text-left">
                                 <div className="font-medium text-sm truncate">
-                                  {task.name}
+                                  {task.action}
                                 </div>
                                 <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                                   <User className="h-3 w-3" />
@@ -309,14 +300,6 @@ export function Summary({ xagentId }: SummaryProps) {
                           </AccordionTrigger>
                           <AccordionContent className="pb-4">
                             <div className="space-y-4 pt-2">
-                              <div className="space-y-2">
-                                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                  Objective
-                                </span>
-                                <p className="text-sm leading-relaxed">
-                                  {task.goal}
-                                </p>
-                              </div>
 
                               {task.dependencies.length > 0 && (
                                 <div className="space-y-2">

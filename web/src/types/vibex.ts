@@ -76,6 +76,8 @@ export interface Tool {
 // Project-related types
 export interface Project {
   project_id: string;
+  name?: string;
+  goal?: string;
   status: ProjectStatus;
   config_path: string;
   description?: string;
@@ -93,7 +95,6 @@ export type ProjectStatus = "pending" | "running" | "completed" | "error";
 
 // Plan and Task types (tasks are execution units within a plan)
 export interface Plan {
-  goal: string;
   tasks: Task[];
   created_at?: string;
   updated_at?: string;
@@ -102,8 +103,7 @@ export interface Plan {
 
 export interface Task {
   id: string;
-  name: string;
-  description?: string;
+  action: string;
   status: TaskStatus;
   dependencies: string[];
   result?: string;
@@ -126,6 +126,7 @@ export interface CreateXAgentRequest {
 
 export interface XAgent {
   agent_id: string;
+  name?: string;
   status: TaskStatus;
   goal?: string;
   result?: any;

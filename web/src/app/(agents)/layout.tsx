@@ -123,19 +123,13 @@ export default function TasksLayout({
               <Plus className="h-5 w-5" />
             </div>
             <p className="text-sm font-medium mb-1">No XAgents found</p>
-            <p className="text-xs opacity-75">
-              Create a new XAgent to get started
+            <p className="text-xs opacity-75 mb-4">
+              Create your first XAgent to get started
             </p>
-            {!isHomepage && (
-              <Button
-                size="sm"
-                className="mt-3"
-                onClick={() => (window.location.href = "/")}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New XAgent
-              </Button>
-            )}
+            <Button size="sm" onClick={() => (window.location.href = "/")}>
+              <Plus className="h-4 w-4 mr-2" />
+              New XAgent
+            </Button>
           </div>
         }
       >
@@ -162,171 +156,160 @@ export default function TasksLayout({
               >
                 <X className="h-3 w-3" />
               </Button>
-            ) : (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-3 w-3 absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                  >
-                    <Filter className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-40">
-                  {statusOptions.map((option) => (
-                    <DropdownMenuCheckboxItem
-                      key={option.value}
-                      className="cursor-pointer text-xs hover:bg-muted"
-                      checked={statusFilter.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (option.value === "all") {
-                          setStatusFilter(checked ? ["all"] : []);
-                        } else {
-                          setStatusFilter((prev) => {
-                            const newFilter = prev.filter((f) => f !== "all");
-                            if (checked) {
-                              return [...newFilter, option.value];
-                            } else {
-                              const filtered = newFilter.filter(
-                                (f) => f !== option.value
-                              );
-                              return filtered.length === 0 ? ["all"] : filtered;
-                            }
-                          });
-                        }
-                      }}
-                    >
-                      {option.label}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            ) : null}
           </div>
+
+          {/* Status Filter */}
+          {xagents.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs relative"
+                >
+                  <Filter className="h-3 w-3 mr-1" />
+                  {activeStatusCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs"
+                    >
+                      {activeStatusCount}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-40">
+                {statusOptions.map((option) => (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    className="cursor-pointer text-xs hover:bg-muted"
+                    checked={statusFilter.includes(option.value)}
+                    onCheckedChange={(checked) => {
+                      if (option.value === "all") {
+                        setStatusFilter(checked ? ["all"] : []);
+                      } else {
+                        setStatusFilter((prev) => {
+                          const newFilter = prev.filter((f) => f !== "all");
+                          if (checked) {
+                            return [...newFilter, option.value];
+                          } else {
+                            const filtered = newFilter.filter(
+                              (f) => f !== option.value
+                            );
+                            return filtered.length === 0 ? ["all"] : filtered;
+                          }
+                        });
+                      }
+                    }}
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* XAgents List */}
-        {!isLoading && xagents.length === 0 ? (
-          // Empty state for no XAgents at all - centered in sidebar
-          <div className="flex-1 relative">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-muted-foreground px-4">
-                <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                  <Plus className="h-5 w-5" />
-                </div>
-                <p className="text-sm font-medium mb-1">No XAgents found</p>
-                <p className="text-xs opacity-75 mb-4">
-                  Create your first XAgent to get started
-                </p>
-                <Button size="sm" onClick={() => (window.location.href = "/")}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New XAgent
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {filteredXAgents.map((xagent: any) => {
-                const isActive = xagent.agent_id === currentAgentId;
+        <ScrollArea className="flex-1">
+          <div className="p-2 space-y-1">
+            {filteredXAgents.map((xagent: any) => {
+              const isActive = xagent.agent_id === currentAgentId;
 
-                return (
-                  <div
-                    key={xagent.agent_id}
-                    className={cn(
-                      "group relative rounded-lg cursor-pointer transition-all duration-200",
-                      "border hover:shadow-sm",
-                      isActive
-                        ? "bg-accent border-accent-foreground/20 shadow-sm"
-                        : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                    )}
-                    onClick={() => handleXAgentClick(xagent.agent_id)}
-                  >
-                    {/* Status indicator bar */}
-                    {xagent.status && (
-                      <div
-                        className={cn(
-                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                          xagent.status === "running" && "bg-blue-500",
-                          xagent.status === "completed" && "bg-green-500",
-                          xagent.status === "error" && "bg-red-500",
-                          xagent.status === "pending" && "bg-yellow-500"
-                        )}
-                      />
-                    )}
+              return (
+                <div
+                  key={xagent.agent_id}
+                  className={cn(
+                    "group relative rounded-lg cursor-pointer transition-all duration-200",
+                    "border hover:shadow-sm",
+                    isActive
+                      ? "bg-accent border-accent-foreground/20 shadow-sm"
+                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                  )}
+                  onClick={() => handleXAgentClick(xagent.agent_id)}
+                >
+                  {/* Status indicator bar */}
+                  {xagent.status && (
+                    <div
+                      className={cn(
+                        "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
+                        xagent.status === "running" && "bg-blue-500",
+                        xagent.status === "completed" && "bg-green-500",
+                        xagent.status === "error" && "bg-red-500",
+                        xagent.status === "pending" && "bg-yellow-500"
+                      )}
+                    />
+                  )}
 
-                    <div className="p-3 pl-4">
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="flex-1 min-w-0">
-                          <h4
-                            className={cn(
-                              "font-medium text-sm leading-tight line-clamp-1",
-                              isActive
-                                ? "text-accent-foreground"
-                                : "text-foreground"
-                            )}
-                          >
-                            {xagent.goal || "Untitled XAgent"}
-                          </h4>
+                  <div className="p-3 pl-4">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex-1 min-w-0">
+                        <h4
+                          className={cn(
+                            "font-medium text-sm leading-tight line-clamp-1",
+                            isActive
+                              ? "text-accent-foreground"
+                              : "text-foreground"
+                          )}
+                        >
+                          {xagent.goal || "Untitled XAgent"}
+                        </h4>
+                      </div>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      {xagent.status && (
+                        <div className="flex items-center gap-1">
+                          {getStatusIcon(xagent.status)}
+                          <span className="capitalize">{xagent.status}</span>
                         </div>
-                      </div>
+                      )}
 
-                      {/* Metadata */}
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        {xagent.status && (
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(xagent.status)}
-                            <span className="capitalize">{xagent.status}</span>
-                          </div>
-                        )}
+                      {xagent.created_at && (
+                        <>
+                          <span className="opacity-40">•</span>
+                          <span>{getTimeAgo(new Date(xagent.created_at))}</span>
+                        </>
+                      )}
 
-                        {xagent.created_at && (
-                          <>
-                            <span className="opacity-40">•</span>
-                            <span>
-                              {getTimeAgo(new Date(xagent.created_at))}
-                            </span>
-                          </>
-                        )}
-
-                        {xagent.config_path && (
-                          <>
-                            <span className="opacity-40">•</span>
-                            <span
-                              className="truncate max-w-[80px]"
-                              title={xagent.config_path}
-                            >
-                              {xagent.config_path
-                                .split("/")
-                                .pop()
-                                ?.replace(/\.(yaml|yml)$/, "")}
-                            </span>
-                          </>
-                        )}
-                      </div>
+                      {xagent.config_path && (
+                        <>
+                          <span className="opacity-40">•</span>
+                          <span
+                            className="truncate max-w-[80px]"
+                            title={xagent.config_path}
+                          >
+                            {xagent.config_path
+                              .split("/")
+                              .pop()
+                              ?.replace(/\.(yaml|yml)$/, "")}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
 
-              {/* Empty state for filtered results */}
-              {!isLoading &&
-                filteredXAgents.length === 0 &&
-                xagents.length > 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                      <Search className="h-5 w-5" />
-                    </div>
-                    <p className="text-sm font-medium mb-1">No matches found</p>
-                    <p className="text-xs opacity-75">
-                      Try adjusting your search or filters
-                    </p>
+            {/* Empty state for filtered results */}
+            {!isLoading &&
+              filteredXAgents.length === 0 &&
+              xagents.length > 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                    <Search className="h-5 w-5" />
                   </div>
-                )}
-            </div>
-          </ScrollArea>
-        )}
+                  <p className="text-sm font-medium mb-1">No matches found</p>
+                  <p className="text-xs opacity-75">
+                    Try adjusting your search or filters
+                  </p>
+                </div>
+              )}
+          </div>
+        </ScrollArea>
       </Sidebar>
 
       {/* Main Content Area */}
