@@ -13,7 +13,7 @@ export class VibexClient {
   private userId: string | null = null;
 
   constructor(
-    baseURL: string = process.env.NEXT_PUBLIC_API_URL || "/api/vibex"
+    baseURL: string = process.env.NEXT_PUBLIC_VIBEX_API_URL || "/api/vibex"
   ) {
     this.baseURL = baseURL;
   }
@@ -125,13 +125,20 @@ export class VibexClient {
   ) {
     const effectiveUserId = this.userId || "guest";
     const params = `?user_id=${encodeURIComponent(effectiveUserId)}`;
-    const eventSource = new EventSource(
-      `${this.baseURL}/agents/${agentId}/stream${params}`
-    );
+    const url = `${this.baseURL}/agents/${agentId}/stream${params}`;
+    
+    console.log("[SSE] Connecting to:", url);
+    const eventSource = new EventSource(url);
+
+    eventSource.onopen = () => {
+      console.log("[SSE] Connection opened for agent:", agentId);
+    };
 
     eventSource.onmessage = (event) => {
+      console.log("[SSE] Raw event received:", event);
       try {
         const data = JSON.parse(event.data);
+        console.log("[SSE] Parsed data:", data);
         onUpdate(data);
       } catch (error) {
         console.error("Error parsing SSE data:", error);
