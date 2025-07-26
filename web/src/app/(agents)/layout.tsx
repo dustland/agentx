@@ -208,19 +208,21 @@ export default function TasksLayout({
         {/* XAgents List */}
         {!isLoading && xagents.length === 0 ? (
           // Empty state for no XAgents at all - centered in sidebar
-          <div className="flex-1 flex items-center justify-center min-h-0">
-            <div className="text-center text-muted-foreground">
-              <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                <Plus className="h-5 w-5" />
+          <div className="flex-1 relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-muted-foreground px-4">
+                <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                  <Plus className="h-5 w-5" />
+                </div>
+                <p className="text-sm font-medium mb-1">No XAgents found</p>
+                <p className="text-xs opacity-75 mb-4">
+                  Create your first XAgent to get started
+                </p>
+                <Button size="sm" onClick={() => (window.location.href = "/")}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  New XAgent
+                </Button>
               </div>
-              <p className="text-sm font-medium mb-1">No XAgents found</p>
-              <p className="text-xs opacity-75 mb-4">
-                Create your first XAgent to get started
-              </p>
-              <Button size="sm" onClick={() => (window.location.href = "/")}>
-                <Plus className="h-4 w-4 mr-2" />
-                New XAgent
-              </Button>
             </div>
           </div>
         ) : (

@@ -398,14 +398,14 @@ async def resume_project(
         project_data = await storage.read_file("project.json")
         if project_data:
             data = json.loads(project_data)
-            goal = data.get("goal", data.get("initial_goal", ""))  # Support old format
+            goal = data.get("goal", "")
             name = data.get("name")
     except Exception:
         metadata_file = workspace_path / "metadata.json"
         if metadata_file.exists():
             with open(metadata_file, 'r') as f:
                 metadata = json.load(f)
-                goal = metadata.get("goal", metadata.get("initial_goal", ""))  # Support old format
+                goal = metadata.get("goal", "")
                 name = metadata.get("name")
     
     project = Project(
