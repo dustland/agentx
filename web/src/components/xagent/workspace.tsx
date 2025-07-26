@@ -46,7 +46,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
   const [selectedToolCall, setSelectedToolCall] = useState<ToolCall | null>(
     null
   );
-  const [activeTab, setActiveTab] = useState("artifacts");
+  const [activeTab, setActiveTab] = useState("plan");
   const initialTabSetRef = useRef(false);
 
   // Set up tool call selection handler
@@ -87,12 +87,10 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
         >
           <CardHeader className="p-2 flex-shrink-0">
             <TabsList className="h-7 text-xs">
-              {hasPlan && (
-                <TabsTrigger value="plan" className="text-xs gap-1 py-1">
-                  <Goal className="h-3 w-3 mr-1" />
-                  Plan
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="plan" className="text-xs gap-1 py-1">
+                <Goal className="h-3 w-3 mr-1" />
+                Plan
+              </TabsTrigger>
               <TabsTrigger value="artifacts" className="text-xs gap-1 py-1">
                 <Folder className="h-3 w-3 mr-1" />
                 Files
@@ -113,11 +111,9 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
           </CardHeader>
 
           {/* Plan Tab */}
-          {hasPlan && (
-            <TabsContent value="plan" className="flex-1 m-0 min-h-0">
-              <Plan xagentId={xagentId} />
-            </TabsContent>
-          )}
+          <TabsContent value="plan" className="flex-1 m-0 min-h-0">
+            <Plan xagentId={xagentId} />
+          </TabsContent>
 
           {/* Artifacts Tab */}
           <TabsContent value="artifacts" className="flex-1 m-0 min-h-0">

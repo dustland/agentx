@@ -5,6 +5,7 @@ Provides business logic orchestration for project management.
 Handles user-project relationships while keeping the framework pure.
 """
 
+import asyncio
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime
@@ -162,28 +163,28 @@ class ProjectService:
         for project_id in project_ids:
             try:
                 # Check if task still exists
-                task_path = Path(f".vibex/projects/{project_id}")
-                if task_path.exists():
+                project_path = Path(f".vibex/projects/{project_id}")
+                if project_path.exists():
                     # Determine status from filesystem
                     status = "active"
-                    if (task_path / "error.log").exists():
+                    if (project_path / "error.log").exists():
                         status = "failed"
-                    elif any(task_path.glob("artifacts/*")):
+                    elif any(project_path.glob("artifacts/*")):
                         status = "completed"
                     
-                    tasks.append({
+                    projects.append({
                         "project_id": project_id,
                         "status": status,
-                        "created_at": datetime.fromtimestamp(task_path.stat().st_ctime).isoformat()
+                        "created_at": datetime.fromtimestamp(project_path.stat().st_ctime).isoformat()
                     })
                 else:
                     # Project was deleted, remove from registry
                     await self.registry.remove_project(user_id, project_id)
                     
             except Exception as e:
-                logger.error(f"Error checking task {project_id}: {e}")
+                logger.error(f"Error checking project {project_id}: {e}")
         
-        return tasks
+        return projects
     
     async def delete_project(self, user_id: str, project_id: str) -> None:
         """

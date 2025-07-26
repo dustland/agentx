@@ -73,7 +73,7 @@ export function ChatInput({
           placeholder={
             mode === "agent"
               ? allowEmptyMessage
-                ? "Type a message or press Send to continue plan execution..."
+                ? "Type a message or press Send to continue..."
                 : "Describe a task for agents to complete..."
               : "Type a message..."
           }
@@ -88,8 +88,8 @@ export function ChatInput({
             disabled && "opacity-50 cursor-not-allowed",
             // Use semantic border colors
             "border border-border",
-            "group-hover:border-muted-foreground",
-            "focus:border-muted-foreground",
+            "group-hover:border-muted-foreground/50",
+            "focus:border-muted-foreground/50",
             "focus:outline-none focus:ring-0 focus:ring-transparent",
             "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:ring-transparent"
           )}

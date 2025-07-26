@@ -10,7 +10,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ActivityIcon, CheckCircleIcon, Activity, Wifi } from "lucide-react";
-import { RecentProjects } from "@/components/project/recent-projects";
+import { RecentProjects } from "@/components/xagent/recent-projects";
 import { useObservability } from "@/hooks/use-observability";
 
 export default function ObservabilityPage() {

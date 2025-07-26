@@ -4,15 +4,16 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Monitor,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
   Pin,
   PinOff,
   Loader2,
   BookOpen,
   Home,
+  Settings,
+  LogOut,
+  HelpCircle,
+  ExternalLink,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,82 +28,23 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useUser } from "@/contexts/user-context";
-import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { ThemeSwitcher } from "../theme-switcher";
 import { useAppStore } from "@/store/app";
 import { useObservability } from "@/hooks/use-observability";
 import { Icons } from "../icons";
 
-export interface SidebarItem {
-  id: string;
-  title: string;
-  subtitle?: string;
-  status?: "running" | "completed" | "error" | "pending";
-  href?: string;
-  onClick?: () => void;
-  metadata?: {
-    timeAgo?: string;
-    configPath?: string;
-  };
-}
-
 interface SidebarProps {
   className?: string;
   title?: string;
-  items?: SidebarItem[];
-  isActiveItem?: (item: SidebarItem) => boolean;
   children?: React.ReactNode;
   isLoading?: boolean;
   placeholder?: React.ReactNode;
 }
 
-const getStatusIcon = (status: string) => {
-  switch (status) {
-    case "running":
-      return <AlertCircle className="h-3 w-3 text-blue-500" />;
-    case "completed":
-      return <CheckCircle className="h-3 w-3 text-green-500" />;
-    case "error":
-      return <XCircle className="h-3 w-3 text-red-500" />;
-    case "pending":
-      return <Clock className="h-3 w-3 text-yellow-500" />;
-    default:
-      return <Clock className="h-3 w-3 text-gray-500" />;
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "running":
-      return "border-l-blue-500";
-    case "completed":
-      return "border-l-green-500";
-    case "error":
-      return "border-l-red-500";
-    case "pending":
-      return "border-l-yellow-500";
-    default:
-      return "border-l-gray-500";
-  }
-};
-
-const getTimeAgo = (date: Date): string => {
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
 export function Sidebar({
   className,
   title,
-  items,
-  isActiveItem,
   children,
   isLoading = false,
   placeholder,
@@ -135,103 +77,6 @@ export function Sidebar({
 
     if (children) {
       return <ScrollArea className="flex-1 min-h-0">{children}</ScrollArea>;
-    }
-
-    if (items && items.length > 0) {
-      return (
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="p-2 space-y-1">
-            {items.map((item) => {
-              const isActive = isActiveItem ? isActiveItem(item) : false;
-
-              return (
-                <div
-                  key={item.id}
-                  className={cn(
-                    "group relative rounded-lg cursor-pointer transition-all duration-200",
-                    "border hover:shadow-sm",
-                    isActive
-                      ? "bg-accent border-accent-foreground/20 shadow-sm"
-                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                  )}
-                  onClick={
-                    item.onClick || (() => item.href && router.push(item.href))
-                  }
-                >
-                  {/* Status indicator bar */}
-                  {item.status && (
-                    <div
-                      className={cn(
-                        "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                        item.status === "running" && "bg-blue-500",
-                        item.status === "completed" && "bg-green-500",
-                        item.status === "error" && "bg-red-500",
-                        item.status === "pending" && "bg-yellow-500"
-                      )}
-                    />
-                  )}
-
-                  <div className="p-3 pl-4">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <div className="flex-1 min-w-0">
-                        <h4
-                          className={cn(
-                            "font-medium text-sm leading-tight line-clamp-2",
-                            isActive
-                              ? "text-accent-foreground"
-                              : "text-foreground"
-                          )}
-                        >
-                          {item.title}
-                        </h4>
-                        {item.subtitle && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {item.subtitle}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Metadata */}
-                    {(item.status || item.metadata) && (
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        {item.status && (
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(item.status)}
-                            <span className="capitalize">{item.status}</span>
-                          </div>
-                        )}
-
-                        {item.metadata?.timeAgo && (
-                          <>
-                            <span className="opacity-40">•</span>
-                            <span>{item.metadata.timeAgo}</span>
-                          </>
-                        )}
-
-                        {item.metadata?.configPath && (
-                          <>
-                            <span className="opacity-40">•</span>
-                            <span
-                              className="truncate max-w-[80px]"
-                              title={item.metadata.configPath}
-                            >
-                              {item.metadata.configPath
-                                .split("/")
-                                .pop()
-                                ?.replace(/\.(yaml|yml)$/, "")}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
-      );
     }
 
     // Empty state
@@ -353,7 +198,7 @@ export function Sidebar({
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link
-                        href="https://dustland.github.io/vibex/docs"
+                        href="https://vibex.co/docs"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center"
@@ -416,7 +261,7 @@ export function Sidebar({
                 </DropdownMenu>
               )}
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Link href="/">
                 <Button
                   variant="ghost"
@@ -452,6 +297,16 @@ export function Sidebar({
                 </Button>
               </Link>
               <ThemeSwitcher />
+              <Link href="/settings">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  title="Settings"
+                >
+                  <Settings className="h-3 w-3" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

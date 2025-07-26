@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState, useCallback, useEffect } from "react";
-import { Workspace } from "@/components/project";
+import { Workspace } from "@/components/xagent";
 import { ChatLayout } from "@/components/chat";
 import {
   ResizablePanelGroup,
@@ -33,6 +33,12 @@ export default function XAgentPage({
 
   // Use the plan hook to check if plan exists
   const { plan } = usePlan(id);
+
+  // Stop function for cancelling ongoing operations
+  const handleStop = useCallback(() => {
+    // TODO: Implement actual stop functionality when streaming is added
+    console.log("Stop requested - not implemented yet");
+  }, []);
 
   // Send initial message if present
   useEffect(() => {
@@ -75,7 +81,7 @@ export default function XAgentPage({
           <ChatLayout
             messages={messages}
             onSendMessage={handleSendMessage}
-            onStop={stop}
+            onStop={handleStop}
             isLoading={isLoading}
             allowEmptyMessage={!!plan}
           />

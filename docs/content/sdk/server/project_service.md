@@ -7,7 +7,7 @@ Project Service Layer
 Provides business logic orchestration for project management.
 Handles user-project relationships while keeping the framework pure.
 
-## ProjectService <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L22" class="source-link" title="View source code">source</a>
+## ProjectService <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L23" class="source-link" title="View source code">source</a>
 
 Service layer for project management.
 
@@ -20,12 +20,12 @@ It does NOT handle:
 - Storage paths (framework's responsibility)
 - HTTP concerns (API layer's responsibility)
 
-### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L36" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L37" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-### create_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L40" class="source-link" title="View source code">source</a>
+### create_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L41" class="source-link" title="View source code">source</a>
 
 ```python
 async def create_project(self, user_id: str, description: str, config_path: str = 'examples/simple_chat/config/team.yaml', context: Optional[Dict[str, Any]] = None) -> ProjectResponse
@@ -42,7 +42,7 @@ Create a new project for a user.
 **Returns:**
     ProjectResponse object
 
-### verify_project_ownership <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L85" class="source-link" title="View source code">source</a>
+### verify_project_ownership <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L86" class="source-link" title="View source code">source</a>
 
 ```python
 async def verify_project_ownership(self, user_id: str, project_id: str) -> bool
@@ -65,7 +65,7 @@ operations like fetching logs.
     PermissionError: If user doesn't own the project
     ValueError: If project doesn't exist
 
-### get_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L117" class="source-link" title="View source code">source</a>
+### get_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L118" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_project(self, user_id: str, project_id: str) -> XAgent
@@ -84,7 +84,7 @@ Get the project's X agent, verifying user ownership.
     PermissionError: If user doesn't own the project
     ValueError: If project doesn't exist
 
-### list_user_projects <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L149" class="source-link" title="View source code">source</a>
+### list_user_projects <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L150" class="source-link" title="View source code">source</a>
 
 ```python
 async def list_user_projects(self, user_id: str) -> List[Dict[str, Any]]
@@ -98,7 +98,7 @@ List all projects for a user.
 **Returns:**
     List of project information dictionaries
 
-### delete_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L188" class="source-link" title="View source code">source</a>
+### delete_project <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L189" class="source-link" title="View source code">source</a>
 
 ```python
 async def delete_project(self, user_id: str, project_id: str) -> None
@@ -113,7 +113,7 @@ Delete a task, verifying user ownership.
 **Raises:**
     PermissionError: If user doesn't own the project
 
-### send_message <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L214" class="source-link" title="View source code">source</a>
+### send_message <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L215" class="source-link" title="View source code">source</a>
 
 ```python
 async def send_message(self, user_id: str, project_id: str, content: str, mode: str = 'agent') -> Dict[str, Any]
@@ -132,7 +132,7 @@ Send a message to the project's X agent.
 **Raises:**
     PermissionError: If user doesn't own the project
 
-### get_project_messages <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L270" class="source-link" title="View source code">source</a>
+### get_project_messages <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L271" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_project_messages(self, user_id: str, project_id: str) -> List[Dict[str, Any]]
@@ -150,7 +150,7 @@ Get messages for a project.
 **Raises:**
     PermissionError: If user doesn't own the project
 
-### get_project_artifacts <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L312" class="source-link" title="View source code">source</a>
+### get_project_artifacts <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L313" class="source-link" title="View source code">source</a>
 
 ```python
 async def get_project_artifacts(self, user_id: str, project_id: str) -> List[Dict[str, Any]]
@@ -168,7 +168,7 @@ Get artifacts for a project.
 **Raises:**
     PermissionError: If user doesn't own the project
 
-### execute_project_step <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L348" class="source-link" title="View source code">source</a>
+### execute_project_step <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L349" class="source-link" title="View source code">source</a>
 
 ```python
 async def execute_project_step(self, user_id: str, project_id: str) -> str
@@ -184,7 +184,7 @@ This is a placeholder for more complex project execution logic.
 **Returns:**
     str: A message indicating the result of the execution step.
 
-### start_run <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L380" class="source-link" title="View source code">source</a>
+### start_run <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L381" class="source-link" title="View source code">source</a>
 
 ```python
 def start_run(self, project_id: str) -> bool
@@ -193,7 +193,7 @@ def start_run(self, project_id: str) -> bool
 Try to start running a project.
 Returns True if run started, False if already running.
 
-### finish_run <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L390" class="source-link" title="View source code">source</a>
+### finish_run <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L391" class="source-link" title="View source code">source</a>
 
 ```python
 def finish_run(self, project_id: str) -> None
@@ -203,7 +203,7 @@ Mark project run as finished.
 
 ## Functions
 
-## get_project_service <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L399" class="source-link" title="View source code">source</a>
+## get_project_service <a href="https://github.com/dustland/vibex/blob/main/src/vibex/server/project_service.py#L400" class="source-link" title="View source code">source</a>
 
 ```python
 def get_project_service() -> ProjectService

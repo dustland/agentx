@@ -152,7 +152,7 @@ class Project:
         task.agent = agent_name
         self.updated_at = datetime.now()
         await self._persist_project_state()
-        logger.info(f"Assigned project {project_id} to agent {agent_name}")
+        logger.info(f"Assigned task {task_id} to agent {agent_name}")
         return True
     
     def is_plan_complete(self) -> bool:

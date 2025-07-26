@@ -2,11 +2,19 @@
 
 A comprehensive reference for VibeX terminology and concepts.
 
+import { Cards } from "nextra/components";
+
+<Cards>
+  <Cards.Card title="A - H" href="#a" />
+  <Cards.Card title="M - P" href="#m" />
+  <Cards.Card title="S - X" href="#s" />
+</Cards>
+
 ## A
 
 ### Agent
 
-An AI assistant with specific roles and capabilities. Agents can be preset (built-in specialists) or custom (defined with your own prompts and tools).
+A specialized worker designed to perform specific types of tasks within a multi-agent system. Unlike XAgent which orchestrates the overall workflow, Agents are domain experts that receive well-defined tasks and execute them using their specialized tools and knowledge.
 
 ### Agent Types
 
@@ -75,11 +83,19 @@ A coordinated group of agents working together, each with specialized roles and 
 
 ## O
 
+### Observability
+
+Real-time monitoring and visibility into the VibeX system, including agent performance, task execution status, system health metrics, and workflow insights. Provides dashboards and monitoring tools for understanding system behavior.
+
 ### Orchestrator
 
 The coordination layer that manages multi-agent workflows, handles handoffs, and ensures proper task execution.
 
 ## P
+
+### Project
+
+The primary unit of work in VibeX that encapsulates everything needed to achieve a high-level goal. Each project is a self-contained environment with its own isolated workspace, state, team configuration, and version control. Projects serve as the backend foundation that XAgents represent and manage.
 
 ### Preset Agents
 
@@ -88,6 +104,7 @@ Built-in specialist agents provided by VibeX:
 - **Researcher**: Gathers and synthesizes evidence-based research
 - **Writer**: Transforms research into clear, persuasive content
 - **Web Designer**: Creates interactive HTML experiences
+- **Developer**: Handles software implementation, code development, and system architecture
 - **Reviewer**: Provides quality assurance and final polish
 
 ### Prompt Template
@@ -99,6 +116,15 @@ Markdown files that define agent behavior, personality, and capabilities.
 ### start_task
 
 Task-based interface for complex multi-step workflows, returns an XAgent instance for interaction.
+
+### Status
+
+The current execution state of an XAgent or task. Common statuses include:
+
+- **Running**: Currently executing or processing
+- **Completed**: Successfully finished execution
+- **Error**: Encountered an issue during execution
+- **Pending**: Waiting to start or for dependencies
 
 ### Streaming
 
@@ -122,6 +148,10 @@ Functions agents can use to interact with the world:
 - **Custom Tools**: User-defined functions for specific needs
 - **External Tools**: Third-party integrations and APIs
 
+### Taskspace
+
+Isolated directory for each task containing files, artifacts, logs, and execution context.
+
 ## V
 
 ### Vibe-X Philosophy
@@ -132,17 +162,11 @@ VibeX's core principles:
 - **Human-in-the-Loop**: Strategic human oversight with AI execution
 - **Cost-Aware Intelligence**: Intelligent model routing balancing capability with cost
 
-## W
-
-### Taskspace
-
-Isolated directory for each task containing files, artifacts, logs, and execution context.
-
 ## X
 
 ### XAgent
 
-The conversational interface for interacting with your agent team. Perfect for chat applications and iterative refinement.
+The Strategic Task Orchestrator and Planning System that serves as the lead coordinator for multi-agent workflows. XAgent acts as the project's conversational representative, handling task decomposition, plan creation, agent coordination, and user interaction. It's the unified interface that breaks down complex goals into manageable tasks for specialist agents.
 
 ---
 

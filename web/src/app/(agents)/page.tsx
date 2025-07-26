@@ -63,17 +63,20 @@ export default function HomePage() {
     },
   ];
 
-  const handleCreateTask = useCallback(
+  const handleCreateXAgent = useCallback(
     async (prompt: string) => {
       if (!prompt.trim()) return;
 
       setIsCreating(true);
       try {
-        console.log("Creating XAgent with prompt:", prompt);
+        console.log("Phase 1: Setting initial message and creating XAgent");
 
-        // Create XAgent with the prompt as goal for autonomous execution
+        // Phase 1: Set initial message in store (for Phase 2 on agent page)
+        setInitialMessage(prompt);
+
+        // Phase 1: Create XAgent (just create it, don't start yet)
         const response = await vibex.createXAgent(
-          prompt,
+          "", // Empty goal - the actual goal will be sent as first message
           "examples/simple_chat/config/team.yaml",
           { source: "studio_homepage" }
         );
@@ -85,10 +88,13 @@ export default function HomePage() {
           throw new Error("No agent ID returned from API");
         }
 
-        // Navigate to the agent page
-        router.push(`/agent/${agentId}`);
+        // Phase 1: Navigate to the agent page (Phase 2 will happen there)
+        router.push(`/x/${agentId}`);
       } catch (error) {
         console.error("Failed to create task:", error);
+
+        // Clear initial message on error
+        setInitialMessage(null);
 
         // Check if it's a backend error
         if (
@@ -114,7 +120,7 @@ export default function HomePage() {
 
   const handleSampleGoalClick = (goal: any) => {
     const prompt = `${goal.title}: ${goal.description}`;
-    handleCreateTask(prompt);
+    handleCreateXAgent(prompt);
   };
 
   return (
@@ -135,7 +141,7 @@ export default function HomePage() {
 
             {/* Simple Task Input */}
             <ChatInput
-              onSendMessage={handleCreateTask}
+              onSendMessage={handleCreateXAgent}
               isLoading={isCreating}
               placeholder="Describe what would you like me to do..."
             />
