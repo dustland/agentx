@@ -28,10 +28,6 @@ class Plan(BaseModel):
     when their dependencies are met.
     """
     
-    goal: str = Field(
-        ...,
-        description="The high-level objective that this plan is designed to achieve.",
-    )
     tasks: List[Task] = Field(
         default_factory=list, 
         description="The list of tasks that make up the plan."

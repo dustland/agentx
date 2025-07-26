@@ -206,104 +206,125 @@ export default function TasksLayout({
         </div>
 
         {/* XAgents List */}
-        <ScrollArea className="flex-1">
-          <div className="p-2 space-y-1">
-            {filteredXAgents.map((xagent: any) => {
-              const isActive = xagent.agent_id === currentAgentId;
+        {!isLoading && xagents.length === 0 ? (
+          // Empty state for no XAgents at all - centered in sidebar
+          <div className="flex-1 flex items-center justify-center min-h-0">
+            <div className="text-center text-muted-foreground">
+              <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                <Plus className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-medium mb-1">No XAgents found</p>
+              <p className="text-xs opacity-75 mb-4">
+                Create your first XAgent to get started
+              </p>
+              <Button size="sm" onClick={() => (window.location.href = "/")}>
+                <Plus className="h-4 w-4 mr-2" />
+                New XAgent
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <ScrollArea className="flex-1">
+            <div className="p-2 space-y-1">
+              {filteredXAgents.map((xagent: any) => {
+                const isActive = xagent.agent_id === currentAgentId;
 
-              return (
-                <div
-                  key={xagent.agent_id}
-                  className={cn(
-                    "group relative rounded-lg cursor-pointer transition-all duration-200",
-                    "border hover:shadow-sm",
-                    isActive
-                      ? "bg-accent border-accent-foreground/20 shadow-sm"
-                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                  )}
-                  onClick={() => handleXAgentClick(xagent.agent_id)}
-                >
-                  {/* Status indicator bar */}
-                  {xagent.status && (
-                    <div
-                      className={cn(
-                        "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                        xagent.status === "running" && "bg-blue-500",
-                        xagent.status === "completed" && "bg-green-500",
-                        xagent.status === "error" && "bg-red-500",
-                        xagent.status === "pending" && "bg-yellow-500"
-                      )}
-                    />
-                  )}
+                return (
+                  <div
+                    key={xagent.agent_id}
+                    className={cn(
+                      "group relative rounded-lg cursor-pointer transition-all duration-200",
+                      "border hover:shadow-sm",
+                      isActive
+                        ? "bg-accent border-accent-foreground/20 shadow-sm"
+                        : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                    )}
+                    onClick={() => handleXAgentClick(xagent.agent_id)}
+                  >
+                    {/* Status indicator bar */}
+                    {xagent.status && (
+                      <div
+                        className={cn(
+                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
+                          xagent.status === "running" && "bg-blue-500",
+                          xagent.status === "completed" && "bg-green-500",
+                          xagent.status === "error" && "bg-red-500",
+                          xagent.status === "pending" && "bg-yellow-500"
+                        )}
+                      />
+                    )}
 
-                  <div className="p-3 pl-4">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <div className="flex-1 min-w-0">
-                        <h4
-                          className={cn(
-                            "font-medium text-sm leading-tight line-clamp-1",
-                            isActive
-                              ? "text-accent-foreground"
-                              : "text-foreground"
-                          )}
-                        >
-                          {xagent.goal || "Untitled XAgent"}
-                        </h4>
+                    <div className="p-3 pl-4">
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="flex-1 min-w-0">
+                          <h4
+                            className={cn(
+                              "font-medium text-sm leading-tight line-clamp-1",
+                              isActive
+                                ? "text-accent-foreground"
+                                : "text-foreground"
+                            )}
+                          >
+                            {xagent.goal || "Untitled XAgent"}
+                          </h4>
+                        </div>
+                      </div>
+
+                      {/* Metadata */}
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        {xagent.status && (
+                          <div className="flex items-center gap-1">
+                            {getStatusIcon(xagent.status)}
+                            <span className="capitalize">{xagent.status}</span>
+                          </div>
+                        )}
+
+                        {xagent.created_at && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span>
+                              {getTimeAgo(new Date(xagent.created_at))}
+                            </span>
+                          </>
+                        )}
+
+                        {xagent.config_path && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span
+                              className="truncate max-w-[80px]"
+                              title={xagent.config_path}
+                            >
+                              {xagent.config_path
+                                .split("/")
+                                .pop()
+                                ?.replace(/\.(yaml|yml)$/, "")}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
+                  </div>
+                );
+              })}
 
-                    {/* Metadata */}
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      {xagent.status && (
-                        <div className="flex items-center gap-1">
-                          {getStatusIcon(xagent.status)}
-                          <span className="capitalize">{xagent.status}</span>
-                        </div>
-                      )}
-
-                      {xagent.created_at && (
-                        <>
-                          <span className="opacity-40">•</span>
-                          <span>{getTimeAgo(new Date(xagent.created_at))}</span>
-                        </>
-                      )}
-
-                      {xagent.config_path && (
-                        <>
-                          <span className="opacity-40">•</span>
-                          <span
-                            className="truncate max-w-[80px]"
-                            title={xagent.config_path}
-                          >
-                            {xagent.config_path
-                              .split("/")
-                              .pop()
-                              ?.replace(/\.(yaml|yml)$/, "")}
-                          </span>
-                        </>
-                      )}
+              {/* Empty state for filtered results */}
+              {!isLoading &&
+                filteredXAgents.length === 0 &&
+                xagents.length > 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                      <Search className="h-5 w-5" />
                     </div>
+                    <p className="text-sm font-medium mb-1">No matches found</p>
+                    <p className="text-xs opacity-75">
+                      Try adjusting your search or filters
+                    </p>
                   </div>
-                </div>
-              );
-            })}
-
-            {/* Empty state for filtered results */}
-            {!isLoading &&
-              filteredXAgents.length === 0 &&
-              xagents.length > 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                    <Search className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">No matches found</p>
-                  <p className="text-xs opacity-75">
-                    Try adjusting your search or filters
-                  </p>
-                </div>
-              )}
-          </div>
-        </ScrollArea>
+                )}
+            </div>
+          </ScrollArea>
+        )}
       </Sidebar>
 
       {/* Main Content Area */}

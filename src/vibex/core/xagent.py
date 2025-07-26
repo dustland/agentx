@@ -656,7 +656,7 @@ Please provide a helpful, informative response based on the current state of the
         await self._persist_plan()
 
         return XAgentResponse(
-            text=f"I've created a plan for your task: {self.plan.goal}\n\n"
+            text=f"I've created a plan for your task: {self.project.goal if self.project else 'Unknown'}\n\n"
                  f"The plan includes {len(self.plan.tasks)} tasks. "
                  f"Use step() to execute the plan autonomously, or continue chatting to refine it.",
             metadata={"execution_type": "plan_created"}
@@ -1137,7 +1137,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         completed_tasks = len([t for t in self.plan.tasks if t.status == "completed"])
         failed_tasks = len([t for t in self.plan.tasks if t.status == "failed"])
 
-        summary = f"Plan: {self.plan.goal}\n"
+        summary = f"Plan: {self.project.goal if self.project else 'Unknown'}\n"
         summary += f"Progress: {completed_tasks}/{total_tasks} completed"
         if failed_tasks > 0:
             summary += f", {failed_tasks} failed"
@@ -1220,6 +1220,21 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             "parallel_execution": self.parallel_execution,
             "max_concurrent_tasks": self.max_concurrent_tasks
         }
+    
+    async def set_name(self, name: str) -> None:
+        """Set a custom name for this XAgent/Project."""
+        if self.project:
+            await self.project.set_name(name)
+            logger.info(f"Updated project name to: {name}")
+        else:
+            logger.warning("Cannot set name - no project associated with this XAgent")
+    
+    @property
+    def goal(self) -> str:
+        """Get the project goal."""
+        if self.project:
+            return self.project.goal
+        return self.initial_prompt or ""
 
     async def step(self) -> str:
         """

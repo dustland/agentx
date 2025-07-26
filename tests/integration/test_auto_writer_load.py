@@ -264,7 +264,7 @@ async def test_auto_writer_load_and_resume():
     assert resumed_project.project_id == project_id, "Resumed project should have the same ID."
 
     # 2. Check if the initial goal is loaded correctly
-    assert "test project to be resumed" in resumed_project.initial_goal, "Initial goal not loaded correctly."
+    assert "test project to be resumed" in resumed_project.goal, "Goal not loaded correctly."
 
     # 3. Check if the plan was loaded
     assert resumed_project.plan is not None, "Plan should be loaded from the resumed project."

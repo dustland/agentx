@@ -55,7 +55,8 @@ class Project:
         message_queue: MessageQueue,
         agents: Dict[str, Agent],
         storage: ProjectStorage,
-        initial_goal: str,
+        goal: str,
+        name: Optional[str] = None,
         x_agent: Optional['XAgent'] = None,
     ):
         self.project_id = project_id
@@ -64,7 +65,8 @@ class Project:
         self.message_queue = message_queue
         self.agents = agents
         self.storage = storage
-        self.initial_goal = initial_goal
+        self.goal = goal
+        self.name = name or f"Project {project_id}"
         self.x_agent = x_agent
         
         self.is_complete: bool = False
@@ -85,7 +87,7 @@ class Project:
         context = {
             "project_id": self.project_id,
             "status": "completed" if self.is_complete else "in_progress",
-            "initial_goal": self.initial_goal,
+            "goal": self.goal,
             "storage_path": str(self.storage.get_project_path()),
             "agents": list(self.agents.keys()),
             "history_length": len(self.history.messages),
@@ -94,7 +96,7 @@ class Project:
         
         if self.plan:
             context["plan"] = {
-                "goal": self.plan.goal,
+                "goal": self.goal,
                 "total_tasks": len(self.plan.tasks),
                 "progress": self.plan.get_progress_summary(),
             }
@@ -111,6 +113,13 @@ class Project:
         self.updated_at = datetime.now()
         await self._persist_project_state()
         logger.info(f"Updated plan for project {self.project_id}")
+    
+    async def set_name(self, name: str) -> None:
+        """Set a custom name for this project."""
+        self.name = name
+        self.updated_at = datetime.now()
+        await self._persist_project_state()
+        logger.info(f"Updated project {self.project_id} name to: {name}")
     
     async def get_next_task(self) -> Optional[Task]:
         if not self.plan:
@@ -169,7 +178,8 @@ class Project:
     async def _persist_project_state(self) -> None:
         project_data = {
             "project_id": self.project_id,
-            "initial_goal": self.initial_goal,
+            "name": self.name,
+            "goal": self.goal,
             "status": "completed" if self.is_complete else "in_progress",
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
@@ -188,6 +198,7 @@ class Project:
                 self.created_at = datetime.fromisoformat(data.get("created_at", self.created_at.isoformat()))
                 self.updated_at = datetime.fromisoformat(data.get("updated_at", self.updated_at.isoformat()))
                 self.is_complete = data.get("status") == "completed"
+                self.name = data.get("name", self.name)  # Load name if available
                 
                 if data.get("plan"):
                     self.plan = Plan(**data["plan"])
@@ -205,7 +216,8 @@ class Project:
     def get_summary(self) -> Dict[str, Any]:
         summary = {
             "project_id": self.project_id,
-            "goal": self.initial_goal,
+            "name": self.name,
+            "goal": self.goal,
             "status": "completed" if self.is_complete else "in_progress",
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
@@ -234,6 +246,7 @@ async def start_project(
     config_path: Union[str, Path, TeamConfig],
     project_id: Optional[str] = None,
     workspace_dir: Optional[Path] = None,
+    name: Optional[str] = None,
 ) -> Project:
     from vibex.core.xagent import XAgent
     
@@ -283,7 +296,8 @@ async def start_project(
         message_queue=message_queue,
         agents=agents,
         storage=storage,
-        initial_goal=goal,
+        goal=goal,
+        name=name,
         x_agent=x_agent
     )
     
@@ -378,18 +392,21 @@ async def resume_project(
         initial_prompt=""
     )
     
-    initial_goal = ""
+    goal = ""
+    name = None
     try:
         project_data = await storage.read_file("project.json")
         if project_data:
             data = json.loads(project_data)
-            initial_goal = data.get("initial_goal", "")
+            goal = data.get("goal", data.get("initial_goal", ""))  # Support old format
+            name = data.get("name")
     except Exception:
         metadata_file = workspace_path / "metadata.json"
         if metadata_file.exists():
             with open(metadata_file, 'r') as f:
                 metadata = json.load(f)
-                initial_goal = metadata.get("initial_goal", "")
+                goal = metadata.get("goal", metadata.get("initial_goal", ""))  # Support old format
+                name = metadata.get("name")
     
     project = Project(
         project_id=project_id,
@@ -398,7 +415,8 @@ async def resume_project(
         message_queue=message_queue,
         agents=agents,
         storage=storage,
-        initial_goal=initial_goal,
+        goal=goal,
+        name=name,
         x_agent=x_agent
     )
     

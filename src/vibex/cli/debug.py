@@ -133,7 +133,7 @@ class DebugSession:
 
             if self.xagent.plan:
                 state["plan"] = {
-                    "goal": self.xagent.plan.goal,
+                    "goal": self.xagent.goal,
                     "tasks": [
                         {
                             "id": task.id,
@@ -195,7 +195,7 @@ class DebugSession:
                 return
 
             plan = self.xagent.plan
-            print(f"📋 Execution Plan: {plan.goal}")
+            print(f"📋 Execution Plan for: {self.xagent.goal}")
             print("Tasks:")
 
             for i, task in enumerate(plan.tasks, 1):

@@ -231,7 +231,7 @@ Examples:
                     continue
                 elif user_input == '/plan':
                     if x.plan:
-                        print(f"Goal: {x.plan.goal}")
+                        print(f"Goal: {x.goal}")
                         print(f"Tasks: {len(x.plan.tasks)}")
                         for i, task in enumerate(x.plan.tasks, 1):
                             status_icon = "✓" if task.status == "completed" else "○"

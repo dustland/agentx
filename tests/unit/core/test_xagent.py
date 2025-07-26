@@ -109,7 +109,7 @@ class TestXAgent:
                 assert x.conversation_history[0].content == "Hello, create a test report"
                 # Verify plan was set
                 assert x.plan is not None
-                assert x.plan.goal == "Test goal"
+                assert x.project and x.project.goal == "Test goal"
 
     @patch('vibex.storage.factory.StorageFactory')
     @patch('vibex.core.xagent.setup_task_file_logging')
