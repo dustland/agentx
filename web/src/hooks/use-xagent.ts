@@ -33,6 +33,9 @@ export function useXAgent(xagentId: string) {
   const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>(
     []
   );
+  const [streamingMessages, setStreamingMessages] = useState<Map<string, ChatMessage>>(
+    new Map()
+  );
 
   // Queries
   const xagentQuery = useQuery({
@@ -85,13 +88,18 @@ export function useXAgent(xagentId: string) {
 
     // Add real messages first
     messages.forEach((msg) => {
-      messageMap.set(msg.content, msg);
+      messageMap.set(msg.id, msg);
+    });
+
+    // Add streaming messages (override real ones if same ID)
+    Array.from(streamingMessages.values()).forEach((msg) => {
+      messageMap.set(msg.id, msg);
     });
 
     // Add optimistic messages if they don't already exist
     optimisticMessages.forEach((msg) => {
-      if (!messageMap.has(msg.content)) {
-        messageMap.set(msg.content, msg);
+      if (!messageMap.has(msg.id)) {
+        messageMap.set(msg.id, msg);
       }
     });
 
@@ -99,7 +107,7 @@ export function useXAgent(xagentId: string) {
     return Array.from(messageMap.values()).sort(
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
-  }, [messages, optimisticMessages]);
+  }, [messages, optimisticMessages, streamingMessages]);
 
   const artifactsQuery = useQuery({
     queryKey: xagentKeys.artifacts(xagentId),
@@ -116,21 +124,78 @@ export function useXAgent(xagentId: string) {
       (data) => {
         console.log("[useXAgent] Received SSE data:", data);
 
-        // Invalidate and refetch relevant queries based on event type
-        queryClient.invalidateQueries({
-          queryKey: xagentKeys.messages(xagentId),
-        });
-        queryClient.invalidateQueries({
-          queryKey: xagentKeys.artifacts(xagentId),
-        });
+        if (data.event === "message_chunk") {
+          // Handle streaming message chunks
+          const chunkData = data.data || data;
+          const messageId = `streaming-${chunkData.step_id || Date.now()}`;
+          
+          setStreamingMessages(prev => {
+            const updated = new Map(prev);
+            const existing = updated.get(messageId);
+            
+            if (existing) {
+              // Append to existing streaming message
+              updated.set(messageId, {
+                ...existing,
+                content: existing.content + (chunkData.text || ''),
+                status: chunkData.is_final ? "complete" : "streaming"
+              });
+            } else {
+              // Create new streaming message
+              updated.set(messageId, {
+                id: messageId,
+                role: "assistant",
+                content: chunkData.text || '',
+                timestamp: new Date(chunkData.timestamp || Date.now()),
+                status: chunkData.is_final ? "complete" : "streaming",
+                metadata: {
+                  agentName: chunkData.agent_name
+                }
+              });
+            }
+            
+            return updated;
+          });
 
-        if (data.event === "xagent_update") {
+          // If final chunk, invalidate messages to get the persisted version
+          if (chunkData.is_final) {
+            setTimeout(() => {
+              queryClient.invalidateQueries({
+                queryKey: xagentKeys.messages(xagentId),
+              });
+              // Clear streaming message once real message is loaded
+              setStreamingMessages(prev => {
+                const updated = new Map(prev);
+                updated.delete(messageId);
+                return updated;
+              });
+            }, 1000);
+          }
+          
+        } else if (data.event === "message") {
+          // Handle complete message events
+          const messageData = data.data || data;
           queryClient.invalidateQueries({
-            queryKey: xagentKeys.detail(xagentId),
+            queryKey: xagentKeys.messages(xagentId),
+          });
+          
+        } else {
+          // Handle other events (xagent_update, etc.)
+          queryClient.invalidateQueries({
+            queryKey: xagentKeys.messages(xagentId),
           });
           queryClient.invalidateQueries({
             queryKey: xagentKeys.artifacts(xagentId),
           });
+
+          if (data.event === "xagent_update") {
+            queryClient.invalidateQueries({
+              queryKey: xagentKeys.detail(xagentId),
+            });
+            queryClient.invalidateQueries({
+              queryKey: xagentKeys.artifacts(xagentId),
+            });
+          }
         }
       },
       (error) => {
