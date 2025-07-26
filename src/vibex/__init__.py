@@ -20,7 +20,7 @@ from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 from vibex.core.agent import Agent
 from .core.xagent import XAgent
 
-__version__ = "0.28.2"
+__version__ = "0.28.3"
 
 __all__ = [
     # Main API - primary entry points (v2.0)
