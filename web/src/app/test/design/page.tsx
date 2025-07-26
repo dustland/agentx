@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Sidebar, SidebarItem } from "@/components/layout/sidebar";
 import {
   ChevronRight,
   Settings,
@@ -61,6 +62,53 @@ import {
 export default function DesignPage() {
   const [progress, setProgress] = useState(33);
   const [sliderValue, setSliderValue] = useState([50]);
+
+  // Mock sidebar items for testing
+  const mockSidebarItems: SidebarItem[] = [
+    {
+      id: "1",
+      title: "Research Task",
+      subtitle: "Data analysis project",
+      status: "running",
+      href: "#",
+      metadata: {
+        timeAgo: "2m ago",
+        configPath: "config/research.yaml",
+      },
+    },
+    {
+      id: "2",
+      title: "Content Generation",
+      subtitle: "Blog post writing",
+      status: "completed",
+      href: "#",
+      metadata: {
+        timeAgo: "1h ago",
+        configPath: "config/writer.yaml",
+      },
+    },
+    {
+      id: "3",
+      title: "Code Review",
+      subtitle: "PR analysis",
+      status: "error",
+      href: "#",
+      metadata: {
+        timeAgo: "30m ago",
+        configPath: "config/reviewer.yaml",
+      },
+    },
+    {
+      id: "4",
+      title: "Data Processing",
+      subtitle: "ETL pipeline",
+      status: "pending",
+      href: "#",
+      metadata: {
+        timeAgo: "5m ago",
+      },
+    },
+  ];
 
   return (
     <div className="container max-w-7xl py-8 mx-auto space-y-8">
@@ -539,6 +587,108 @@ export default function DesignPage() {
                     </p>
                   </CardContent>
                 </Card>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sidebar Testing */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sidebar Testing</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Sidebar with Items */}
+            <div className="space-y-2">
+              <h4 className="font-medium">With Items</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar
+                  title="XAgents"
+                  items={mockSidebarItems}
+                  isActiveItem={(item) => item.id === "1"}
+                />
+              </div>
+            </div>
+
+            {/* Loading Sidebar */}
+            <div className="space-y-2">
+              <h4 className="font-medium">Loading State</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar title="XAgents" isLoading={true} />
+              </div>
+            </div>
+
+            {/* Sidebar with Placeholder */}
+            <div className="space-y-2">
+              <h4 className="font-medium">Empty State</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar
+                  title="XAgents"
+                  items={[]}
+                  placeholder={
+                    <div className="text-center text-muted-foreground">
+                      <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+                        <Plus className="h-5 w-5" />
+                      </div>
+                      <p className="text-sm font-medium mb-1">
+                        No XAgents found
+                      </p>
+                      <p className="text-xs opacity-75">
+                        Create a new XAgent to get started
+                      </p>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Sidebar with Custom Children */}
+            <div className="space-y-2">
+              <h4 className="font-medium">Custom Content</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar title="Custom">
+                  <div className="p-4 space-y-3">
+                    <div className="bg-accent/20 rounded-lg p-3">
+                      <h5 className="font-medium text-sm">Custom Section 1</h5>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This is custom content in the sidebar
+                      </p>
+                    </div>
+                    <div className="bg-primary/10 rounded-lg p-3">
+                      <h5 className="font-medium text-sm">Custom Section 2</h5>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        You can put anything here
+                      </p>
+                    </div>
+                  </div>
+                </Sidebar>
+              </div>
+            </div>
+
+            {/* Sidebar without Title */}
+            <div className="space-y-2">
+              <h4 className="font-medium">No Title</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar
+                  items={mockSidebarItems.slice(0, 2)}
+                  isActiveItem={(item) => item.id === "2"}
+                />
+              </div>
+            </div>
+
+            {/* Minimal Sidebar */}
+            <div className="space-y-2">
+              <h4 className="font-medium">Minimal</h4>
+              <div className="h-80 border rounded-lg overflow-hidden">
+                <Sidebar
+                  items={[
+                    { id: "simple1", title: "Simple Item 1" },
+                    { id: "simple2", title: "Simple Item 2" },
+                    { id: "simple3", title: "Simple Item 3" },
+                  ]}
+                />
               </div>
             </div>
           </div>

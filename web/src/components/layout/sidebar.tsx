@@ -1,27 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Github,
-  Plus,
   Monitor,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
-  MoreHorizontal,
-  Trash2,
-  Archive,
-  Star,
   Pin,
   PinOff,
   Loader2,
   BookOpen,
-  AlertTriangle,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -30,7 +23,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -38,7 +30,6 @@ import { useUser } from "@/contexts/user-context";
 import { LogOut, Settings, HelpCircle, ExternalLink } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
 import { ThemeSwitcher } from "../theme-switcher";
-import { useXAgents } from "@/hooks/use-xagent";
 import { useAppStore } from "@/store/app";
 import { useObservability } from "@/hooks/use-observability";
 import { Icons } from "../icons";
@@ -61,8 +52,9 @@ interface SidebarProps {
   title?: string;
   items?: SidebarItem[];
   isActiveItem?: (item: SidebarItem) => boolean;
-  showFilters?: boolean;
   children?: React.ReactNode;
+  isLoading?: boolean;
+  placeholder?: React.ReactNode;
 }
 
 const getStatusIcon = (status: string) => {
@@ -111,44 +103,15 @@ export function Sidebar({
   title,
   items,
   isActiveItem,
-  showFilters = true,
   children,
+  isLoading = false,
+  placeholder,
 }: SidebarProps) {
-  const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useUser();
-  const {
-    xagents: xagentsResponse,
-    isLoading,
-    deleteXAgent: deleteXAgentMutation,
-  } = useXAgents();
   const { sidebarPinned, setSidebarPinned } = useAppStore();
   const { systemHealth } = useObservability();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isHovered, setIsHovered] = useState(false);
-
-  const xagents = xagentsResponse.map((xagent: any) => ({
-    id: xagent.agent_id,
-    status: xagent.status,
-    goal: xagent.goal,
-    config_path: xagent.config_path,
-    created_at: xagent.created_at,
-  }));
-
-  const currentAgentId = pathname.match(/\/agent\/([^\/]+)/)?.[1];
-
-  const filteredXAgents = xagents.filter((xagent: any) => {
-    if (statusFilter === "all") return true;
-    return xagent.status === statusFilter;
-  });
-
-  // Count XAgents by status
-  const statusCounts = {
-    all: xagents.length,
-    running: xagents.filter((x: any) => x.status === "running").length,
-    completed: xagents.filter((x: any) => x.status === "completed").length,
-    failed: xagents.filter((x: any) => x.status === "error").length,
-  };
 
   // Handle pin/unpin toggle
   const handlePinToggle = () => {
@@ -156,6 +119,138 @@ export function Sidebar({
   };
 
   const sidebarWidth = "w-72";
+
+  // Render main content based on props
+  const renderMainContent = () => {
+    if (isLoading) {
+      return (
+        <div className="h-full flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mb-2" />
+            <p className="text-xs text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (children) {
+      return <ScrollArea className="flex-1 min-h-0">{children}</ScrollArea>;
+    }
+
+    if (items && items.length > 0) {
+      return (
+        <ScrollArea className="flex-1 min-h-0">
+          <div className="p-2 space-y-1">
+            {items.map((item) => {
+              const isActive = isActiveItem ? isActiveItem(item) : false;
+
+              return (
+                <div
+                  key={item.id}
+                  className={cn(
+                    "group relative rounded-lg cursor-pointer transition-all duration-200",
+                    "border hover:shadow-sm",
+                    isActive
+                      ? "bg-accent border-accent-foreground/20 shadow-sm"
+                      : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                  )}
+                  onClick={
+                    item.onClick || (() => item.href && router.push(item.href))
+                  }
+                >
+                  {/* Status indicator bar */}
+                  {item.status && (
+                    <div
+                      className={cn(
+                        "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
+                        item.status === "running" && "bg-blue-500",
+                        item.status === "completed" && "bg-green-500",
+                        item.status === "error" && "bg-red-500",
+                        item.status === "pending" && "bg-yellow-500"
+                      )}
+                    />
+                  )}
+
+                  <div className="p-3 pl-4">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="flex-1 min-w-0">
+                        <h4
+                          className={cn(
+                            "font-medium text-sm leading-tight line-clamp-2",
+                            isActive
+                              ? "text-accent-foreground"
+                              : "text-foreground"
+                          )}
+                        >
+                          {item.title}
+                        </h4>
+                        {item.subtitle && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {item.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Metadata */}
+                    {(item.status || item.metadata) && (
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        {item.status && (
+                          <div className="flex items-center gap-1">
+                            {getStatusIcon(item.status)}
+                            <span className="capitalize">{item.status}</span>
+                          </div>
+                        )}
+
+                        {item.metadata?.timeAgo && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span>{item.metadata.timeAgo}</span>
+                          </>
+                        )}
+
+                        {item.metadata?.configPath && (
+                          <>
+                            <span className="opacity-40">•</span>
+                            <span
+                              className="truncate max-w-[80px]"
+                              title={item.metadata.configPath}
+                            >
+                              {item.metadata.configPath
+                                .split("/")
+                                .pop()
+                                ?.replace(/\.(yaml|yml)$/, "")}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      );
+    }
+
+    // Empty state
+    return (
+      <div className="h-full flex items-center justify-center">
+        {placeholder ? (
+          placeholder
+        ) : (
+          <div className="text-center text-muted-foreground">
+            <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <p className="text-sm font-medium mb-1">No items found</p>
+            <p className="text-xs opacity-75">No items to display</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -226,291 +321,8 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Status Filters */}
-        {showFilters && (
-          <div className="px-2 pb-2">
-            <ToggleGroup
-              type="single"
-              value={statusFilter}
-              onValueChange={setStatusFilter}
-              className="w-full border rounded-md bg-muted/20"
-            >
-              <ToggleGroupItem
-                value="all"
-                className="flex-1 h-7 text-xs px-1.5 font-medium"
-              >
-                All ({statusCounts.all})
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="running"
-                className="flex-1 h-7 text-xs px-1"
-              >
-                <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
-                {statusCounts.running}
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="completed"
-                className="flex-1 h-7 text-xs px-1"
-              >
-                <CheckCircle className="h-2.5 w-2.5 mr-0.5" />
-                {statusCounts.completed}
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="error"
-                className="flex-1 h-7 text-xs px-1"
-              >
-                <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
-                {statusCounts.failed}
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-        )}
-
         {/* Main Content */}
-        <ScrollArea className="flex-1 min-h-0">
-          {children ? (
-            children
-          ) : items ? (
-            <div className="p-2 space-y-1">
-              {items.map((item) => {
-                const isActive = isActiveItem ? isActiveItem(item) : false;
-
-                return (
-                  <div
-                    key={item.id}
-                    className={cn(
-                      "group relative rounded-lg cursor-pointer transition-all duration-200",
-                      "border hover:shadow-sm",
-                      isActive
-                        ? "bg-accent border-accent-foreground/20 shadow-sm"
-                        : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                    )}
-                    onClick={
-                      item.onClick ||
-                      (() => item.href && router.push(item.href))
-                    }
-                  >
-                    {/* Status indicator bar */}
-                    {item.status && (
-                      <div
-                        className={cn(
-                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                          item.status === "running" && "bg-blue-500",
-                          item.status === "completed" && "bg-green-500",
-                          item.status === "error" && "bg-red-500",
-                          item.status === "pending" && "bg-yellow-500"
-                        )}
-                      />
-                    )}
-
-                    <div className="p-3 pl-4">
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="flex-1 min-w-0">
-                          <h4
-                            className={cn(
-                              "font-medium text-sm leading-tight line-clamp-2",
-                              isActive
-                                ? "text-accent-foreground"
-                                : "text-foreground"
-                            )}
-                          >
-                            {item.title}
-                          </h4>
-                          {item.subtitle && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {item.subtitle}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Metadata */}
-                      {(item.status || item.metadata) && (
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {item.status && (
-                            <div className="flex items-center gap-1">
-                              {getStatusIcon(item.status)}
-                              <span className="capitalize">{item.status}</span>
-                            </div>
-                          )}
-
-                          {item.metadata?.timeAgo && (
-                            <>
-                              <span className="opacity-40">•</span>
-                              <span>{item.metadata.timeAgo}</span>
-                            </>
-                          )}
-
-                          {item.metadata?.configPath && (
-                            <>
-                              <span className="opacity-40">•</span>
-                              <span
-                                className="truncate max-w-[80px]"
-                                title={item.metadata.configPath}
-                              >
-                                {item.metadata.configPath
-                                  .split("/")
-                                  .pop()
-                                  ?.replace(/\.(yaml|yml)$/, "")}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-2 space-y-1">
-              {isLoading ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mb-2" />
-                  <p className="text-xs text-muted-foreground">
-                    Loading XAgents...
-                  </p>
-                </div>
-              ) : filteredXAgents.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
-                    <AlertCircle className="h-5 w-5" />
-                  </div>
-                  <p className="text-sm font-medium mb-1">No XAgents found</p>
-                  <p className="text-xs opacity-75">
-                    Create a new XAgent to get started
-                  </p>
-                </div>
-              ) : (
-                filteredXAgents.map((xagent: any, index: number) => {
-                  const isActive = currentAgentId === xagent.id;
-                  const createdAt = xagent.created_at
-                    ? new Date(xagent.created_at)
-                    : null;
-                  const timeAgo = createdAt ? getTimeAgo(createdAt) : null;
-
-                  return (
-                    <div
-                      key={xagent.id}
-                      className={cn(
-                        "group relative rounded-lg cursor-pointer transition-all duration-200",
-                        "border hover:shadow-sm",
-                        isActive
-                          ? "bg-accent border-accent-foreground/20 shadow-sm"
-                          : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
-                      )}
-                      onClick={() => router.push(`/agent/${xagent.id}`)}
-                    >
-                      {/* Status indicator bar */}
-                      <div
-                        className={cn(
-                          "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                          xagent.status === "running" && "bg-blue-500",
-                          xagent.status === "completed" && "bg-green-500",
-                          xagent.status === "error" && "bg-red-500",
-                          xagent.status === "pending" && "bg-yellow-500"
-                        )}
-                      />
-
-                      <div className="p-3 pl-4">
-                        {/* Header with title and actions */}
-                        <div className="flex items-start justify-between gap-2 mb-1.5">
-                          <div className="flex-1 min-w-0">
-                            <h4
-                              className={cn(
-                                "font-medium text-sm leading-tight line-clamp-2",
-                                isActive
-                                  ? "text-accent-foreground"
-                                  : "text-foreground"
-                              )}
-                            >
-                              {xagent.goal || "Untitled XAgent"}
-                            </h4>
-                          </div>
-
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={cn(
-                                  "h-6 w-6 p-0 flex-shrink-0 transition-opacity",
-                                  "opacity-0 group-hover:opacity-100 focus:opacity-100",
-                                  isActive && "opacity-60 hover:opacity-100"
-                                )}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <MoreHorizontal className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40">
-                              <DropdownMenuItem>
-                                <Star className="h-3 w-3 mr-2" />
-                                Favorite
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <Archive className="h-3 w-3 mr-2" />
-                                Archive
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteXAgentMutation.mutate(xagent.id, {
-                                    onSuccess: () => {
-                                      // If we deleted the current XAgent, redirect to homepage
-                                      if (currentAgentId === xagent.id) {
-                                        router.push("/");
-                                      }
-                                    },
-                                  });
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-
-                        {/* Metadata */}
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(xagent.status)}
-                            <span className="capitalize">{xagent.status}</span>
-                          </div>
-
-                          {timeAgo && (
-                            <>
-                              <span className="opacity-40">•</span>
-                              <span>{timeAgo}</span>
-                            </>
-                          )}
-
-                          {xagent.config_path && (
-                            <>
-                              <span className="opacity-40">•</span>
-                              <span
-                                className="truncate max-w-[80px]"
-                                title={xagent.config_path}
-                              >
-                                {xagent.config_path
-                                  .split("/")
-                                  .pop()
-                                  ?.replace(/\.(yaml|yml)$/, "")}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </ScrollArea>
+        {renderMainContent()}
 
         {/* Footer */}
         <div className="p-3">
@@ -605,6 +417,16 @@ export function Sidebar({
               )}
             </div>
             <div className="flex items-center gap-1">
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  title="Home"
+                >
+                  <Home className="h-3 w-3" />
+                </Button>
+              </Link>
               <Link href="/observability">
                 <Button
                   variant="ghost"
