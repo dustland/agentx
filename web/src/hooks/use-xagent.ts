@@ -124,10 +124,10 @@ export function useXAgent(xagentId: string) {
       (data) => {
         console.log("[useXAgent] Received SSE data:", data);
 
-        if (data.event === "message_chunk") {
+        if (data.event === "stream_chunk") {
           // Handle streaming message chunks
           const chunkData = data.data || data;
-          const messageId = `streaming-${chunkData.step_id || Date.now()}`;
+          const messageId = `streaming-${chunkData.message_id || Date.now()}`;
 
           setStreamingMessages((prev) => {
             const updated = new Map(prev);
@@ -137,7 +137,7 @@ export function useXAgent(xagentId: string) {
               // Append to existing streaming message
               updated.set(messageId, {
                 ...existing,
-                content: existing.content + (chunkData.text || ""),
+                content: existing.content + (chunkData.chunk || ""),
                 status: chunkData.is_final ? "complete" : "streaming",
               });
             } else {
@@ -145,12 +145,12 @@ export function useXAgent(xagentId: string) {
               updated.set(messageId, {
                 id: messageId,
                 role: "assistant",
-                content: chunkData.text || "",
+                content: chunkData.chunk || "",
                 timestamp: new Date(chunkData.timestamp || Date.now()),
                 status: chunkData.is_final ? "complete" : "streaming",
                 metadata: {
-                  agentName: chunkData.agent_name,
-                },
+                  messageId: chunkData.message_id,
+                } as any,
               });
             }
 
