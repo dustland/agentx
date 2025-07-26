@@ -1,6 +1,6 @@
 # Memory System
 
-_Module: [`vibex.core.memory`](https://github.com/dustland/vibex/blob/main/src/vibex/core/memory.py)_
+*Module: [`vibex.core.memory`](https://github.com/dustland/vibex/blob/main/src/vibex/core/memory.py)*
 
 Memory component for context and knowledge management.
 
@@ -34,12 +34,11 @@ Memory component for individual agents.
 Provides a simple interface backed by intelligent memory backends
 for semantic search and advanced memory operations.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/memory.py#L68" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/memory.py#L68" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, agent: 'Agent', config = None)
 ```
-
 ### save_async <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/memory.py#L81" class="source-link" title="View source code">source</a>
 
 ```python

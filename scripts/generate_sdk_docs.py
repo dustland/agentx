@@ -389,7 +389,7 @@ def generate_markdown(module_data: Dict[str, Any]) -> str:
 def main():
     """Generate API documentation for all VibeX modules."""
     src_path = Path(__file__).parent.parent / "src" / "vibex"
-    docs_path = Path(__file__).parent.parent / "docs" / "content" / "api"
+    docs_path = Path(__file__).parent.parent / "docs" / "content" / "sdk"
 
     # Clean existing docs
     if docs_path.exists():

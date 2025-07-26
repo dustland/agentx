@@ -1,6 +1,6 @@
 # Storage Interfaces
 
-_Module: [`vibex.search.interfaces`](https://github.com/dustland/vibex/blob/main/src/vibex/search/interfaces.py)_
+*Module: [`vibex.search.interfaces`](https://github.com/dustland/vibex/blob/main/src/vibex/search/interfaces.py)*
 
 Search interfaces and base classes.
 

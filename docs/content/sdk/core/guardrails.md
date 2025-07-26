@@ -1,6 +1,6 @@
 # Guardrails
 
-_Module: [`vibex.core.guardrails`](https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py)_
+*Module: [`vibex.core.guardrails`](https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py)*
 
 Guardrails Engine - Comprehensive Safety and Compliance System
 
@@ -19,12 +19,11 @@ Rate limiting state tracking.
 
 Abstract base class for guardrail rules.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L47" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L47" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, severity: str = 'medium', action: str = 'warn')
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L53" class="source-link" title="View source code">source</a>
 
 ```python
@@ -37,12 +36,11 @@ Check content against this rule.
 
 Input validation rule for sanitizing user inputs.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L61" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L61" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, patterns: List[str])
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L65" class="source-link" title="View source code">source</a>
 
 ```python
@@ -55,12 +53,11 @@ Check input against validation patterns.
 
 Content filtering rule for blocking inappropriate content.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L91" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L91" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, keywords: List[str])
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L95" class="source-link" title="View source code">source</a>
 
 ```python
@@ -73,12 +70,11 @@ Check content for inappropriate keywords.
 
 Rate limiting rule for preventing abuse.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L122" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L122" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, max_requests: int, window_seconds: int)
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L128" class="source-link" title="View source code">source</a>
 
 ```python
@@ -91,12 +87,11 @@ Check rate limits for the agent.
 
 Content safety rule using pattern matching and heuristics.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L171" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L171" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, safety_patterns: List[str])
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L175" class="source-link" title="View source code">source</a>
 
 ```python
@@ -109,12 +104,11 @@ Check content for safety violations.
 
 Compliance rule for organizational and regulatory requirements.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L201" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L201" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str, compliance_checks: List[Dict[str, Any]])
 ```
-
 ### check <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L205" class="source-link" title="View source code">source</a>
 
 ```python
@@ -130,12 +124,11 @@ Comprehensive guardrails engine for safety and compliance.
 Implements multi-layered safety mechanisms including input validation,
 output filtering, rate limiting, content safety, and policy compliance.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L252" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L252" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-
 ### add_policy <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L286" class="source-link" title="View source code">source</a>
 
 ```python
@@ -153,12 +146,12 @@ async def check_content(self, content: str, context: GuardrailContext, policy_na
 Check content against guardrail policies.
 
 **Args:**
-content: Content to check
-context: Context information
-policy_names: Specific policies to check (None for all applicable)
+    content: Content to check
+    context: Context information
+    policy_names: Specific policies to check (None for all applicable)
 
 **Returns:**
-GuardrailPart with check results
+    GuardrailPart with check results
 
 ### should_block_content <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L452" class="source-link" title="View source code">source</a>
 
@@ -197,17 +190,17 @@ Get the global guardrail engine instance.
 ## check_content_safety <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/guardrails.py#L484" class="source-link" title="View source code">source</a>
 
 ```python
-async def check_content_safety(content: str, agent_name: str, policy_names: Optional[List[str]] = None, task_id: Optional[str] = None, step_id: Optional[str] = None) -> GuardrailPart
+async def check_content_safety(content: str, agent_name: str, policy_names: Optional[List[str]] = None, project_id: Optional[str] = None, step_id: Optional[str] = None) -> GuardrailPart
 ```
 
 Convenience function to check content safety.
 
 **Args:**
-content: Content to check
-agent_name: Name of the agent
-policy_names: Specific policies to check
-task_id: Optional task ID
-step_id: Optional step ID
+    content: Content to check
+    agent_name: Name of the agent
+    policy_names: Specific policies to check
+    project_id: Optional task ID
+    step_id: Optional step ID
 
 **Returns:**
-GuardrailPart with check results
+    GuardrailPart with check results

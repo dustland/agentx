@@ -1,17 +1,15 @@
 # Web Scraping
 
-_Module: [`vibex.builtin_tools.web`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/web.py)_
+*Module: [`vibex.builtin_tools.web`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/web.py)*
 
 Web Tools - Advanced URL content extraction using crawl4ai 0.7.0.
 
 Supports multiple extraction strategies:
-
 - Markdown: Clean markdown extraction (default)
 - Structured: Schema-based structured data extraction
 - CSS: Targeted extraction using CSS selectors
 
 Features:
-
 - Virtual scroll for infinite scroll pages
 - Custom JavaScript execution
 - Flexible extraction strategies
@@ -26,17 +24,15 @@ Content extracted from a web page.
 Advanced web content extraction tool using crawl4ai 0.7.0.
 
 Provides intelligent content extraction with multiple strategies:
-
 - CSS selector-based targeted extraction
 - Virtual scroll for dynamic content
 - Custom JavaScript execution
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/web.py#L69" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/web.py#L69" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, taskspace_storage: Optional[Any] = None) -> None
+def __init__(self, project_storage: Optional[Any] = None) -> None
 ```
-
 ### extract_urls <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/web.py#L77" class="source-link" title="View source code">source</a>
 
 ```python

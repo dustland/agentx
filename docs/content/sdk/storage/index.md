@@ -1,6 +1,6 @@
 # Storage
 
-_Module: [`vibex.storage`](https://github.com/dustland/vibex/blob/main/src/vibex/storage.py)_
+*Module: [`vibex.storage`](https://github.com/dustland/vibex/blob/main/src/vibex/storage.py)*
 
 VibeX Storage - Clean persistence abstractions for the framework.
 

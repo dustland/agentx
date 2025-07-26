@@ -1,6 +1,6 @@
 # Tool Commands
 
-_Module: [`vibex.cli.tools`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/tools.py)_
+*Module: [`vibex.cli.tools`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/tools.py)*
 
 CLI commands for tool management and discovery.
 

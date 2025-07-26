@@ -1,6 +1,6 @@
 # Event Middleware
 
-_Module: [`vibex.event.middleware`](https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py)_
+*Module: [`vibex.event.middleware`](https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py)*
 
 Event middleware for the VibeX event system.
 
@@ -46,12 +46,11 @@ Called when an error occurs during event processing.
 
 Middleware for logging events.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L45" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L45" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, log_level: int = logging.INFO)
 ```
-
 ### before_publish <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L49" class="source-link" title="View source code">source</a>
 
 ```python
@@ -88,12 +87,11 @@ Log event processing error.
 
 Middleware for collecting event metrics.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L81" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L81" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-
 ### before_publish <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L92" class="source-link" title="View source code">source</a>
 
 ```python
@@ -146,12 +144,11 @@ Reset all metrics.
 
 Middleware for filtering events based on custom criteria.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L169" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L169" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, filter_func: callable)
 ```
-
 ### before_publish <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L172" class="source-link" title="View source code">source</a>
 
 ```python
@@ -188,12 +185,11 @@ No action needed on error.
 
 Middleware for handling event correlation and tracing.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L194" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L194" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-
 ### before_publish <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/middleware.py#L197" class="source-link" title="View source code">source</a>
 
 ```python

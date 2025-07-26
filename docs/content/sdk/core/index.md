@@ -1,3 +1,3 @@
 # Core
 
-_Module: [`vibex.core`](https://github.com/dustland/vibex/blob/main/src/vibex/core.py)_
+*Module: [`vibex.core`](https://github.com/dustland/vibex/blob/main/src/vibex/core.py)*

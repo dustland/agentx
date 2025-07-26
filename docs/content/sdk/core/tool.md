@@ -1,6 +1,6 @@
 # Tool System
 
-_Module: [`vibex.core.tool`](https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py)_
+*Module: [`vibex.core.tool`](https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py)*
 
 Tool component for function calling and code execution.
 
@@ -20,12 +20,11 @@ Canonical tool execution result model.
 
 This is the single source of truth for tool execution results across the framework.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L75" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L75" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-
 ### to_dict <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L81" class="source-link" title="View source code">source</a>
 
 ```python
@@ -74,12 +73,11 @@ Statistics for tool execution.
 
 Base class for tools that provide multiple callable methods for LLMs.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L274" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L274" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str = '')
 ```
-
 ### get_callable_methods <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/tool.py#L277" class="source-link" title="View source code">source</a>
 
 ```python
@@ -125,5 +123,5 @@ def tool(description: str = '', return_description: str = '')
 Decorator to mark methods as available tool calls.
 
 **Args:**
-description: Clear description of what this tool does
-return_description: Description of what the tool returns
+    description: Clear description of what this tool does
+    return_description: Description of what the tool returns

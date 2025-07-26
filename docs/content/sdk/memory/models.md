@@ -1,6 +1,6 @@
 # Tool Models
 
-_Module: [`vibex.memory.models`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/models.py)_
+*Module: [`vibex.memory.models`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/models.py)*
 
 Memory subsystem models - Self-contained data models for memory management.
 
@@ -11,12 +11,11 @@ architectural rule that subsystems should be self-contained and not import from 
 
 Types of memory content.
 
-### **str** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/models.py#L41" class="source-link" title="View source code">source</a>
+### __str__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/models.py#L41" class="source-link" title="View source code">source</a>
 
 ```python
 def __str__(self)
 ```
-
 ## MemoryBackendType <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/models.py#L45" class="source-link" title="View source code">source</a>
 
 Types of memory backends.

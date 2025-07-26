@@ -140,10 +140,17 @@ class XAgent(Agent):
             # This is for resuming existing projects
             from ..storage.project import ProjectStorage
             from ..storage.backends import LocalFileStorage
-            storage = LocalFileStorage(workspace_dir)
+            
+            # For resuming projects, the workspace_dir IS the project directory
+            # Don't double-add the project_id to the path
+            workspace_path = Path(workspace_dir)
+            storage = LocalFileStorage(workspace_path)
             cache_backend = ProjectStorageFactory.get_cache_provider(cache_provider)
+            
+            # Create ProjectStorage with correct base_path calculation
+            # Since workspace_dir is already the full project path, use parent as base
             self.project_storage = ProjectStorage(
-                base_path=workspace_dir.parent if isinstance(workspace_dir, Path) else Path(workspace_dir).parent,
+                base_path=workspace_path.parent,
                 project_id=self.project_id,
                 file_storage=storage,
                 use_git_artifacts=True,

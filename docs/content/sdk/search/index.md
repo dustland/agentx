@@ -1,6 +1,6 @@
 # Web Search
 
-_Module: [`vibex.search`](https://github.com/dustland/vibex/blob/main/src/vibex/search.py)_
+*Module: [`vibex.search`](https://github.com/dustland/vibex/blob/main/src/vibex/search.py)*
 
 VibeX Search Module
 

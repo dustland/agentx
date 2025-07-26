@@ -1,6 +1,6 @@
 # Project Templates
 
-_Module: [`vibex.cli.templates`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/templates.py)_
+*Module: [`vibex.cli.templates`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/templates.py)*
 
 Bootstrap Template Generation
 

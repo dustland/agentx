@@ -1,6 +1,6 @@
 # Search Manager
 
-_Module: [`vibex.search.search_manager`](https://github.com/dustland/vibex/blob/main/src/vibex/search/search_manager.py)_
+*Module: [`vibex.search.search_manager`](https://github.com/dustland/vibex/blob/main/src/vibex/search/search_manager.py)*
 
 Search manager that coordinates different search backends.
 
@@ -8,7 +8,7 @@ Search manager that coordinates different search backends.
 
 Manages multiple search backends and provides unified search interface.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/search/search_manager.py#L15" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/search/search_manager.py#L15" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, default_backend: str = 'serpapi')
@@ -17,8 +17,8 @@ def __init__(self, default_backend: str = 'serpapi')
 Initialize search manager.
 
 **Args:**
-default_backend: Default backend to use for searches
-\*\*backend_configs: Configuration for different backends
+    default_backend: Default backend to use for searches
+    **backend_configs: Configuration for different backends
 
 ### add_backend <a href="https://github.com/dustland/vibex/blob/main/src/vibex/search/search_manager.py#L40" class="source-link" title="View source code">source</a>
 
@@ -53,9 +53,9 @@ async def search(self, query: str, backend: Optional[str] = None) -> SearchRespo
 Execute a search using the specified or default backend.
 
 **Args:**
-query: Search query
-backend: Backend to use (defaults to default_backend)
-\*\*kwargs: Additional search parameters
+    query: Search query
+    backend: Backend to use (defaults to default_backend)
+    **kwargs: Additional search parameters
 
 **Returns:**
-SearchResponse with results
+    SearchResponse with results

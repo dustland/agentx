@@ -1,6 +1,6 @@
 # Project Bootstrap
 
-_Module: [`vibex.cli.bootstrap`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/bootstrap.py)_
+*Module: [`vibex.cli.bootstrap`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/bootstrap.py)*
 
 Bootstrap Project Creation
 

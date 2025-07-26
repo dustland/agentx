@@ -1,6 +1,6 @@
 # Agent
 
-_Module: [`vibex.core.agent`](https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py)_
+*Module: [`vibex.core.agent`](https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py)*
 
 ## AgentState <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L13" class="source-link" title="View source code">source</a>
 
@@ -11,19 +11,17 @@ Current state of an agent during execution.
 Represents an autonomous agent that manages its own conversation flow.
 
 Key Principles:
-
 - Each agent is autonomous and manages its own conversation flow
 - Agents communicate with other agents through public interfaces only
 - The brain is private to the agent - no external access
 - Tool execution is handled through the injected tool manager
 
 This combines:
-
 - AgentConfig (configuration data)
 - Brain (private LLM interaction)
 - Conversation management with integrated tool execution
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L42" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L42" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, config: AgentConfig, tool_manager = None)
@@ -32,8 +30,8 @@ def __init__(self, config: AgentConfig, tool_manager = None)
 Initialize agent with configuration and optional tool manager.
 
 **Args:**
-config: Agent configuration
-tool_manager: Optional tool manager (injected by TaskExecutor)
+    config: Agent configuration
+    tool_manager: Optional tool manager (injected by TaskExecutor)
 
 ### get_max_context_tokens <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L165" class="source-link" title="View source code">source</a>
 
@@ -62,12 +60,12 @@ Generate response with tool execution.
 This is a simpler, non-streaming version that returns the final response.
 
 **Args:**
-messages: Conversation messages in LLM format
-system_prompt: Optional system prompt override
-max_tool_rounds: Maximum tool execution rounds
+    messages: Conversation messages in LLM format
+    system_prompt: Optional system prompt override
+    max_tool_rounds: Maximum tool execution rounds
 
 **Returns:**
-Final response string
+    Final response string
 
 ### stream_response <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L241" class="source-link" title="View source code">source</a>
 
@@ -80,12 +78,12 @@ Stream response with tool execution.
 This matches Brain's interface but includes tool execution loop.
 
 **Args:**
-messages: Conversation messages in LLM format
-system_prompt: Optional system prompt override
-max_tool_rounds: Maximum tool execution rounds
+    messages: Conversation messages in LLM format
+    system_prompt: Optional system prompt override
+    max_tool_rounds: Maximum tool execution rounds
 
 Yields:
-Response chunks and tool execution status updates
+    Response chunks and tool execution status updates
 
 ### build_system_prompt <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L555" class="source-link" title="View source code">source</a>
 
@@ -135,18 +133,16 @@ def update_config(self)
 
 Update agent configuration.
 
-### **str** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L676" class="source-link" title="View source code">source</a>
+### __str__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L676" class="source-link" title="View source code">source</a>
 
 ```python
 def __str__(self) -> str
 ```
-
-### **repr** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L679" class="source-link" title="View source code">source</a>
+### __repr__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L679" class="source-link" title="View source code">source</a>
 
 ```python
 def __repr__(self) -> str
 ```
-
 ## Functions
 
 ## create_assistant_agent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/agent.py#L683" class="source-link" title="View source code">source</a>

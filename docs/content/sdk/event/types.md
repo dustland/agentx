@@ -1,6 +1,6 @@
 # Memory Types
 
-_Module: [`vibex.event.types`](https://github.com/dustland/vibex/blob/main/src/vibex/event/types.py)_
+*Module: [`vibex.event.types`](https://github.com/dustland/vibex/blob/main/src/vibex/event/types.py)*
 
 Event system type definitions.
 

@@ -1,6 +1,6 @@
 # Status Commands
 
-_Module: [`vibex.cli.status`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/status.py)_
+*Module: [`vibex.cli.status`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/status.py)*
 
 CLI Status Commands
 

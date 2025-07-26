@@ -1,6 +1,6 @@
 # Handoff Evaluator
 
-_Module: [`vibex.core.handoff_evaluator`](https://github.com/dustland/vibex/blob/main/src/vibex/core/handoff_evaluator.py)_
+*Module: [`vibex.core.handoff_evaluator`](https://github.com/dustland/vibex/blob/main/src/vibex/core/handoff_evaluator.py)*
 
 Handoff evaluation system for XAgent orchestration.
 
@@ -16,12 +16,11 @@ Context for evaluating handoff conditions.
 
 Evaluates handoff conditions and determines next agent.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/handoff_evaluator.py#L31" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/handoff_evaluator.py#L31" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, handoffs: List[Handoff], agents: Dict[str, Agent])
 ```
-
 ### evaluate_handoffs <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/handoff_evaluator.py#L48" class="source-link" title="View source code">source</a>
 
 ```python

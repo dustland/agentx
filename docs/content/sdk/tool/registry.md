@@ -1,6 +1,6 @@
 # Tool Registry
 
-_Module: [`vibex.tool.registry`](https://github.com/dustland/vibex/blob/main/src/vibex/tool/registry.py)_
+*Module: [`vibex.tool.registry`](https://github.com/dustland/vibex/blob/main/src/vibex/tool/registry.py)*
 
 Tool Registry - The single source of truth for tool definitions.
 
@@ -8,12 +8,11 @@ Tool Registry - The single source of truth for tool definitions.
 
 A thread-safe registry for managing tools and their configurations.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/tool/registry.py#L21" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/tool/registry.py#L21" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self)
 ```
-
 ### register_tool <a href="https://github.com/dustland/vibex/blob/main/src/vibex/tool/registry.py#L30" class="source-link" title="View source code">source</a>
 
 ```python

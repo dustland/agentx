@@ -1,6 +1,6 @@
 # Configuration Models
 
-_Module: [`vibex.core.config`](https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py)_
+*Module: [`vibex.core.config`](https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py)*
 
 ## ExecutionMode <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py#L6" class="source-link" title="View source code">source</a>
 
@@ -31,7 +31,6 @@ Brain configuration with DeepSeek as default provider.
 ```python
 def set_default_base_url(self)
 ```
-
 ## ToolConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py#L59" class="source-link" title="View source code">source</a>
 
 Tool configuration supporting multiple tool types.
@@ -68,9 +67,9 @@ def get_default_brain_config(self) -> BrainConfig
 
 Get default Brain config for orchestrator if none specified.
 
-## TaskConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py#L156" class="source-link" title="View source code">source</a>
+## ProjectConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py#L156" class="source-link" title="View source code">source</a>
 
-Task-specific configuration for execution control.
+Project-specific configuration for execution control.
 
 ## TeamConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/config.py#L178" class="source-link" title="View source code">source</a>
 

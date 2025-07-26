@@ -1,6 +1,6 @@
 # CLI Interface
 
-_Module: [`vibex.cli.main`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/main.py)_
+*Module: [`vibex.cli.main`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/main.py)*
 
 Universal VibeX CLI
 

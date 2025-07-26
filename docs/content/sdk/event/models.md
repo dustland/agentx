@@ -1,6 +1,6 @@
 # Tool Models
 
-_Module: [`vibex.event.models`](https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py)_
+*Module: [`vibex.event.models`](https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py)*
 
 Event subsystem models - Self-contained data models for event management.
 
@@ -31,21 +31,21 @@ def to_dict(self) -> Dict[str, Any]
 
 Convert to dictionary for serialization.
 
-## TaskEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L134" class="source-link" title="View source code">source</a>
+## ProjectEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L134" class="source-link" title="View source code">source</a>
 
-Task-related events.
+Project-related events.
 
-## TaskStartEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L146" class="source-link" title="View source code">source</a>
+## ProjectStartEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L146" class="source-link" title="View source code">source</a>
 
-Event emitted when a task starts.
+Event emitted when a project starts.
 
-## TaskCompleteEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L153" class="source-link" title="View source code">source</a>
+## ProjectCompleteEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L153" class="source-link" title="View source code">source</a>
 
-Event emitted when a task completes.
+Event emitted when a project completes.
 
-## TaskFailEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L161" class="source-link" title="View source code">source</a>
+## ProjectFailEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L161" class="source-link" title="View source code">source</a>
 
-Event emitted when a task fails.
+Event emitted when a project fails.
 
 ## AgentEvent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L169" class="source-link" title="View source code">source</a>
 
@@ -164,23 +164,23 @@ Generate a short, URL-friendly, cryptographically secure random ID.
 ## create_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L421" class="source-link" title="View source code">source</a>
 
 ```python
-def create_event(event_type: EventType, source: str, data: Dict[str, Any] = None, task_id: str = None, agent_name: str = None, tool_name: str = None, priority: EventPriority = EventPriority.NORMAL) -> Event
+def create_event(event_type: EventType, source: str, data: Dict[str, Any] = None, project_id: str = None, agent_name: str = None, tool_name: str = None, priority: EventPriority = EventPriority.NORMAL) -> Event
 ```
 
 Create a new event with the specified parameters.
 
-## create_task_start_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L436" class="source-link" title="View source code">source</a>
+## create_project_start_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L436" class="source-link" title="View source code">source</a>
 
 ```python
-def create_task_start_event(task_id: str, source: str, task_config: Dict[str, Any] = None, initial_prompt: str = None) -> TaskStartEvent
+def create_project_start_event(project_id: str, source: str, task_config: Dict[str, Any] = None, initial_prompt: str = None) -> ProjectStartEvent
 ```
 
-Create a task start event.
+Create a project start event.
 
 ## create_tool_call_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L447" class="source-link" title="View source code">source</a>
 
 ```python
-def create_tool_call_event(tool_name: str, tool_call_id: str, source: str, args: Dict[str, Any] = None, task_id: str = None, agent_name: str = None) -> ToolCallStartEvent
+def create_tool_call_event(tool_name: str, tool_call_id: str, source: str, args: Dict[str, Any] = None, project_id: str = None, agent_name: str = None) -> ToolCallStartEvent
 ```
 
 Create a tool call start event.
@@ -188,7 +188,7 @@ Create a tool call start event.
 ## create_agent_handoff_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/models.py#L461" class="source-link" title="View source code">source</a>
 
 ```python
-def create_agent_handoff_event(from_agent: str, to_agent: str, source: str, task_id: str = None, handoff_reason: str = None) -> AgentHandoffEvent
+def create_agent_handoff_event(from_agent: str, to_agent: str, source: str, project_id: str = None, handoff_reason: str = None) -> AgentHandoffEvent
 ```
 
 Create an agent handoff event.

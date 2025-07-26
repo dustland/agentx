@@ -1,6 +1,6 @@
 # Storage Backends
 
-_Module: [`vibex.storage.backends`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/backends.py)_
+*Module: [`vibex.storage.backends`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/backends.py)*
 
 Storage backend implementations.
 
@@ -8,12 +8,11 @@ Storage backend implementations.
 
 Local filesystem storage backend with security constraints.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/backends.py#L22" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/backends.py#L22" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, base_path: Union[str, Path])
 ```
-
 ### exists <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/backends.py#L39" class="source-link" title="View source code">source</a>
 
 ```python

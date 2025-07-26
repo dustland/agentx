@@ -1,6 +1,6 @@
 # Event System
 
-_Module: [`vibex.core.event`](https://github.com/dustland/vibex/blob/main/src/vibex/core/event.py)_
+*Module: [`vibex.core.event`](https://github.com/dustland/vibex/blob/main/src/vibex/core/event.py)*
 
 ## StreamChunk <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/event.py#L15" class="source-link" title="View source code">source</a>
 

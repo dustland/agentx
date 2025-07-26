@@ -1,6 +1,6 @@
 # Event Bus
 
-_Module: [`vibex.event.bus`](https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py)_
+*Module: [`vibex.event.bus`](https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py)*
 
 Event Bus implementation for VibeX framework.
 
@@ -12,7 +12,6 @@ middleware support, and comprehensive observability features.
 Centralized event bus for publish/subscribe messaging.
 
 Features:
-
 - Async/sync event publishing
 - Priority-based event processing
 - Event filtering and routing
@@ -20,12 +19,11 @@ Features:
 - Comprehensive statistics
 - Error handling and retries
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L40" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L40" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str = 'default')
 ```
-
 ### start <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L52" class="source-link" title="View source code">source</a>
 
 ```python
@@ -59,14 +57,18 @@ def subscribe(self, event_types: Union[str, List[str]], handler: EventHandler, f
 Subscribe to events.
 
 **Args:**
-event*types: Event type(s) to subscribe to. Supports wildcards: - "*" matches any characters - "?" matches single character - "Agent\_" matches "AgentStartEvent", "AgentCompleteEvent", etc. - "\*Event" matches all events ending with "Event"
-handler: Event handler function
-filter_func: Optional filter function
-priority: Subscription priority
-subscription_id: Optional custom subscription ID
+    event_types: Event type(s) to subscribe to. Supports wildcards:
+                - "*" matches any characters
+                - "?" matches single character
+                - "Agent*" matches "AgentStartEvent", "AgentCompleteEvent", etc.
+                - "*Event" matches all events ending with "Event"
+    handler: Event handler function
+    filter_func: Optional filter function
+    priority: Subscription priority
+    subscription_id: Optional custom subscription ID
 
 **Returns:**
-Subscription ID
+    Subscription ID
 
 ### unsubscribe <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L132" class="source-link" title="View source code">source</a>
 
@@ -77,10 +79,10 @@ def unsubscribe(self, subscription_id: str) -> bool
 Unsubscribe from events.
 
 **Args:**
-subscription_id: Subscription ID to remove
+    subscription_id: Subscription ID to remove
 
 **Returns:**
-True if subscription was found and removed
+    True if subscription was found and removed
 
 ### publish <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L159" class="source-link" title="View source code">source</a>
 
@@ -91,15 +93,15 @@ async def publish(self, event_data: Any, event_type: Optional[str] = None, prior
 Publish an event.
 
 **Args:**
-event_data: Event data (should be a Pydantic model)
-event_type: Optional event type override
-priority: Event priority
-source: Event source identifier
-correlation_id: Correlation ID for tracing
-tags: Additional tags
+    event_data: Event data (should be a Pydantic model)
+    event_type: Optional event type override
+    priority: Event priority
+    source: Event source identifier
+    correlation_id: Correlation ID for tracing
+    tags: Additional tags
 
 **Returns:**
-Event ID
+    Event ID
 
 ### publish_sync <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/bus.py#L222" class="source-link" title="View source code">source</a>
 

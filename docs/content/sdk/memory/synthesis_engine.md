@@ -1,6 +1,6 @@
 # Memory Synthesis Engine
 
-_Module: [`vibex.memory.synthesis_engine`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/synthesis_engine.py)_
+*Module: [`vibex.memory.synthesis_engine`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/synthesis_engine.py)*
 
 Memory Synthesis Engine
 
@@ -13,18 +13,16 @@ in the architecture document.
 The logical core of the Memory System that analyzes events and creates memories.
 
 Implements the event-driven analysis logic specified in the architecture:
-
 - Analyzes user messages for constraints/preferences
 - Detects tool failures and creates hot issues
 - Resolves hot issues when tools succeed
 - Chunks document content for semantic search
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/synthesis_engine.py#L41" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/synthesis_engine.py#L41" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, memory_backend: MemoryBackend, brain: Optional['Brain'] = None)
 ```
-
 ### on_event <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/synthesis_engine.py#L62" class="source-link" title="View source code">source</a>
 
 ```python

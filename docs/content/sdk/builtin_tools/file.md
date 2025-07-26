@@ -1,26 +1,25 @@
 # File Operations
 
-_Module: [`vibex.builtin_tools.file`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py)_
+*Module: [`vibex.builtin_tools.file`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py)*
 
 File operations for VibeX.
 
 ## FileTool <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L17" class="source-link" title="View source code">source</a>
 
-File tool that works with taskspace artifacts and provides simple file operations.
+File tool that works with project artifacts and provides simple file operations.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L20" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L20" class="source-link" title="View source code">source</a>
 
 ```python
-def __init__(self, taskspace_storage: TaskspaceStorage)
+def __init__(self, project_storage: ProjectStorage)
 ```
-
 ### write_file <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L34" class="source-link" title="View source code">source</a>
 
 ```python
 async def write_file(self, filename: Annotated[str, "Name of the file (e.g., 'report.html', 'requirements.md')"], content: Annotated[str, 'Content to write to the file']) -> ToolResult
 ```
 
-Write content to file as a taskspace artifact with versioning.
+Write content to file as a project artifact with versioning.
 
 ### append_file <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L87" class="source-link" title="View source code">source</a>
 
@@ -31,7 +30,6 @@ async def append_file(self, filename: Annotated[str, 'Name of the file to append
 Append content to an existing file. Creates the file if it doesn't exist.
 
 WARNING: This tool should NOT be used for structured files like:
-
 - HTML files (will add content after closing tags)
 - XML files (will break document structure)
 - JSON files (will create invalid JSON)
@@ -44,7 +42,7 @@ For structured files, read the entire content, modify it, and use write_file ins
 async def read_file(self, filename: Annotated[str, 'Name of the file to read'], version: Annotated[Optional[str], 'Specific version to read (optional, defaults to latest)'] = None) -> ToolResult
 ```
 
-Read file contents from taskspace artifacts.
+Read file contents from project artifacts.
 
 ### list_files <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L192" class="source-link" title="View source code">source</a>
 
@@ -52,7 +50,7 @@ Read file contents from taskspace artifacts.
 async def list_files(self) -> ToolResult
 ```
 
-List all file artifacts in the taskspace.
+List all file artifacts in the project.
 
 ### file_exists <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L254" class="source-link" title="View source code">source</a>
 
@@ -60,7 +58,7 @@ List all file artifacts in the taskspace.
 async def file_exists(self, filename: Annotated[str, 'Name of the file to check']) -> ToolResult
 ```
 
-Check if a file artifact exists in the taskspace.
+Check if a file artifact exists in the project.
 
 ### delete_file <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L312" class="source-link" title="View source code">source</a>
 
@@ -68,7 +66,7 @@ Check if a file artifact exists in the taskspace.
 async def delete_file(self, filename: Annotated[str, 'Name of the file to delete'], version: Annotated[Optional[str], 'Specific version to delete (optional, deletes all versions if not specified)'] = None) -> ToolResult
 ```
 
-Delete a file artifact from the taskspace.
+Delete a file artifact from the project.
 
 ### get_file_versions <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L352" class="source-link" title="View source code">source</a>
 
@@ -78,13 +76,13 @@ async def get_file_versions(self, filename: Annotated[str, 'Name of the file to 
 
 Get version history of a file artifact.
 
-### get_taskspace_summary <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L415" class="source-link" title="View source code">source</a>
+### get_project_summary <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L415" class="source-link" title="View source code">source</a>
 
 ```python
-async def get_taskspace_summary(self) -> ToolResult
+async def get_project_summary(self) -> ToolResult
 ```
 
-Get a summary of the taskspace contents.
+Get a summary of the project contents.
 
 ### create_directory <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L453" class="source-link" title="View source code">source</a>
 
@@ -92,28 +90,12 @@ Get a summary of the taskspace contents.
 async def create_directory(self, path: Annotated[str, "Directory path to create (e.g., 'reports', 'data/sources')"]) -> ToolResult
 ```
 
-Create a directory in the taskspace using the underlying file storage.
+Create a directory in the project using the underlying file storage.
 
 ### list_directory <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L492" class="source-link" title="View source code">source</a>
 
 ```python
-async def list_directory(self, path: Annotated[str, 'Directory path to list (defaults to taskspace root)'] = '') -> ToolResult
+async def list_directory(self, path: Annotated[str, 'Directory path to list (defaults to project root)'] = '') -> ToolResult
 ```
 
-List the contents of a directory in the taskspace.
-
-## Functions
-
-## create_file_tool <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/file.py#L570" class="source-link" title="View source code">source</a>
-
-```python
-def create_file_tool(taskspace_path: str) -> FileTool
-```
-
-Create a file tool for taskspace operations.
-
-**Args:**
-taskspace_path: Path to the taskspace directory
-
-**Returns:**
-FileTool instance that properly uses taskspace abstraction
+List the contents of a directory in the project.

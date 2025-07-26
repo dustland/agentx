@@ -9,6 +9,8 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 import asyncio
 import importlib.metadata
+import json
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -256,7 +258,7 @@ def create_app() -> FastAPI:
         except AgentNotFoundError:
             raise HTTPException(status_code=404, detail="XAgent not found")
         except Exception as e:
-            logger.error(f"Failed to get messages: {e}")
+            # Don't log errors for read-only operations to avoid feedback loops
             return {"messages": []}  # Return empty on error for compatibility
     
     # ===== Agent Resources =====
@@ -267,26 +269,35 @@ def create_app() -> FastAPI:
         artifact_path: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
-        """Get artifact from XAgent's project storage."""
+        """Get artifact directly from filesystem to avoid logging feedback loops."""
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(agent_id)
+            # Access artifact directly from filesystem
+            artifact_file = Path(f".vibex/projects/{agent_id}/artifacts/{artifact_path}")
             
-            # Access artifact through XAgent's project storage
-            if hasattr(xagent, 'project_storage') and xagent.project_storage:
-                artifact_content = await xagent.project_storage.get_artifact(artifact_path)
-                if artifact_content is None:
-                    raise HTTPException(status_code=404, detail="Artifact not found")
-                return {"artifact_path": artifact_path, "content": artifact_content}
-            else:
-                raise HTTPException(status_code=404, detail="No project storage available")
+            if not artifact_file.exists():
+                raise HTTPException(status_code=404, detail="Artifact not found")
+            
+            # Read artifact content
+            if artifact_file.is_file():
+                try:
+                    with open(artifact_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                except UnicodeDecodeError:
+                    # Handle binary files
+                    with open(artifact_file, 'rb') as f:
+                        content = f.read().decode('utf-8', errors='replace')
                 
-        except AgentNotFoundError:
-            raise HTTPException(status_code=404, detail="XAgent not found")
+                return {"artifact_path": artifact_path, "content": content}
+            else:
+                raise HTTPException(status_code=404, detail="Artifact path is not a file")
+                
+        except HTTPException:
+            raise  # Re-raise HTTP exceptions as-is
         except Exception as e:
-            logger.error(f"Failed to get artifact: {e}")
+            # Don't log errors for read-only operations to avoid feedback loops
             raise HTTPException(status_code=500, detail=str(e))
     
     @app.get("/agents/{agent_id}/logs")
@@ -294,28 +305,29 @@ def create_app() -> FastAPI:
         agent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
-        """Get logs from XAgent."""
+        """Get logs directly from filesystem to avoid logging feedback loops."""
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(agent_id)
+            # Access logs directly from filesystem
+            log_file = Path(f".vibex/projects/{agent_id}/logs/project.log")
             
-            # Access logs through XAgent
-            if hasattr(xagent, 'get_logs'):
-                logs = await xagent.get_logs()
-                return {"logs": logs}
-            elif hasattr(xagent, 'project_storage') and xagent.project_storage:
-                # Fallback to project storage logs
-                logs = await xagent.project_storage.get_logs()
-                return {"logs": logs}
-            else:
-                return {"logs": []}
+            if not log_file.exists():
+                return {"logs": []}  # Return empty if no logs yet
+            
+            # Read log content as raw lines (frontend expects strings for .match())
+            logs = []
+            with open(log_file, 'r', encoding='utf-8', errors='replace') as f:
+                for line in f:
+                    line = line.strip()
+                    if line:  # Skip empty lines
+                        logs.append(line)
+            
+            return {"logs": logs}
                 
-        except AgentNotFoundError:
-            raise HTTPException(status_code=404, detail="XAgent not found")
         except Exception as e:
-            logger.error(f"Failed to get logs: {e}")
+            # Don't log errors for read-only operations to avoid feedback loops
             return {"logs": []}  # Return empty on error for compatibility
     
     @app.get("/agents/{agent_id}/plan")
@@ -323,23 +335,28 @@ def create_app() -> FastAPI:
         agent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
-        """Get plan from XAgent."""
+        """Get plan directly from filesystem to avoid logging feedback loops."""
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(agent_id)
+            # Access plan directly from project.json
+            project_file = Path(f".vibex/projects/{agent_id}/project.json")
             
-            # Access plan directly from XAgent
-            if xagent.plan:
-                return {"plan": xagent.plan.model_dump()}
-            else:
-                return {"plan": None}
+            if not project_file.exists():
+                raise HTTPException(status_code=404, detail="Project not found")
+            
+            # Read and parse project.json
+            with open(project_file, 'r', encoding='utf-8') as f:
+                project_data = json.load(f)
+            
+            plan = project_data.get("plan")
+            return {"plan": plan}
                 
-        except AgentNotFoundError:
-            raise HTTPException(status_code=404, detail="XAgent not found")
+        except HTTPException:
+            raise  # Re-raise HTTP exceptions as-is
         except Exception as e:
-            logger.error(f"Failed to get plan: {e}")
+            # Don't log errors for read-only operations to avoid feedback loops
             raise HTTPException(status_code=500, detail=str(e))
 
     # ===== Streaming =====

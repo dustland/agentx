@@ -1,11 +1,10 @@
 # Memory System
 
-_Module: [`vibex.memory.memory_system`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/memory_system.py)_
+*Module: [`vibex.memory.memory_system`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/memory_system.py)*
 
 Memory System - Coordinated Memory Management
 
 This module provides the main Memory System interface that coordinates:
-
 - Memory backend for storage
 - Synthesis engine for event-driven analysis
 - Context retrieval for agent prompt enhancement
@@ -15,17 +14,15 @@ This module provides the main Memory System interface that coordinates:
 Coordinated Memory System that integrates storage, synthesis, and retrieval.
 
 This is the main interface for the memory system that provides:
-
 - Event-driven memory synthesis
 - Context-aware memory retrieval
 - Specialized memory management (constraints, hot issues, document chunks)
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/memory_system.py#L37" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/memory_system.py#L37" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, backend: MemoryBackend, synthesis_engine: MemorySynthesisEngine = None)
 ```
-
 ### initialize <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/memory_system.py#L44" class="source-link" title="View source code">source</a>
 
 ```python

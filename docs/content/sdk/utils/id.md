@@ -1,6 +1,6 @@
 # ID Utilities
 
-_Module: [`vibex.utils.id`](https://github.com/dustland/vibex/blob/main/src/vibex/utils/id.py)_
+*Module: [`vibex.utils.id`](https://github.com/dustland/vibex/blob/main/src/vibex/utils/id.py)*
 
 ID generation utilities for VibeX.
 
@@ -13,7 +13,7 @@ def generate_short_id(length: int = 8) -> str
 Generate a short, URL-friendly, cryptographically secure random ID.
 
 **Args:**
-length (int): The desired length of the ID. Defaults to 8.
+    length (int): The desired length of the ID. Defaults to 8.
 
 **Returns:**
-str: A new short ID.
+    str: A new short ID.

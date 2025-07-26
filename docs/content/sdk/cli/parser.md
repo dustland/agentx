@@ -1,6 +1,6 @@
 # Argument Parser
 
-_Module: [`vibex.cli.parser`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/parser.py)_
+*Module: [`vibex.cli.parser`](https://github.com/dustland/vibex/blob/main/src/vibex/cli/parser.py)*
 
 CLI Argument Parser
 

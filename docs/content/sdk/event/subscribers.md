@@ -1,6 +1,6 @@
 # Event Subscribers
 
-_Module: [`vibex.event.subscribers`](https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py)_
+*Module: [`vibex.event.subscribers`](https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py)*
 
 Event subscribers for the VibeX event system.
 
@@ -10,12 +10,11 @@ Provides base classes and utilities for creating event subscribers.
 
 Base class for event subscribers.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L21" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L21" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str)
 ```
-
 ### get_event_types <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L28" class="source-link" title="View source code">source</a>
 
 ```python
@@ -76,12 +75,11 @@ Check if subscriber is active.
 
 Base class for async event subscribers.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L87" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L87" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str)
 ```
-
 ### get_event_types <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L94" class="source-link" title="View source code">source</a>
 
 ```python
@@ -142,12 +140,11 @@ Check if subscriber is active.
 
 Subscriber for observability events.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L153" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L153" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str = 'observability')
 ```
-
 ### get_event_types <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L157" class="source-link" title="View source code">source</a>
 
 ```python
@@ -184,12 +181,11 @@ Get events of a specific type.
 
 Subscriber for collecting metrics from events.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L206" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L206" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, name: str = 'metrics')
 ```
-
 ### get_event_types <a href="https://github.com/dustland/vibex/blob/main/src/vibex/event/subscribers.py#L217" class="source-link" title="View source code">source</a>
 
 ```python

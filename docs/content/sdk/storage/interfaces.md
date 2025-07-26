@@ -1,6 +1,6 @@
 # Storage Interfaces
 
-_Module: [`vibex.storage.interfaces`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py)_
+*Module: [`vibex.storage.interfaces`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py)*
 
 Storage interfaces - Clean abstractions for different types of storage operations.
 
@@ -143,3 +143,94 @@ async def delete_artifact(self, name: str, version: Optional[str] = None) -> Sto
 ```
 
 Delete an artifact or specific version.
+
+## StorageProvider <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L137" class="source-link" title="View source code">source</a>
+
+Abstract interface for storage provider implementations.
+
+This is a simpler interface than FileStorage, focused on basic operations
+that can be implemented by different backends (file, S3, Azure, etc.).
+
+### read <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L146" class="source-link" title="View source code">source</a>
+
+```python
+async def read(self, path: str) -> bytes
+```
+
+Read binary content from storage
+
+### write <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L151" class="source-link" title="View source code">source</a>
+
+```python
+async def write(self, path: str, data: bytes) -> None
+```
+
+Write binary content to storage
+
+### exists <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L156" class="source-link" title="View source code">source</a>
+
+```python
+async def exists(self, path: str) -> bool
+```
+
+Check if path exists in storage
+
+### delete <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L161" class="source-link" title="View source code">source</a>
+
+```python
+async def delete(self, path: str) -> None
+```
+
+Delete from storage
+
+### list <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L166" class="source-link" title="View source code">source</a>
+
+```python
+async def list(self, prefix: str = '') -> List[str]
+```
+
+List all paths with given prefix
+
+### makedirs <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L171" class="source-link" title="View source code">source</a>
+
+```python
+async def makedirs(self, path: str) -> None
+```
+
+Create directory structure
+
+## CacheBackend <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L176" class="source-link" title="View source code">source</a>
+
+Abstract interface for cache implementations
+
+### get <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L180" class="source-link" title="View source code">source</a>
+
+```python
+async def get(self, key: str) -> Optional[Any]
+```
+
+Get value from cache
+
+### set <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L185" class="source-link" title="View source code">source</a>
+
+```python
+async def set(self, key: str, value: Any, ttl: int = 300) -> None
+```
+
+Set value in cache with TTL in seconds
+
+### delete <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L190" class="source-link" title="View source code">source</a>
+
+```python
+async def delete(self, key: str) -> None
+```
+
+Delete value from cache
+
+### clear <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/interfaces.py#L195" class="source-link" title="View source code">source</a>
+
+```python
+async def clear(self) -> None
+```
+
+Clear all cache entries

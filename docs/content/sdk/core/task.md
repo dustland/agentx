@@ -1,141 +1,55 @@
 # Task Management
 
-_Module: [`vibex.core.task`](https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py)_
+*Module: [`vibex.core.task`](https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py)*
 
-Task execution class - the primary interface for VibeX task execution.
+Task module - Defines the Task class and related functionality.
 
-Clean API: # One-shot execution (Fire-and-forget)
-await execute_task(prompt, config_path)
+In VibeX v2.0+:
+- Project: Top-level container for work
+- Task: Execution unit within a project (formerly PlanItem)
+- TaskStep: Individual actions within a task
 
-    # Step-by-step execution (Conversational)
-    executor = start_task(prompt, config_path)
-    await executor.start(prompt)
-    while not executor.is_complete():
-        response = await executor.step()
-        print(response)
+A Task represents a single unit of work that can be assigned to an agent
+and executed as part of a project's plan.
 
-## Task <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L45" class="source-link" title="View source code">source</a>
+## Task <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L26" class="source-link" title="View source code">source</a>
 
-Represents the state and context of a single task being executed.
-This class is a data container and does not have execution logic.
+Represents a single task in a project plan.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L51" class="source-link" title="View source code">source</a>
+A task is the atomic unit of work in VibeX. Each task:
+- Has a clear goal/objective
+- Can be assigned to a single agent
+- May depend on other tasks
+- Produces a result upon completion
 
-```python
-def __init__(self, task_id: str, config: TaskConfig, history: TaskHistory, message_queue: MessageQueue, agents: Dict[str, Agent], taskspace: TaskspaceStorage, initial_prompt: str)
-```
-
-### get_agent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L73" class="source-link" title="View source code">source</a>
+### assign_to_agent <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L47" class="source-link" title="View source code">source</a>
 
 ```python
-def get_agent(self, name: str) -> Agent
+def assign_to_agent(self, agent_name: str)
 ```
 
-Retrieves an agent by name.
+Assigns the task to an agent.
 
-### complete <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L79" class="source-link" title="View source code">source</a>
+### can_start <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L51" class="source-link" title="View source code">source</a>
 
 ```python
-def complete(self)
+def can_start(self, completed_task_ids: List[str]) -> bool
 ```
 
-Marks the task as complete.
+Check if this task can start based on completed dependencies.
 
-### get_context <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L84" class="source-link" title="View source code">source</a>
+### to_dict <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L55" class="source-link" title="View source code">source</a>
 
 ```python
-def get_context(self) -> Dict[str, Any]
+def to_dict(self) -> Dict[str, Any]
 ```
 
-Returns a dictionary with the task's context.
+Convert the task to a dictionary.
 
-### create_plan <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L106" class="source-link" title="View source code">source</a>
+### from_dict <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L60" class="source-link" title="View source code">source</a>
 
 ```python
-def create_plan(self, plan: Plan) -> None
+def from_dict(cls, data: Dict[str, Any]) -> 'Task'
 ```
 
-Creates a new plan for the task.
-
-### update_plan <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L111" class="source-link" title="View source code">source</a>
-
-```python
-async def update_plan(self, plan: Plan) -> None
-```
-
-Updates the current plan and persists it.
-
-### update_task_status <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L117" class="source-link" title="View source code">source</a>
-
-```python
-async def update_task_status(self, task_id: str, status: TaskStatus) -> bool
-```
-
-Update task status and automatically persist the plan.
-
-### get_plan <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L127" class="source-link" title="View source code">source</a>
-
-```python
-def get_plan(self) -> Optional[Plan]
-```
-
-Returns the current plan.
-
-### load_plan <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L143" class="source-link" title="View source code">source</a>
-
-```python
-async def load_plan(self) -> Optional[Plan]
-```
-
-Loads the plan from plan.json if it exists.
-
-## Functions
-
-## execute_task <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L157" class="source-link" title="View source code">source</a>
-
-```python
-async def execute_task(prompt: str, config_path: str, stream: bool = False) -> AsyncGenerator[Message, None]
-```
-
-High-level function to execute a task from a prompt and config file.
-This function runs the task to completion autonomously.
-
-## start_task <a href="https://github.com/dustland/vibex/blob/main/src/vibex/core/task.py#L185" class="source-link" title="View source code">source</a>
-
-```python
-async def start_task(prompt: str, config_path: Union[str, Path, TeamConfig], task_id: Optional[str] = None, taskspace_dir: Optional[Path] = None) -> XAgent
-```
-
-High-level function to start a task and return an initialized XAgent.
-
-This function creates an XAgent instance that users can chat with
-to manage complex multi-agent tasks conversationally.
-
-**Args:**
-prompt: The initial task prompt
-config_path: Path to the team configuration file
-task_id: Optional custom task ID
-taskspace_dir: Optional custom taskspace directory
-
-**Returns:**
-XAgent: The initialized XAgent ready for conversational interaction
-
-**Example:**
-
-````python # Start a conversational task
-x = await start_task(
-prompt="Create a market research report",
-config_path="config/team.yaml"
-)
-
-    # Chat with X to manage the task
-    response = await x.chat("Update the report with more visual appeal")
-    print(response.text)
-
-    # Send rich messages with attachments
-    response = await x.chat(Message(parts=[
-        TextPart("Use this style guide"),
-        ArtifactPart(artifact=style_guide)
-    ]))
-    ```
-````
+Create a Task instance from a dictionary.

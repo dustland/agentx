@@ -1,6 +1,6 @@
 # Mem0 Backend
 
-_Module: [`vibex.memory.mem0_backend`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/mem0_backend.py)_
+*Module: [`vibex.memory.mem0_backend`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/mem0_backend.py)*
 
 Mem0 Backend Implementation
 
@@ -11,7 +11,7 @@ and advanced memory operations.
 
 Mem0-powered memory backend with semantic search and intelligent storage.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/mem0_backend.py#L22" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/mem0_backend.py#L22" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, config)
@@ -20,7 +20,7 @@ def __init__(self, config)
 Initialize Mem0 backend.
 
 **Args:**
-config: Memory configuration
+    config: Memory configuration
 
 ### add <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/mem0_backend.py#L72" class="source-link" title="View source code">source</a>
 

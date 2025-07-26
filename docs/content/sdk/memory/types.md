@@ -1,6 +1,6 @@
 # Memory Types
 
-_Module: [`vibex.memory.types`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/types.py)_
+*Module: [`vibex.memory.types`](https://github.com/dustland/vibex/blob/main/src/vibex/memory/types.py)*
 
 Memory System Types
 
@@ -10,12 +10,11 @@ Data models and types for the memory backend system.
 
 Types of memory content.
 
-### **str** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/types.py#L33" class="source-link" title="View source code">source</a>
+### __str__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/types.py#L33" class="source-link" title="View source code">source</a>
 
 ```python
 def __str__(self)
 ```
-
 ## MemoryItem <a href="https://github.com/dustland/vibex/blob/main/src/vibex/memory/types.py#L38" class="source-link" title="View source code">source</a>
 
 Individual memory item with metadata.

@@ -1,6 +1,6 @@
 # Tool Models
 
-_Module: [`vibex.storage.models`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py)_
+*Module: [`vibex.storage.models`](https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py)*
 
 Storage subsystem models - Self-contained data models for storage management.
 
@@ -147,13 +147,13 @@ async def health(self) -> Dict[str, Any]
 
 Get storage backend health information.
 
-## TaskspaceConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L222" class="source-link" title="View source code">source</a>
+## ProjectConfig <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L222" class="source-link" title="View source code">source</a>
 
-Configuration for a taskspace.
+Configuration for a project workspace.
 
-## TaskspaceState <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L249" class="source-link" title="View source code">source</a>
+## ProjectState <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L249" class="source-link" title="View source code">source</a>
 
-Current state of a taskspace.
+Current state of a project workspace.
 
 ## FileInfo <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L276" class="source-link" title="View source code">source</a>
 
@@ -224,7 +224,7 @@ Generate a short, URL-friendly, cryptographically secure random ID.
 ## create_artifact <a href="https://github.com/dustland/vibex/blob/main/src/vibex/storage/models.py#L552" class="source-link" title="View source code">source</a>
 
 ```python
-def create_artifact(name: str, path: str, artifact_type: ArtifactType, content_size: int = 0, created_by: str = None, task_id: str = None, agent_name: str = None, metadata: Dict[str, Any] = None) -> Artifact
+def create_artifact(name: str, path: str, artifact_type: ArtifactType, content_size: int = 0, created_by: str = None, project_id: str = None, agent_name: str = None, metadata: Dict[str, Any] = None) -> Artifact
 ```
 
 Create a new artifact with the specified parameters.

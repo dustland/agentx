@@ -70,11 +70,37 @@ class XAgentService:
         Get an XAgent instance by ID.
         
         Returns the actual XAgent instance for direct interaction.
+        Uses lazy loading - if not in memory, tries to load from filesystem.
         """
-        if agent_id not in active_xagents:
-            raise AgentNotFoundError(f"XAgent {agent_id} not found")
+        # Check if already loaded in memory
+        if agent_id in active_xagents:
+            return active_xagents[agent_id]
         
-        return active_xagents[agent_id]
+        # Try to load from filesystem (lazy loading)
+        try:
+            from pathlib import Path
+            from vibex.core.project import resume_project
+            
+            # Check if project exists on filesystem
+            project_path = Path(f".vibex/projects/{agent_id}")
+            if not project_path.exists():
+                raise AgentNotFoundError(f"XAgent {agent_id} not found")
+            
+            # Load project and get XAgent
+            # Use a default config path - in production you'd want to store this
+            config_path = "examples/simple_chat/config/team.yaml"
+            project = await resume_project(agent_id, config_path)
+            xagent = project.x_agent
+            
+            # Cache it for future requests
+            active_xagents[agent_id] = xagent
+            
+            logger.info(f"Lazy loaded XAgent {agent_id} from filesystem")
+            return xagent
+            
+        except Exception as e:
+            logger.error(f"Failed to lazy load XAgent {agent_id}: {e}")
+            raise AgentNotFoundError(f"XAgent {agent_id} not found")
 
     async def list_for_user(self, user_id: Optional[str] = None) -> list[XAgent]:
         """

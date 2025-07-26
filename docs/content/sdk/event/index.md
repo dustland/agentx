@@ -1,6 +1,6 @@
 # Event System
 
-_Module: [`vibex.event`](https://github.com/dustland/vibex/blob/main/src/vibex/event.py)_
+*Module: [`vibex.event`](https://github.com/dustland/vibex/blob/main/src/vibex/event.py)*
 
 Event system for VibeX framework.
 

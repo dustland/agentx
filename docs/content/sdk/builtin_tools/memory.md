@@ -1,6 +1,6 @@
 # Memory System
 
-_Module: [`vibex.builtin_tools.memory`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/memory.py)_
+*Module: [`vibex.builtin_tools.memory`](https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/memory.py)*
 
 Memory Tools - Clean implementation using Memory.
 
@@ -8,12 +8,11 @@ Memory Tools - Clean implementation using Memory.
 
 Memory management capabilities using Memory.
 
-### **init** <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/memory.py#L12" class="source-link" title="View source code">source</a>
+### __init__ <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/memory.py#L12" class="source-link" title="View source code">source</a>
 
 ```python
 def __init__(self, memory: MemoryBackend)
 ```
-
 ### execute <a href="https://github.com/dustland/vibex/blob/main/src/vibex/builtin_tools/memory.py#L16" class="source-link" title="View source code">source</a>
 
 ```python
