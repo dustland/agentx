@@ -68,7 +68,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="h-full flex flex-col"
+          className="h-full flex flex-col gap-0"
         >
           <CardHeader className="p-2 flex-shrink-0">
             <TabsList className="h-7 text-xs">

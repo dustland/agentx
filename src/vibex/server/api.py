@@ -77,7 +77,6 @@ def create_app() -> FastAPI:
                 "/agents/{agent_id}/messages",
                 "/agents/{agent_id}/artifacts/{artifact_path}",
                 "/agents/{agent_id}/logs",
-                "/agents/{agent_id}/plan",
                 "/agents/{agent_id}/stream",
                 "/chat",
                 "/health", 
@@ -85,8 +84,11 @@ def create_app() -> FastAPI:
             ]
         }
     
-    def _xagent_to_response(xagent, user_id: str) -> XAgentResponse:
+    async def _xagent_to_response(xagent, user_id: str) -> XAgentResponse:
         """Convert XAgent instance to XAgentResponse DTO for API serialization."""
+        # Ensure plan is loaded before creating response
+        await xagent._ensure_plan_initialized()
+        
         return XAgentResponse(
             agent_id=xagent.project_id,
             status=TaskStatus.COMPLETED if xagent.is_complete() else TaskStatus.RUNNING,
@@ -149,7 +151,7 @@ def create_app() -> FastAPI:
             )
 
             # Convert to DTO for API response
-            return _xagent_to_response(xagent, user_id)
+            return await _xagent_to_response(xagent, user_id)
             
         except Exception as e:
             logger.error(f"Failed to create XAgent: {e}", exc_info=True)
@@ -163,7 +165,9 @@ def create_app() -> FastAPI:
         
         try:
             xagents = await xagent_service.list_for_user(x_user_id)
-            runs = [_xagent_to_response(xagent, x_user_id) for xagent in xagents]
+            runs = []
+            for xagent in xagents:
+                runs.append(await _xagent_to_response(xagent, x_user_id))
             return XAgentListResponse(runs=runs)
         except Exception as e:
             logger.error(f"Failed to list XAgents: {e}")
@@ -180,7 +184,7 @@ def create_app() -> FastAPI:
         
         try:
             xagent = await xagent_service.get(agent_id)
-            return _xagent_to_response(xagent, x_user_id)
+            return await _xagent_to_response(xagent, x_user_id)
             
         except AgentNotFoundError:
             raise HTTPException(status_code=404, detail="XAgent not found")
@@ -330,34 +334,7 @@ def create_app() -> FastAPI:
             # Don't log errors for read-only operations to avoid feedback loops
             return {"logs": []}  # Return empty on error for compatibility
     
-    @app.get("/agents/{agent_id}/plan")
-    async def get_agent_plan(
-        agent_id: str,
-        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
-    ):
-        """Get plan directly from filesystem to avoid logging feedback loops."""
-        if not x_user_id:
-            raise HTTPException(status_code=401, detail="User ID required")
-        
-        try:
-            # Access plan directly from project.json
-            project_file = Path(f".vibex/projects/{agent_id}/project.json")
-            
-            if not project_file.exists():
-                raise HTTPException(status_code=404, detail="Project not found")
-            
-            # Read and parse project.json
-            with open(project_file, 'r', encoding='utf-8') as f:
-                project_data = json.load(f)
-            
-            plan = project_data.get("plan")
-            return {"plan": plan}
-                
-        except HTTPException:
-            raise  # Re-raise HTTP exceptions as-is
-        except Exception as e:
-            # Don't log errors for read-only operations to avoid feedback loops
-            raise HTTPException(status_code=500, detail=str(e))
+
 
     # ===== Streaming =====
     

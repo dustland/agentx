@@ -29,6 +29,8 @@ import {
 import { cn } from "@/lib/utils";
 import { useXAgent } from "@/hooks/use-xagent";
 import { EmptyState } from "./empty-state";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface PlanTask {
   id: string;
@@ -119,20 +121,30 @@ export function Summary({ xagentId }: SummaryProps) {
         size="icon"
         variant="ghost"
         onClick={() => setShowRawJson(!showRawJson)}
-        className="absolute top-3 right-3 z-10 h-7 w-7 bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-background/90"
+        className="absolute top-0 right-1 z-10 h-7 w-7 bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-background/90"
       >
         <Braces className="h-3 w-3" />
       </Button>
 
       <ScrollArea className="flex-1 h-full">
         {showRawJson ? (
-          <div className="p-4">
-            <pre className="text-xs font-mono bg-muted/50 p-4 rounded-lg overflow-auto border whitespace-pre-wrap">
+          <div className="p-2">
+            <SyntaxHighlighter
+              language="json"
+              style={vscDarkPlus}
+              customStyle={{
+                margin: 0,
+                fontSize: "0.75rem",
+                borderRadius: "0.5rem",
+                border: "1px solid hsl(var(--border))",
+              }}
+              showLineNumbers={true}
+            >
               {JSON.stringify(xagent, null, 2)}
-            </pre>
+            </SyntaxHighlighter>
           </div>
         ) : (
-          <div className="p-4 space-y-6">
+          <div className="p-2 space-y-2">
             {/* XAgent Overview */}
             <Card>
               <CardContent className="pt-6 space-y-4">

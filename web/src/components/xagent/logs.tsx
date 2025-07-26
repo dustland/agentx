@@ -213,13 +213,13 @@ export function Logs({ xagentId }: LogsProps) {
                   loadLogs(0, !tailMode);
                 }}
                 className={`h-6 w-6 bg-background/80 backdrop-blur-sm border ${
-                  tailMode ? "text-primary border-primary" : ""
+                  tailMode ? "text-primary bg-primary/10" : ""
                 }`}
               >
                 {tailMode ? (
-                  <Terminal className="h-4 w-4" />
+                  <Terminal className="h-3 w-3" />
                 ) : (
-                  <FileStack className="h-4 w-4" />
+                  <FileStack className="h-3 w-3" />
                 )}
               </Button>
             </TooltipTrigger>
@@ -267,7 +267,7 @@ export function Logs({ xagentId }: LogsProps) {
                 variant="ghost"
                 onClick={() => setAutoScrollLogs(!autoScrollLogs)}
                 className={`h-6 w-6 bg-background/80 backdrop-blur-sm border ${
-                  autoScrollLogs ? "text-primary border-primary" : ""
+                  autoScrollLogs ? "text-primary bg-primary/10" : ""
                 }`}
               >
                 <Activity className="h-4 w-4" />

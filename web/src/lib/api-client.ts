@@ -117,10 +117,6 @@ export class VibexClient {
     return this.get(`/agents/${agentId}/logs`);
   }
 
-  async getPlan(agentId: string): Promise<{ plan: any }> {
-    return this.get(`/agents/${agentId}/plan`);
-  }
-
   // Streaming
   subscribeToXAgentUpdates(
     agentId: string,

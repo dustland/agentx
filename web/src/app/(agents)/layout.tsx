@@ -140,7 +140,7 @@ export default function TasksLayout({
         }
       >
         {/* Filters */}
-        <div className="flex items-center w-full gap-2 p-2 border-b">
+        <div className="flex items-center w-full gap-2 p-2">
           {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
@@ -148,7 +148,7 @@ export default function TasksLayout({
               placeholder="Search XAgents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 h-8 text-xs"
+              className="pl-7 h-8 text-xs placeholder:text-xs"
             />
             {searchQuery ? (
               <Button
@@ -167,16 +167,16 @@ export default function TasksLayout({
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
-                    className="h-3 absolute right-0 top-1/2 transform -translate-y-1/2 text-xs"
+                    className="h-3 w-3 absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                   >
-                    <Filter className="h-2 w-2" />
+                    <Filter className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-40">
                   {statusOptions.map((option) => (
                     <DropdownMenuCheckboxItem
                       key={option.value}
+                      className="cursor-pointer text-xs hover:bg-muted"
                       checked={statusFilter.includes(option.value)}
                       onCheckedChange={(checked) => {
                         if (option.value === "all") {

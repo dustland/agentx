@@ -471,55 +471,7 @@ class ProjectStorage:
             logger.error(f"Failed to read file {path}: {e}")
             return None
 
-    # Plan Management
-    async def store_plan(self, plan: Dict[str, Any]) -> StorageResult:
-        """Store the project plan as plan.json with write-through caching."""
-        try:
-            # Write to storage first
-            result = await self.file_storage.write_text(
-                "plan.json",
-                json.dumps(plan, indent=2)
-            )
-            
-            # Update cache if write succeeded
-            if result.success and self._cache:
-                cache_key = self._cache_key("plan")
-                await self._cache.set(cache_key, plan)
-                
-            return result
 
-        except Exception as e:
-            logger.error(f"Failed to store plan: {e}")
-            return StorageResult(success=False, error=str(e))
-
-    async def get_plan(self) -> Optional[Dict[str, Any]]:
-        """Get the project plan from plan.json with caching."""
-        try:
-            # Check cache first
-            if self._cache:
-                cache_key = self._cache_key("plan")
-                cached = await self._cache.get(cache_key)
-                if cached is not None:
-                    logger.debug(f"Cache hit for plan")
-                    return cached
-            
-            # Cache miss - read from storage
-            if not await self.file_storage.exists("plan.json"):
-                return None
-
-            content = await self.file_storage.read_text("plan.json")
-            plan = json.loads(content)
-            
-            # Update cache
-            if self._cache and plan is not None:
-                cache_key = self._cache_key("plan")
-                await self._cache.set(cache_key, plan)
-            
-            return plan
-
-        except Exception as e:
-            logger.error(f"Failed to get plan: {e}")
-            return None
 
     # Directory Management
     async def list_directory(self, path: str = "") -> Dict[str, Any]:

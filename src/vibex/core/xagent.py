@@ -277,16 +277,12 @@ class XAgent(Agent):
         """Initialize XAgent with an initial prompt and load/create plan."""
         self.initial_prompt = prompt
 
-        # Try to load existing plan
-        plan_path = self.project_storage.get_project_path() / "plan.json"
-        if plan_path.exists():
-            try:
-                with open(plan_path, 'r') as f:
-                    plan_data = json.load(f)
-                self.plan = Plan(**plan_data)
-                logger.info("Loaded existing plan from project storage")
-            except Exception as e:
-                logger.warning(f"Failed to load existing plan: {e}")
+        # Try to load existing plan from project
+        if self.project:
+            await self.project.load_project_state()
+            if self.project.plan:
+                self.plan = self.project.plan
+                logger.info("Loaded existing plan from project")
 
         # Generate new plan if none exists
         if not self.plan:
@@ -302,18 +298,13 @@ class XAgent(Agent):
         if self.initial_prompt:
             await self._initialize_with_prompt(self.initial_prompt)
             self._plan_initialized = True
-        # Otherwise, try to load existing plan
-        elif not self.plan:
-            plan_path = self.project_storage.get_project_path() / "plan.json"
-            if plan_path.exists():
-                try:
-                    with open(plan_path, 'r') as f:
-                        plan_data = json.load(f)
-                    self.plan = Plan(**plan_data)
-                    logger.info("Loaded existing plan from project storage")
-                    self._plan_initialized = True
-                except Exception as e:
-                    logger.warning(f"Failed to load existing plan: {e}")
+        # Otherwise, try to load existing plan from project
+        elif not self.plan and self.project:
+            await self.project.load_project_state()
+            if self.project.plan:
+                self.plan = self.project.plan
+                logger.info("Loaded existing plan from project")
+                self._plan_initialized = True
 
     async def chat(self, message: Union[str, Message], mode: str = "agent") -> XAgentResponse:
         """
@@ -1125,16 +1116,15 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         return response
 
     async def _persist_plan(self) -> None:
-        """Persist the current plan to project storage."""
-        if not self.plan:
+        """Persist the current plan to project storage via Project class."""
+        if not self.plan or not self.project:
             return
 
-        plan_path = self.project_storage.get_project_path() / "plan.json"
         try:
-            import json
-            with open(plan_path, 'w') as f:
-                json.dump(self.plan.model_dump(), f, indent=2)
-            logger.debug("Plan persisted to project storage")
+            # Update the project's plan field and persist project state
+            self.project.plan = self.plan
+            await self.project._persist_project_state()
+            logger.debug("Plan persisted to project.json via Project class")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
 
