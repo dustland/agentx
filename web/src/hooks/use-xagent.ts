@@ -33,9 +33,9 @@ export function useXAgent(xagentId: string) {
   const [optimisticMessages, setOptimisticMessages] = useState<ChatMessage[]>(
     []
   );
-  const [streamingMessages, setStreamingMessages] = useState<Map<string, ChatMessage>>(
-    new Map()
-  );
+  const [streamingMessages, setStreamingMessages] = useState<
+    Map<string, ChatMessage>
+  >(new Map());
 
   // Queries
   const xagentQuery = useQuery({
@@ -128,32 +128,32 @@ export function useXAgent(xagentId: string) {
           // Handle streaming message chunks
           const chunkData = data.data || data;
           const messageId = `streaming-${chunkData.step_id || Date.now()}`;
-          
-          setStreamingMessages(prev => {
+
+          setStreamingMessages((prev) => {
             const updated = new Map(prev);
             const existing = updated.get(messageId);
-            
+
             if (existing) {
               // Append to existing streaming message
               updated.set(messageId, {
                 ...existing,
-                content: existing.content + (chunkData.text || ''),
-                status: chunkData.is_final ? "complete" : "streaming"
+                content: existing.content + (chunkData.text || ""),
+                status: chunkData.is_final ? "complete" : "streaming",
               });
             } else {
               // Create new streaming message
               updated.set(messageId, {
                 id: messageId,
                 role: "assistant",
-                content: chunkData.text || '',
+                content: chunkData.text || "",
                 timestamp: new Date(chunkData.timestamp || Date.now()),
                 status: chunkData.is_final ? "complete" : "streaming",
                 metadata: {
-                  agentName: chunkData.agent_name
-                }
+                  agentName: chunkData.agent_name,
+                },
               });
             }
-            
+
             return updated;
           });
 
@@ -164,21 +164,19 @@ export function useXAgent(xagentId: string) {
                 queryKey: xagentKeys.messages(xagentId),
               });
               // Clear streaming message once real message is loaded
-              setStreamingMessages(prev => {
+              setStreamingMessages((prev) => {
                 const updated = new Map(prev);
                 updated.delete(messageId);
                 return updated;
               });
             }, 1000);
           }
-          
         } else if (data.event === "message") {
           // Handle complete message events
           const messageData = data.data || data;
           queryClient.invalidateQueries({
             queryKey: xagentKeys.messages(xagentId),
           });
-          
         } else {
           // Handle other events (xagent_update, etc.)
           queryClient.invalidateQueries({
