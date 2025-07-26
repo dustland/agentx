@@ -7,14 +7,14 @@ import { ChatInput } from "@/components/chat/input";
 import { useUser } from "@/contexts/user-context";
 import { useCallback } from "react";
 import { useAppStore } from "@/store/app";
-import { useApi } from "@/lib/api-client";
 import { Card } from "@/components/ui/card";
+import { useXAgents } from "@/hooks/use-xagent";
 
 export default function HomePage() {
   const router = useRouter();
   const { user } = useUser();
   const { setInitialMessage } = useAppStore();
-  const vibex = useApi();
+  const { createXAgent } = useXAgents();
   const [isCreating, setIsCreating] = useState(false);
 
   // Sample goals with team-based configurations
@@ -64,58 +64,65 @@ export default function HomePage() {
   ];
 
   const handleCreateXAgent = useCallback(
-    async (prompt: string) => {
+    (prompt: string) => {
       if (!prompt.trim()) return;
 
       setIsCreating(true);
-      try {
-        console.log("Phase 1: Setting initial message and creating XAgent");
 
-        // Phase 1: Set initial message in store (for Phase 2 on agent page)
-        setInitialMessage(prompt);
+      // Phase 1: Set initial message in store (for Phase 2 on agent page)
+      setInitialMessage(prompt);
 
-        // Phase 1: Create XAgent (just create it, don't start yet)
-        const response = await vibex.createXAgent(
-          "", // Empty goal - the actual goal will be sent as first message
-          "examples/simple_chat/config/team.yaml",
-          { source: "studio_homepage" }
-        );
+      // Phase 1: Create XAgent (just create it, don't start yet)
+      createXAgent.mutate(
+        {
+          goal: "", // Empty goal - the actual goal will be sent as first message
+          configPath: "examples/simple_chat/config/team.yaml",
+          context: { source: "studio_homepage" },
+        },
+        {
+          onSuccess: (response) => {
+            console.log("XAgent created successfully:", response);
+            const agentId = response.agent_id;
 
-        console.log("XAgent created successfully:", response);
-        const agentId = response.agent_id;
+            if (!agentId) {
+              throw new Error("No agent ID returned from API");
+            }
 
-        if (!agentId) {
-          throw new Error("No agent ID returned from API");
+            // Phase 1: Navigate to the agent page (Phase 2 will happen there)
+            router.push(`/x/${agentId}`);
+          },
+          onError: (error) => {
+            console.error("Failed to create task:", error);
+
+            // Clear initial message on error
+            setInitialMessage(null);
+
+            // Check if it's a backend error
+            if (
+              error instanceof Error &&
+              error.message.includes("name 'os' is not defined")
+            ) {
+              alert(
+                "Backend service is currently experiencing issues. The task creation feature is temporarily disabled."
+              );
+            } else if (
+              error instanceof Error &&
+              error.message.includes("404")
+            ) {
+              alert(
+                "Task service not found. Please check if the backend is running."
+              );
+            } else {
+              alert("Failed to create task. Please try again.");
+            }
+          },
+          onSettled: () => {
+            setIsCreating(false);
+          },
         }
-
-        // Phase 1: Navigate to the agent page (Phase 2 will happen there)
-        router.push(`/x/${agentId}`);
-      } catch (error) {
-        console.error("Failed to create task:", error);
-
-        // Clear initial message on error
-        setInitialMessage(null);
-
-        // Check if it's a backend error
-        if (
-          error instanceof Error &&
-          error.message.includes("name 'os' is not defined")
-        ) {
-          alert(
-            "Backend service is currently experiencing issues. The task creation feature is temporarily disabled."
-          );
-        } else if (error instanceof Error && error.message.includes("404")) {
-          alert(
-            "Task service not found. Please check if the backend is running."
-          );
-        } else {
-          alert("Failed to create task. Please try again.");
-        }
-      } finally {
-        setIsCreating(false);
-      }
+      );
     },
-    [vibex, router, setInitialMessage]
+    [createXAgent, router, setInitialMessage]
   );
 
   const handleSampleGoalClick = (goal: any) => {

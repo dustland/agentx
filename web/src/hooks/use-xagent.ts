@@ -377,6 +377,21 @@ export function useXAgents() {
     queryFn: () => vibex.listXAgents(),
   });
 
+  const createXAgent = useMutation({
+    mutationFn: ({
+      goal,
+      configPath,
+      context,
+    }: {
+      goal: string;
+      configPath: string;
+      context?: object;
+    }) => vibex.createXAgent(goal, configPath, context),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: xagentKeys.list() });
+    },
+  });
+
   const deleteXAgent = useMutation({
     mutationFn: (xagentId: string) => vibex.deleteXAgent(xagentId),
     onSuccess: () => {
@@ -389,6 +404,7 @@ export function useXAgents() {
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
+    createXAgent,
     deleteXAgent,
   };
 }
