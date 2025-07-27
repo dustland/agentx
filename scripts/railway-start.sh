@@ -9,7 +9,7 @@ echo "[STARTUP] Working directory: $(pwd)"
 
 # Start the backend API in the background
 echo "[STARTUP] Starting backend API on port 7770..."
-cd /app && python -m vibex.run start 2>&1 | sed 's/^/[BACKEND] /' &
+cd /app && uv run prod 2>&1 | sed 's/^/[BACKEND] /' &
 BACKEND_PID=$!
 
 # Wait for backend to be ready
