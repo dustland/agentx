@@ -31,7 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Sidebar, SidebarItem } from "@/components/layout/sidebar";
+import { Sidebar } from "@/components/layout/sidebar";
 import { TypingIndicator } from "@/components/typing-indicator";
 import {
   ChevronRight,
@@ -56,16 +56,14 @@ import {
   X,
   AlertCircle,
   Info,
-  CheckCircle2,
-  AlertTriangle,
 } from "lucide-react";
 
 export default function DesignPage() {
-  const [progress, setProgress] = useState(33);
+  const [progress] = useState(33);
   const [sliderValue, setSliderValue] = useState([50]);
 
   // Mock sidebar items for testing
-  const mockSidebarItems: SidebarItem[] = [
+  const mockSidebarItems = [
     {
       id: "1",
       title: "Research Task",
@@ -618,11 +616,38 @@ export default function DesignPage() {
             <div className="space-y-2">
               <h4 className="font-medium">With Items</h4>
               <div className="h-80 border rounded-lg overflow-hidden">
-                <Sidebar
-                  title="XAgents"
-                  items={mockSidebarItems}
-                  isActiveItem={(item) => item.id === "1"}
-                />
+                <Sidebar title="XAgents">
+                  <div className="p-4 space-y-3">
+                    {mockSidebarItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-card border rounded-lg p-3 cursor-pointer hover:bg-accent/20 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h5 className="font-medium text-sm">
+                              {item.title}
+                            </h5>
+                            <p className="text-xs text-muted-foreground">
+                              {item.subtitle}
+                            </p>
+                          </div>
+                          <Badge
+                            variant={
+                              item.status === "running"
+                                ? "default"
+                                : item.status === "completed"
+                                ? "secondary"
+                                : "destructive"
+                            }
+                          >
+                            {item.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Sidebar>
               </div>
             </div>
 
@@ -640,7 +665,6 @@ export default function DesignPage() {
               <div className="h-80 border rounded-lg overflow-hidden">
                 <Sidebar
                   title="XAgents"
-                  items={[]}
                   placeholder={
                     <div className="text-center text-muted-foreground">
                       <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
@@ -685,10 +709,21 @@ export default function DesignPage() {
             <div className="space-y-2">
               <h4 className="font-medium">No Title</h4>
               <div className="h-80 border rounded-lg overflow-hidden">
-                <Sidebar
-                  items={mockSidebarItems.slice(0, 2)}
-                  isActiveItem={(item) => item.id === "2"}
-                />
+                <Sidebar>
+                  <div className="p-4 space-y-3">
+                    {mockSidebarItems.slice(0, 2).map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-card border rounded-lg p-3 cursor-pointer hover:bg-accent/20 transition-colors"
+                      >
+                        <h5 className="font-medium text-sm">{item.title}</h5>
+                        <p className="text-xs text-muted-foreground">
+                          {item.subtitle}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </Sidebar>
               </div>
             </div>
 
@@ -696,13 +731,22 @@ export default function DesignPage() {
             <div className="space-y-2">
               <h4 className="font-medium">Minimal</h4>
               <div className="h-80 border rounded-lg overflow-hidden">
-                <Sidebar
-                  items={[
-                    { id: "simple1", title: "Simple Item 1" },
-                    { id: "simple2", title: "Simple Item 2" },
-                    { id: "simple3", title: "Simple Item 3" },
-                  ]}
-                />
+                <Sidebar>
+                  <div className="p-4 space-y-3">
+                    {[
+                      { id: "simple1", title: "Simple Item 1" },
+                      { id: "simple2", title: "Simple Item 2" },
+                      { id: "simple3", title: "Simple Item 3" },
+                    ].map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-card border rounded-lg p-3 cursor-pointer hover:bg-accent/20 transition-colors"
+                      >
+                        <h5 className="font-medium text-sm">{item.title}</h5>
+                      </div>
+                    ))}
+                  </div>
+                </Sidebar>
               </div>
             </div>
           </div>
