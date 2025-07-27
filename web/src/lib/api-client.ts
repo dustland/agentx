@@ -126,16 +126,19 @@ export class VibexClient {
     const effectiveUserId = this.userId || "guest";
     const params = `?user_id=${encodeURIComponent(effectiveUserId)}`;
     const url = `${this.baseURL}/agents/${agentId}/stream${params}`;
-    
+
     console.log("[SSE] Connecting to:", url);
     const eventSource = new EventSource(url);
 
     eventSource.onopen = () => {
       console.log("[SSE] Connection opened for agent:", agentId);
+      console.log("[SSE] Connection URL:", url);
     };
 
     eventSource.onmessage = (event) => {
       console.log("[SSE] Raw event received:", event);
+      console.log("[SSE] Event data:", event.data);
+      console.log("[SSE] Event type:", event.type);
       try {
         const data = JSON.parse(event.data);
         console.log("[SSE] Parsed data:", data);

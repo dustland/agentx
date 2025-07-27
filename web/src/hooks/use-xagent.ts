@@ -107,11 +107,14 @@ export function useXAgent(xagentId: string) {
     const result = Array.from(messageMap.values()).sort(
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
-    
+
     console.log("[useXAgent] Combined messages:", result);
-    console.log("[useXAgent] Streaming messages count:", streamingMessages.size);
+    console.log(
+      "[useXAgent] Streaming messages count:",
+      streamingMessages.size
+    );
     console.log("[useXAgent] Real messages count:", messages.length);
-    
+
     return result;
   }, [messages, optimisticMessages, streamingMessages]);
 
@@ -125,6 +128,8 @@ export function useXAgent(xagentId: string) {
   useEffect(() => {
     if (!xagentId || xagentId === "dummy-task-id") return;
 
+        console.log("[useXAgent] Setting up SSE connection for agent:", xagentId);
+ 
     const cleanup = vibex.subscribeToXAgentUpdates(
       xagentId,
       (data) => {
@@ -137,7 +142,8 @@ export function useXAgent(xagentId: string) {
           // The data.data is a JSON string that needs to be parsed
           let chunkData;
           try {
-            chunkData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+            chunkData =
+              typeof data.data === "string" ? JSON.parse(data.data) : data.data;
           } catch (e) {
             console.error("[useXAgent] Failed to parse chunk data:", e);
             return;
@@ -153,9 +159,14 @@ export function useXAgent(xagentId: string) {
               const newMessage = {
                 ...existing,
                 content: existing.content + (chunkData.chunk || ""),
-                status: (chunkData.is_final ? "complete" : "streaming") as "complete" | "streaming",
+                status: (chunkData.is_final ? "complete" : "streaming") as
+                  | "complete"
+                  | "streaming",
               };
-              console.log("[useXAgent] Updating streaming message:", newMessage);
+              console.log(
+                "[useXAgent] Updating streaming message:",
+                newMessage
+              );
               updated.set(messageId, newMessage);
             } else {
               // Create new streaming message
@@ -164,12 +175,17 @@ export function useXAgent(xagentId: string) {
                 role: "assistant" as const,
                 content: chunkData.chunk || "",
                 timestamp: new Date(chunkData.timestamp || Date.now()),
-                status: (chunkData.is_final ? "complete" : "streaming") as "complete" | "streaming",
+                status: (chunkData.is_final ? "complete" : "streaming") as
+                  | "complete"
+                  | "streaming",
                 metadata: {
                   messageId: chunkData.message_id,
                 } as any,
               };
-              console.log("[useXAgent] Creating new streaming message:", newMessage);
+              console.log(
+                "[useXAgent] Creating new streaming message:",
+                newMessage
+              );
               updated.set(messageId, newMessage);
             }
 
@@ -194,7 +210,8 @@ export function useXAgent(xagentId: string) {
           // Handle complete message events
           let messageData;
           try {
-            messageData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+            messageData =
+              typeof data.data === "string" ? JSON.parse(data.data) : data.data;
           } catch (e) {
             console.error("[useXAgent] Failed to parse message data:", e);
             return;
@@ -226,10 +243,17 @@ export function useXAgent(xagentId: string) {
       }
     );
 
+    // Store cleanup function in ref for proper cleanup
+    sseCleanupRef.current = () => cleanup.close();
+    
     return () => {
+      console.log(
+        "[useXAgent] Cleaning up SSE connection for agent:",
+        xagentId
+      );
       if (cleanup) cleanup.close();
     };
-  }, [xagentId, vibex, queryClient]);
+  }, [xagentId, queryClient]);
 
   // Chat functionality
   const sendMessage = useMutation({
