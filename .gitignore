@@ -200,6 +200,9 @@ tests/test_task_data/
 !tests/test_task_data/.gitkeep
 !tests/test_task_data/sample_team/
 
+# Test artifacts directory (generated during test runs)
+test/
+
 # User data
 user_data/
 user_data/*
