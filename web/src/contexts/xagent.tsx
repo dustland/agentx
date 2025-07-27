@@ -22,7 +22,9 @@ interface XAgentContextType {
   // Chat functionality
   input: string;
   handleSubmit: (message: string, mode?: "chat" | "agent") => void;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleInputChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
   setInput: (value: string) => void;
 
   // Chat loading state
@@ -34,11 +36,11 @@ interface XAgentContextType {
 
 const XAgentContext = createContext<XAgentContextType | undefined>(undefined);
 
-export function XAgentProvider({ 
-  children, 
-  xagentId 
-}: { 
-  children: ReactNode; 
+export function XAgentProvider({
+  children,
+  xagentId,
+}: {
+  children: ReactNode;
   xagentId: string;
 }) {
   const xagentData = useXAgent(xagentId);

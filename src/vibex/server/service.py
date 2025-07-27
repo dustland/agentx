@@ -16,6 +16,7 @@ from vibex.utils.logger import get_logger
 from vibex.core.exceptions import AgentNotFoundError
 from .registry import get_project_registry
 from vibex.utils.paths import get_project_path
+from .models import ProjectInfo, MessageInfo, ArtifactInfo, MessageResponse
 
 logger = get_logger(__name__)
 
@@ -48,7 +49,7 @@ class XAgentService:
         Returns the actual XAgent instance, not a DTO wrapper.
         The XAgent manages its own project internally.
         """
-        logger.info(f"Creating XAgent{f' for user {user_id}' if user_id else ''} with goal: {goal}")
+        logger.info(f"Creating XAgent{f' for user {user_id}' if user_id else ''} with goal: '{goal}'")
         
         try:
             # Use start_project function to create XAgent properly
@@ -100,7 +101,9 @@ class XAgentService:
             # Load project and get XAgent
             # Get config path from registry or use default
             project_info = await self.registry.get_project_info(xagent_id)
-            config_path = project_info.get('config_path', "examples/simple_chat/config/team.yaml") if project_info else "examples/simple_chat/config/team.yaml"
+            config_path = project_info.config_path if project_info else "examples/simple_chat/config/team.yaml"
+            if not config_path:
+                config_path = "examples/simple_chat/config/team.yaml"
             
             project = await resume_project(xagent_id, config_path)
             xagent = project.x_agent
@@ -115,7 +118,7 @@ class XAgentService:
             logger.error(f"Failed to lazy load XAgent {xagent_id}: {e}")
             raise AgentNotFoundError(f"XAgent {xagent_id} not found")
 
-    async def list(self, user_id: str) -> List[Dict[str, Any]]:
+    async def list(self, user_id: str) -> List[ProjectInfo]:
         """
         Get all XAgent instances for a specific user.
         Returns project information including status.
@@ -135,11 +138,16 @@ class XAgentService:
                     elif any(project_path.glob("artifacts/*")):
                         status = "completed"
                     
-                    projects.append({
-                        "project_id": project_id,
-                        "status": status,
-                        "created_at": datetime.fromtimestamp(project_path.stat().st_ctime).isoformat()
-                    })
+                    # Get project info from registry
+                    project_info = await self.registry.get_project_info(project_id)
+                    config_path = project_info.config_path if project_info else None
+                    
+                    projects.append(ProjectInfo(
+                        project_id=project_id,
+                        status=status,
+                        created_at=datetime.fromtimestamp(project_path.stat().st_ctime),
+                        config_path=config_path
+                    ))
                 else:
                     # Project was deleted, remove from registry
                     await self.registry.remove_project(user_id, project_id)
@@ -201,7 +209,7 @@ class XAgentService:
         
         return True
 
-    async def send_message(self, user_id: str, xagent_id: str, content: str, mode: str = "agent") -> Dict[str, Any]:
+    async def send_message(self, user_id: str, xagent_id: str, content: str, mode: str = "agent") -> MessageResponse:
         """
         Send a message to the project's X agent.
         """
@@ -244,16 +252,16 @@ class XAgentService:
         )
         logger.info(f"[CHAT] Project status updated to pending")
         
-        result = {
-            "message_id": f"msg_{datetime.now().timestamp():.0f}",
-            "response": response.text if response else "",
-            "timestamp": datetime.now().isoformat()
-        }
+        result = MessageResponse(
+            message_id=f"msg_{datetime.now().timestamp():.0f}",
+            response=response.text if response else "",
+            timestamp=datetime.now()
+        )
         
-        logger.info(f"[CHAT] Returning response with message_id: {result['message_id']}")
+        logger.info(f"[CHAT] Returning response with message_id: {result.message_id}")
         return result
 
-    async def get_messages(self, user_id: str, xagent_id: str) -> List[Dict[str, Any]]:
+    async def get_messages(self, user_id: str, xagent_id: str) -> List[MessageInfo]:
         """
         Get messages for a project.
         """
@@ -271,20 +279,20 @@ class XAgentService:
                     if line.strip():  # Skip empty lines
                         try:
                             message = json.loads(line)
-                            # Convert to API format
-                            messages.append({
-                                "message_id": message.get("id"),
-                                "role": message.get("role"),
-                                "content": message.get("content"),
-                                "timestamp": message.get("timestamp"),
-                                "metadata": {}
-                            })
-                        except json.JSONDecodeError:
-                            logger.warning(f"Failed to parse message line: {line}")
+                            # Convert to MessageInfo
+                            messages.append(MessageInfo(
+                                message_id=message.get("id", ""),
+                                role=message.get("role", ""),
+                                content=message.get("content", ""),
+                                timestamp=datetime.fromisoformat(message.get("timestamp", datetime.now().isoformat())),
+                                metadata={}
+                            ))
+                        except (json.JSONDecodeError, ValueError) as e:
+                            logger.warning(f"Failed to parse message line: {line}, error: {e}")
         
         return messages
 
-    async def get_artifacts(self, user_id: str, xagent_id: str) -> List[Dict[str, Any]]:
+    async def get_artifacts(self, user_id: str, xagent_id: str) -> List[ArtifactInfo]:
         """
         Get artifacts for a project.
         """
@@ -302,11 +310,11 @@ class XAgentService:
                     # Skip any files under .git
                     if any(part == ".git" for part in relative_path.parts):
                         continue
-                    artifacts.append({
-                        "path": str(relative_path),
-                        "size": item.stat().st_size,
-                        "modified_at": datetime.fromtimestamp(item.stat().st_mtime).isoformat()
-                    })
+                    artifacts.append(ArtifactInfo(
+                        path=str(relative_path),
+                        size=item.stat().st_size,
+                        modified_at=datetime.fromtimestamp(item.stat().st_mtime)
+                    ))
         
         return artifacts
 

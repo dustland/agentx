@@ -56,9 +56,54 @@ class TaskRunInfo(BaseModel):
     plan: Optional[Dict[str, Any]] = None
 
 
+class ProjectRegistryInfo(BaseModel):
+    """Information stored in the project registry."""
+    user_id: str = Field(description="The user who owns this project")
+    config_path: Optional[str] = Field(default=None, description="Configuration path used")
+    created_at: datetime = Field(description="When the project was created")
+
+
+class ProjectInfo(BaseModel):
+    """Information about a project without loading the full XAgent instance."""
+    project_id: str = Field(description="The project ID")
+    status: str = Field(description="The project status") 
+    created_at: datetime = Field(description="When the project was created")
+    config_path: Optional[str] = Field(default=None, description="Configuration path used")
+
+
+class MessageInfo(BaseModel):
+    """Information about a message in the conversation history."""
+    message_id: str = Field(description="The message ID")
+    role: str = Field(description="The role (user, assistant, system)")
+    content: str = Field(description="The message content")
+    timestamp: datetime = Field(description="When the message was created")
+    metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+
+
+class ArtifactInfo(BaseModel):
+    """Information about an artifact in a project."""
+    path: str = Field(description="The relative path to the artifact")
+    size: int = Field(description="The file size in bytes")
+    modified_at: datetime = Field(description="When the artifact was last modified")
+
+
+class MessageResponse(BaseModel):
+    """Response from sending a message to an XAgent."""
+    message_id: str = Field(description="The message ID")
+    response: str = Field(description="The response text")
+    timestamp: datetime = Field(description="When the response was created")
+
+
+class ChatRequest(BaseModel):
+    """Request to send a chat message to an XAgent."""
+    xagent_id: str = Field(description="The XAgent ID to chat with")
+    content: str = Field(description="The message content")
+    mode: str = Field(default="agent", description="The chat mode (agent or plan)")
+
+
 class XAgentListResponse(BaseModel):
     """Response for listing XAgents"""
-    runs: List[XAgentResponse]
+    xagents: List[XAgentResponse]
 
 
 class MemoryRequest(BaseModel):

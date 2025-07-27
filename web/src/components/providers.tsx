@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import { UserProvider } from "@/contexts/user-context";
+import { UserProvider } from "@/contexts/user";
 
 const queryClient = new QueryClient({
   defaultOptions: {

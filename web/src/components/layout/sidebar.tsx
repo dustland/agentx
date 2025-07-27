@@ -27,7 +27,7 @@ import {
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/contexts/user";
 import { UserAvatar } from "@/components/user-avatar";
 import { ThemeSwitcher } from "../theme-switcher";
 import { useAppStore } from "@/store/app";
@@ -70,6 +70,8 @@ export function Sidebar({
       setIsRefreshing(true);
       try {
         await onRefresh();
+      } catch (error) {
+        console.error("Refresh failed:", error);
       } finally {
         setIsRefreshing(false);
       }

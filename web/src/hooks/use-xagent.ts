@@ -449,7 +449,7 @@ export function useXAgents() {
   });
 
   return {
-    xagents: query.data?.runs || [],
+    xagents: query.data?.xagents || [],
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,

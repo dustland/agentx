@@ -140,7 +140,7 @@ export interface XAgent {
 }
 
 export interface XAgentListResponse {
-  runs: XAgent[];
+  xagents: XAgent[];
 }
 
 // API request/response types

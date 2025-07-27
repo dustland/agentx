@@ -81,6 +81,15 @@ export default function TasksLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { xagents, isLoading, deleteXAgent, refetch } = useXAgents();
+
+  // Handle refetch with proper error handling
+  const handleRefetch = async () => {
+    try {
+      await refetch();
+    } catch (error) {
+      console.error("Refetch failed:", error);
+    }
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>(["all"]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -163,7 +172,7 @@ export default function TasksLayout({
       <Sidebar
         isLoading={isLoading}
         showRefreshButton={true}
-        onRefresh={refetch}
+        onRefresh={handleRefetch}
         placeholder={
           <div className="text-center text-muted-foreground">
             <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">

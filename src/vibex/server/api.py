@@ -17,18 +17,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
 from .service import XAgentService, get_xagent_service
-from .models import CreateXAgentRequest, XAgentResponse, TaskStatus, XAgentListResponse
+from .models import CreateXAgentRequest, XAgentResponse, TaskStatus, XAgentListResponse, ChatRequest
 from .streaming import event_stream_manager
 from ..utils.logger import get_logger
 # Authentication temporarily disabled
 # from .auth import get_user_id
 from ..core.exceptions import AgentNotFoundError
 from ..utils.paths import get_project_path
-
-# Temporary stub for authentication
-async def get_user_id() -> str:
-    """Temporary stub that returns a default user ID."""
-    return "default-user"
 
 logger = get_logger(__name__)
 
@@ -107,13 +102,16 @@ def create_app() -> FastAPI:
             else:
                 status = TaskStatus.PENDING
         
+        goal_value = xagent.initial_prompt or ""
+        logger.debug(f"[_xagent_to_response] XAgent {xagent.project_id} - initial_prompt: '{xagent.initial_prompt}', goal: '{goal_value}'")
+        
         return XAgentResponse(
             xagent_id=xagent.project_id,
             user_id=user_id,
             status=status,
             created_at=datetime.now(),  # TODO: Get actual creation time from XAgent
             updated_at=datetime.now(),  # TODO: Get actual update time from XAgent
-            goal=xagent.initial_prompt or "",
+            goal=goal_value,
             name=getattr(xagent, 'name', f"Project {xagent.project_id}"),
             config_path=getattr(xagent, 'config_path', None),
             plan=xagent.plan.model_dump() if xagent.plan else None,
@@ -151,27 +149,31 @@ def create_app() -> FastAPI:
     @app.post("/xagents", response_model=XAgentResponse)
     async def create_agent_run(
         request: CreateXAgentRequest,
-        user_id: str = Depends(get_user_id),
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID"),
         xagent_service: XAgentService = Depends(get_xagent_service),
     ):
         """
         Creates a new XAgent instance.
         Returns a DTO representation for API compatibility.
         """
-        logger.info(f"[/xagents] Received request to create XAgent for user: {user_id}")
+        if not x_user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+            
+        logger.info(f"[/xagents] Received request to create XAgent for user: {x_user_id}")
+        logger.info(f"[/xagents] Goal: '{request.goal}'")
         logger.debug(f"Request details: {request}")
 
         try:
             # Create XAgent instance
             xagent = await xagent_service.create(
-                user_id=user_id,
+                user_id=x_user_id,
                 goal=request.goal,
                 config_path=request.config_path,
                 context=request.context,
             )
 
             # Convert to DTO for API response
-            return await _xagent_to_response(xagent, user_id)
+            return await _xagent_to_response(xagent, x_user_id)
             
         except Exception as e:
             logger.error(f"Failed to create XAgent: {e}", exc_info=True)
@@ -184,11 +186,31 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagents = await xagent_service.list(x_user_id)
+            # Get list of ProjectInfo objects
+            project_infos = await xagent_service.list(x_user_id)
             runs = []
-            for xagent in xagents:
-                runs.append(await _xagent_to_response(xagent, x_user_id))
-            return XAgentListResponse(runs=runs)
+            
+            # For each project, load the XAgent and convert to response
+            for project_info in project_infos:
+                try:
+                    # Load the actual XAgent instance
+                    xagent = await xagent_service.get(project_info.project_id)
+                    response = await _xagent_to_response(xagent, x_user_id)
+                    runs.append(response)
+                except Exception as e:
+                    logger.warning(f"Failed to load XAgent {project_info.project_id}: {e}")
+                    # Create minimal response for failed loads
+                    runs.append(XAgentResponse(
+                        xagent_id=project_info.project_id,
+                        goal="",
+                        status=project_info.status,
+                        name=f"Project {project_info.project_id}",
+                        created_at=project_info.created_at,
+                        plan=None,
+                        artifacts=[]
+                    ))
+            
+            return XAgentListResponse(xagents=runs)
         except Exception as e:
             logger.error(f"Failed to list XAgents: {e}")
             raise HTTPException(status_code=500, detail=str(e))
@@ -235,27 +257,20 @@ def create_app() -> FastAPI:
     
     @app.post("/chat")
     async def chat_with_agent(
-        request: Dict[str, Any],
+        request: ChatRequest,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Chat with an XAgent."""
-        xagent_id = request.get("xagent_id")
-        if not xagent_id:
-            raise HTTPException(status_code=400, detail="xagent_id is required")
-            
-        logger.info(f"[API] POST /chat - User: {x_user_id}, XAgent: {xagent_id}")
+        logger.info(f"[API] POST /chat - User: {x_user_id}, XAgent: {request.xagent_id}")
         logger.info(f"[API] Chat request: {request}")
         
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            content = request.get("content", "")
-            mode = request.get("mode", "agent")  # Default to agent mode
-            
             # Get XAgent instance and chat directly
-            xagent = await xagent_service.get(xagent_id)
-            response = await xagent.chat(content, mode=mode)
+            xagent = await xagent_service.get(request.xagent_id)
+            response = await xagent.chat(request.content, mode=request.mode)
             
             logger.info(f"[API] Response from XAgent: {response.text[:100]}...")
             return {"response": response.text}
@@ -276,9 +291,10 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(xagent_id)
-            messages = [msg.model_dump() for msg in xagent.conversation_history]
-            return {"messages": messages}
+            # Use service method which returns typed MessageInfo objects
+            messages = await xagent_service.get_messages(x_user_id, xagent_id)
+            # Serialize to dicts for API response
+            return {"messages": [msg.model_dump() for msg in messages]}
         except AgentNotFoundError:
             raise HTTPException(status_code=404, detail="XAgent not found")
         except Exception as e:

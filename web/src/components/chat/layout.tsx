@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Bot } from "lucide-react";
 import { ChatInput } from "./input";
 import { MessageBubble } from "./message-bubble";
-import { useXAgentContext } from "@/contexts/xagent-context";
+import { useXAgentContext } from "@/contexts/xagent";
 
 export function ChatLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);

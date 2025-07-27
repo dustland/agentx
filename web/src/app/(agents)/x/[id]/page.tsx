@@ -8,7 +8,7 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { XAgentProvider, useXAgentContext } from "@/contexts/xagent-context";
+import { XAgentProvider, useXAgentContext } from "@/contexts/xagent";
 import { useAppStore } from "@/store/app";
 
 function XAgentPageContent({ id }: { id: string }) {

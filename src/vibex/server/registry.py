@@ -7,11 +7,12 @@ This keeps the framework layer pure and user-agnostic.
 
 import asyncio
 from pathlib import Path
-from typing import List, Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING, Dict, Any
 from datetime import datetime
 from ..storage.factory import ProjectStorageFactory
 from ..storage.interfaces import FileStorage
 from ..utils.logger import get_logger
+from .models import ProjectRegistryInfo
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
@@ -50,7 +51,7 @@ class Registry:
         """Get the owner of a project"""
         raise NotImplementedError
     
-    async def get_project_info(self, project_id: str) -> Optional[dict]:
+    async def get_project_info(self, project_id: str) -> Optional[ProjectRegistryInfo]:
         """Get project information including config_path"""
         raise NotImplementedError
 
@@ -189,13 +190,20 @@ class FileRegistry(Registry):
             logger.error(f"Failed to get project owner for {project_id}: {e}")
             return None
     
-    async def get_project_info(self, project_id: str) -> Optional[dict]:
+    async def get_project_info(self, project_id: str) -> Optional[ProjectRegistryInfo]:
         """Get project information including config_path"""
         index_file = self._get_project_index_file()
         
         try:
             index_data = await self.storage.read_json(index_file)
-            return index_data.get(project_id) if index_data else None
+            if index_data and project_id in index_data:
+                info = index_data[project_id]
+                return ProjectRegistryInfo(
+                    user_id=info["user_id"],
+                    config_path=info.get("config_path"),
+                    created_at=datetime.fromisoformat(info["created_at"])
+                )
+            return None
             
         except Exception as e:
             logger.error(f"Failed to get project info for {project_id}: {e}")
@@ -263,7 +271,7 @@ class RedisRegistry(Registry):
         user_id = await r.hget(f"project:{project_id}", "user_id")
         return user_id.decode() if user_id and isinstance(user_id, bytes) else user_id
     
-    async def get_project_info(self, project_id: str) -> Optional[dict]:
+    async def get_project_info(self, project_id: str) -> Optional[ProjectRegistryInfo]:
         """Get project information including config_path"""
         r = await self._get_redis()
         project_data = await r.hgetall(f"project:{project_id}")
@@ -272,9 +280,15 @@ class RedisRegistry(Registry):
             return None
         
         # Convert bytes to strings
-        return {k.decode() if isinstance(k, bytes) else k: 
+        data = {k.decode() if isinstance(k, bytes) else k: 
                 v.decode() if isinstance(v, bytes) else v 
                 for k, v in project_data.items()}
+        
+        return ProjectRegistryInfo(
+            user_id=data["user_id"],
+            config_path=data.get("config_path"),
+            created_at=datetime.fromisoformat(data["created_at"])
+        )
     
     async def close(self):
         """Close Redis connection"""

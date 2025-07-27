@@ -28,7 +28,7 @@ import {
   FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useXAgentContext } from "@/contexts/xagent-context";
+import { useXAgentContext } from "@/contexts/xagent";
 import { EmptyState } from "./empty-state";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -145,16 +145,14 @@ export function Summary({ xagentId }: SummaryProps) {
         </ScrollArea>
       ) : (
         <ScrollArea className="h-full">
-          <div className="p-6 space-y-6">
+          <div className="p-2 space-y-4">
             {/* Header with Status */}
             <div className="flex items-center justify-between pb-4 border-b border-border/50">
               <div className="space-y-1">
                 <h2 className="text-lg font-semibold text-foreground">
                   XAgent Overview
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Agent details and configuration
-                </p>
+                <p className="text-sm text-muted-foreground">{xagent?.goal}</p>
               </div>
               <Badge
                 variant={getStatusVariant(xagent?.status || "pending")}

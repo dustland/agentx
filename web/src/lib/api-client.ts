@@ -6,7 +6,7 @@ import {
   MemorySearchRequest,
 } from "@/types/vibex";
 import { useMemo } from "react";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/contexts/user";
 
 export class VibexClient {
   private baseURL: string;

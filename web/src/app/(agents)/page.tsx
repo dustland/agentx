@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/chat/input";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "@/contexts/user";
 import { useCallback } from "react";
 import { useAppStore } from "@/store/app";
 import { Card } from "@/components/ui/card";
@@ -75,7 +75,7 @@ export default function HomePage() {
       // Phase 1: Create XAgent (just create it, don't start yet)
       createXAgent.mutate(
         {
-          goal: "", // Empty goal - the actual goal will be sent as first message
+          goal: prompt, // Pass the prompt as the goal
           configPath: "examples/simple_chat/config/team.yaml",
           context: { source: "studio_homepage" },
         },

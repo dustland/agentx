@@ -14,7 +14,7 @@ import {
   Folder,
 } from "lucide-react";
 import { EmptyState } from "./empty-state";
-import { useXAgentContext } from "@/contexts/xagent-context";
+import { useXAgentContext } from "@/contexts/xagent";
 import { formatBytes } from "@/lib/utils";
 
 interface Artifact {
