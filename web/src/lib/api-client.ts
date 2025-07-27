@@ -135,14 +135,64 @@ export class VibexClient {
       console.log("[SSE] Connection URL:", url);
     };
 
+    // Handle specific event types
+    eventSource.addEventListener("stream_chunk", (event) => {
+      console.log("[SSE] Stream chunk event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Stream chunk data:", data);
+        onUpdate({ event: "stream_chunk", data });
+      } catch (error) {
+        console.error("Error parsing stream chunk data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("message", (event) => {
+      console.log("[SSE] Message event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Message data:", data);
+        onUpdate({ event: "message", data });
+      } catch (error) {
+        console.error("Error parsing message data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("agent_status", (event) => {
+      console.log("[SSE] Agent status event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Agent status data:", data);
+        onUpdate({ event: "agent_status", data });
+      } catch (error) {
+        console.error("Error parsing agent status data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("project_update", (event) => {
+      console.log("[SSE] Project update event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Project update data:", data);
+        onUpdate({ event: "project_update", data });
+      } catch (error) {
+        console.error("Error parsing project update data:", error);
+        onError(error);
+      }
+    });
+
+    // Handle generic messages (fallback)
     eventSource.onmessage = (event) => {
-      console.log("[SSE] Raw event received:", event);
+      console.log("[SSE] Generic message event received:", event);
       console.log("[SSE] Event data:", event.data);
       console.log("[SSE] Event type:", event.type);
       try {
         const data = JSON.parse(event.data);
         console.log("[SSE] Parsed data:", data);
-        onUpdate(data);
+        onUpdate({ event: "generic", data });
       } catch (error) {
         console.error("Error parsing SSE data:", error);
         onError(error);

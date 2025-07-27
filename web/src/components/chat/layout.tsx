@@ -9,22 +9,43 @@ import { useXAgentContext } from "@/contexts/xagent";
 
 export function ChatLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use the XAgent context for all functionality
   const { xagent, messages, isLoading, isSendingMessage, handleSubmit } =
     useXAgentContext();
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive or during streaming
   useEffect(() => {
-    // Use a small delay to ensure DOM is updated
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    const scrollToBottom = () => {
+      if (scrollAreaRef.current) {
+        const scrollElement = scrollAreaRef.current.querySelector(
+          "[data-radix-scroll-area-viewport]"
+        );
+        if (scrollElement) {
+          scrollElement.scrollTop = scrollElement.scrollHeight;
+        }
       }
-    }, 100);
+    };
 
-    return () => clearTimeout(timer);
-  }, [messages]);
+    const hasStreamingMessages = messages.some(
+      (msg) => msg.status === "streaming"
+    );
+
+    if (hasStreamingMessages) {
+      // More frequent scrolling during streaming
+      const interval = setInterval(scrollToBottom, 50); // Scroll every 50ms during streaming
+      return () => clearInterval(interval);
+    } else {
+      // Single scroll for new messages or when streaming ends
+      const timer = setTimeout(scrollToBottom, 10);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    messages.length,
+    messages.length > 0 ? messages[messages.length - 1]?.content?.length : 0,
+    isSendingMessage,
+  ]); // Trigger on message count, last message content length, and streaming state
 
   // Stop function for cancelling ongoing operations
   const handleStop = useCallback(() => {
@@ -56,7 +77,7 @@ export function ChatLayout() {
           </div>
         )
       ) : (
-        <ScrollArea className="flex-1 overflow-hidden">
+        <ScrollArea className="flex-1 overflow-hidden" ref={scrollAreaRef}>
           <div className="p-4 space-y-3">
             {messages.map((message) => (
               <MessageBubble

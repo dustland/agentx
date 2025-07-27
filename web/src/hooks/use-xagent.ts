@@ -108,13 +108,6 @@ export function useXAgent(xagentId: string) {
       (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
     );
 
-    console.log("[useXAgent] Combined messages:", result);
-    console.log(
-      "[useXAgent] Streaming messages count:",
-      streamingMessages.size
-    );
-    console.log("[useXAgent] Real messages count:", messages.length);
-
     return result;
   }, [messages, optimisticMessages, streamingMessages]);
 

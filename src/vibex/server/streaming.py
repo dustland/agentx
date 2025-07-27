@@ -39,7 +39,7 @@ class ProjectEventStream:
                 "timestamp": datetime.now().isoformat()
             }
             await stream.put(event)
-            logger.info(f"[SSE] Sent {event_type} event for project {project_id} to stream (queue size: {stream.qsize()})")
+            logger.debug(f"[SSE] Sent {event_type} event for project {project_id} to stream (queue size: {stream.qsize()})")
             logger.debug(f"[SSE] Event data: {data}")
         else:
             logger.warning(f"[SSE] No stream found for project {project_id}, creating one")
@@ -66,7 +66,7 @@ class ProjectEventStream:
                     logger.debug(f"[SSE] Timeout waiting for events, queue size: {stream.qsize()}")
                     continue
                 
-                logger.info(f"[SSE] Streaming event for task {project_id}: type={event['event']}, id={event['id']}")
+                logger.debug(f"[SSE] Streaming event for task {project_id}: type={event['event']}, id={event['id']}")
                 logger.debug(f"[SSE] Event content: {event['data']}")
                 
                 # Yield the event as a dictionary

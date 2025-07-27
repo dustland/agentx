@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Sidebar, SidebarItem } from "@/components/layout/sidebar";
+import { TypingIndicator } from "@/components/typing-indicator";
 import {
   ChevronRight,
   Settings,
@@ -444,6 +445,19 @@ export default function DesignPage() {
                     This is a destructive alert message.
                   </AlertDescription>
                 </Alert>
+              </div>
+            </div>
+
+            {/* Typing Indicator */}
+            <div className="space-y-3">
+              <h4 className="font-semibold">Typing Indicator</h4>
+              <div className="space-y-3">
+                <div className="bg-card border rounded-lg p-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Message content would go here...
+                  </p>
+                  <TypingIndicator />
+                </div>
               </div>
             </div>
           </div>

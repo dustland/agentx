@@ -202,17 +202,23 @@ class FileRegistry(Registry):
         """Get the owner of a project"""
         try:
             # List all user files and search for the project
-            user_files = await self.storage.list_files("*.json")
+            user_files_info = await self.storage.list_directory(".")
             
-            for user_file in user_files:
-                if user_file == "_project_index.json":  # Skip the old index file
+            for file_info in user_files_info:
+                user_file = file_info.path
+                if not user_file.endswith(".json") or user_file == "_project_index.json":  # Skip the old index file
                     continue
                 
                 try:
                     user_data = await self.storage.read_json(user_file)
                     if user_data and "projects" in user_data:
-                        if project_id in user_data["projects"]:
-                            return user_data["user_id"]
+                        # Check if project_id exists in the projects list
+                        projects = user_data["projects"]
+                        for project in projects:
+                            if isinstance(project, dict) and project.get("project_id") == project_id:
+                                return user_data["user_id"]
+                            elif isinstance(project, str) and project == project_id:
+                                return user_data["user_id"]
                 except Exception as e:
                     logger.warning(f"Failed to read user file {user_file}: {e}")
                     continue
