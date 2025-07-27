@@ -51,18 +51,15 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
         )}
       >
         {/* Content */}
-        <div
-          className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap break-words",
-            "text-foreground"
-          )}
-        >
+        <div className="text-foreground">
           {isAssistant ? (
             <div className="markdown-message">
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           ) : (
-            message.content
+            <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+              {message.content}
+            </div>
           )}
           {isStreaming && <TypingIndicator />}
         </div>
