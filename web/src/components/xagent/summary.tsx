@@ -59,6 +59,7 @@ export function Summary({ xagentId }: SummaryProps) {
     switch (status) {
       case "completed":
         return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
+      case "running":
       case "in_progress":
         return <PlayCircle className="h-4 w-4 text-blue-500" />;
       case "failed":
@@ -72,6 +73,7 @@ export function Summary({ xagentId }: SummaryProps) {
     switch (status) {
       case "completed":
         return "default";
+      case "running":
       case "in_progress":
         return "secondary";
       case "failed":
@@ -240,7 +242,7 @@ export function Summary({ xagentId }: SummaryProps) {
                       },
                     },
                     {
-                      status: "in_progress",
+                      status: "running",
                       label: "Running",
                       icon: PlayCircle,
                       colors: {
@@ -274,7 +276,9 @@ export function Summary({ xagentId }: SummaryProps) {
                     },
                   ].map(({ status, label, icon: Icon, colors }) => {
                     const count = planData.tasks.filter(
-                      (t) => t.status === status
+                      (t) =>
+                        t.status === status ||
+                        (status === "running" && t.status === "in_progress")
                     ).length;
                     return (
                       <div

@@ -78,23 +78,36 @@ class FileRegistry(Registry):
         """Get the file path for a user"""
         return f"{user_id}.json"
     
-    def _get_project_index_file(self) -> str:
-        """Get the reverse index file (project -> user mapping)"""
-        return "_project_index.json"
+
     
     async def _read_user_data(self, user_id: str) -> dict:
         """Read user data from file"""
         user_file = self._get_user_file(user_id)
         
         if not await self.storage.exists(user_file):
-            return {"user_id": user_id, "projects": [], "created_at": datetime.now().isoformat()}
+            return {
+                "user_id": user_id, 
+                "projects": [],
+                "created_at": datetime.now().isoformat()
+            }
         
         try:
             data = await self.storage.read_json(user_file)
-            return data or {"user_id": user_id, "projects": [], "created_at": datetime.now().isoformat()}
+            if not data:
+                return {
+                    "user_id": user_id, 
+                    "projects": [],
+                    "created_at": datetime.now().isoformat()
+                }
+            
+            return data
         except Exception as e:
             logger.error(f"Failed to read user data for {user_id}: {e}")
-            return {"user_id": user_id, "projects": [], "created_at": datetime.now().isoformat()}
+            return {
+                "user_id": user_id, 
+                "projects": [],
+                "created_at": datetime.now().isoformat()
+            }
     
     async def _write_user_data(self, user_id: str, data: dict) -> None:
         """Write user data to file"""
@@ -109,44 +122,41 @@ class FileRegistry(Registry):
             logger.error(f"Failed to write user data for {user_id}: {e}")
             raise
     
-    async def _update_project_index(self, project_id: str, user_id: Optional[str], config_path: Optional[str] = None) -> None:
-        """Update the reverse index (project -> user mapping)"""
-        index_file = self._get_project_index_file()
-        
-        try:
-            index_data = await self.storage.read_json(index_file) or {}
-            
-            if user_id:
-                index_data[project_id] = {
-                    "user_id": user_id,
-                    "config_path": config_path,
-                    "updated_at": datetime.now().isoformat()
-                }
-            else:
-                # Remove project from index
-                index_data.pop(project_id, None)
-            
-            result = await self.storage.write_json(index_file, index_data)
-            if not result.success:
-                raise Exception(f"Failed to update project index: {result.error}")
-                
-        except Exception as e:
-            logger.error(f"Failed to update project index: {e}")
-            raise
+
     
     async def add_project(self, user_id: str, project_id: str, config_path: Optional[str] = None) -> None:
         """Add a project to a user's index"""
         async with self._lock:
             user_data = await self._read_user_data(user_id)
             
-            # Add project if not already present
-            if project_id not in user_data.get("projects", []):
+            # Check if project already exists
+            existing_project = None
+            for project in user_data.get("projects", []):
+                if isinstance(project, dict) and project.get("project_id") == project_id:
+                    existing_project = project
+                    break
+                elif isinstance(project, str) and project == project_id:
+                    # Convert old string format to new object format
+                    existing_project = {"project_id": project_id}
+                    break
+            
+            if not existing_project:
                 if "projects" not in user_data:
                     user_data["projects"] = []
-                user_data["projects"].append(project_id)
                 
+                # Preserve existing created_at if project already exists
+                created_at = existing_project.get("created_at") if existing_project else datetime.now().isoformat()
+                
+                project_obj = {
+                    "project_id": project_id,
+                    "user_id": user_id,
+                    "config_path": config_path,
+                    "created_at": created_at,
+                    "updated_at": datetime.now().isoformat()
+                }
+                
+                user_data["projects"].append(project_obj)
                 await self._write_user_data(user_id, user_data)
-                await self._update_project_index(project_id, user_id, config_path)
                 
                 logger.info(f"Added project {project_id} to user {user_id}")
     
@@ -156,18 +166,32 @@ class FileRegistry(Registry):
             user_data = await self._read_user_data(user_id)
             
             # Remove project if present
-            if "projects" in user_data and project_id in user_data["projects"]:
-                user_data["projects"].remove(project_id)
-                
-                await self._write_user_data(user_id, user_data)
-                await self._update_project_index(project_id, None)
-                
-                logger.info(f"Removed project {project_id} from user {user_id}")
+            projects = user_data.get("projects", [])
+            for i, project in enumerate(projects):
+                if isinstance(project, dict) and project.get("project_id") == project_id:
+                    projects.pop(i)
+                    break
+                elif isinstance(project, str) and project == project_id:
+                    projects.pop(i)
+                    break
+            
+            await self._write_user_data(user_id, user_data)
+            logger.info(f"Removed project {project_id} from user {user_id}")
     
     async def get_user_projects(self, user_id: str) -> List[str]:
         """Get all project IDs for a user"""
         user_data = await self._read_user_data(user_id)
-        return user_data.get("projects", [])
+        projects = user_data.get("projects", [])
+        
+        # Convert to list of project IDs (handle both old string format and new object format)
+        project_ids = []
+        for project in projects:
+            if isinstance(project, dict):
+                project_ids.append(project.get("project_id"))
+            elif isinstance(project, str):
+                project_ids.append(project)
+        
+        return project_ids
     
     async def user_owns_project(self, user_id: str, project_id: str) -> bool:
         """Check if a user owns a specific project"""
@@ -176,15 +200,24 @@ class FileRegistry(Registry):
     
     async def get_project_owner(self, project_id: str) -> Optional[str]:
         """Get the owner of a project"""
-        index_file = self._get_project_index_file()
-        
         try:
-            index_data = await self.storage.read_json(index_file)
-            if not index_data:
-                return None
+            # List all user files and search for the project
+            user_files = await self.storage.list_files("*.json")
             
-            project_info = index_data.get(project_id)
-            return project_info.get("user_id") if project_info else None
+            for user_file in user_files:
+                if user_file == "_project_index.json":  # Skip the old index file
+                    continue
+                
+                try:
+                    user_data = await self.storage.read_json(user_file)
+                    if user_data and "projects" in user_data:
+                        if project_id in user_data["projects"]:
+                            return user_data["user_id"]
+                except Exception as e:
+                    logger.warning(f"Failed to read user file {user_file}: {e}")
+                    continue
+            
+            return None
             
         except Exception as e:
             logger.error(f"Failed to get project owner for {project_id}: {e}")
@@ -192,18 +225,38 @@ class FileRegistry(Registry):
     
     async def get_project_info(self, project_id: str) -> Optional[ProjectRegistryInfo]:
         """Get project information including config_path"""
-        index_file = self._get_project_index_file()
-        
         try:
-            index_data = await self.storage.read_json(index_file)
-            if index_data and project_id in index_data:
-                info = index_data[project_id]
-                return ProjectRegistryInfo(
-                    user_id=info["user_id"],
-                    config_path=info.get("config_path"),
-                    created_at=datetime.fromisoformat(info["created_at"])
-                )
-            return None
+            # First find which user owns this project
+            owner = await self.get_project_owner(project_id)
+            if not owner:
+                return None
+            
+            # Read the user's data to get project details
+            user_data = await self._read_user_data(owner)
+            projects = user_data.get("projects", [])
+            
+            # Find the project object
+            project_obj = None
+            for project in projects:
+                if isinstance(project, dict) and project.get("project_id") == project_id:
+                    project_obj = project
+                    break
+            
+            if not project_obj:
+                return None
+            
+            # Handle both created_at and updated_at fields for backward compatibility
+            created_at_str = project_obj.get("created_at") or project_obj.get("updated_at")
+            if created_at_str:
+                created_at = datetime.fromisoformat(created_at_str)
+            else:
+                created_at = datetime.now()  # Fallback to current time
+            
+            return ProjectRegistryInfo(
+                user_id=project_obj["user_id"],
+                config_path=project_obj.get("config_path"),
+                created_at=created_at
+            )
             
         except Exception as e:
             logger.error(f"Failed to get project info for {project_id}: {e}")

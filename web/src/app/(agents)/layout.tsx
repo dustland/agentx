@@ -53,15 +53,17 @@ const getTimeAgo = (date: Date): string => {
 const getStatusIcon = (status: string) => {
   switch (status) {
     case "running":
+    case "in_progress":
       return <AlertCircle className="h-3 w-3 text-blue-500" />;
     case "completed":
-      return <CheckCircle className="h-3 w-3 text-green-500" />;
+      return <CheckCircle className="h-3 w-3 text-emerald-500" />;
     case "error":
+    case "failed":
       return <XCircle className="h-3 w-3 text-red-500" />;
     case "pending":
-      return <Clock className="h-3 w-3 text-yellow-500" />;
+      return <Clock className="h-3 w-3 text-slate-400" />;
     default:
-      return <Clock className="h-3 w-3 text-gray-500" />;
+      return <Clock className="h-3 w-3 text-slate-400" />;
   }
 };
 
@@ -70,6 +72,7 @@ const statusOptions = [
   { value: "running", label: "Running" },
   { value: "completed", label: "Completed" },
   { value: "error", label: "Error" },
+  { value: "failed", label: "Failed" },
   { value: "pending", label: "Pending" },
 ];
 
@@ -227,7 +230,8 @@ export default function TasksLayout({
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-3 w-3 absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                        size="icon"
+                        className="p-1 h-3 w-3 absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"
                       >
                         <Filter className="h-3 w-3" />
                       </Button>
@@ -236,7 +240,7 @@ export default function TasksLayout({
                       {statusOptions.map((option) => (
                         <DropdownMenuCheckboxItem
                           key={option.value}
-                          className="cursor-pointer text-xs hover:bg-muted"
+                          className="cursor-pointer hover:bg-muted"
                           checked={statusFilter.includes(option.value)}
                           onCheckedChange={(checked) => {
                             if (option.value === "all") {
@@ -280,10 +284,10 @@ export default function TasksLayout({
                       key={xagent.xagent_id}
                       className={cn(
                         "group relative rounded-lg cursor-pointer transition-all duration-200",
-                        "border hover:shadow-sm",
+                        "border overflow-hidden",
                         isActive
-                          ? "bg-accent border-accent-foreground/20 shadow-sm"
-                          : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
+                          ? "bg-gradient-to-br from-accent/80 to-accent border-accent-foreground/20"
+                          : "bg-gradient-to-br from-card/80 to-card/90 border-border/50 hover:from-card hover:to-card hover:border-border"
                       )}
                       onClick={() => handleXAgentClick(xagent.xagent_id)}
                     >
@@ -292,10 +296,16 @@ export default function TasksLayout({
                         <div
                           className={cn(
                             "absolute left-0 top-0 bottom-0 w-1 rounded-l-lg transition-all",
-                            xagent.status === "running" && "bg-blue-500",
-                            xagent.status === "completed" && "bg-green-500",
-                            xagent.status === "error" && "bg-red-500",
-                            xagent.status === "pending" && "bg-yellow-500"
+                            (xagent.status === "running" ||
+                              xagent.status === "in_progress") &&
+                              "bg-gradient-to-b from-blue-500 to-blue-600",
+                            xagent.status === "completed" &&
+                              "bg-gradient-to-b from-emerald-500 to-emerald-600",
+                            (xagent.status === "error" ||
+                              xagent.status === "failed") &&
+                              "bg-gradient-to-b from-red-500 to-red-600",
+                            xagent.status === "pending" &&
+                              "bg-gradient-to-b from-slate-400 to-slate-500"
                           )}
                         />
                       )}
@@ -322,8 +332,24 @@ export default function TasksLayout({
                             {xagent.status && (
                               <div className="flex items-center gap-1">
                                 {getStatusIcon(xagent.status)}
-                                <span className="capitalize">
-                                  {xagent.status}
+                                <span
+                                  className={cn(
+                                    "capitalize text-xs font-medium px-1.5 py-0.5 rounded",
+                                    (xagent.status === "running" ||
+                                      xagent.status === "in_progress") &&
+                                      "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300",
+                                    xagent.status === "completed" &&
+                                      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300",
+                                    (xagent.status === "error" ||
+                                      xagent.status === "failed") &&
+                                      "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-300",
+                                    xagent.status === "pending" &&
+                                      "bg-slate-100 text-slate-700 dark:bg-slate-950/30 dark:text-slate-300"
+                                  )}
+                                >
+                                  {xagent.status === "in_progress"
+                                    ? "running"
+                                    : xagent.status.replace("_", " ")}
                                 </span>
                               </div>
                             )}
