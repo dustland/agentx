@@ -195,6 +195,20 @@ class XAgent(Agent):
         # Parallel execution settings
         self.parallel_execution = True  # Enable parallel execution by default
         self.max_concurrent_tasks = 3  # Default concurrency limit
+        
+        # Execution control
+        self._execution_interrupted = False  # Flag to interrupt ongoing execution
+        
+        # Message queue for async processing
+        self._message_queue: asyncio.Queue[Message] = asyncio.Queue()
+        self._consumer_task: Optional[asyncio.Task] = None
+        self._is_processing = False
+        
+        # Response tracking
+        self._response_futures: Dict[str, asyncio.Future] = {}
+        
+        # Mode tracking for messages
+        self._message_modes: Dict[str, str] = {}
 
         # Initialize handoff evaluator if handoffs are configured
         self.handoff_evaluator = None
@@ -205,7 +219,111 @@ class XAgent(Agent):
             )
 
         logger.info("✅ XAgent initialized and ready for conversation")
+        
+        # Start the message consumer
+        self._start_message_consumer()
 
+    async def cleanup(self) -> None:
+        """Clean up resources when XAgent is done."""
+        # Set interruption flag
+        self._execution_interrupted = True
+        
+        # Stop the consumer task
+        if self._consumer_task and not self._consumer_task.done():
+            self._consumer_task.cancel()
+            try:
+                await self._consumer_task
+            except asyncio.CancelledError:
+                pass
+            logger.info("Stopped message consumer")
+        
+        # Cancel any pending response futures
+        for future in self._response_futures.values():
+            if not future.done():
+                future.cancel()
+        self._response_futures.clear()
+        
+        # Clean up any streaming operations in the brain
+        if hasattr(self, 'brain') and hasattr(self.brain, 'cleanup'):
+            await self.brain.cleanup()
+    
+    def _start_message_consumer(self) -> None:
+        """Start the async message consumer loop."""
+        if not self._consumer_task or self._consumer_task.done():
+            self._consumer_task = asyncio.create_task(self._message_consumer_loop())
+            logger.info("Started message consumer loop")
+    
+    async def _message_consumer_loop(self) -> None:
+        """Continuously process messages from the queue."""
+        logger.info("Message consumer loop started")
+        
+        while True:
+            try:
+                # Wait for a message from the queue
+                message = await self._message_queue.get()
+                logger.info(f"Processing message from queue: {message.content[:100]}...")
+                
+                # Set processing flag
+                self._is_processing = True
+                
+                try:
+                    # Process the message
+                    response = await self._process_message(message)
+                    
+                    # Set the response future if one exists
+                    response_future = self._response_futures.pop(message.id, None)
+                    if response_future and not response_future.done():
+                        response_future.set_result(response)
+                        logger.info(f"Response sent for message {message.id}")
+                    
+                    # Clean up mode tracking
+                    self._message_modes.pop(message.id, None)
+                    
+                except Exception as e:
+                    logger.error(f"Error processing message: {e}", exc_info=True)
+                    
+                    # Set error response if future exists
+                    response_future = self._response_futures.pop(message.id, None)
+                    if response_future and not response_future.done():
+                        error_response = XAgentResponse(
+                            text=f"Error processing message: {str(e)}",
+                            metadata={"error": str(e)}
+                        )
+                        response_future.set_result(error_response)
+                    
+                    # Clean up mode tracking
+                    self._message_modes.pop(message.id, None)
+                    
+                finally:
+                    self._is_processing = False
+                    
+            except asyncio.CancelledError:
+                logger.info("Message consumer loop cancelled")
+                break
+            except Exception as e:
+                logger.error(f"Unexpected error in message consumer: {e}", exc_info=True)
+                await asyncio.sleep(1)  # Brief pause before retrying
+    
+    def _build_context_messages(self) -> List[Dict[str, Any]]:
+        """Build context messages for the LLM including plan state."""
+        messages = []
+        
+        # Add plan context if available
+        if self.plan:
+            plan_summary = f"Current goal: {self.project.goal if self.project else 'Unknown'}\n"
+            plan_summary += f"Total tasks: {len(self.plan.tasks)}\n"
+            plan_summary += f"Pending: {sum(1 for t in self.plan.tasks if t.status == 'pending')}\n"
+            plan_summary += f"Completed: {sum(1 for t in self.plan.tasks if t.status == 'completed')}\n"
+            
+            messages.append({
+                "role": "system",
+                "content": f"Plan context:\n{plan_summary}"
+            })
+        
+        # Add recent conversation history if needed
+        # For now, just return the plan context
+        return messages
+    
     def _setup_task_logging(self) -> None:
         """Sets up file-based logging for the project."""
         log_dir = self.project_storage.get_project_path() / "logs"
@@ -304,38 +422,77 @@ class XAgent(Agent):
 
     async def chat(self, message: Union[str, Message], mode: str = "agent") -> XAgentResponse:
         """
-        Send a conversational message to X and get a response.
+        Queue a message for processing and wait for response.
+        
+        This method adds messages to the queue and waits for the consumer
+        to process them, ensuring proper message ordering and interruption.
+        
+        Args:
+            message: The message to process
+            mode: Execution mode - "agent" (multi-agent with plan) or "chat" (direct response)
+            
+        Returns:
+            XAgentResponse with the processing result
+        """
+        # Convert string to Message if needed
+        if isinstance(message, str):
+            message = Message.user_message(message)
+            
+        # Store mode separately since Message doesn't have metadata
+        self._message_modes[message.id] = mode
+        
+        # Create a future to track the response
+        response_future = asyncio.Future()
+        self._response_futures[message.id] = response_future
+        
+        # Add to queue
+        await self._message_queue.put(message)
+        logger.info(f"Message queued: {message.content[:100]}...")
+        
+        try:
+            # Wait for the response (with timeout)
+            response = await asyncio.wait_for(response_future, timeout=300.0)  # 5 minute timeout
+            return response
+        except asyncio.TimeoutError:
+            # Clean up the future and mode tracking
+            self._response_futures.pop(message.id, None)
+            self._message_modes.pop(message.id, None)
+            return XAgentResponse(
+                text="Request timed out after 5 minutes",
+                metadata={"error": "timeout", "mode": mode}
+            )
+    
+    async def _process_message(self, message: Message) -> XAgentResponse:
+        """
+        Process a message from the queue.
 
-        This is the conversational interface that handles:
+        This handles the actual message processing logic:
         - User questions and clarifications
         - Plan adjustments and modifications
         - Rich messages with attachments
         - Preserving completed work while regenerating only necessary steps
 
-        This method is for USER INPUT and conversation, not for autonomous project execution.
-        For autonomous project execution, use step() method instead.
-
         Args:
-            message: Either a simple text string or a rich Message with parts
-            mode: Execution mode - "agent" (multi-agent with plan) or "chat" (direct response)
+            message: The message to process (from queue)
 
         Returns:
             XAgentResponse with text, artifacts, and execution details
         """
         setup_clean_chat_logging()
-
-        # Convert string to Message if needed
-        if isinstance(message, str):
-            message = Message.user_message(message)
+        
+        # Get mode from tracking dict
+        mode = self._message_modes.get(message.id, "agent")
 
         # Add to conversation history
         self.conversation_history.append(message)
         self.history.add_message(message)
         
         # Persist message to chat history
-        import asyncio
         if hasattr(self, 'chat_storage'):
             asyncio.create_task(self.chat_storage.save_message(self.project_id, message))
+        
+        # If another message arrives while processing, it will be queued
+        # The consumer loop will process it after this one completes
 
         logger.info(f"XAgent received chat message: {message.content[:100]}...")
 
@@ -344,46 +501,127 @@ class XAgent(Agent):
             # Handle empty message - means "figure out what to do next"
             if not message.content.strip():
                 logger.info("Empty message received - X will figure out what to do next")
+                logger.info(f"Plan exists: {self.plan is not None}, Tasks: {len(self.plan.tasks) if self.plan else 0}")
+                if self.plan:
+                    pending_count = sum(1 for t in self.plan.tasks if t.status == "pending")
+                    logger.info(f"Pending tasks: {pending_count}")
                 # If we have a plan, execute the next pending task
                 if self.plan and any(task.status == "pending" for task in self.plan.tasks):
-                    response_text = await self.step()
+                    # Reset interruption flag before executing
+                    self._execution_interrupted = False
+                    
+                    # Execute all pending tasks, checking for interruptions
+                    execution_results = []
+                    while self.plan and any(task.status == "pending" for task in self.plan.tasks):
+                        # Check if we should stop for a new message
+                        if not self._message_queue.empty():
+                            logger.info("New message in queue, pausing execution")
+                            execution_results.append("⏸️ Execution paused - new message received")
+                            break
+                            
+                        # Execute one step
+                        try:
+                            step_result = await self.step()
+                            execution_results.append(step_result)
+                        except asyncio.CancelledError:
+                            logger.info("Step execution cancelled")
+                            execution_results.append("⏸️ Execution interrupted")
+                            break
+                        except Exception as e:
+                            logger.error(f"Error during step: {e}")
+                            execution_results.append(f"❌ Error: {str(e)}")
+                            break
+                        
+                        # Check if execution was interrupted
+                        if self._execution_interrupted:
+                            break
+                            
+                        # Break if completed or failed
+                        if "completed successfully" in step_result or "Cannot continue" in step_result:
+                            break
+                    
+                    response_text = "\n".join(execution_results) if execution_results else "No tasks executed"
                     response = XAgentResponse(
                         text=response_text,
                         metadata={"empty_message": True}
                     )
                 # If no plan or all tasks complete, ask for direction
                 else:
-                    return XAgentResponse(
+                    response = XAgentResponse(
                         text="I'm ready to help! What would you like me to work on? Please provide a specific task or goal.",
                         metadata={"empty_message": True, "has_plan": bool(self.plan)}
                     )
             
-            # In chat mode, always respond directly without plan
+            # Handle based on mode
             if mode == "chat":
+                # Chat mode - always respond directly without plan
                 response = await self._handle_chat_mode(message)
             else:
-                # Agent mode - original behavior with plan
-                # Ensure plan is initialized if we have an initial prompt
+                # Agent mode - handle message and execute plan
                 await self._ensure_plan_initialized()
-
-                # Analyze message impact on current plan
-                impact_analysis = await self._analyze_message_impact(message)
-
-                # If message requires plan adjustment
-                if impact_analysis.get("requires_plan_adjustment", False):
-                    response = await self._handle_plan_adjustment(message, impact_analysis)
-
-                # If message is Q&A or informational
-                elif impact_analysis.get("is_informational", False):
-                    response = await self._handle_informational_query(message)
-
-                # If no plan exists and this is a new task request
-                elif not self.plan and impact_analysis.get("is_new_task", False):
-                    response = await self._handle_new_task_request(message)
-
-                # Default: treat as conversational input
+                
+                # Non-empty message with existing plan
+                if self.plan:
+                    # The message goes to the LLM to interpret and respond
+                    # The LLM's response IS the action - no keyword detection
+                    response = await self._handle_agent_message(message)
+                    
+                    # After responding, check if there are pending tasks and no new messages
+                    # This allows natural flow: respond first, then continue execution if appropriate
+                    if (self.plan and 
+                        any(task.status == "pending" for task in self.plan.tasks) and
+                        self._message_queue.empty()):
+                        
+                        logger.info("Continuing execution after message handling")
+                        
+                        # Reset interruption flag before executing
+                        self._execution_interrupted = False
+                        
+                        # Execute one step at a time, checking for interruptions
+                        execution_results = []
+                        try:
+                            step_result = await self.step()
+                            execution_results.append(step_result)
+                        except asyncio.CancelledError:
+                            logger.info("Initial execution cancelled")
+                            execution_results.append("⏸️ Execution interrupted")
+                        except Exception as e:
+                            logger.error(f"Error during initial step: {e}")
+                            execution_results.append(f"❌ Error: {str(e)}")
+                        
+                        # Only continue if no new messages
+                        while (self.plan and 
+                               any(task.status == "pending" for task in self.plan.tasks) and
+                               self._message_queue.empty() and
+                               not self._execution_interrupted):
+                            
+                            # Break if completed or failed
+                            if "completed successfully" in step_result or "Cannot continue" in step_result:
+                                break
+                            
+                            try:
+                                # Execute next step with proper cancellation handling
+                                step_result = await self.step()
+                                execution_results.append(step_result)
+                            except asyncio.CancelledError:
+                                logger.info("Execution cancelled due to interruption")
+                                execution_results.append("⏸️ Execution interrupted")
+                                break
+                            except Exception as e:
+                                logger.error(f"Error during step execution: {e}")
+                                execution_results.append(f"❌ Error: {str(e)}")
+                                break
+                        
+                        # Append execution results to the response
+                        if execution_results:
+                            execution_text = "\n\n" + "\n".join(execution_results)
+                            response = XAgentResponse(
+                                text=response.text + execution_text,
+                                metadata=response.metadata
+                            )
                 else:
-                    response = await self._handle_conversational_input(message)
+                    # No plan yet - create one based on the message
+                    response = await self._handle_new_task_request(message)
 
         except Exception as e:
             logger.error(f"Error processing chat message: {e}")
@@ -538,13 +776,15 @@ CONVERSATION CONTEXT:
 {self._get_conversation_summary()}
 
 Please analyze:
-1. Does this message require adjusting the current plan?
-2. Is this an informational query (asking about status, sources, methodology)?
-3. If plan adjustment is needed, which specific tasks should be regenerated?
-4. What completed work should be preserved?
+1. Is this a command to execute/continue the current plan?
+2. Does this message require adjusting the current plan?
+3. Is this an informational query (asking about status, sources, methodology)?
+4. If plan adjustment is needed, which specific tasks should be regenerated?
+5. What completed work should be preserved?
 
 Respond with a JSON object:
 {{
+  "is_execution_command": boolean,
   "requires_plan_adjustment": boolean,
   "is_informational": boolean,
   "is_new_task": boolean,
@@ -568,10 +808,13 @@ Respond with a JSON object:
             return result
         except (json.JSONDecodeError, ValueError):
             # Fallback to simple heuristics
+            message_lower = message.content.lower()
             return {
-                "requires_plan_adjustment": any(word in message.content.lower()
+                "is_execution_command": any(word in message_lower 
+                                          for word in ["execute", "continue", "run", "go", "start", "proceed"]),
+                "requires_plan_adjustment": any(word in message_lower
                                                for word in ["regenerate", "redo", "change", "update", "revise"]),
-                "is_informational": any(word in message.content.lower()
+                "is_informational": any(word in message_lower
                                        for word in ["what", "how", "why", "explain", "show"]),
                 "is_new_task": not self.plan,
                 "affected_tasks": [],
@@ -653,8 +896,11 @@ Please provide a helpful, informative response based on the current state of the
 
         return XAgentResponse(
             text=f"I've created a plan for your task: {self.project.goal if self.project else 'Unknown'}\n\n"
-                 f"The plan includes {len(self.plan.tasks)} tasks. "
-                 f"Use step() to execute the plan autonomously, or continue chatting to refine it.",
+                 f"The plan includes {len(self.plan.tasks)} tasks.\n\n"
+                 f"To execute the plan, you can:\n"
+                 f"- Say 'continue', 'execute', or 'run' to start execution\n"
+                 f"- Send an empty message to execute the next step\n"
+                 f"- Or continue chatting to refine the plan first",
             metadata={"execution_type": "plan_created"}
         )
 
@@ -687,6 +933,30 @@ suggest they be more specific about what changes they want.
             message_id=message_id
         )
 
+    async def _handle_agent_message(self, message: Message) -> XAgentResponse:
+        """
+        Handle a message in agent mode - let the LLM interpret and respond.
+        No keyword detection or rule-based logic.
+        """
+        messages = self._build_context_messages()
+        messages.append({"role": "user", "content": message.content})
+        
+        # Simple prompt - let the LLM be intelligent
+        system_prompt = f"""You are the project's X agent. You're managing the execution of a plan.
+
+Current project goal: {self.project.goal if self.project else 'Unknown'}
+Plan status: {len([t for t in self.plan.tasks if t.status == 'pending'])} pending, {len([t for t in self.plan.tasks if t.status == 'completed'])} completed
+
+Respond naturally to the user's message. Be concise and helpful."""
+        
+        # Get response from brain
+        response_text, msg_id = await self._stream_full_response(messages, system_prompt)
+        
+        return XAgentResponse(
+            text=response_text,
+            metadata={"message_id": msg_id, "mode": "agent"}
+        )
+    
     async def _handle_chat_mode(self, message: Message) -> XAgentResponse:
         """Handle messages in chat mode - direct LLM response without plan."""
         # Build context for direct response
@@ -799,6 +1069,11 @@ Respond with a JSON object following this schema:
         """Execute a single step of the plan."""
         if not self.plan:
             return "No plan available for execution."
+            
+        # Check for interruption
+        if self._execution_interrupted:
+            logger.info("Execution interrupted by new message")
+            return "⏸️ Execution paused - new message received"
 
         # Check if plan is already complete
         if self.plan.is_complete():

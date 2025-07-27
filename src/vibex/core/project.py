@@ -304,9 +304,12 @@ async def start_project(
     
     if goal:
         logger.info(f"Creating initial plan for project {project_id}")
-        plan_response = await x_agent._generate_plan(goal)
-        if plan_response and hasattr(plan_response, 'plan'):
-            await project.create_plan(plan_response.plan)
+        plan = await x_agent._generate_plan(goal)
+        if plan:
+            await project.create_plan(plan)
+            # Sync plan to XAgent
+            x_agent.plan = plan
+            x_agent._plan_initialized = True
     
     logger.info(f"Started project {project_id} with goal: {goal}")
     return project
