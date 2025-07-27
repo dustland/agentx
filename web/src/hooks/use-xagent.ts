@@ -128,8 +128,8 @@ export function useXAgent(xagentId: string) {
   useEffect(() => {
     if (!xagentId || xagentId === "dummy-task-id") return;
 
-        console.log("[useXAgent] Setting up SSE connection for agent:", xagentId);
- 
+    console.log("[useXAgent] Setting up SSE connection for agent:", xagentId);
+
     const cleanup = vibex.subscribeToXAgentUpdates(
       xagentId,
       (data) => {
@@ -245,7 +245,7 @@ export function useXAgent(xagentId: string) {
 
     // Store cleanup function in ref for proper cleanup
     sseCleanupRef.current = () => cleanup.close();
-    
+
     return () => {
       console.log(
         "[useXAgent] Cleaning up SSE connection for agent:",
@@ -270,7 +270,7 @@ export function useXAgent(xagentId: string) {
   });
 
   const handleSubmit = useCallback(
-    (message: string, mode?: "chat" | "command") => {
+    (message: string, mode?: "chat" | "agent") => {
       if (!message.trim()) return;
 
       // Add optimistic message
@@ -409,7 +409,7 @@ export function useMemory(xagentId: string, query: string, limit: number = 10) {
 
   return useQuery({
     queryKey: xagentKeys.memory(xagentId, query, limit),
-    queryFn: () => vibex.searchMemory({ agent_id: xagentId, query, limit }),
+    queryFn: () => vibex.searchMemory({ xagent_id: xagentId, query, limit }),
     enabled: !!xagentId && !!query && xagentId !== "dummy-task-id",
   });
 }

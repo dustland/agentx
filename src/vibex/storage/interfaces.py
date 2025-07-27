@@ -83,6 +83,24 @@ class FileStorage(StorageBackend):
         """Write binary content to a file."""
         pass
 
+    async def read_json(self, path: str) -> Optional[Dict[str, Any]]:
+        """Read and parse JSON content from a file."""
+        try:
+            content = await self.read_text(path)
+            import json
+            return json.loads(content)
+        except Exception:
+            return None
+
+    async def write_json(self, path: str, data: Dict[str, Any], indent: int = 2) -> StorageResult:
+        """Write data as JSON to a file."""
+        try:
+            import json
+            content = json.dumps(data, indent=indent)
+            return await self.write_text(path, content)
+        except Exception as e:
+            return StorageResult(success=False, error=str(e))
+
     @abstractmethod
     async def append_text(self, path: str, content: str, encoding: str = "utf-8") -> StorageResult:
         """Append text content to a file."""

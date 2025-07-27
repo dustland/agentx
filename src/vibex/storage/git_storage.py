@@ -40,13 +40,19 @@ class GitArtifactStorage:
     - Meaningful commit messages
     """
 
-    def __init__(self, base_path: Union[str, Path], project_id: str):
+    def __init__(self, project_dir: Union[str, Path], project_id: str):
+        """
+        Initialize Git-based artifact storage.
+        
+        Args:
+            project_dir: The full path to this project's directory
+            project_id: The project ID (used for commit messages)
+        """
         if not GIT_AVAILABLE:
             raise ImportError("GitPython is required for Git-based artifact storage")
 
-        # Single API: base_path + project_id for project isolation
-        self.project_path = Path(base_path) / project_id
-
+        self.project_path = Path(project_dir)
+        self.project_id = project_id
         self.artifacts_path = self.project_path / "artifacts"
         self.artifacts_path.mkdir(parents=True, exist_ok=True)
 
@@ -56,14 +62,14 @@ class GitArtifactStorage:
         # Initialize or open Git repository
         self.repo = self._init_repository()
 
-        logger.info(f"GitArtifactStorage initialized: {self.artifacts_path}")
+        logger.debug(f"GitArtifactStorage initialized: {self.artifacts_path}")
 
     def _init_repository(self) -> Repo:
         """Initialize or open Git repository."""
         try:
             # Try to open existing repository
             repo = Repo(self.artifacts_path)
-            logger.info("Opened existing Git repository for artifacts")
+            logger.debug("Opened existing Git repository for artifacts")
             return repo
         except InvalidGitRepositoryError:
             # Initialize new repository
@@ -76,7 +82,7 @@ class GitArtifactStorage:
 
             # Git repository initialized - no initial commit needed
 
-            logger.info("Initialized new Git repository for artifacts")
+            logger.debug("Initialized new Git repository for artifacts")
             return repo
 
     async def store_artifact(

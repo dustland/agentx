@@ -181,7 +181,7 @@ class TestXAgentHandoffs:
                 handoff_task = test_plan.tasks[1]
                 assert handoff_task.assigned_to == "reviewer"
                 assert handoff_task.dependencies == ["task_1"]
-                assert "Continue work with reviewer" in handoff_task.name
+                assert "Continue work with reviewer" in handoff_task.action
 
                 # Verify response includes handoff message
                 assert "Handing off to reviewer" in result

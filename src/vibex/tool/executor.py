@@ -180,7 +180,7 @@ class ToolExecutor:
         self.active_executions = 0
         self.execution_history: List[Dict[str, Any]] = []
 
-        logger.info("🔧 ToolExecutor initialized with security policies")
+        logger.debug("🔧 ToolExecutor initialized with security policies")
 
     async def execute_tool(
         self,

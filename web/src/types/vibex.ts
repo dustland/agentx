@@ -125,7 +125,7 @@ export interface CreateXAgentRequest {
 }
 
 export interface XAgent {
-  agent_id: string;
+  xagent_id: string;
   name?: string;
   status: TaskStatus;
   goal?: string;
@@ -191,7 +191,7 @@ export interface StreamEvent {
 
 // Specific stream event data types
 export interface AgentMessageEvent {
-  agent_id: string;
+  xagent_id: string;
   message: string;
   message_id?: string;
   timestamp?: string;
@@ -200,14 +200,14 @@ export interface AgentMessageEvent {
 }
 
 export interface ToolCallStartEvent {
-  agent_id: string;
+  xagent_id: string;
   tool_call_id: string;
   tool_name: string;
   args: Record<string, any>;
 }
 
 export interface ToolCallResultEvent {
-  agent_id: string;
+  xagent_id: string;
   tool_call_id: string;
   tool_name: string;
   result: any;
@@ -215,7 +215,7 @@ export interface ToolCallResultEvent {
 }
 
 export interface AgentStatusEvent {
-  agent_id: string;
+  xagent_id: string;
   status: "idle" | "thinking" | "working" | "waiting";
   message?: string;
 }
@@ -269,7 +269,7 @@ export interface MemoryContent {
 }
 
 export interface MemorySearchRequest {
-  agent_id: string;
+  xagent_id: string;
   query: string;
   limit?: number;
 }

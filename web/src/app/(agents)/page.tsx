@@ -82,7 +82,7 @@ export default function HomePage() {
         {
           onSuccess: (response) => {
             console.log("XAgent created successfully:", response);
-            const agentId = response.agent_id;
+            const agentId = response.xagent_id;
 
             if (!agentId) {
               throw new Error("No agent ID returned from API");

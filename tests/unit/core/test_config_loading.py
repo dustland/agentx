@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from vibex.core.xagent import XAgent
 from vibex.core.agent import Agent
 from vibex.tool.registry import get_tool_registry
-from vibex.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, TaskConfig, ConfigurationError
+from vibex.core.config import TeamConfig, AgentConfig, BrainConfig, ToolConfig, ProjectConfig, ConfigurationError
 
 # It's better to use absolute paths in tests to avoid issues with the test runner's CWD
 # This finds the project root based on the test file's location.
@@ -18,229 +18,154 @@ try:
     # Check if a known file exists to validate root
     if not (PROJECT_ROOT / 'pyproject.toml').exists():
         # This works when the CWD is inside the tests folder
-        PROJECT_ROOT = Path.cwd().parent
-except FileNotFoundError:
+        PROJECT_ROOT = Path.cwd()
+        while not (PROJECT_ROOT / 'pyproject.toml').exists() and PROJECT_ROOT.parent != PROJECT_ROOT:
+            PROJECT_ROOT = PROJECT_ROOT.parent
+except:
+    # Fallback: assume we're in the project root
     PROJECT_ROOT = Path.cwd()
 
-
-SIMPLE_TEAM_CONFIG_PATH = PROJECT_ROOT / "examples" / "simple-research-team" / "team.json"
-
-@pytest.fixture
-def tool_registry():
-    """Fixture to get a clean tool registry for each test."""
-    registry = get_tool_registry()
-    registry.clear()
-    yield registry
-    registry.clear()
+@pytest.fixture(scope="module")
+def project_root():
+    return PROJECT_ROOT
 
 @pytest.fixture
-def sample_team_config_path():
-    """Fixture that provides the path to the sample team config."""
-    return "tests/test_taskspaces/sample_team/team.yaml"
+def sample_team_config_path(project_root):
+    """Returns the path to a sample team configuration file."""
+    return str(project_root / "examples" / "simple_team" / "config" / "team.yaml")
+
+@pytest.fixture
+def sample_prompt_path(project_root):
+    """Returns the path to the sample prompt template."""
+    return str(project_root / "examples" / "simple_team" / "config" / "prompts" / "analyst.jinja2")
 
 @pytest.fixture(autouse=True)
-def clear_tool_registry_fixture():
-    """Fixture to automatically clear the tool registry before each test."""
+def reset_tool_registry():
+    """Reset the tool registry before each test to avoid conflicts."""
     registry = get_tool_registry()
     registry.clear()
-    yield
-    registry.clear()
 
-def test_load_team_from_config(sample_team_config_path: str):
-    """
-    Tests that an XAgent can be successfully loaded from a YAML config file.
-    """
-    # Act
-    xagent = XAgent(sample_team_config_path)
-
-    # Assert
-    assert xagent.team_config.name == "sample_team"
-    assert len(xagent.specialist_agents) == 3  # coordinator, analyst, writer
-    assert "coordinator" in xagent.specialist_agents
-    assert "analyst" in xagent.specialist_agents
-    assert "writer" in xagent.specialist_agents
-
-    # Check max rounds - this comes from team_config.max_rounds (default 10)
-    assert xagent.team_config.max_rounds == 10
-
-def test_load_team_with_nonexistent_config():
-    """
-    Tests that loading a non-existent config file raises ConfigurationError.
-    """
-    with pytest.raises(ConfigurationError):
-        XAgent("non_existent_path/team.yaml")
-
-def test_load_team_with_invalid_yaml(tmp_path: Path):
-    """
-    Tests that loading a malformed YAML file raises a parsing error.
-    """
-    invalid_yaml = "name: Test Team\n  agents: - name: agent1" # Bad indentation
-    config_path = tmp_path / "invalid_team.yaml"
-    config_path.write_text(invalid_yaml)
-
-    with pytest.raises(ConfigurationError):
-        XAgent(str(config_path))
-
-def test_load_team_with_validation_error(tmp_path: Path):
-    """
-    Tests that a config with missing required fields raises a configuration error.
-    """
-    # 'name' field is missing, which should cause a validation error
-    invalid_config = """
-version: "1.0"
-agents:
-  - name: "researcher"
-    description: "A researcher agent"
-    prompt_template: "prompt.jinja2"
-    tools: []
-"""
-    config_path = tmp_path / "invalid_team.yaml"
-    (tmp_path / "prompt.jinja2").write_text("dummy prompt")
-    config_path.write_text(invalid_config)
-
-    with pytest.raises(ConfigurationError):
-        XAgent(str(config_path))
-
-def test_load_team_with_invalid_tool_source(tmp_path: Path):
-    """
-    Tests that an invalid tool source string is handled gracefully.
-    """
-    invalid_config = """
-version: "1.0"
-name: "Test Team"
-description: "A test team"
-agents:
-  - name: "test_agent"
-    description: "Test agent"
-    prompt_template: "prompt.jinja2"
-    tools: []
-tools:
-  - name: "bad_tool"
-    type: "python_function"
-    source: "non.existent.module.NonExistentTool"
-"""
-    config_path = tmp_path / "team.yaml"
-    (tmp_path / "prompt.jinja2").write_text("dummy prompt")
-    config_path.write_text(invalid_config)
-
-    # This should load successfully since we don't validate tool sources at load time
-    xagent = XAgent(str(config_path))
-    assert xagent.team_config.name == "Test Team"
-
-def test_load_team_with_undefined_agent_tool(tmp_path: Path):
-    """
-    Tests that an agent referencing an undefined tool is handled gracefully.
-    """
-    config = """
-version: "1.0"
-name: "Test Team"
-description: "A test team"
-agents:
-  - name: "agent1"
-    description: "Test agent"
-    prompt_template: "prompt.jinja2"
-    tools: ["some_tool_that_does_not_exist"]
-tools: []
-"""
-    config_path = tmp_path / "team.yaml"
-    (tmp_path / "prompt.jinja2").write_text("prompt")
-    config_path.write_text(config)
-
-    # This should load successfully
-    xagent = XAgent(str(config_path))
-    assert xagent.team_config.name == "Test Team"
+# REMOVED: XAgent no longer accepts config path as constructor argument
+# The following tests have been removed as they test outdated XAgent initialization:
+# - test_load_team_from_config
+# - test_load_team_with_nonexistent_config
+# - test_load_team_with_invalid_yaml
+# - test_load_team_with_validation_error
+# - test_load_team_with_invalid_tool_source
+# - test_load_team_with_undefined_agent_tool
 
 def test_basic_team_config_loading():
-    """Test loading a basic team configuration."""
-
-    # Create a minimal team configuration
-    config_data = {
-        'name': 'test_team',
-        'description': 'A test team configuration',
-        'agents': [
-            {
-                'name': 'assistant',
-                'description': 'A helpful assistant agent',
-                'prompt_template': 'assistant.jinja2',
-                'tools': ['file_ops']
-            }
-        ],
-        'tools': [
-            {
-                'name': 'file_ops',
-                'type': 'builtin',
-                'description': 'File operations'
-            }
-        ]
-    }
-
-    # Create TeamConfig from dict
-    team_config = TeamConfig(**config_data)
-
-    # Verify the configuration
-    assert team_config.name == 'test_team'
-    assert team_config.description == 'A test team configuration'
-    assert len(team_config.agents) == 1
-    assert len(team_config.tools) == 1
-    assert team_config.agents[0].name == 'assistant'
-    assert team_config.tools[0].name == 'file_ops'
-
-def test_team_config_validation():
-    """Test that team configuration validation works correctly."""
-
-    # Test missing required fields
-    with pytest.raises(Exception):  # Should raise validation error
-        TeamConfig()
-
-    # Test valid minimal config
-    config = TeamConfig(
-        name="test",
-        description="test team",
+    """
+    Tests basic team configuration creation
+    """
+    # Create team config programmatically
+    team_config = TeamConfig(
+        name="Test Team",
+        description="A test team configuration",
         agents=[
             AgentConfig(
                 name="test_agent",
-                description="test agent",
-                prompt_template="test.jinja2"
+                description="A test agent",
+                prompt_file="test_prompt.md",
+                tools=[],
+                brain_config=BrainConfig(
+                    provider="test_provider",
+                    model="test_model"
+                ),
+                context={
+                    "test_key": "test_value"
+                }
             )
-        ]
+        ],
+        tools=[],
+        max_rounds=20
     )
 
-    assert config.name == "test"
-    assert len(config.agents) == 1
+    # Assertions
+    assert team_config.name == "Test Team"
+    assert team_config.description == "A test team configuration"
+    assert len(team_config.agents) == 1
+    assert team_config.agents[0].name == "test_agent"
+    assert team_config.agents[0].brain_config.provider == "test_provider"
+    assert team_config.agents[0].context["test_key"] == "test_value"
+    assert team_config.max_rounds == 20
+
+def test_team_config_validation():
+    """
+    Tests that invalid team configurations raise validation errors
+    """
+    # Missing required field 'name'
+    with pytest.raises(ValidationError):
+        TeamConfig(
+            description="Missing name field",
+            agents=[],
+            tools=[]
+        )
+
+    # Invalid agent configuration (missing name)
+    with pytest.raises(ValidationError):
+        TeamConfig(
+            name="Invalid Team",
+            description="Team with invalid agent",
+            agents=[
+                AgentConfig(
+                    description="Agent missing name",
+                    prompt_file="test.md",
+                    tools=[]
+                )
+            ],
+            tools=[]
+        )
 
 def test_brain_config_defaults():
-    """Test that Brain configuration uses proper defaults."""
+    """Test brain configuration defaults."""
+    # Test with minimal config
+    brain_config = BrainConfig(
+        provider="openai",
+        model="gpt-4"
+    )
 
-    # Test with minimal Brain config
-    brain_config = BrainConfig(provider='deepseek', model='deepseek-chat', api_key='test-key')
+    assert brain_config.provider == "openai"
+    assert brain_config.model == "gpt-4"
+    assert brain_config.temperature == 0.7  # default
+    assert brain_config.max_tokens == 8000  # default
+    assert brain_config.timeout == 30  # default
 
-    assert brain_config.provider == 'deepseek'
-    assert brain_config.model == 'deepseek-chat'
-    assert brain_config.temperature == 0.7  # Default value
-    assert brain_config.max_tokens == 8000  # Default value
-    assert brain_config.base_url == 'https://api.deepseek.com'  # Default for deepseek
-    assert brain_config.timeout == 30  # Default value
+    # Test with custom values
+    brain_config = BrainConfig(
+        provider="anthropic",
+        model="claude-3-opus",
+        temperature=0.3,
+        max_tokens=4000,
+        timeout=120
+    )
 
-def test_task_config():
-    """Test task configuration."""
+    assert brain_config.provider == "anthropic"
+    assert brain_config.model == "claude-3-opus"
+    assert brain_config.temperature == 0.3
+    assert brain_config.max_tokens == 4000
+    assert brain_config.timeout == 120
+
+def test_project_config():
+    """Test project configuration."""
 
     # Test default values
-    task_config = TaskConfig()
+    project_config = ProjectConfig()
 
-    assert task_config.mode == "autonomous"
-    assert task_config.max_rounds == 10  # Updated to match current default
-    assert task_config.timeout_seconds == 300
-    assert task_config.step_through_enabled == False
+    assert project_config.mode == "autonomous"
+    assert project_config.max_rounds == 10  # Updated to match current default
+    assert project_config.timeout_seconds == 300
+    assert project_config.step_through_enabled == False
 
     # Test custom values
-    task_config = TaskConfig(
+    project_config = ProjectConfig(
         mode="step_through",
         max_rounds=50,
         timeout_seconds=600,
         step_through_enabled=True
     )
 
-    assert task_config.mode == "step_through"
-    assert task_config.max_rounds == 50
-    assert task_config.timeout_seconds == 600
-    assert task_config.step_through_enabled == True
+    assert project_config.mode == "step_through"
+    assert project_config.max_rounds == 50
+    assert project_config.timeout_seconds == 600
+    assert project_config.step_through_enabled == True

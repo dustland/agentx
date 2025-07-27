@@ -105,12 +105,10 @@ Each task you create should include:
 
 ```json
 {
-  "goal": "Clear, specific statement of the main objective",
   "tasks": [
     {
       "id": "task_1",
-      "name": "Descriptive task name",
-      "goal": "Specific objective including explicit artifact requirements like 'save findings to filename.md'",
+      "action": "Descriptive action to be performed, including explicit artifact requirements like 'save findings to filename.md'",
       "agent": "agent_name",
       "dependencies": [],
       "status": "pending",

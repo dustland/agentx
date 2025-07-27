@@ -10,70 +10,70 @@ HEADERS = {"X-User-ID": USER_ID, "Content-Type": "application/json"}
 PROJECT_GOAL = "Create a basic plan for a new marketing campaign."
 CONFIG_PATH = "examples/simple_team/config/team.yaml"
 
-def create_project():
-    """Create a project and return its ID."""
-    print("--- 1. Creating Project ---")
+def create_xagent():
+    """Create an XAgent and return its ID."""
+    print("--- 1. Creating XAgent ---")
     payload = {"goal": PROJECT_GOAL, "config_path": CONFIG_PATH}
-    response = requests.post(f"{BASE_URL}/projects", headers=HEADERS, json=payload)
+    response = requests.post(f"{BASE_URL}/xagents", headers=HEADERS, json=payload)
     
     if response.status_code == 200:
-        project_data = response.json()
-        project_id = project_data.get("project_id")
-        print(f"Project created successfully. ID: {project_id}")
-        return project_id
+        xagent_data = response.json()
+        xagent_id = xagent_data.get("xagent_id")
+        print(f"XAgent created successfully. ID: {xagent_id}")
+        return xagent_id
     else:
-        print(f"Error creating project: {response.status_code} - {response.text}")
+        print(f"Error creating XAgent: {response.status_code} - {response.text}")
         return None
 
-def get_project_details(project_id):
-    """Get and print details of a project."""
-    print(f"--- 2. Getting Project Details (ID: {project_id}) ---")
-    response = requests.get(f"{BASE_URL}/projects/{project_id}", headers=HEADERS)
+def get_xagent_details(xagent_id):
+    """Get and print details of an XAgent."""
+    print(f"--- 2. Getting XAgent Details (ID: {xagent_id}) ---")
+    response = requests.get(f"{BASE_URL}/xagents/{xagent_id}", headers=HEADERS)
     
     if response.status_code == 200:
-        print("Project details retrieved:")
+        print("XAgent details retrieved:")
         print(json.dumps(response.json(), indent=2))
         return True
     else:
-        print(f"Error getting project details: {response.status_code} - {response.text}")
+        print(f"Error getting XAgent details: {response.status_code} - {response.text}")
         return False
 
-def list_projects():
-    """List all projects for the user."""
-    print("--- 3. Listing All Projects ---")
-    response = requests.get(f"{BASE_URL}/projects", headers=HEADERS)
+def list_xagents():
+    """List all XAgents for the user."""
+    print("--- 3. Listing All XAgents ---")
+    response = requests.get(f"{BASE_URL}/xagents", headers=HEADERS)
     
     if response.status_code == 200:
-        projects = response.json().get("projects", [])
-        print(f"Found {len(projects)} projects.")
-        for project in projects:
-            print(f"  - ID: {project.get('project_id')}, Status: {project.get('status')}")
+        xagents = response.json().get("xagents", [])
+        print(f"Found {len(xagents)} XAgents.")
+        for xagent in xagents:
+            print(f"  - ID: {xagent.get('xagent_id')}, Status: {xagent.get('status')}")
         return True
     else:
-        print(f"Error listing projects: {response.status_code} - {response.text}")
+        print(f"Error listing XAgents: {response.status_code} - {response.text}")
         return False
 
-def delete_project(project_id):
-    """Delete a project."""
-    print(f"--- 4. Deleting Project (ID: {project_id}) ---")
-    response = requests.delete(f"{BASE_URL}/projects/{project_id}", headers=HEADERS)
+def delete_xagent(xagent_id):
+    """Delete an XAgent."""
+    print(f"--- 4. Deleting XAgent (ID: {xagent_id}) ---")
+    response = requests.delete(f"{BASE_URL}/xagents/{xagent_id}", headers=HEADERS)
     
     if response.status_code == 200:
-        print("Project deleted successfully.")
+        print("XAgent deleted successfully.")
         return True
     else:
-        print(f"Error deleting project: {response.status_code} - {response.text}")
+        print(f"Error deleting XAgent: {response.status_code} - {response.text}")
         return False
 
 def run_tests():
     """Run the sequence of API tests."""
-    project_id = create_project()
+    xagent_id = create_xagent()
     
-    if project_id:
+    if xagent_id:
         time.sleep(1)  # Give server a moment
-        get_project_details(project_id)
-        list_projects()
-        delete_project(project_id)
+        get_xagent_details(xagent_id)
+        list_xagents()
+        delete_xagent(xagent_id)
 
 if __name__ == "__main__":
     run_tests()

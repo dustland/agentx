@@ -39,6 +39,7 @@ from vibex.config.team_loader import load_team_config
 from vibex.tool.manager import ToolManager
 from vibex.utils.id import generate_short_id
 from vibex.utils.logger import get_logger
+from vibex.utils.paths import get_project_root, get_project_path
 
 if TYPE_CHECKING:
     from vibex.core.xagent import XAgent
@@ -69,7 +70,6 @@ class Project:
         self.name = name or f"Project {project_id}"
         self.x_agent = x_agent
         
-        self.is_complete: bool = False
         self.created_at: datetime = datetime.now()
         self.updated_at: datetime = datetime.now()
         self.plan: Optional[Plan] = None
@@ -80,13 +80,12 @@ class Project:
         return self.agents[name]
     
     def complete(self):
-        self.is_complete = True
+        """Mark project as complete - this is now derived from task status."""
         logger.info(f"Project {self.project_id} completed")
     
     def get_context(self) -> Dict[str, Any]:
         context = {
             "project_id": self.project_id,
-            "status": "completed" if self.is_complete else "in_progress",
             "goal": self.goal,
             "storage_path": str(self.storage.get_project_path()),
             "agents": list(self.agents.keys()),
@@ -105,20 +104,20 @@ class Project:
     
     async def create_plan(self, plan: Plan) -> None:
         self.plan = plan
-        await self._persist_project_state()
+        await self._persist_state()
         logger.info(f"Created plan for project {self.project_id} with {len(plan.tasks)} tasks")
     
     async def update_plan(self, plan: Plan) -> None:
         self.plan = plan
         self.updated_at = datetime.now()
-        await self._persist_project_state()
+        await self._persist_state()
         logger.info(f"Updated plan for project {self.project_id}")
     
     async def set_name(self, name: str) -> None:
         """Set a custom name for this project."""
         self.name = name
         self.updated_at = datetime.now()
-        await self._persist_project_state()
+        await self._persist_state()
         logger.info(f"Updated project {self.project_id} name to: {name}")
     
     async def get_next_task(self) -> Optional[Task]:
@@ -132,7 +131,7 @@ class Project:
             return []
         return self.plan.get_all_actionable_tasks(max_tasks)
 
-    async def update_project_status(self, project_id: str, status: TaskStatus) -> bool:
+    async def update_status(self, project_id: str, status: TaskStatus) -> bool:
         """Update the status of a task and persist the plan."""
         if not self.plan:
             return False
@@ -140,12 +139,12 @@ class Project:
         success = self.plan.update_task_status(project_id, status)
         if success:
             self.updated_at = datetime.now()
-            await self._persist_project_state()
+            await self._persist_state()
             logger.info(f"Updated project {project_id} status to {status}")
             
         return success
 
-    async def assign_task_to_agent(self, task_id: str, agent_name: str) -> bool:
+    async def assign_task(self, task_id: str, agent_name: str) -> bool:
         """Assign a task to a specific agent."""
         if not self.plan:
             return False
@@ -158,9 +157,9 @@ class Project:
             logger.error(f"Agent '{agent_name}' not found in project team")
             return False
             
-        task.agent = agent_name
+        task.assigned_to = agent_name
         self.updated_at = datetime.now()
-        await self._persist_project_state()
+        await self._persist_state()
         logger.info(f"Assigned task {task_id} to agent {agent_name}")
         return True
     
@@ -175,12 +174,11 @@ class Project:
             return False
         return self.plan.has_failed_tasks()
     
-    async def _persist_project_state(self) -> None:
+    async def _persist_state(self) -> None:
         project_data = {
             "project_id": self.project_id,
             "name": self.name,
             "goal": self.goal,
-            "status": "completed" if self.is_complete else "in_progress",
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "team_agents": list(self.agents.keys()),
@@ -188,7 +186,7 @@ class Project:
         }
         await self.storage.save_file("project.json", project_data)
     
-    async def load_project_state(self) -> bool:
+    async def load_state(self) -> bool:
         try:
             project_data = await self.storage.read_file("project.json")
             if project_data:
@@ -197,7 +195,6 @@ class Project:
                 
                 self.created_at = datetime.fromisoformat(data.get("created_at", self.created_at.isoformat()))
                 self.updated_at = datetime.fromisoformat(data.get("updated_at", self.updated_at.isoformat()))
-                self.is_complete = data.get("status") == "completed"
                 self.name = data.get("name", self.name)  # Load name if available
                 
                 if data.get("plan"):
@@ -209,7 +206,7 @@ class Project:
         return False
     
     async def load_plan(self) -> Optional[Plan]:
-        if await self.load_project_state():
+        if await self.load_state():
             return self.plan
         return None
     
@@ -218,7 +215,6 @@ class Project:
             "project_id": self.project_id,
             "name": self.name,
             "goal": self.goal,
-            "status": "completed" if self.is_complete else "in_progress",
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "team_size": len(self.agents),
@@ -245,7 +241,7 @@ async def start_project(
     goal: str,
     config_path: Union[str, Path, TeamConfig],
     project_id: Optional[str] = None,
-    workspace_dir: Optional[Path] = None,
+    project_root: Optional[Path] = None,
     name: Optional[str] = None,
 ) -> Project:
     from vibex.core.xagent import XAgent
@@ -260,7 +256,7 @@ async def start_project(
     
     storage = ProjectStorageFactory.create_project_storage(
         project_id=project_id,
-        base_path=workspace_dir or Path(".vibex/projects"),
+        project_root=project_root or get_project_root(),
         use_git_artifacts=True
     )
     
@@ -269,7 +265,7 @@ async def start_project(
     
     tool_manager = ToolManager(
         project_id=project_id,
-        workspace_path=str(storage.get_project_path())
+        project_path=str(storage.get_project_path())
     )
     
     agents = {}
@@ -285,7 +281,7 @@ async def start_project(
     x_agent = XAgent(
         team_config=team_config,
         project_id=project_id,
-        workspace_dir=storage.get_project_path(),
+        project_path=storage.get_project_path(),
         initial_prompt=goal
     )
     
@@ -303,7 +299,7 @@ async def start_project(
     
     x_agent.project = project
     
-    await project._persist_project_state()
+    await project._persist_state()
     logger.info(f"Created project {project_id} with initial state")
     
     if goal:
@@ -323,15 +319,14 @@ async def run_project(
 ) -> AsyncGenerator[Message, None]:
     project = await start_project(goal, config_path, project_id)
     
-    while not project.is_complete:
+    while not project.is_plan_complete():
         response = await project.x_agent.step()
         
         message = Message.assistant_message(response)
         
         yield message
         
-        if project.is_plan_complete() or project.has_failed_tasks():
-            project.complete()
+        if project.has_failed_tasks():
             break
     
     logger.info(f"Project {project.project_id} completed")
@@ -343,8 +338,8 @@ async def resume_project(
 ) -> Project:
     from vibex.core.xagent import XAgent
     
-    workspace_path = Path(f".vibex/projects/{project_id}")
-    if not workspace_path.exists():
+    project_path = get_project_path(project_id)
+    if not project_path.exists():
         raise ValueError(f"Project {project_id} not found")
     
     if isinstance(config_path, (str, Path)):
@@ -354,14 +349,14 @@ async def resume_project(
     
     storage = ProjectStorageFactory.create_project_storage(
         project_id=project_id,
-        base_path=workspace_path.parent.parent,
+        project_root=get_project_root(),
         use_git_artifacts=True
     )
     
     message_queue = MessageQueue()
     history = ConversationHistory(project_id=project_id)
     
-    messages_file = workspace_path / "history" / "messages.jsonl"
+    messages_file = project_path / "history" / "messages.jsonl"
     if messages_file.exists():
         import json
         with open(messages_file, 'r') as f:
@@ -372,7 +367,7 @@ async def resume_project(
     
     tool_manager = ToolManager(
         project_id=project_id,
-        workspace_path=str(storage.get_project_path())
+        project_path=str(storage.get_project_path())
     )
     
     agents = {}
@@ -388,7 +383,7 @@ async def resume_project(
     x_agent = XAgent(
         team_config=team_config,
         project_id=project_id,
-        workspace_dir=storage.get_project_path(),
+        project_path=storage.get_project_path(),
         initial_prompt=""
     )
     
@@ -401,7 +396,7 @@ async def resume_project(
             goal = data.get("goal", "")
             name = data.get("name")
     except Exception:
-        metadata_file = workspace_path / "metadata.json"
+        metadata_file = project_path / "metadata.json"
         if metadata_file.exists():
             with open(metadata_file, 'r') as f:
                 metadata = json.load(f)
@@ -422,7 +417,7 @@ async def resume_project(
     
     x_agent.project = project
     
-    await project.load_project_state()
+    await project.load_state()
     
     logger.info(f"Resumed project {project_id}")
     return project

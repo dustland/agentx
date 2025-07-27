@@ -19,12 +19,14 @@ from .utils.logger import setup_clean_chat_logging, set_log_level, get_logger
 # Core classes for advanced usage
 from vibex.core.agent import Agent
 from .core.xagent import XAgent
+from .config.team_loader import load_team_config
 
 __version__ = "0.28.5"
 
 __all__ = [
     # Main API - primary entry points (v2.0)
     "XAgent",
+    "start_task",
     
     # Tool creation - for custom tools
     "Tool",
@@ -68,3 +70,34 @@ except ImportError:
 except Exception:
     # Any other error, skip silently
     pass
+
+
+async def start_task(prompt: str, config_path: str):
+    """
+    Start a task with the given prompt and configuration.
+    
+    This is a convenience function that creates an XAgent instance
+    and initializes it with the given prompt.
+    
+    Args:
+        prompt: The initial prompt for the task
+        config_path: Path to the team configuration file
+        
+    Returns:
+        XAgent: An initialized XAgent instance
+    """
+    from pathlib import Path
+    
+    # Load team configuration
+    team_config = load_team_config(str(config_path))
+    
+    # Create XAgent instance
+    xagent = XAgent(
+        team_config=team_config,
+        initial_prompt=prompt
+    )
+    
+    # Initialize with the prompt
+    await xagent._initialize_with_prompt(prompt)
+    
+    return xagent

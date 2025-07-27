@@ -1,33 +1,18 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Bot } from "lucide-react";
 import { ChatInput } from "./input";
 import { MessageBubble } from "./message-bubble";
+import { useXAgentContext } from "@/contexts/xagent-context";
 
-interface ChatLayoutProps {
-  messages: Array<{
-    id: string;
-    role: "user" | "assistant" | "system";
-    content: string;
-    timestamp: Date;
-    status?: "streaming" | "complete" | "error";
-  }>;
-  onSendMessage: (message: string, mode?: "agent" | "chat") => void;
-  onStop?: () => void;
-  isLoading?: boolean;
-  allowEmptyMessage?: boolean;
-}
-
-export function ChatLayout({
-  messages,
-  onSendMessage,
-  onStop,
-  isLoading = false,
-  allowEmptyMessage = false,
-}: ChatLayoutProps) {
+export function ChatLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Use the XAgent context for all functionality
+  const { xagent, messages, isLoading, isSendingMessage, handleSubmit } =
+    useXAgentContext();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -41,9 +26,11 @@ export function ChatLayout({
     return () => clearTimeout(timer);
   }, [messages]);
 
-  const handleSubmit = (message: string, mode?: "agent" | "chat") => {
-    onSendMessage(message, mode);
-  };
+  // Stop function for cancelling ongoing operations
+  const handleStop = useCallback(() => {
+    // TODO: Implement actual stop functionality when streaming is added
+    console.log("Stop requested - not implemented yet");
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
@@ -53,7 +40,7 @@ export function ChatLayout({
           <div className="flex-1 flex items-center justify-center">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">Loading task...</span>
+              <span className="text-sm">Loading messages...</span>
             </div>
           </div>
         ) : (
@@ -90,9 +77,9 @@ export function ChatLayout({
       <div className="flex-shrink-0">
         <ChatInput
           onSendMessage={handleSubmit}
-          onStop={onStop}
-          isLoading={isLoading}
-          allowEmptyMessage={allowEmptyMessage}
+          onStop={handleStop}
+          isLoading={isSendingMessage}
+          allowEmptyMessage={!!xagent?.plan}
         />
       </div>
     </div>

@@ -201,9 +201,9 @@ def generate_env_example(model: str) -> str:
 
     env_content += """
 # Optional: VibeX Configuration
-# AGENTX_LOG_LEVEL=INFO
-# AGENTX_WORKSPACE_DIR=./projectspace
-# AGENTX_MAX_ROUNDS=50
+# VIBEX_LOG_LEVEL=INFO
+# VIBEX_BASE_PATH=.vibex
+# VIBEX_MAX_ROUNDS=50
 """
 
     return env_content

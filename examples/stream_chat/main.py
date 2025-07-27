@@ -235,7 +235,7 @@ Examples:
                         print(f"Tasks: {len(x.plan.tasks)}")
                         for i, task in enumerate(x.plan.tasks, 1):
                             status_icon = "✓" if task.status == "completed" else "○"
-                            print(f"  {status_icon} {i}. {task.name} ({task.status})")
+                            print(f"  {status_icon} {i}. {task.action} ({task.status})")
                     else:
                         print("No plan created yet.")
                     continue

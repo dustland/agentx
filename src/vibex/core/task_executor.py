@@ -100,8 +100,7 @@ class TaskExecutor:
         
         # Send task to agent
         prompt = f"""Please complete the following task:
-        Task: {task.name}
-        Goal: {task.goal}
+        Task: {task.action}
         """
         
         # In real implementation, this would interact with agent's brain

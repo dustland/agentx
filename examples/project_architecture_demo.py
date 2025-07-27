@@ -94,7 +94,7 @@ async def main():
     parallel_tasks = await project.get_parallel_tasks(max_tasks=2)
     print(f"\n⚡ Can execute {len(parallel_tasks)} tasks in parallel:")
     for task in parallel_tasks:
-        print(f"   - {task.name} (assigned to: {task.agent})")
+                    print(f"   - {task.action} (assigned to: {task.assigned_to})")
     
     # 5. Conversational interaction with the project
     print("\n💬 Chatting with the project's X agent...")
@@ -116,10 +116,10 @@ async def main():
     # 7. Task-level details
     print("\n🔍 Task Details:")
     for task in project.plan.tasks:
-        print(f"\n   Task: {task.name}")
+        print(f"\n   Task: {task.action}")
         print(f"   - ID: {task.id}")
         print(f"   - Status: {task.status}")
-        print(f"   - Agent: {task.agent or 'Not assigned'}")
+        print(f"   - Agent: {task.assigned_to or 'Not assigned'}")
         print(f"   - Dependencies: {task.dependencies or 'None'}")
     
     # 8. Project completion
@@ -183,7 +183,7 @@ async def example_parallel_execution():
     parallel_tasks = await project.get_parallel_tasks()
     print(f"\n⚡ {len(parallel_tasks)} tasks can run in parallel:")
     for task in parallel_tasks:
-        print(f"   - {task.name} → {task.agent}")
+        print(f"   - {task.action} → {task.assigned_to}")
     
     # In real execution, these would run concurrently
     print("\n🚀 All three analysis tasks would execute simultaneously by different agents")

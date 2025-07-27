@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Monitor,
   Pin,
@@ -14,6 +13,7 @@ import {
   HelpCircle,
   ExternalLink,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,6 +40,8 @@ interface SidebarProps {
   children?: React.ReactNode;
   isLoading?: boolean;
   placeholder?: React.ReactNode;
+  onRefresh?: () => void;
+  showRefreshButton?: boolean;
 }
 
 export function Sidebar({
@@ -48,16 +50,30 @@ export function Sidebar({
   children,
   isLoading = false,
   placeholder,
+  onRefresh,
+  showRefreshButton = false,
 }: SidebarProps) {
-  const router = useRouter();
   const { user, logout } = useUser();
   const { sidebarPinned, setSidebarPinned } = useAppStore();
   const { systemHealth } = useObservability();
   const [isHovered, setIsHovered] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Handle pin/unpin toggle
   const handlePinToggle = () => {
     setSidebarPinned(!sidebarPinned);
+  };
+
+  // Handle refresh with loading state
+  const handleRefresh = async () => {
+    if (onRefresh && !isRefreshing) {
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
   };
 
   const sidebarWidth = "w-72";
@@ -149,6 +165,23 @@ export function Sidebar({
               </div>
             </div>
             <div className="flex items-center gap-1 flex-shrink-0">
+              {showRefreshButton && onRefresh && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={handleRefresh}
+                  disabled={isLoading || isRefreshing}
+                  title="Refresh"
+                >
+                  <RefreshCw
+                    className={cn(
+                      "h-3 w-3 transition-all duration-200",
+                      (isLoading || isRefreshing) && "animate-spin"
+                    )}
+                  />
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="ghost"

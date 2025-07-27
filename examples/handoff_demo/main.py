@@ -71,7 +71,7 @@ async def main():
                     "pending": "⏳"
                 }.get(task.status, "❓")
 
-                print(f"{i}. {status_emoji} [{task.agent}] {task.name}")
+                print(f"{i}. {status_emoji} [{task.assigned_to}] {task.action}")
                 if task.id.startswith("handoff_"):
                     print(f"   ↳ (Automatic handoff based on conditions)")
 

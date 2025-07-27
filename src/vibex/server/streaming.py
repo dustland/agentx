@@ -96,13 +96,13 @@ event_stream_manager = ProjectEventStream()
 
 # send_agent_message removed - use send_message_object instead for consistency
 
-async def send_agent_status(project_id: str, agent_id: str, status: str, progress: int = 0):
+async def send_agent_status(project_id: str, xagent_id: str, status: str, progress: int = 0):
     """Send an agent status update"""
     await event_stream_manager.send_event(
         project_id,
         "agent_status",
         {
-            "agent_id": agent_id,
+            "xagent_id": xagent_id,
             "status": status,
             "progress": progress
         }
@@ -121,13 +121,13 @@ async def send_project_update(project_id: str, status: str, result: Optional[Any
     )
 
 
-async def send_tool_call(project_id: str, agent_id: str, tool_name: str, parameters: Dict, result: Optional[Any] = None, status: str = "pending"):
+async def send_tool_call(project_id: str, xagent_id: str, tool_name: str, parameters: Dict, result: Optional[Any] = None, status: str = "pending"):
     """Send a tool call event"""
     await event_stream_manager.send_event(
         project_id,
         "tool_call",
         {
-            "agent_id": agent_id,
+            "xagent_id": xagent_id,
             "tool_name": tool_name,
             "parameters": parameters,
             "result": result,

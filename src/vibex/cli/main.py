@@ -110,17 +110,17 @@ def main():
                     pass
             
             # Use simplified web interface for pip-installed version
-            from .commands.studio_simple import run_studio_command
+            from .commands.web_simple import run_web_command
             
             if not web_action:
                 # Default to start if no subcommand given
-                return run_studio_command(
+                return run_web_command(
                     action="start",
                     open_browser=True
                 )
             
             if web_action == "start":
-                return run_studio_command(
+                return run_web_command(
                     action="start",
                     port=args.port,
                     api_port=args.api_port,
@@ -129,9 +129,9 @@ def main():
                     production=args.production
                 )
             elif web_action == "setup":
-                return run_studio_command(action="setup")
+                return run_web_command(action="setup")
             elif web_action == "dev":
-                return run_studio_command(
+                return run_web_command(
                     action="start",
                     port=args.port,
                     api_port=args.api_port,

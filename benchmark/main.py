@@ -141,8 +141,8 @@ Please provide a direct, factual answer. Be concise and specific.
         # Set up usage tracking via Brain wrapping (simpler than callbacks)
         wrapped_agents = []
         try:
-            if hasattr(task, 'task') and hasattr(task.task, 'agents'):
-                agents = task.task.agents
+            if hasattr(task, 'specialist_agents'):
+                agents = task.specialist_agents
                 if verbose:
                     print(f"   Found {len(agents)} agents: {list(agents.keys())}")
 
@@ -158,7 +158,7 @@ Please provide a direct, factual answer. Be concise and specific.
                             print(f"{Colors.CYAN}💰 Set up cost tracking for agent: {agent_name}{Colors.RESET}")
             else:
                 if verbose:
-                    print(f"{Colors.YELLOW}⚠️  Could not access task.agents structure{Colors.RESET}")
+                    print(f"{Colors.YELLOW}⚠️  Could not access specialist_agents structure{Colors.RESET}")
         except Exception as e:
             if verbose:
                 print(f"{Colors.YELLOW}⚠️  Could not set up brain wrapping: {e}{Colors.RESET}")

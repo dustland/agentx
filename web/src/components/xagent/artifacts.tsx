@@ -14,7 +14,7 @@ import {
   Folder,
 } from "lucide-react";
 import { EmptyState } from "./empty-state";
-import { useXAgent } from "@/hooks/use-xagent";
+import { useXAgentContext } from "@/contexts/xagent-context";
 import { formatBytes } from "@/lib/utils";
 
 interface Artifact {
@@ -33,7 +33,7 @@ interface ArtifactsProps {
 }
 
 export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
-  const { artifacts, isLoadingArtifacts } = useXAgent(xagentId);
+  const { artifacts, isLoadingArtifacts } = useXAgentContext();
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
     new Set()
   );

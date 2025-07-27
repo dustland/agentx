@@ -28,18 +28,24 @@ class ProjectStorage:
 
     def __init__(
         self,
-        base_path: Union[str, Path],
+        project_path: Union[str, Path],
         project_id: str,
         file_storage: FileStorage = None,
         use_git_artifacts: bool = True,
         cache_backend: Optional[CacheBackend] = None
     ):
-        # Single API: base_path + project_id for project isolation
-        # User mapping is handled by the service layer, not storage
-        self.project_id = project_id
+        """
+        Initialize project storage for a specific project.
         
-        # Always use simple project_id path
-        self.project_path = Path(base_path) / project_id
+        Args:
+            project_path: The full path to this project's directory (project_dir)
+            project_id: The project ID (used for cache keys and Git)
+            file_storage: FileStorage implementation to use
+            use_git_artifacts: Whether to use Git for artifact versioning
+            cache_backend: Optional cache backend for performance
+        """
+        self.project_id = project_id
+        self.project_path = Path(project_path)
 
         self.file_storage = file_storage
         self.use_git_artifacts = use_git_artifacts
@@ -48,7 +54,7 @@ class ProjectStorage:
         # Initialize artifact storage
         self._init_artifact_storage()
 
-        logger.info(f"ProjectStorage initialized: {self.project_path} (Git artifacts: {use_git_artifacts}, Cache: {'enabled' if cache_backend else 'disabled'})")
+        logger.debug(f"ProjectStorage initialized: {self.project_path} (Git artifacts: {use_git_artifacts}, Cache: {'enabled' if cache_backend else 'disabled'})")
     
     def _cache_key(self, operation: str, *args) -> str:
         """Generate cache key for operation."""
@@ -71,11 +77,10 @@ class ProjectStorage:
             try:
                 from .git_storage import GitArtifactStorage
 
-                # Use single API: base_path + project_id for project isolation
-                base_path = self.project_path.parent
-                self.artifact_storage = GitArtifactStorage(base_path=base_path, project_id=self.project_id)
+                # Git storage needs project_dir for the repository location
+                self.artifact_storage = GitArtifactStorage(project_dir=self.project_path, project_id=self.project_id)
 
-                logger.info("Using Git-based artifact storage")
+                logger.debug("Using Git-based artifact storage")
             except ImportError:
                 logger.warning("GitPython not available, falling back to simple artifact storage")
                 self.artifact_storage = None

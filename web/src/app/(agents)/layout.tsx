@@ -80,7 +80,7 @@ export default function TasksLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { xagents, isLoading, deleteXAgent } = useXAgents();
+  const { xagents, isLoading, deleteXAgent, refetch } = useXAgents();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string[]>(["all"]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -162,6 +162,8 @@ export default function TasksLayout({
       {/* Sidebar */}
       <Sidebar
         isLoading={isLoading}
+        showRefreshButton={true}
+        onRefresh={refetch}
         placeholder={
           <div className="text-center text-muted-foreground">
             <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">
@@ -174,8 +176,12 @@ export default function TasksLayout({
                 : "Create your first XAgent to get started"}
             </p>
             {!isHomepage && (
-              <Button size="sm" onClick={() => (window.location.href = "/")}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => (window.location.href = "/")}
+              >
+                <Plus className="h-4 w-4" />
                 New XAgent
               </Button>
             )}
@@ -258,11 +264,11 @@ export default function TasksLayout({
             <ScrollArea className="flex-1">
               <div className="p-2 space-y-1">
                 {filteredXAgents.map((xagent: any) => {
-                  const isActive = xagent.agent_id === currentAgentId;
+                  const isActive = xagent.xagent_id === currentAgentId;
 
                   return (
                     <div
-                      key={xagent.agent_id}
+                      key={xagent.xagent_id}
                       className={cn(
                         "group relative rounded-lg cursor-pointer transition-all duration-200",
                         "border hover:shadow-sm",
@@ -270,7 +276,7 @@ export default function TasksLayout({
                           ? "bg-accent border-accent-foreground/20 shadow-sm"
                           : "bg-card/50 border-border/50 hover:bg-card hover:border-border"
                       )}
-                      onClick={() => handleXAgentClick(xagent.agent_id)}
+                      onClick={() => handleXAgentClick(xagent.xagent_id)}
                     >
                       {/* Status indicator bar */}
                       {xagent.status && (
@@ -358,7 +364,7 @@ export default function TasksLayout({
                                   // TODO: Implement rename functionality
                                   console.log(
                                     "Rename XAgent:",
-                                    xagent.agent_id
+                                    xagent.xagent_id
                                   );
                                 }}
                               >
@@ -370,7 +376,7 @@ export default function TasksLayout({
                                 className="text-xs cursor-pointer text-destructive"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteXAgent(xagent.agent_id);
+                                  handleDeleteXAgent(xagent.xagent_id);
                                 }}
                               >
                                 <Trash2 className="h-3 w-3 mr-2" />

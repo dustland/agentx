@@ -12,7 +12,7 @@ interface ObservabilityLayoutProps {
 export default function ObservabilityLayout({
   children,
 }: ObservabilityLayoutProps) {
-  const { systemHealth, isLoading } = useObservability();
+  const { systemHealth, isLoading, refetch } = useObservability();
 
   return (
     <div className="h-screen flex">
@@ -20,6 +20,8 @@ export default function ObservabilityLayout({
       <Sidebar
         title="System Monitor"
         isLoading={isLoading}
+        showRefreshButton={true}
+        onRefresh={refetch}
         placeholder={
           <div className="text-center text-muted-foreground">
             <div className="bg-muted/30 rounded-full p-3 w-12 h-12 mx-auto mb-3 flex items-center justify-center">

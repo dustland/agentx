@@ -137,9 +137,9 @@ class DebugSession:
                     "tasks": [
                         {
                             "id": task.id,
-                            "name": task.name,
+                            "action": task.action,
                             "status": task.status,
-                            "agent": task.agent
+                            "assigned_to": task.assigned_to
                         }
                         for task in self.xagent.plan.tasks
                     ]
@@ -200,9 +200,8 @@ class DebugSession:
 
             for i, task in enumerate(plan.tasks, 1):
                 status_icon = "✅" if task.status == "completed" else "⏳" if task.status == "in_progress" else "⭕"
-                print(f"  {i}. {status_icon} {task.name}")
-                print(f"     Agent: {task.agent}")
-                print(f"     Goal: {task.goal}")
+                print(f"  {i}. {status_icon} {task.action}")
+                print(f"     Agent: {task.assigned_to}")
                 if task.dependencies:
                     print(f"     Dependencies: {', '.join(task.dependencies)}")
                 print()

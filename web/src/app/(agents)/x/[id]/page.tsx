@@ -8,35 +8,14 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
-import { useXAgent } from "@/hooks/use-xagent";
+import { XAgentProvider, useXAgentContext } from "@/contexts/xagent-context";
 import { useAppStore } from "@/store/app";
 
-export default function XAgentPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+function XAgentPageContent({ id }: { id: string }) {
   const { initialMessage, setInitialMessage } = useAppStore();
 
-  // Use the XAgent hook for all functionality
-  const {
-    xagent,
-    messages,
-    input,
-    isLoading,
-    isMessagesLoading,
-    handleInputChange,
-    handleSubmit,
-    setInput,
-    isSendingMessage,
-  } = useXAgent(id);
-
-  // Stop function for cancelling ongoing operations
-  const handleStop = useCallback(() => {
-    // TODO: Implement actual stop functionality when streaming is added
-    console.log("Stop requested - not implemented yet");
-  }, []);
+  // Use the XAgent context for all functionality
+  const { messages, isMessagesLoading, handleSubmit } = useXAgentContext();
 
   // Send initial message if present
   useEffect(() => {
@@ -52,13 +31,6 @@ export default function XAgentPage({
     handleSubmit,
     setInitialMessage,
   ]);
-
-  // ChatLayout expects onSendMessage to be (message: string, mode?: "chat" | "agent") => void
-  const handleSendMessage = (message: string, mode?: "chat" | "agent") => {
-    // Convert "agent" mode to "command" for the API
-    const apiMode = mode === "agent" ? "command" : mode;
-    handleSubmit(message, apiMode);
-  };
 
   // Callback registration function for tool call selection
   const registerToolCallHandler = useCallback(
@@ -76,13 +48,7 @@ export default function XAgentPage({
         className="flex-1 overflow-hidden"
       >
         <ResizablePanel defaultSize={55} minSize={30}>
-          <ChatLayout
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            onStop={handleStop}
-            isLoading={isLoading}
-            allowEmptyMessage={!!xagent?.plan}
-          />
+          <ChatLayout />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />
         <ResizablePanel defaultSize={45} minSize={20}>
@@ -90,5 +56,19 @@ export default function XAgentPage({
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
+  );
+}
+
+export default function XAgentPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+
+  return (
+    <XAgentProvider xagentId={id}>
+      <XAgentPageContent id={id} />
+    </XAgentProvider>
   );
 }

@@ -74,29 +74,29 @@ export class VibexClient {
       config_path: configPath,
       context: context,
     };
-    return this.post<XAgent>("/agents", requestBody);
+    return this.post<XAgent>("/xagents", requestBody);
   }
 
   async listXAgents(): Promise<XAgentListResponse> {
-    return this.get<XAgentListResponse>("/agents");
+    return this.get<XAgentListResponse>("/xagents");
   }
 
   async getXAgent(agentId: string): Promise<XAgent> {
-    return this.get<XAgent>(`/agents/${agentId}`);
+    return this.get<XAgent>(`/xagents/${agentId}`);
   }
 
   async deleteXAgent(agentId: string): Promise<{ message: string }> {
-    return this.delete(`/agents/${agentId}`);
+    return this.delete(`/xagents/${agentId}`);
   }
 
   // Chat
-  async sendMessage(agentId: string, message: string): Promise<any> {
-    const requestBody = { agent_id: agentId, content: message };
+  async sendMessage(xagentId: string, message: string): Promise<any> {
+    const requestBody = { xagent_id: xagentId, content: message };
     return this.post(`/chat`, requestBody);
   }
 
   async getMessages(agentId: string): Promise<{ messages: any[] }> {
-    return this.get(`/agents/${agentId}/messages`);
+    return this.get(`/xagents/${agentId}/messages`);
   }
 
   // Agent Resources
@@ -110,11 +110,11 @@ export class VibexClient {
     agentId: string,
     artifactPath: string
   ): Promise<{ artifact_path: string; content: any }> {
-    return this.get(`/agents/${agentId}/artifacts/${artifactPath}`);
+    return this.get(`/xagents/${agentId}/artifacts/${artifactPath}`);
   }
 
   async getLogs(agentId: string): Promise<{ logs: any[] }> {
-    return this.get(`/agents/${agentId}/logs`);
+    return this.get(`/xagents/${agentId}/logs`);
   }
 
   // Streaming
@@ -125,7 +125,7 @@ export class VibexClient {
   ) {
     const effectiveUserId = this.userId || "guest";
     const params = `?user_id=${encodeURIComponent(effectiveUserId)}`;
-    const url = `${this.baseURL}/agents/${agentId}/stream${params}`;
+    const url = `${this.baseURL}/xagents/${agentId}/stream${params}`;
 
     console.log("[SSE] Connecting to:", url);
     const eventSource = new EventSource(url);

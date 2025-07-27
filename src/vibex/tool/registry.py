@@ -9,23 +9,13 @@ logger = get_logger(__name__)
 
 
 class ToolRegistry:
-    """A thread-safe registry for managing tools and their configurations."""
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(ToolRegistry, cls).__new__(cls)
-            cls._instance.__initialized = False
-        return cls._instance
+    """A registry for managing tools and their configurations."""
 
     def __init__(self):
-        if self.__initialized:
-            return
         self._tools: Dict[str, ToolFunction] = {}
         self._toolsets: Dict[str, List[str]] = {}
         # Note: Builtin tools are now registered by ToolManager with proper taskspace context
         # This prevents duplicate registrations and ensures correct taskspace paths
-        self.__initialized = True
 
     def register_tool(self, tool: Tool):
         """
@@ -162,5 +152,5 @@ class ToolRegistry:
 
 
 def get_tool_registry() -> ToolRegistry:
-    """Get the global tool registry instance."""
+    """Create a new tool registry instance."""
     return ToolRegistry()

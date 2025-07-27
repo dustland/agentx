@@ -24,47 +24,47 @@ class ToolManager:
     instance to prevent tool conflicts between tasks.
     """
 
-    def __init__(self, project_id: str = "default", workspace_path: Optional[str] = None):
+    def __init__(self, project_id: str = "default", project_path: Optional[str] = None):
         """
         Initialize tool manager with task isolation.
 
         Args:
             project_id: Unique identifier for this task (for logging/debugging)
-            workspace_path: Path to project-specific workspace (for file tools)
+            project_path: Path to project directory (for file tools)
         """
         self.project_id = project_id
-        self.workspace_path = workspace_path
+        self.project_path = project_path
         self.registry = ToolRegistry()
 
-        # Register project-specific builtin tools if workspace_path is provided
-        if workspace_path:
-            self._register_builtin_tools(workspace_path)
+        # Register project-specific builtin tools if project_path is provided
+        if project_path:
+            self._register_builtin_tools(project_path)
 
         self.executor = ToolExecutor(registry=self.registry)
 
-        logger.debug(f"ToolManager initialized for project {project_id} with workspace: {workspace_path}")
+        logger.debug(f"ToolManager initialized for project {project_id} with project path: {project_path}")
 
-    def _register_builtin_tools(self, workspace_path: str):
-        """Register builtin tools with correct workspace path."""
+    def _register_builtin_tools(self, project_path: str):
+        """Register builtin tools with correct project path."""
         from ..builtin_tools import register_builtin_tools
         from ..storage.factory import ProjectStorageFactory
         from pathlib import Path
 
-        # Extract project_id from workspace_path (assuming format: base_path/project_id)
-        path = Path(workspace_path)
+        # Extract project_id from project_path
+        path = Path(project_path)
         project_id = path.name
-        base_path = path.parent
+        project_root = path.parent
 
-        # Create single project storage instance for all tools using preferred method
+        # Create single project storage instance for all tools
         project_storage = ProjectStorageFactory.create_project_storage(
-            base_path=base_path,
+            project_root=project_root,
             project_id=project_id
         )
 
         # Register all builtin tools using the centralized function
         register_builtin_tools(self.registry, project_storage=project_storage)
 
-        logger.info(f"Registered builtin tools for workspace: {workspace_path}")
+        logger.debug(f"Registered builtin tools for project path: {project_path}")
 
     # Registry methods (delegation)
     def register_tool(self, tool: Tool) -> None:

@@ -1,4 +1,4 @@
-"""Simplified Studio CLI for pip-installed VibeX."""
+"""Simplified Web CLI for pip-installed VibeX."""
 
 import os
 import sys
@@ -14,11 +14,11 @@ from ...utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# Studio package files embedded as base64
-STUDIO_PACKAGE = {
+# Web package files embedded as base64
+WEB_PACKAGE = {
     "package.json": """
 {
-  "name": "vibex-studio-embedded",
+  "name": "vibex-web-embedded",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -45,42 +45,42 @@ STUDIO_PACKAGE = {
   }
 }
 """,
-    # We'll include minimal files needed for a basic studio
+    # We'll include minimal files needed for a basic web
 }
 
 
-def get_embedded_studio_path() -> Path:
-    """Get or create the embedded studio directory."""
+def get_embedded_web_path() -> Path:
+    """Get or create the embedded web directory."""
     # Use a consistent location in user's home directory
-    studio_dir = Path.home() / ".vibex" / "studio"
+    web_dir = Path.home() / ".vibex" / "web"
     
     # Check if already extracted
-    if (studio_dir / "package.json").exists():
-        return studio_dir
+    if (web_dir / "package.json").exists():
+        return web_dir
     
-    # Extract embedded studio
-    logger.info("Extracting embedded studio files...")
-    studio_dir.mkdir(parents=True, exist_ok=True)
+    # Extract embedded web
+    logger.info("Extracting embedded web files...")
+    web_dir.mkdir(parents=True, exist_ok=True)
     
     # Write package files
-    for filename, content in STUDIO_PACKAGE.items():
-        (studio_dir / filename).write_text(content.strip())
+    for filename, content in WEB_PACKAGE.items():
+        (web_dir / filename).write_text(content.strip())
     
     # Create minimal Next.js structure
-    create_minimal_studio(studio_dir)
+    create_minimal_web(web_dir)
     
-    return studio_dir
+    return web_dir
 
 
-def create_minimal_studio(studio_dir: Path):
-    """Create a minimal studio structure."""
+def create_minimal_web(web_dir: Path):
+    """Create a minimal web structure."""
     # Create directories
-    (studio_dir / "pages").mkdir(exist_ok=True)
-    (studio_dir / "styles").mkdir(exist_ok=True)
-    (studio_dir / "public").mkdir(exist_ok=True)
+    (web_dir / "pages").mkdir(exist_ok=True)
+    (web_dir / "styles").mkdir(exist_ok=True)
+    (web_dir / "public").mkdir(exist_ok=True)
     
     # Create minimal pages/index.tsx
-    (studio_dir / "pages" / "index.tsx").write_text("""
+    (web_dir / "pages" / "index.tsx").write_text("""
 import { useEffect, useState } from 'react'
 
 export default function Home() {
@@ -98,11 +98,11 @@ export default function Home() {
       
       <div style={{ marginTop: '2rem' }}>
         <h2>Quick Start</h2>
-        <p>This is a minimal studio interface. For the full experience:</p>
+        <p>This is a minimal web interface. For the full experience:</p>
         <ol>
           <li>Clone the VibeX repository</li>
-          <li>Run <code>vibex studio setup</code> in the project directory</li>
-          <li>Run <code>vibex studio start</code></li>
+          <li>Run <code>vibex web setup</code> in the project directory</li>
+          <li>Run <code>vibex web start</code></li>
         </ol>
       </div>
       
@@ -117,7 +117,7 @@ export default function Home() {
 """)
     
     # Create next.config.js
-    (studio_dir / "next.config.js").write_text("""
+    (web_dir / "next.config.js").write_text("""
 module.exports = {
   reactStrictMode: true,
   env: {
@@ -127,7 +127,7 @@ module.exports = {
 """)
     
     # Create minimal styles/globals.css
-    (studio_dir / "styles" / "globals.css").write_text("""
+    (web_dir / "styles" / "globals.css").write_text("""
 html, body {
   padding: 0;
   margin: 0;
@@ -141,7 +141,7 @@ html, body {
 """)
     
     # Create pages/_app.tsx
-    (studio_dir / "pages" / "_app.tsx").write_text("""
+    (web_dir / "pages" / "_app.tsx").write_text("""
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 
@@ -151,12 +151,12 @@ export default function App({ Component, pageProps }: AppProps) {
 """)
 
 
-def download_full_studio(target_dir: Path) -> bool:
-    """Download the full studio from GitHub."""
+def download_full_web(target_dir: Path) -> bool:
+    """Download the full web from GitHub."""
     try:
         logger.info("Downloading full VibeX from GitHub...")
         
-        # Use git to clone just the studio directory
+        # Use git to clone just the web directory
         subprocess.run([
             'git', 'clone', '--depth', '1', '--filter=blob:none', '--sparse',
             'https://github.com/yourusername/vibex.git',
@@ -164,44 +164,44 @@ def download_full_studio(target_dir: Path) -> bool:
         ], check=True, capture_output=True)
         
         subprocess.run([
-            'git', '-C', str(target_dir / '.tmp'), 'sparse-checkout', 'set', 'studio'
+            'git', '-C', str(target_dir / '.tmp'), 'sparse-checkout', 'set', 'web'
         ], check=True, capture_output=True)
         
-        # Move studio files
-        shutil.move(str(target_dir / '.tmp' / 'studio'), str(target_dir))
+        # Move web files
+        shutil.move(str(target_dir / '.tmp' / 'web'), str(target_dir))
         shutil.rmtree(str(target_dir / '.tmp'))
         
-        logger.info("Full studio downloaded successfully!")
+        logger.info("Full web downloaded successfully!")
         return True
         
     except Exception as e:
-        logger.warning(f"Could not download full studio: {e}")
-        logger.info("Using embedded minimal studio instead")
+        logger.warning(f"Could not download full web: {e}")
+        logger.info("Using embedded minimal web instead")
         return False
 
 
-def ensure_studio_available() -> tuple[Path, bool]:
-    """Ensure studio is available, either full or embedded."""
-    # First, check if we're in a project with studio/
-    local_studio = Path.cwd() / "studio"
-    if local_studio.exists() and (local_studio / "package.json").exists():
-        logger.info("Using local studio from project directory")
-        return local_studio, True
+def ensure_web_available() -> tuple[Path, bool]:
+    """Ensure web is available, either full or embedded."""
+    # First, check if we're in a project with web/
+    local_web = Path.cwd() / "web"
+    if local_web.exists() and (local_web / "package.json").exists():
+        logger.info("Using local web from project directory")
+        return local_web, True
     
-    # Check if full studio is already downloaded
-    full_studio = Path.home() / ".vibex" / "studio-full"
-    if full_studio.exists() and (full_studio / "package.json").exists():
-        return full_studio, True
+    # Check if full web is already downloaded
+    full_web = Path.home() / ".vibex" / "web-full"
+    if full_web.exists() and (full_web / "package.json").exists():
+        return full_web, True
     
-    # Try to download full studio
-    if download_full_studio(Path.home() / ".vibex"):
-        return Path.home() / ".vibex" / "studio-full", True
+    # Try to download full web
+    if download_full_web(Path.home() / ".vibex"):
+        return Path.home() / ".vibex" / "web-full", True
     
-    # Fall back to embedded minimal studio
-    return get_embedded_studio_path(), False
+    # Fall back to embedded minimal web
+    return get_embedded_web_path(), False
 
 
-def run_studio_command(
+def run_web_command(
     action: str = "start",
     port: int = 7777,
     api_port: int = 7770,
@@ -209,19 +209,19 @@ def run_studio_command(
     open_browser: bool = True,
     production: bool = False
 ):
-    """Run studio with automatic detection and fallback."""
-    studio_path, is_full = ensure_studio_available()
+    """Run web with automatic detection and fallback."""
+    web_path, is_full = ensure_web_available()
     
     if action == "setup":
-        logger.info(f"Installing dependencies in {studio_path}...")
-        subprocess.run(['npm', 'install'], cwd=studio_path, check=True)
+        logger.info(f"Installing dependencies in {web_path}...")
+        subprocess.run(['npm', 'install'], cwd=web_path, check=True)
         logger.info("Setup completed!")
         return
     
     # Check if dependencies are installed
-    if not (studio_path / "node_modules").exists():
-        logger.info("Installing studio dependencies...")
-        subprocess.run(['npm', 'install'], cwd=studio_path, check=True)
+    if not (web_path / "node_modules").exists():
+        logger.info("Installing web dependencies...")
+        subprocess.run(['npm', 'install'], cwd=web_path, check=True)
     
     # Prepare environment
     env = os.environ.copy()
@@ -240,19 +240,19 @@ def run_studio_command(
         time.sleep(3)  # Give API time to start
     
     try:
-        # Start studio
+        # Start web
         logger.info(f"Starting VibeX on http://localhost:{port}")
         
         if not is_full:
-            logger.info("Note: Running minimal embedded studio. For full features, clone the VibeX repository.")
+            logger.info("Note: Running minimal embedded web. For full features, clone the VibeX repository.")
         
         if production:
-            subprocess.run(['npm', 'run', 'build'], cwd=studio_path, check=True)
-            studio_cmd = ['npm', 'run', 'start', '--', '-p', str(port)]
+            subprocess.run(['npm', 'run', 'build'], cwd=web_path, check=True)
+            web_cmd = ['npm', 'run', 'start', '--', '-p', str(port)]
         else:
-            studio_cmd = ['npm', 'run', 'dev', '--', '-p', str(port)]
+            web_cmd = ['npm', 'run', 'dev', '--', '-p', str(port)]
         
-        studio_process = subprocess.Popen(studio_cmd, cwd=studio_path, env=env)
+        web_process = subprocess.Popen(web_cmd, cwd=web_path, env=env)
         
         # Open browser
         if open_browser:
@@ -262,12 +262,12 @@ def run_studio_command(
         logger.info(f"\n✨ VibeX is running at http://localhost:{port}")
         logger.info("Press Ctrl+C to stop.\n")
         
-        studio_process.wait()
+        web_process.wait()
         
     except KeyboardInterrupt:
         logger.info("\nShutting down...")
     finally:
-        if studio_process:
-            studio_process.terminate()
+        if web_process:
+            web_process.terminate()
         if api_process:
             api_process.terminate()

@@ -110,11 +110,9 @@ def setup_task_file_logging(log_file_path: str) -> None:
                     logger.addHandler(file_handler)
                     logger.setLevel(logging.INFO)
 
-        # Test that it works with a sample log
-        test_logger = logging.getLogger('vibex.core.task')
-        test_logger.info("Task file logging initialized successfully with rotation (max 50MB per file, keeping 5 backups)")
-
-        print(f"Task file logging initialized with rotation: {log_file}")
+        # Log initialization only once using root logger
+        logger = logging.getLogger('vibex')
+        logger.debug(f"Task file logging initialized with rotation: {log_file}")
 
     except Exception as e:
         print(f"Failed to setup task file logging: {e}")

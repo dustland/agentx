@@ -34,28 +34,24 @@ class CreateXAgentRequest(BaseModel):
 
 class XAgentResponse(BaseModel):
     """Response from XAgent operations"""
-    agent_id: str = Field(description="The XAgent's unique identifier")
-    status: TaskStatus
+    xagent_id: str = Field(description="The XAgent's unique identifier")
     goal: Optional[str] = Field(default=None, description="The XAgent's goal")
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    name: Optional[str] = Field(default=None, description="The project name")
+    status: TaskStatus = Field(default=TaskStatus.PENDING, description="The XAgent's current status")
     created_at: datetime = Field(default_factory=utc_now)
-    completed_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     config_path: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
     plan: Optional[Dict[str, Any]] = None
 
 
 class TaskRunInfo(BaseModel):
     """Detailed information about a task run"""
-    agent_id: str
-    status: TaskStatus
+    xagent_id: str
     config_path: str
     goal: str
-    context: Optional[Dict[str, Any]] = None
     created_at: datetime
-    completed_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     plan: Optional[Dict[str, Any]] = None
 
@@ -67,14 +63,14 @@ class XAgentListResponse(BaseModel):
 
 class MemoryRequest(BaseModel):
     """Request for memory operations"""
-    agent_id: str
+    xagent_id: str
     content: Optional[str] = Field(default=None, description="Content to add to memory")
     query: Optional[str] = Field(default=None, description="Query to search memory")
 
 
 class MemoryResponse(BaseModel):
     """Response from memory operations"""
-    agent_id: str
+    xagent_id: str
     success: bool
     data: Optional[Any] = None
     error: Optional[str] = None
@@ -89,5 +85,5 @@ class HealthResponse(BaseModel):
     service_name: str = "VibeX API"
     service_type: str = "vibex-agent-orchestration"
     api_endpoints: List[str] = Field(default_factory=lambda: [
-        "/agents", "/agents/{agent_id}", "/agents/{agent_id}/memory", "/health", "/monitor"
+        "/xagents", "/xagents/{xagent_id}", "/xagents/{xagent_id}/memory", "/health", "/monitor"
     ])

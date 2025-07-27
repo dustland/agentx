@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Activity, Folder, Monitor, Goal } from "lucide-react";
-import { useXAgent } from "@/hooks/use-xagent";
 
 // Import the new tab components
 import { Artifacts } from "./artifacts";
@@ -25,7 +24,7 @@ interface Artifact {
 
 interface ToolCall {
   id: string;
-  agent_id: string;
+  xagent_id: string;
   tool_name: string;
   parameters: any;
   result?: any;

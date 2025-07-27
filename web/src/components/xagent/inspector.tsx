@@ -22,7 +22,7 @@ interface Artifact {
 
 interface ToolCall {
   id: string;
-  agent_id: string;
+  xagent_id: string;
   tool_name: string;
   parameters: any;
   result?: any;
@@ -114,7 +114,7 @@ export function Inspector({
         <div className="space-y-4 p-4">
           <div>
             <h4 className="text-sm font-medium mb-2">Agent</h4>
-            <Badge variant="outline">{selectedToolCall.agent_id}</Badge>
+            <Badge variant="outline">{selectedToolCall.xagent_id}</Badge>
           </div>
           <div>
             <h4 className="text-sm font-medium mb-2">Parameters</h4>

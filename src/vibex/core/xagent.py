@@ -44,6 +44,7 @@ from vibex.utils.logger import (
     set_streaming_mode,
 )
 from vibex.config.team_loader import load_team_config
+from vibex.utils.paths import get_project_root
 
 if TYPE_CHECKING:
     pass
@@ -113,7 +114,7 @@ class XAgent(Agent):
         self,
         team_config: TeamConfig,
         project_id: Optional[str] = None,
-        workspace_dir: Optional[Path] = None,
+        project_path: Optional[Path] = None,
         initial_prompt: Optional[str] = None,
     ):
         # Generate unique project ID
@@ -134,32 +135,27 @@ class XAgent(Agent):
         elif os.getenv("ENABLE_MEMORY_CACHE", "false").lower() == "true":
             cache_provider = "memory"
         
-        if workspace_dir:
-            # Use explicit project storage directory
-            # Note: When workspace_dir is provided, we use it directly
-            # This is for resuming existing projects
+        if project_path:
+            # Use explicit project path (for resuming existing projects)
             from ..storage.project import ProjectStorage
             from ..storage.backends import LocalFileStorage
             
-            # For resuming projects, the workspace_dir IS the project directory
-            # Don't double-add the project_id to the path
-            workspace_path = Path(workspace_dir)
-            storage = LocalFileStorage(workspace_path)
+            project_path = Path(project_path)
+            storage = LocalFileStorage(project_path)
             cache_backend = ProjectStorageFactory.get_cache_provider(cache_provider)
             
-            # Create ProjectStorage with correct base_path calculation
-            # Since workspace_dir is already the full project path, use parent as base
+            # Create ProjectStorage with the provided path
             self.project_storage = ProjectStorage(
-                base_path=workspace_path.parent,
+                project_path=project_path,
                 project_id=self.project_id,
                 file_storage=storage,
                 use_git_artifacts=True,
                 cache_backend=cache_backend
             )
         else:
-            # Use standard project storage: project_data/{project_id}
+            # Use standard project storage with default project root
             self.project_storage = ProjectStorageFactory.create_project_storage(
-                base_path=Path("./.vibex/projects"),
+                project_root=get_project_root(),
                 project_id=self.project_id,
                 cache_provider=cache_provider
             )
@@ -191,7 +187,7 @@ class XAgent(Agent):
 
         # Project state
         self.plan: Optional[Plan] = None
-        self.is_complete_flag: bool = False
+
         self.conversation_history: List[Message] = []
         self.initial_prompt = initial_prompt
         self._plan_initialized = False
@@ -221,9 +217,9 @@ class XAgent(Agent):
         """Initializes the ToolManager and registers builtin tools."""
         tool_manager = ToolManager(
             project_id=self.project_id,
-            workspace_path=str(self.project_storage.get_project_path())
+            project_path=str(self.project_storage.get_project_path())
         )
-        logger.info("ToolManager initialized.")
+        logger.debug("ToolManager initialized.")
         return tool_manager
 
     def _initialize_specialist_agents(self) -> Dict[str, Agent]:
@@ -279,7 +275,7 @@ class XAgent(Agent):
 
         # Try to load existing plan from project
         if self.project:
-            await self.project.load_project_state()
+            await self.project.load_state()
             if self.project.plan:
                 self.plan = self.project.plan
                 logger.info("Loaded existing plan from project")
@@ -300,7 +296,7 @@ class XAgent(Agent):
             self._plan_initialized = True
         # Otherwise, try to load existing plan from project
         elif not self.plan and self.project:
-            await self.project.load_project_state()
+            await self.project.load_state()
             if self.project.plan:
                 self.plan = self.project.plan
                 logger.info("Loaded existing plan from project")
@@ -599,7 +595,7 @@ Respond with a JSON object:
             for task in self.plan.tasks:
                 if task.id == task_id:
                     task.status = "pending"
-                    logger.info(f"Reset task '{task.name}' to pending for regeneration")
+                    logger.info(f"Reset task '{task.action}' to pending for regeneration")
 
         # Don't auto-execute - let user call step() to execute
         await self._persist_plan()
@@ -740,12 +736,10 @@ Respond with a JSON object following this schema:
   "tasks": [
     {{
       "id": "string - unique task identifier",
-      "name": "string - task name",
-      "goal": "string - specific task objective",
-      "agent": "string - agent name from available agents",
+      "action": "string - the action to be performed",
+      "assigned_to": "string - agent name from available agents",
       "dependencies": ["array of task IDs this depends on"],
-      "status": "pending",
-      "on_failure": "proceed"
+      "status": "pending"
     }}
   ]
 }}
@@ -793,12 +787,10 @@ Respond with a JSON object following this schema:
                 tasks=[
                     Task(
                         id="task_1",
-                        name="Complete the requested task",
-                        goal=goal,
-                        agent=next(iter(self.specialist_agents.keys())),
+                        action="Complete the requested task",
+                        assigned_to=next(iter(self.specialist_agents.keys())),
                         dependencies=[],
-                        status="pending",
-                        on_failure="halt"
+                        status="pending"
                     )
                 ]
             )
@@ -824,7 +816,7 @@ Respond with a JSON object following this schema:
 
         # Execute the task
         try:
-            logger.info(f"Executing task: {next_task.name}")
+            logger.info(f"Executing task: {next_task.action}")
             result = await self._execute_single_task(next_task)
 
             # Update task status
@@ -837,7 +829,7 @@ Respond with a JSON object following this schema:
                 await send_task_update(
                     project_id=self.project_id,
                     status="completed",
-                    result={"task": next_task.name, "result": result}
+                    result={"task": next_task.action, "result": result}
                 )
             except ImportError:
                 # Streaming not available in this context
@@ -845,7 +837,6 @@ Respond with a JSON object following this schema:
 
             # Check if this was the last task
             if self.plan.is_complete():
-                self.is_complete_flag = True
                 try:
                     from ..server.streaming import send_task_update
                     await send_task_update(
@@ -855,12 +846,12 @@ Respond with a JSON object following this schema:
                     )
                 except ImportError:
                     pass
-                return f"✅ {next_task.name}: {result}\n\n🎉 All tasks completed successfully!"
+                return f"✅ {next_task.action}: {result}\n\n🎉 All tasks completed successfully!"
             else:
-                return f"✅ {next_task.name}: {result}"
+                return f"✅ {next_task.action}: {result}"
 
         except Exception as e:
-            logger.error(f"Task failed: {next_task.name} - {e}")
+            logger.error(f"Task failed: {next_task.action} - {e}")
             next_task.status = "failed"
             await self._persist_plan()
             
@@ -870,17 +861,16 @@ Respond with a JSON object following this schema:
                 await send_task_update(
                     project_id=self.project_id,
                     status="failed",
-                    result={"error": str(e), "task": next_task.name}
+                    result={"error": str(e), "task": next_task.action}
                 )
             except ImportError:
                 # Streaming not available in this context
                 pass
 
             if next_task.on_failure == "halt":
-                self.is_complete_flag = True
-                return f"❌ {next_task.name}: Failed - {e}\n\nTask execution halted."
+                return f"❌ {next_task.action}: Failed - {e}\n\nTask execution halted."
             else:
-                return f"⚠️ {next_task.name}: Failed but continuing - {e}"
+                return f"⚠️ {next_task.action}: Failed but continuing - {e}"
 
     async def _execute_plan_steps(self) -> str:
         """Execute the current plan step by step (for compatibility)."""
@@ -925,7 +915,6 @@ Respond with a JSON object following this schema:
         
         if not actionable_tasks:
             if self.plan.has_failed_tasks():
-                self.is_complete_flag = True
                 return "❌ Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
@@ -945,7 +934,7 @@ Respond with a JSON object following this schema:
             # Create coroutines for parallel execution
             task_coroutines = []
             for task in actionable_tasks:
-                logger.info(f"Starting parallel task: {task.name}")
+                logger.info(f"Starting parallel task: {task.action}")
                 task_coroutines.append(self._execute_single_task(task))
             
             # Execute all tasks concurrently
@@ -958,34 +947,32 @@ Respond with a JSON object following this schema:
             for i, (task, result) in enumerate(zip(actionable_tasks, results)):
                 if isinstance(result, Exception):
                     # Task failed
-                    logger.error(f"Parallel task failed: {task.name} - {result}")
+                    logger.error(f"Parallel task failed: {task.action} - {result}")
                     task.status = "failed"
                     failed_tasks.append(task)
                     
                     if task.on_failure == "halt":
-                        completion_messages.append(f"❌ {task.name}: Failed - {result}")
+                        completion_messages.append(f"❌ {task.action}: Failed - {result}")
                         # Mark remaining tasks as failed too
                         for remaining_task in actionable_tasks[i+1:]:
                             remaining_task.status = "failed"
                         break
                     else:
-                        completion_messages.append(f"⚠️ {task.name}: Failed but continuing - {result}")
+                        completion_messages.append(f"⚠️ {task.action}: Failed but continuing - {result}")
                 else:
                     # Task succeeded
                     task.status = "completed"
-                    completion_messages.append(f"✅ {task.name}: {result}")
+                    completion_messages.append(f"✅ {task.action}: {result}")
             
             # Persist plan after parallel execution
             await self._persist_plan()
             
             # Check if this completed all tasks
             if self.plan.is_complete():
-                self.is_complete_flag = True
                 completion_messages.append("🎉 All tasks completed successfully!")
             
             # If we had halt failures, mark as complete
             if failed_tasks and any(task.on_failure == "halt" for task in failed_tasks):
-                self.is_complete_flag = True
                 completion_messages.append("Task execution halted due to critical failure.")
             
             return "\n".join(completion_messages)
@@ -1013,13 +1000,13 @@ Respond with a JSON object following this schema:
             from vibex.core.message import Message
             await send_agent_status(
                 project_id=self.project_id,
-                agent_id=task.assigned_to,
+                xagent_id=task.assigned_to,
                 status="starting",
                 progress=0
             )
             
             # Send task briefing as system message
-            system_message = Message.system_message(f"Starting task: {task.name} - {task.description}")
+            system_message = Message.system_message(f"Starting task: {task.action}")
             await send_message_object(self.project_id, system_message)
             # Persist the message
             await self.chat_storage.save_message(self.project_id, system_message)
@@ -1036,8 +1023,7 @@ Respond with a JSON object following this schema:
                 "role": "system",
                 "content": f"""You are being assigned a specific task as part of a larger plan.
 
-TASK: {task.name}
-GOAL: {task.description}
+TASK: {task.action}
 
 Complete this specific task using your available tools. Save any outputs that other agents might need as files in the project storage.
 
@@ -1046,7 +1032,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             },
             {
                 "role": "user",
-                "content": f"Please complete this task: {task.description}"
+                "content": f"Please complete this task: {task.action}"
             }
         ]
 
@@ -1065,7 +1051,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             await self.chat_storage.save_message(self.project_id, agent_message)
             
             # Send task completion status
-            completion_message = Message.system_message(f"Completed task: {task.name}")
+            completion_message = Message.system_message(f"Completed task: {task.action}")
             await send_message_object(self.project_id, completion_message)
             await self.chat_storage.save_message(self.project_id, completion_message)
         except ImportError:
@@ -1088,7 +1074,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             context = HandoffContext(
                 current_agent=task.assigned_to,
                 task_result=response,
-                task_goal=task.description,
+                task_goal=task.action,
                 conversation_history=conversation_dicts,
                 taskspace_files=[f["name"] for f in await self.project_storage.list_artifacts()]
             )
@@ -1098,8 +1084,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                 # Create a follow-up task for the handoff
                 handoff_task = Task(
                     id=f"handoff_{task.id}_{next_agent}",
-                    name=f"Continue work with {next_agent}",
-                    description=f"Continue the work from {task.assigned_to} based on: {task.description}",
+                    action=f"Continue work with {next_agent}",
                     assigned_to=next_agent,
                     dependencies=[task.id],
                     status="pending"
@@ -1123,7 +1108,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         try:
             # Update the project's plan field and persist project state
             self.project.plan = self.plan
-            await self.project._persist_project_state()
+            await self.project._persist_state()
             logger.debug("Plan persisted to project.json via Project class")
         except Exception as e:
             logger.error(f"Failed to persist plan: {e}")
@@ -1196,7 +1181,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         """Check if the project is complete."""
         if self.plan:
             return self.plan.is_complete()
-        return self.is_complete_flag
+        return False
 
     async def start(self, prompt: str) -> None:
         """Compatibility method for TaskExecutor.start()."""
@@ -1223,11 +1208,12 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
     
     async def set_name(self, name: str) -> None:
         """Set a custom name for this XAgent/Project."""
+        self._name = name
         if self.project:
             await self.project.set_name(name)
             logger.info(f"Updated project name to: {name}")
         else:
-            logger.warning("Cannot set name - no project associated with this XAgent")
+            logger.info(f"Updated XAgent name to: {name}")
     
     @property
     def goal(self) -> str:
@@ -1235,6 +1221,18 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
         if self.project:
             return self.project.goal
         return self.initial_prompt or ""
+    
+    @property
+    def name(self) -> str:
+        """Get the project name."""
+        if hasattr(self, 'project') and self.project:
+            return self.project.name
+        return getattr(self, '_name', f"Project {self.project_id}")
+    
+    @name.setter
+    def name(self, value: str) -> None:
+        """Set the project name."""
+        self._name = value
 
     async def step(self) -> str:
         """

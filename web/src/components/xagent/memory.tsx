@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { RefreshCw, Brain, Database } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { EmptyState } from "./empty-state";
 
 interface Memory {
   id: string;
   content: string;
   type: string;
-  agent_id: string;
+  xagent_id: string;
   metadata?: any;
   created_at: string;
 }
@@ -73,7 +74,7 @@ export function Memory({ xagentId }: MemoryProps) {
                 <div className="flex items-center gap-2">
                   <Database className="w-4 h-4 text-muted-foreground" />
                   <span className="font-medium text-sm">
-                    {memory.agent_id || "System"}
+                    {memory.xagent_id || "System"}
                   </span>
                 </div>
                 <Badge variant="outline" className="text-xs">

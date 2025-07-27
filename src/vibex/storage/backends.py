@@ -22,7 +22,7 @@ class LocalFileStorage(FileStorage):
     def __init__(self, base_path: Union[str, Path]):
         self.base_path = Path(base_path).resolve()
         self.base_path.mkdir(parents=True, exist_ok=True)
-        logger.info(f"LocalFileStorage initialized: {self.base_path}")
+        logger.debug(f"LocalFileStorage initialized: {self.base_path}")
 
     def _resolve_path(self, path: str) -> Path:
         """Resolve path relative to base path and validate security."""

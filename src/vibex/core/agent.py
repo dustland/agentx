@@ -67,7 +67,7 @@ class Agent:
         # Tool management (injected by TaskExecutor for task isolation)
         self.tool_manager = tool_manager
 
-        logger.info(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
+        logger.debug(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
 
     def _initialize_brain(self, config: AgentConfig) -> Brain:
         """Initialize the brain with the agent's configuration."""

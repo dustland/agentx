@@ -16,13 +16,14 @@ from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Depends, Re
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
-from .xagent_service import XAgentService, get_xagent_service
+from .service import XAgentService, get_xagent_service
 from .models import CreateXAgentRequest, XAgentResponse, TaskStatus, XAgentListResponse
 from .streaming import event_stream_manager
 from ..utils.logger import get_logger
 # Authentication temporarily disabled
 # from .auth import get_user_id
 from ..core.exceptions import AgentNotFoundError
+from ..utils.paths import get_project_path
 
 # Temporary stub for authentication
 async def get_user_id() -> str:
@@ -56,7 +57,7 @@ def create_app() -> FastAPI:
     async def health_check():
         """Health check endpoint"""
         # Get agent count for health info
-        active_agents = len(await xagent_service.list_for_user("_health_check"))
+        active_agents = len(await xagent_service.list("_health_check"))
         
         # Get version from package metadata
         try:
@@ -72,12 +73,12 @@ def create_app() -> FastAPI:
             "service_name": "VibeX API",
             "active_agents": active_agents,
             "api_endpoints": [
-                "/agents", 
-                "/agents/{agent_id}", 
-                "/agents/{agent_id}/messages",
-                "/agents/{agent_id}/artifacts/{artifact_path}",
-                "/agents/{agent_id}/logs",
-                "/agents/{agent_id}/stream",
+                "/xagents", 
+                "/xagents/{xagent_id}", 
+                "/xagents/{xagent_id}/messages",
+                "/xagents/{xagent_id}/artifacts/{artifact_path}",
+                "/xagents/{xagent_id}/logs",
+                "/xagents/{xagent_id}/stream",
                 "/chat",
                 "/health", 
                 "/monitor"
@@ -89,46 +90,65 @@ def create_app() -> FastAPI:
         # Ensure plan is loaded before creating response
         await xagent._ensure_plan_initialized()
         
+        # Determine status from task states in the plan
+        status = TaskStatus.PENDING
+        if xagent.plan and xagent.plan.tasks:
+            # Check task statuses
+            has_failed = any(t.status == "failed" for t in xagent.plan.tasks)
+            has_in_progress = any(t.status == "in_progress" for t in xagent.plan.tasks)
+            all_completed = all(t.status == "completed" for t in xagent.plan.tasks)
+            
+            if has_failed:
+                status = TaskStatus.FAILED
+            elif all_completed:
+                status = TaskStatus.COMPLETED
+            elif has_in_progress:
+                status = TaskStatus.RUNNING
+            else:
+                status = TaskStatus.PENDING
+        
         return XAgentResponse(
-            agent_id=xagent.project_id,
-            status=TaskStatus.COMPLETED if xagent.is_complete() else TaskStatus.RUNNING,
+            xagent_id=xagent.project_id,
             user_id=user_id,
+            status=status,
             created_at=datetime.now(),  # TODO: Get actual creation time from XAgent
+            updated_at=datetime.now(),  # TODO: Get actual update time from XAgent
             goal=xagent.initial_prompt or "",
+            name=getattr(xagent, 'name', f"Project {xagent.project_id}"),
             config_path=getattr(xagent, 'config_path', None),
             plan=xagent.plan.model_dump() if xagent.plan else None,
         )
     
-    @app.get("/test-sse/{agent_id}")
-    async def test_sse(agent_id: str):
+    @app.get("/test-sse/{xagent_id}")
+    async def test_sse(xagent_id: str):
         """Test SSE endpoint to verify streaming is working"""
         from .streaming import send_message_object
         from ..core.message import Message
         
         async def generate_test_events():
-            logger.info(f"[TEST-SSE] Starting test event stream for agent {agent_id}")
+            logger.info(f"[TEST-SSE] Starting test event stream for xagent {xagent_id}")
             
             # Send a test system message
             system_message = Message.system_message("This is a test SSE message")
-            await send_message_object(agent_id, system_message)
+            await send_message_object(xagent_id, system_message)
             
             # Wait a bit
             await asyncio.sleep(1)
             
             # Send another message
             assistant_message = Message.assistant_message("SSE is working correctly!")
-            await send_message_object(agent_id, assistant_message)
+            await send_message_object(xagent_id, assistant_message)
             
-            logger.info(f"[TEST-SSE] Test events sent for agent {agent_id}")
+            logger.info(f"[TEST-SSE] Test events sent for xagent {xagent_id}")
         
         # Run in background
         asyncio.create_task(generate_test_events())
         
-        return {"message": "Test SSE events triggered", "agent_id": agent_id}
+        return {"message": "Test SSE events triggered", "xagent_id": xagent_id}
     
     # ===== Agent Management =====
     
-    @app.post("/agents", response_model=XAgentResponse)
+    @app.post("/xagents", response_model=XAgentResponse)
     async def create_agent_run(
         request: CreateXAgentRequest,
         user_id: str = Depends(get_user_id),
@@ -138,7 +158,7 @@ def create_app() -> FastAPI:
         Creates a new XAgent instance.
         Returns a DTO representation for API compatibility.
         """
-        logger.info(f"[/agents] Received request to create XAgent for user: {user_id}")
+        logger.info(f"[/xagents] Received request to create XAgent for user: {user_id}")
         logger.debug(f"Request details: {request}")
 
         try:
@@ -157,14 +177,14 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to create XAgent: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents", response_model=XAgentListResponse)
+    @app.get("/xagents", response_model=XAgentListResponse)
     async def list_agent_runs(x_user_id: Optional[str] = Header(None, alias="X-User-ID")):
         """List all XAgent instances for the authenticated user."""
         if not x_user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagents = await xagent_service.list_for_user(x_user_id)
+            xagents = await xagent_service.list(x_user_id)
             runs = []
             for xagent in xagents:
                 runs.append(await _xagent_to_response(xagent, x_user_id))
@@ -173,9 +193,9 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to list XAgents: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents/{agent_id}", response_model=XAgentResponse)
+    @app.get("/xagents/{xagent_id}", response_model=XAgentResponse)
     async def get_agent_run(
-        agent_id: str,
+        xagent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Get XAgent information."""
@@ -183,7 +203,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(agent_id)
+            xagent = await xagent_service.get(xagent_id)
             return await _xagent_to_response(xagent, x_user_id)
             
         except AgentNotFoundError:
@@ -192,9 +212,9 @@ def create_app() -> FastAPI:
             logger.error(f"Failed to get XAgent: {e}")
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.delete("/agents/{agent_id}")
+    @app.delete("/xagents/{xagent_id}")
     async def delete_agent_run(
-        agent_id: str,
+        xagent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Delete an XAgent instance."""
@@ -202,7 +222,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            deleted = await xagent_service.delete(agent_id)
+            deleted = await xagent_service.delete(xagent_id)
             if deleted:
                 return {"message": "XAgent deleted successfully"}
             else:
@@ -219,11 +239,11 @@ def create_app() -> FastAPI:
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Chat with an XAgent."""
-        agent_id = request.get("agent_id")
-        if not agent_id:
-            raise HTTPException(status_code=400, detail="agent_id is required")
+        xagent_id = request.get("xagent_id")
+        if not xagent_id:
+            raise HTTPException(status_code=400, detail="xagent_id is required")
             
-        logger.info(f"[API] POST /chat - User: {x_user_id}, Agent: {agent_id}")
+        logger.info(f"[API] POST /chat - User: {x_user_id}, XAgent: {xagent_id}")
         logger.info(f"[API] Chat request: {request}")
         
         if not x_user_id:
@@ -234,7 +254,7 @@ def create_app() -> FastAPI:
             mode = request.get("mode", "agent")  # Default to agent mode
             
             # Get XAgent instance and chat directly
-            xagent = await xagent_service.get(agent_id)
+            xagent = await xagent_service.get(xagent_id)
             response = await xagent.chat(content, mode=mode)
             
             logger.info(f"[API] Response from XAgent: {response.text[:100]}...")
@@ -246,9 +266,9 @@ def create_app() -> FastAPI:
             logger.error(f"[API] Failed to send message: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents/{agent_id}/messages")
+    @app.get("/xagents/{xagent_id}/messages")
     async def get_messages(
-        agent_id: str,
+        xagent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Get messages for an XAgent."""
@@ -256,7 +276,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
-            xagent = await xagent_service.get(agent_id)
+            xagent = await xagent_service.get(xagent_id)
             messages = [msg.model_dump() for msg in xagent.conversation_history]
             return {"messages": messages}
         except AgentNotFoundError:
@@ -267,9 +287,9 @@ def create_app() -> FastAPI:
     
     # ===== Agent Resources =====
     
-    @app.get("/agents/{agent_id}/artifacts/{artifact_path:path}")
+    @app.get("/xagents/{xagent_id}/artifacts/{artifact_path:path}")
     async def get_agent_artifact(
-        agent_id: str,
+        xagent_id: str,
         artifact_path: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
@@ -279,7 +299,7 @@ def create_app() -> FastAPI:
         
         try:
             # Access artifact directly from filesystem
-            artifact_file = Path(f".vibex/projects/{agent_id}/artifacts/{artifact_path}")
+            artifact_file = get_project_path(xagent_id) / "artifacts" / artifact_path
             
             if not artifact_file.exists():
                 raise HTTPException(status_code=404, detail="Artifact not found")
@@ -304,9 +324,9 @@ def create_app() -> FastAPI:
             # Don't log errors for read-only operations to avoid feedback loops
             raise HTTPException(status_code=500, detail=str(e))
     
-    @app.get("/agents/{agent_id}/logs")
+    @app.get("/xagents/{xagent_id}/logs")
     async def get_agent_logs(
-        agent_id: str,
+        xagent_id: str,
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Get logs directly from filesystem to avoid logging feedback loops."""
@@ -315,7 +335,7 @@ def create_app() -> FastAPI:
         
         try:
             # Access logs directly from filesystem
-            log_file = Path(f".vibex/projects/{agent_id}/logs/project.log")
+            log_file = get_project_path(xagent_id) / "logs" / "project.log"
             
             if not log_file.exists():
                 return {"logs": []}  # Return empty if no logs yet
@@ -338,30 +358,30 @@ def create_app() -> FastAPI:
 
     # ===== Streaming =====
     
-    @app.get("/agents/{agent_id}/stream")
+    @app.get("/xagents/{xagent_id}/stream")
     async def stream_agent_events(
-        agent_id: str,
+        xagent_id: str,
         user_id: str,  # Required query parameter for SSE
         x_user_id: Optional[str] = Header(None, alias="X-User-ID")
     ):
         """Stream real-time events for an XAgent."""
-        logger.info(f"[API] GET /agents/{agent_id}/stream - User: {user_id} establishing SSE connection")
+        logger.info(f"[API] GET /xagents/{xagent_id}/stream - User: {user_id} establishing SSE connection")
         
         if not user_id:
             raise HTTPException(status_code=401, detail="User ID required")
         
         try:
             # Verify XAgent exists
-            await xagent_service.get(agent_id)
-            logger.info(f"[API] SSE connection authorized for agent {agent_id}")
+            await xagent_service.get(xagent_id)
+            logger.info(f"[API] SSE connection authorized for xagent {xagent_id}")
             
             # Stream events
             async def event_generator():
-                logger.info(f"[API] Starting event stream for agent {agent_id}")
+                logger.info(f"[API] Starting event stream for xagent {xagent_id}")
                 event_count = 0
-                async for event in event_stream_manager.stream_events(agent_id):
+                async for event in event_stream_manager.stream_events(xagent_id):
                     event_count += 1
-                    logger.debug(f"[API] Yielding event #{event_count} for agent {agent_id}: {event.get('event')}")
+                    logger.debug(f"[API] Yielding event #{event_count} for xagent {xagent_id}: {event.get('event')}")
                     yield event
             
             return EventSourceResponse(event_generator())

@@ -88,7 +88,7 @@ async def test_handoff_execution(tmp_path):
             break
 
     assert handoff_task is not None, "Handoff task not found in plan"
-    assert handoff_task.agent == "finisher", "Handoff task should be assigned to finisher"
+    assert handoff_task.assigned_to == "finisher", "Handoff task should be assigned to finisher"
 
 
 @pytest.mark.asyncio

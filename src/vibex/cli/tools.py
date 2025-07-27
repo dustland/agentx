@@ -103,9 +103,9 @@ def _register_builtin_tools(with_taskspace: bool = True):
             base_path=Path("./.vibex/projects"),
             project_id="cli_default"
         )
-        register_builtin_tools(registry, taskspace_storage=project_storage, memory_system=None)
+        register_builtin_tools(registry, project_storage=project_storage, memory_system=None)
     else:
-        register_builtin_tools(registry, taskspace_storage=None, memory_system=None)
+        register_builtin_tools(registry, project_storage=None, memory_system=None)
 
 
 if __name__ == "__main__":

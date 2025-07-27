@@ -37,8 +37,7 @@ class Task(BaseModel):
         description="Unique identifier for the task.", 
         default_factory=lambda: f"task_{uuid.uuid4().hex[:8]}"
     )
-    name: str = Field(description="The name of the task.")
-    description: Optional[str] = Field(None, description="A detailed description of the task.")
+    action: str = Field(description="The action to be performed by this task.")
     status: TaskStatus = Field("pending", description="The current status of the task.")
     dependencies: List[str] = Field([], description="A list of task IDs that this task depends on.")
     result: Optional[str] = Field(None, description="The result or output of the task upon completion.")
@@ -54,7 +53,7 @@ class Task(BaseModel):
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert the task to a dictionary."""
-        return self.dict()
+        return self.model_dump()
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Task":

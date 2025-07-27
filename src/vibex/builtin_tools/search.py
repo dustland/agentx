@@ -46,7 +46,7 @@ class SearchTool(Tool):
         """Initialize SerpAPI backend."""
         try:
             self._backend = SerpAPIBackend(self.api_key)
-            logger.info("SerpAPI search backend initialized")
+            logger.debug("SerpAPI search backend initialized")
         except ValueError as e:
             logger.error(f"Failed to initialize SerpAPI: {e}")
         except Exception as e:

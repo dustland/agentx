@@ -28,7 +28,7 @@ class FileTool(Tool):
             raise TypeError(f"FileTool requires a ProjectStorage instance, got {type(project_storage)}")
 
         self.project_storage = project_storage
-        logger.info(f"FileTool initialized with project storage: {self.project_storage.get_project_path()}")
+        logger.debug(f"FileTool initialized with project storage: {self.project_storage.get_project_path()}")
 
     @tool(description="Write content to a file")
     async def write_file(

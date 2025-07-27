@@ -136,7 +136,7 @@ class ProjectStorageFactory:
     @classmethod
     def create_project_storage(
         cls,
-        base_path: Union[str, Path],
+        project_root: Union[str, Path],
         project_id: str,
         use_git_artifacts: bool = True,
         storage_provider: str = "file",
@@ -149,7 +149,7 @@ class ProjectStorageFactory:
         using configurable storage and cache providers.
 
         Args:
-            base_path: Base path for project storage
+            project_root: Root directory for all projects (e.g., .vibex/projects)
             project_id: Project ID for storage isolation
             use_git_artifacts: Whether to use Git for artifact versioning
             storage_provider: Name of storage provider to use (default: "file")
@@ -161,23 +161,22 @@ class ProjectStorageFactory:
         # Get cache backend if specified
         cache_backend = cls.get_cache_provider(cache_provider)
         
-        # Create project storage with computed path
-        # Always use simple project_id path - user mapping handled by service layer
-        project_path = Path(base_path) / project_id
+        # Create project directory path: project_root + project_id
+        project_dir = Path(project_root) / project_id
         
-        # Create the filesystem abstraction for the computed project path
-        file_storage = cls.create_file_storage(project_path, provider=storage_provider)
+        # Create the filesystem abstraction for the project directory
+        file_storage = cls.create_file_storage(project_dir, provider=storage_provider)
         
-        # Create the final project storage with proper file_storage
+        # Create the final project storage with correct parameters
         project_storage = ProjectStorage(
-            base_path=base_path,
+            project_path=project_dir,
             project_id=project_id,
             file_storage=file_storage,
             use_git_artifacts=use_git_artifacts,
             cache_backend=cache_backend
         )
         
-        logger.info(f"Created project storage: {project_storage.project_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
+        logger.debug(f"Created project storage: {project_storage.project_path} (Storage: {storage_provider}, Cache: {cache_provider or 'disabled'}, Git: {use_git_artifacts})")
         
         return project_storage
 
