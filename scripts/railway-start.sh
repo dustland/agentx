@@ -9,7 +9,7 @@ echo "[STARTUP] Working directory: $(pwd)"
 
 # Start the backend API in the background
 echo "[STARTUP] Starting backend API on port 7770..."
-cd /app && python -m vibex.run --host 0.0.0.0 --port 7770 2>&1 | sed 's/^/[BACKEND] /' &
+cd /app && python -m vibex.run start 2>&1 | sed 's/^/[BACKEND] /' &
 BACKEND_PID=$!
 
 # Wait for backend to be ready
@@ -39,6 +39,9 @@ echo "[STARTUP] Starting web frontend on port $FRONTEND_PORT..."
 cd /app/web && PORT=$FRONTEND_PORT pnpm run start &
 FRONTEND_PID=$!
 
+# Wait a moment for frontend to start
+sleep 3
+
 # Function to handle shutdown
 cleanup() {
     echo "[SHUTDOWN] Stopping services..."
@@ -51,4 +54,9 @@ cleanup() {
 trap cleanup SIGTERM SIGINT
 
 # Wait for both processes
+echo "[STARTUP] All services started. Waiting for processes..."
 wait $BACKEND_PID $FRONTEND_PID
+
+# If we get here, one of the processes has exited
+echo "[ERROR] One of the services has stopped unexpectedly!"
+exit 1
