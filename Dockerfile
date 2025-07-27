@@ -74,12 +74,16 @@ COPY --from=web-builder /app/web/next.config.ts ./web/next.config.ts
 # Copy application source code
 COPY . .
 
-# Expose the port the application runs on
-EXPOSE 7770
+# Make the startup script executable
+RUN chmod +x /app/scripts/railway-start.sh
+
+# Expose the ports the applications run on
+# Railway typically uses 8080 for the main service
+EXPOSE 8080 7770
 
 # Use tini to start the application
 # This ensures that process signals are handled correctly.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Start both the backend and frontend services
-CMD ["sh", "-c", "cd web && npx concurrently --names 'API,WEB' -c 'bgBlue.bold,bgMagenta.bold' 'cd .. && python -m vibex.run --host 0.0.0.0 --port 7770' 'pnpm run start'"] 
+# Use our custom startup script
+CMD ["/app/scripts/railway-start.sh"] 
