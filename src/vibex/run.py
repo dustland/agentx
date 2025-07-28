@@ -465,16 +465,20 @@ def prod():
 
     try:
         import uvicorn
+        import os
 
-        print("🌐 Production server starting at http://localhost:7770")
+        # Use PORT environment variable if available (for Railway/Heroku)
+        port = int(os.environ.get("PORT", 7770))
+        
+        print(f"🌐 Production server starting at http://localhost:{port}")
         print("🚀 Running with 4 workers for concurrent requests")
-        print("📊 Monitor dashboard at http://localhost:7770/monitor")
+        print(f"📊 Monitor dashboard at http://localhost:{port}/monitor")
         print("🔄 Press Ctrl+C to stop")
 
         uvicorn.run(
             "vibex.server.api:app",
             host="0.0.0.0",
-            port=7770,
+            port=port,
             workers=4,  # Multiple workers for concurrent requests
             log_level="info",
             access_log=True

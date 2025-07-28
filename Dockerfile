@@ -58,6 +58,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g pnpm \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python dependencies from the python-base stage
@@ -85,5 +86,5 @@ EXPOSE 8080 7770
 # This ensures that process signals are handled correctly.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Use our custom startup script
-CMD ["/app/scripts/railway-start.sh"] 
+# Run the production server directly
+CMD ["uv", "run", "prod"] 
