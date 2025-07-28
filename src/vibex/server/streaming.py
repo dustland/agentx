@@ -120,6 +120,33 @@ async def send_project_update(project_id: str, status: str, result: Optional[Any
         }
     )
 
+async def send_task_update(project_id: str, status: str, result: Optional[Any] = None):
+    """Send a task status update"""
+    await event_stream_manager.send_event(
+        project_id,
+        "task_update",
+        {
+            "project_id": project_id,
+            "status": status,
+            "result": result,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+async def send_artifact_update(project_id: str, artifact_name: str, action: str = "created", metadata: Optional[Dict[str, Any]] = None):
+    """Send an artifact update event"""
+    await event_stream_manager.send_event(
+        project_id,
+        "artifact_update",
+        {
+            "project_id": project_id,
+            "artifact_name": artifact_name,
+            "action": action,  # "created", "updated", "deleted"
+            "metadata": metadata or {},
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
 
 async def send_tool_call(project_id: str, xagent_id: str, tool_name: str, parameters: Dict, result: Optional[Any] = None, status: str = "pending"):
     """Send a tool call event"""

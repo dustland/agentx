@@ -71,6 +71,7 @@ def create_app() -> FastAPI:
                 "/xagents", 
                 "/xagents/{xagent_id}", 
                 "/xagents/{xagent_id}/messages",
+                "/xagents/{xagent_id}/artifacts",
                 "/xagents/{xagent_id}/artifacts/{artifact_path}",
                 "/xagents/{xagent_id}/logs",
                 "/xagents/{xagent_id}/stream",
@@ -302,6 +303,35 @@ def create_app() -> FastAPI:
             return {"messages": []}  # Return empty on error for compatibility
     
     # ===== Agent Resources =====
+    
+    @app.get("/xagents/{xagent_id}/artifacts")
+    async def list_agent_artifacts(
+        xagent_id: str,
+        x_user_id: Optional[str] = Header(None, alias="X-User-ID")
+    ):
+        """List all artifacts for an XAgent."""
+        if not x_user_id:
+            raise HTTPException(status_code=401, detail="User ID required")
+        
+        try:
+            artifacts = await xagent_service.get_artifacts(x_user_id, xagent_id)
+            # Convert ArtifactInfo to dict for JSON response
+            return {
+                "artifacts": [
+                    {
+                        "path": artifact.path,
+                        "size": artifact.size,
+                        "modified_at": artifact.modified_at.isoformat(),
+                        "type": "file"  # All items from get_artifacts are files
+                    }
+                    for artifact in artifacts
+                ]
+            }
+        except PermissionError:
+            raise HTTPException(status_code=403, detail="Access denied")
+        except Exception as e:
+            logger.error(f"Failed to list artifacts for {xagent_id}: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
     
     @app.get("/xagents/{xagent_id}/artifacts/{artifact_path:path}")
     async def get_agent_artifact(

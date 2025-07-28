@@ -42,6 +42,8 @@ export function useXAgent(xagentId: string) {
     queryKey: xagentKeys.detail(xagentId),
     queryFn: () => vibex.getXAgent(xagentId),
     enabled: !!xagentId && xagentId !== "dummy-task-id",
+    staleTime: 0, // Always fetch fresh data for task status updates
+    refetchOnMount: true,
   });
 
   const messagesQuery = useQuery({
@@ -115,6 +117,8 @@ export function useXAgent(xagentId: string) {
     queryKey: xagentKeys.artifacts(xagentId),
     queryFn: () => vibex.listArtifacts(xagentId),
     enabled: !!xagentId && xagentId !== "dummy-task-id",
+    staleTime: 0, // Always fetch fresh data for artifact updates
+    refetchOnMount: true,
   });
 
   // Subscribe to real-time updates
@@ -211,6 +215,18 @@ export function useXAgent(xagentId: string) {
           }
           queryClient.invalidateQueries({
             queryKey: xagentKeys.messages(xagentId),
+          });
+        } else if (data.event === "task_update") {
+          // Handle task status updates - these should refresh the summary
+          console.log("[useXAgent] Task update received:", data.data);
+          queryClient.invalidateQueries({
+            queryKey: xagentKeys.detail(xagentId),
+          });
+        } else if (data.event === "artifact_update") {
+          // Handle artifact updates - refresh the artifacts list
+          console.log("[useXAgent] Artifact update received:", data.data);
+          queryClient.invalidateQueries({
+            queryKey: xagentKeys.artifacts(xagentId),
           });
         } else {
           // Handle other events (xagent_update, etc.)

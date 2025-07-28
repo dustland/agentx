@@ -63,7 +63,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
 
   return (
     <div className="h-full flex flex-col px-2 py-3">
-      <Card className="h-full flex flex-col rounded-xl">
+      <Card className="h-full flex flex-col rounded-xl overflow-hidden">
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}

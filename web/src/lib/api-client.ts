@@ -101,9 +101,10 @@ export class VibexClient {
 
   // Agent Resources
   async listArtifacts(agentId: string): Promise<any[]> {
-    // For now, return empty array since there's no list endpoint
-    // TODO: Implement proper artifacts listing endpoint
-    return [];
+    const data = await this.request<{ artifacts: any[] }>(
+      `/xagents/${agentId}/artifacts`
+    );
+    return data.artifacts || [];
   }
 
   async getArtifact(
@@ -168,6 +169,30 @@ export class VibexClient {
         onUpdate({ event: "agent_status", data });
       } catch (error) {
         console.error("Error parsing agent status data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("task_update", (event) => {
+      console.log("[SSE] Task update event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Task update data:", data);
+        onUpdate({ event: "task_update", data });
+      } catch (error) {
+        console.error("Error parsing task update data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("artifact_update", (event) => {
+      console.log("[SSE] Artifact update event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Artifact update data:", data);
+        onUpdate({ event: "artifact_update", data });
+      } catch (error) {
+        console.error("Error parsing artifact update data:", error);
         onError(error);
       }
     });

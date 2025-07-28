@@ -1092,6 +1092,23 @@ Respond with a JSON object following this schema:
         # Execute the task
         try:
             logger.info(f"Executing task: {next_task.action}")
+            
+            # Mark task as in progress and send start event
+            next_task.status = "in_progress"
+            await self._persist_plan()
+            
+            # Send task start event
+            try:
+                from ..server.streaming import send_task_update
+                await send_task_update(
+                    project_id=self.project_id,
+                    status="in_progress",
+                    result={"task": next_task.action, "task_id": next_task.id}
+                )
+            except ImportError:
+                # Streaming not available in this context
+                pass
+            
             result = await self._execute_single_task(next_task)
 
             # Update task status
@@ -1201,9 +1218,21 @@ Respond with a JSON object following this schema:
         # Execute tasks in parallel
         logger.info(f"Executing {len(actionable_tasks)} tasks in parallel")
         
-        # Mark all tasks as in_progress to prevent re-execution
+        # Mark all tasks as in_progress to prevent re-execution and send start events
         for task in actionable_tasks:
             task.status = "in_progress"
+            
+            # Send task start event
+            try:
+                from ..server.streaming import send_task_update
+                await send_task_update(
+                    project_id=self.project_id,
+                    status="in_progress",
+                    result={"task": task.action, "task_id": task.id}
+                )
+            except ImportError:
+                # Streaming not available in this context
+                pass
         
         try:
             # Create coroutines for parallel execution

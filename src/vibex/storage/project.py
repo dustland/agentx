@@ -124,6 +124,24 @@ class ProjectStorage:
             # Also invalidate the specific artifact cache
             cache_key = self._cache_key("artifact", name, "latest")
             await self._cache.delete(cache_key)
+        
+        # Send artifact update event if store succeeded
+        if result.success:
+            try:
+                from ..server.streaming import send_artifact_update
+                await send_artifact_update(
+                    project_id=self.project_id,
+                    artifact_name=name,
+                    action="created",
+                    metadata={
+                        "content_type": content_type,
+                        "size": len(content) if isinstance(content, (str, bytes)) else None,
+                        **(metadata or {})
+                    }
+                )
+            except ImportError:
+                # Streaming not available in this context
+                pass
             
         return result
 

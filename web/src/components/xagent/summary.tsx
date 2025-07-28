@@ -128,23 +128,15 @@ export function Summary({ xagentId }: SummaryProps) {
       </Button>
 
       {showRawJson ? (
-        <ScrollArea className="h-full">
-          <div className="p-4">
-            <SyntaxHighlighter
-              language="json"
-              style={vscDarkPlus}
-              customStyle={{
-                margin: 0,
-                fontSize: "0.75rem",
-                borderRadius: "0.75rem",
-                border: "1px solid hsl(var(--border))",
-              }}
-              showLineNumbers={true}
-            >
-              {JSON.stringify(xagent, null, 2)}
-            </SyntaxHighlighter>
+        <div className="h-full overflow-hidden">
+          <div className="h-full">
+            <div className="h-full w-full min-w-0 bg-slate-950">
+              <pre className="h-full w-full overflow-auto p-4 text-xs text-green-400 font-mono whitespace-pre-wrap break-words">
+                {JSON.stringify(xagent, null, 2)}
+              </pre>
+            </div>
           </div>
-        </ScrollArea>
+        </div>
       ) : (
         <ScrollArea className="h-full">
           <div className="p-2 space-y-4">
