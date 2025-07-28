@@ -13,6 +13,9 @@ import {
   Clock,
   AlertCircle,
   FileText,
+  FileEdit,
+  FileSearch,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -148,26 +151,41 @@ function ToolCallPartComponent({ part }: { part: ToolCallPart }) {
   const getStatusIcon = () => {
     switch (part.status) {
       case "running":
-        return <Loader2 className="w-3 h-3 animate-spin text-yellow-500" />;
+        return <Loader2 className="w-3 h-3 animate-spin" />;
       case "completed":
-        return <CheckCircle2 className="w-3 h-3 text-green-500" />;
+        return <CheckCircle2 className="w-3 h-3" />;
       case "failed":
-        return <XCircle className="w-3 h-3 text-red-500" />;
+        return <XCircle className="w-3 h-3" />;
       default:
-        return <Clock className="w-3 h-3 text-gray-400" />;
+        return <Clock className="w-3 h-3" />;
     }
   };
 
   const getStatusColor = () => {
     switch (part.status) {
       case "running":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+        return "text-yellow-500 dark:text-yellow-400";
       case "completed":
-        return "text-green-600 bg-green-50 border-green-200";
+        return "text-green-500 dark:text-green-400";
       case "failed":
-        return "text-red-600 bg-red-50 border-red-200";
+        return "text-red-500 dark:text-red-400";
       default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
+        return "text-muted-foreground";
+    }
+  };
+  
+  const getToolIcon = () => {
+    switch (part.toolName) {
+      case "write_file":
+        return <FileEdit className="w-3 h-3" />;
+      case "edit_file":
+        return <FileText className="w-3 h-3" />;
+      case "read_file":
+        return <FileSearch className="w-3 h-3" />;
+      case "list_files":
+        return <FolderOpen className="w-3 h-3" />;
+      default:
+        return <Terminal className="w-3 h-3" />;
     }
   };
 
@@ -191,23 +209,21 @@ function ToolCallPartComponent({ part }: { part: ToolCallPart }) {
   };
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-lg border my-1",
-        "bg-muted/20 hover:bg-muted/30 transition-colors",
-        getStatusColor()
-      )}
-    >
-      {/* Status Icon */}
-      <div className="flex-shrink-0">{getStatusIcon()}</div>
-
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-border/50 bg-muted/20 dark:bg-muted/10 my-1">
       {/* Tool Icon */}
-      <Terminal className="w-4 h-4 flex-shrink-0" />
+      <div className="flex-shrink-0 text-muted-foreground">
+        {getToolIcon()}
+      </div>
+      
+      {/* Status Icon */}
+      <div className={cn("flex-shrink-0", getStatusColor())}>
+        {getStatusIcon()}
+      </div>
 
       {/* Tool Name */}
-      <span className="font-mono text-sm font-medium flex-shrink-0">
+      <code className="text-xs font-medium text-foreground">
         {part.toolName}
-      </span>
+      </code>
 
       {/* Parameter Summary */}
       <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
@@ -220,11 +236,6 @@ function ToolCallPartComponent({ part }: { part: ToolCallPart }) {
           {(part.duration / 1000).toFixed(1)}s
         </span>
       )}
-
-      {/* Status Badge */}
-      <Badge variant="secondary" className="text-xs flex-shrink-0">
-        {part.status || "pending"}
-      </Badge>
     </div>
   );
 }
@@ -242,6 +253,12 @@ function ToolResultPartComponent({
     typeof part.result === "string"
       ? part.result
       : JSON.stringify(part.result, null, 2);
+
+  // Check if this is a file operation result with a path
+  const isFileOperationResult = (part.toolName === "write_file" || part.toolName === "edit_file") && 
+    typeof part.result === "object" && 
+    part.result !== null &&
+    'path' in part.result;
 
   // Check if the result contains artifacts
   const hasArtifacts = () => {
@@ -265,11 +282,42 @@ function ToolResultPartComponent({
   };
 
   const getResultSummary = () => {
+    // Special handling for different tool types
+    if (part.toolName === "write_file" || part.toolName === "edit_file") {
+      if (typeof part.result === "object" && part.result && 'path' in part.result) {
+        const path = (part.result as any).path;
+        const fileName = path.split('/').pop();
+        return `${part.toolName === "write_file" ? "Created" : "Edited"} ${fileName}`;
+      }
+    }
+    
+    if (part.toolName === "read_file" && typeof part.result === "object") {
+      const content = (part.result as any).content;
+      if (content) {
+        const lines = content.split('\n').length;
+        return `Read ${lines} lines`;
+      }
+    }
+    
+    if (part.toolName === "list_files" && Array.isArray(part.result)) {
+      return `Found ${part.result.length} items`;
+    }
+    
+    if (part.toolName === "run_bash") {
+      if (part.isError) {
+        return "Command failed";
+      }
+      return "Command executed";
+    }
+    
+    if (part.toolName === "search_files" && typeof part.result === "object") {
+      const results = (part.result as any).results || [];
+      return `Found ${results.length} matches`;
+    }
+
     if (hasArtifacts()) {
       const artifacts = getArtifacts();
-      return `Generated ${artifacts.length} artifact${
-        artifacts.length > 1 ? "s" : ""
-      }`;
+      return `Generated ${artifacts.length} artifact${artifacts.length > 1 ? "s" : ""}`;
     }
 
     const summary =
@@ -293,30 +341,25 @@ function ToolResultPartComponent({
   return (
     <div
       className={cn(
-        "rounded-lg border my-1",
+        "rounded-md border my-1",
         part.isError
-          ? "border-red-200 bg-red-50"
-          : "border-green-200 bg-green-50"
+          ? "border-red-500/20 bg-red-500/5 dark:bg-red-500/10"
+          : "border-border/50 bg-muted/20 dark:bg-muted/10"
       )}
     >
       {/* Compact header */}
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div className="flex items-center gap-2 px-3 py-1.5">
         {/* Status Icon */}
         <div className="flex-shrink-0">
           {part.isError ? (
-            <XCircle className="w-3 h-3 text-red-500" />
+            <XCircle className="w-3 h-3 text-red-500 dark:text-red-400" />
           ) : (
-            <CheckCircle2 className="w-3 h-3 text-green-500" />
+            <CheckCircle2 className="w-3 h-3 text-green-500 dark:text-green-400" />
           )}
         </div>
 
-        {/* Tool name */}
-        <span className="font-mono text-sm font-medium flex-shrink-0">
-          {part.toolName}
-        </span>
-
         {/* Result summary */}
-        <span className="text-xs text-muted-foreground truncate flex-1 min-w-0">
+        <span className="text-xs text-foreground flex-1 min-w-0">
           {getResultSummary()}
         </span>
 
@@ -327,20 +370,41 @@ function ToolResultPartComponent({
           </span>
         )}
 
-        {/* Expand button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0 flex-shrink-0"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
-          {isExpanded ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronRight className="w-3 h-3" />
-          )}
-        </Button>
+        {/* Expand button for details */}
+        {(resultString.length > 100 || hasArtifacts()) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-5 w-5 p-0 flex-shrink-0"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? (
+              <ChevronDown className="w-3 h-3" />
+            ) : (
+              <ChevronRight className="w-3 h-3" />
+            )}
+          </Button>
+        )}
       </div>
+
+      {/* File link for file operation results */}
+      {isFileOperationResult && onArtifactSelect && (
+        <div className="px-3 pb-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
+            onClick={() => handleArtifactClick((part.result as any).path)}
+          >
+            {part.toolName === "write_file" ? (
+              <FileEdit className="w-3 h-3 mr-1" />
+            ) : (
+              <FileText className="w-3 h-3 mr-1" />
+            )}
+            Open in inspector
+          </Button>
+        </div>
+      )}
 
       {/* Artifacts list (if any) */}
       {hasArtifacts() && (
@@ -349,9 +413,9 @@ function ToolResultPartComponent({
             {getArtifacts().map((artifact: any, idx: number) => (
               <Button
                 key={idx}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-6 text-xs px-2 hover:bg-background/80"
+                className="h-6 text-xs px-2 text-primary hover:text-primary/80 hover:bg-primary/10"
                 onClick={() =>
                   handleArtifactClick(artifact.path || artifact.name)
                 }
@@ -366,14 +430,13 @@ function ToolResultPartComponent({
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="px-3 pb-3 border-t border-current/10">
+        <div className="px-3 pb-2 border-t border-border/50">
           <div className="mt-2">
             <pre
               className={cn(
-                "text-xs p-2 rounded overflow-x-auto max-h-32",
-                part.isError
-                  ? "bg-red-100 text-red-800"
-                  : "bg-green-100 text-green-800"
+                "text-xs p-2 rounded overflow-x-auto max-h-40",
+                "bg-background/50 border border-border/50",
+                "font-mono text-muted-foreground"
               )}
             >
               {resultString}
@@ -535,12 +598,6 @@ export function MessageParts({
             return null;
         }
       })}
-      {isStreaming && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Thinking...</span>
-        </div>
-      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useApi } from "@/lib/api-client";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { ChatMessage } from "@/types/chat";
 import { nanoid } from "nanoid";
+import type { ToolCallPart, ToolResultPart } from "@/components/chat/message-parts";
 
 /**
  * Query keys for XAgent-related data
@@ -100,7 +101,8 @@ export function useXAgent(xagentId: string) {
         id,
         status: msg.status,
         parts_count: msg.parts?.length,
-        content_length: msg.content?.length
+        content_length: msg.content?.length,
+        content_preview: msg.content?.substring(0, 100)
       })));
     }
 
@@ -179,6 +181,7 @@ export function useXAgent(xagentId: string) {
               timestamp: new Date(),
               status: "streaming",
             });
+            console.log("[useXAgent] Created new streaming message:", message_id);
             return updated;
           });
           return;
@@ -186,32 +189,47 @@ export function useXAgent(xagentId: string) {
 
         if (data.event === "part_delta") {
           const { message_id, part_index, delta, type } = data.data;
-          console.log("[useXAgent] part_delta event:", { message_id, part_index, delta_length: delta?.length, type });
+          console.log("[useXAgent] part_delta event:", { 
+            message_id, 
+            part_index, 
+            delta_length: delta?.length, 
+            type,
+            delta_preview: delta?.substring(0, 50)
+          });
           setStreamingMessages((prev) => {
             const updated = new Map(prev);
             const message = updated.get(message_id);
             if (message) {
+              // Clone the message to avoid mutations
+              const updatedMessage = { ...message };
+              
               // Ensure parts array exists and has enough slots
-              if (!message.parts) {
-                message.parts = [];
+              if (!updatedMessage.parts) {
+                updatedMessage.parts = [];
               }
-              while (message.parts.length <= part_index) {
-                message.parts.push({ type: "text", text: "" });
+              
+              // Clone parts array to avoid mutations
+              updatedMessage.parts = [...updatedMessage.parts];
+              
+              // Ensure we have enough parts
+              while (updatedMessage.parts.length <= part_index) {
+                updatedMessage.parts.push({ type: "text", text: "" });
               }
 
-              // Update the specific part
-              const part = message.parts[part_index];
-              if (part.type === "text") {
-                part.text += delta;
+              // Clone and update the specific part
+              const part = { ...updatedMessage.parts[part_index] };
+              if (part.type === "text" && delta) {
+                part.text = (part.text || "") + delta;
+                updatedMessage.parts[part_index] = part;
               }
 
-              // Rebuild content from parts
-              message.content = message.parts
+              // Rebuild content from parts - only use text from each part once
+              updatedMessage.content = updatedMessage.parts
                 .filter((p: any) => p.type === "text")
-                .map((p: any) => p.text)
+                .map((p: any) => p.text || "")
                 .join("");
 
-              updated.set(message_id, { ...message });
+              updated.set(message_id, updatedMessage);
             }
             return updated;
           });
@@ -309,12 +327,12 @@ export function useXAgent(xagentId: string) {
                 parts: [
                   ...(latestMessage.parts || []),
                   {
-                    type: "tool_call",
-                    tool_call_id: toolData.tool_call_id,
-                    tool_name: toolData.tool_name,
+                    type: "tool-call" as const,
+                    toolCallId: toolData.tool_call_id,
+                    toolName: toolData.tool_name,
                     args: toolData.args,
                     status: "running",
-                  },
+                  } as ToolCallPart,
                 ],
               };
               updated.set(latestMessage.id, updatedMessage);
@@ -340,15 +358,15 @@ export function useXAgent(xagentId: string) {
                   updatedParts[partIndex] = {
                     ...updatedParts[partIndex],
                     status: toolData.is_error ? "failed" : "completed",
-                  };
+                  } as any;
                   // Add tool result part
                   updatedParts.push({
-                    type: "tool_result",
-                    tool_call_id: toolData.tool_call_id,
-                    tool_name: toolData.tool_name,
+                    type: "tool-result" as const,
+                    toolCallId: toolData.tool_call_id,
+                    toolName: toolData.tool_name,
                     result: toolData.result,
-                    is_error: toolData.is_error,
-                  });
+                    isError: toolData.is_error,
+                  } as ToolResultPart);
                   updated.set(id, {
                     ...msg,
                     parts: updatedParts,

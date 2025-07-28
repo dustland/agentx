@@ -5,7 +5,7 @@ import { Check, Copy, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MessageParts } from "./message-parts";
-import { TypingIndicator } from "../typing-indicator";
+import { ThinkingIndicator } from "../thinking-indicator";
 import ReactMarkdown from "react-markdown";
 import type { ChatMessage } from "@/types/chat";
 
@@ -104,8 +104,8 @@ export function MessageBubble({
                   {message.content}
                 </div>
               )}
-              {/* Only show TypingIndicator for messages without parts */}
-              {isStreaming && <TypingIndicator />}
+              {/* Only show ThinkingIndicator for messages without parts */}
+              {isStreaming && <ThinkingIndicator />}
             </>
           )}
         </div>

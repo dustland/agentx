@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Sidebar } from "@/components/layout/sidebar";
-import { TypingIndicator } from "@/components/typing-indicator";
+import { ThinkingIndicator } from "@/components/thinking-indicator";
 import {
   ChevronRight,
   Settings,
@@ -454,7 +454,7 @@ export default function DesignPage() {
                   <p className="text-sm text-muted-foreground mb-2">
                     Message content would go here...
                   </p>
-                  <TypingIndicator />
+                  <ThinkingIndicator />
                 </div>
               </div>
             </div>
