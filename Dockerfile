@@ -60,9 +60,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install -g pnpm \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv properly
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+# Install uv via pip (more reliable in Docker)
+RUN pip install uv
 
 # Copy Python dependencies from the python-base stage
 COPY --from=python-base /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
@@ -89,4 +88,4 @@ EXPOSE 8080 7770
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Run the production server directly
-CMD ["/root/.cargo/bin/uv", "run", "prod"] 
+CMD ["uv", "run", "prod"] 
