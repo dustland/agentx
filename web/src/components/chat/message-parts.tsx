@@ -110,6 +110,23 @@ function TextPartComponent({ part }: { part: TextPart }) {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  // For simple text without markdown, render directly without wrapper
+  const isSimpleText = !part.text.includes('\n') && 
+    !part.text.includes('#') && 
+    !part.text.includes('`') && 
+    !part.text.includes('[') && 
+    !part.text.includes('*') &&
+    part.text.length < 200;
+
+  if (isSimpleText) {
+    return (
+      <div className="text-sm leading-relaxed py-1">
+        {part.text}
+      </div>
+    );
+  }
+
+  // For complex text with markdown, use the full renderer
   return (
     <div className="text-sm leading-relaxed">
       <ReactMarkdown
