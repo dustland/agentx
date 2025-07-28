@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Bot } from "lucide-react";
+import { Loader2, Bot, XCircle } from "lucide-react";
 import { ChatInput } from "./input";
 import { MessageBubble } from "./message-bubble";
 import { useXAgentContext } from "@/contexts/xagent";
@@ -26,8 +26,14 @@ export function ChatLayout({ onArtifactSelect }: ChatLayoutProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use the XAgent context for all functionality
-  const { xagent, messages, isLoading, isSendingMessage, handleSubmit } =
+  const { xagent, messages, isLoading, isSendingMessage, handleSubmit, error, artifactsError } =
     useXAgentContext();
+
+  // Check for authorization errors
+  const authError = error?.response?.status === 403 || 
+                   error?.response?.status === 401 ||
+                   artifactsError?.response?.status === 403 || 
+                   artifactsError?.response?.status === 401;
 
   // Auto-scroll to bottom during active streaming with content changes
   useEffect(() => {
@@ -81,7 +87,17 @@ export function ChatLayout({ onArtifactSelect }: ChatLayoutProps) {
   return (
     <div className="flex flex-col h-full min-w-0">
       {/* Message List */}
-      {messages.length === 0 ? (
+      {authError ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500/10 to-red-600/10 flex items-center justify-center mb-4">
+            <XCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+          <p className="text-sm text-muted-foreground max-w-sm">
+            You don't have permission to access this project
+          </p>
+        </div>
+      ) : messages.length === 0 ? (
         isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -125,14 +141,16 @@ export function ChatLayout({ onArtifactSelect }: ChatLayoutProps) {
       )}
 
       {/* Chat Input */}
-      <div className="flex-shrink-0">
-        <ChatInput
-          onSendMessage={handleSubmit}
-          onStop={handleStop}
-          isLoading={isSendingMessage}
-          allowEmptyMessage={!!xagent?.plan}
-        />
-      </div>
+      {!authError && (
+        <div className="flex-shrink-0">
+          <ChatInput
+            onSendMessage={handleSubmit}
+            onStop={handleStop}
+            isLoading={isSendingMessage}
+            allowEmptyMessage={!!xagent?.plan}
+          />
+        </div>
+      )}
     </div>
   );
 }

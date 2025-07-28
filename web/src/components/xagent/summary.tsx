@@ -51,8 +51,14 @@ interface SummaryProps {
 }
 
 export function Summary({ xagentId }: SummaryProps) {
-  const { xagent, isLoading } = useXAgentContext();
+  const { xagent, isLoading, error, artifactsError } = useXAgentContext();
   const [showRawJson, setShowRawJson] = useState(false);
+
+  // Check for authorization errors
+  const authError = error?.response?.status === 403 || 
+                   error?.response?.status === 401 ||
+                   artifactsError?.response?.status === 403 || 
+                   artifactsError?.response?.status === 401;
 
   // Helper functions
   const getStatusIcon = (status: string) => {
@@ -90,6 +96,18 @@ export function Summary({ xagentId }: SummaryProps) {
       return dateString;
     }
   };
+
+  // Show authorization error first
+  if (authError) {
+    return (
+      <EmptyState
+        icon={XCircle}
+        title="Access Denied"
+        description="You don't have permission to access this project"
+        size="md"
+      />
+    );
+  }
 
   if (isLoading) {
     return (

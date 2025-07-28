@@ -25,6 +25,7 @@ import {
   Archive,
   BookOpen,
   Terminal,
+  XCircle,
 } from "lucide-react";
 import { Icons } from "../icons";
 import {
@@ -290,10 +291,16 @@ function ArtifactHoverContent({
 }
 
 export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
-  const { artifacts, isLoadingArtifacts } = useXAgentContext();
+  const { artifacts, isLoadingArtifacts, error, artifactsError } = useXAgentContext();
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
     new Set()
   );
+
+  // Check for authorization errors
+  const authError = error?.response?.status === 403 || 
+                   error?.response?.status === 401 ||
+                   artifactsError?.response?.status === 403 || 
+                   artifactsError?.response?.status === 401;
 
   // Filter out meta.json files
   const filteredArtifacts =
@@ -431,6 +438,18 @@ export function Artifacts({ xagentId, onArtifactSelect }: ArtifactsProps) {
       );
     });
   };
+
+  // Show authorization error first
+  if (authError) {
+    return (
+      <EmptyState
+        icon={XCircle}
+        title="Access Denied"
+        description="You don't have permission to access this project"
+        size="md"
+      />
+    );
+  }
 
   if (isLoadingArtifacts || !artifacts) {
     return (
