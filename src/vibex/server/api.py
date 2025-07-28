@@ -91,14 +91,14 @@ def create_app() -> FastAPI:
         if xagent.plan and xagent.plan.tasks:
             # Check task statuses
             has_failed = any(t.status == "failed" for t in xagent.plan.tasks)
-            has_in_progress = any(t.status == "in_progress" for t in xagent.plan.tasks)
+            has_running = any(t.status == "running" for t in xagent.plan.tasks)
             all_completed = all(t.status == "completed" for t in xagent.plan.tasks)
             
             if has_failed:
                 status = TaskStatus.FAILED
             elif all_completed:
                 status = TaskStatus.COMPLETED
-            elif has_in_progress:
+            elif has_running:
                 status = TaskStatus.RUNNING
             else:
                 status = TaskStatus.PENDING

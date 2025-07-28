@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field
 import uuid
 
 # Task status represents the execution state of individual tasks
-TaskStatus = Literal["pending", "in_progress", "completed", "failed", "skipped"]
+TaskStatus = Literal["pending", "running", "completed", "failed", "skipped"]
 
 # Failure policy for task execution
 FailurePolicy = Literal["halt", "proceed"]

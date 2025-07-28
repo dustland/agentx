@@ -224,7 +224,7 @@ class Project:
             task_stats = {
                 "total": len(self.plan.tasks),
                 "completed": sum(1 for t in self.plan.tasks if t.status == "completed"),
-                "in_progress": sum(1 for t in self.plan.tasks if t.status == "in_progress"),
+                "running": sum(1 for t in self.plan.tasks if t.status == "running"),
                 "pending": sum(1 for t in self.plan.tasks if t.status == "pending"),
                 "failed": sum(1 for t in self.plan.tasks if t.status == "failed"),
             }

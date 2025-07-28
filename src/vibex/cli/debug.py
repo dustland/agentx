@@ -199,7 +199,7 @@ class DebugSession:
             print("Tasks:")
 
             for i, task in enumerate(plan.tasks, 1):
-                status_icon = "✅" if task.status == "completed" else "⏳" if task.status == "in_progress" else "⭕"
+                status_icon = "✅" if task.status == "completed" else "⏳" if task.status == "running" else "⭕"
                 print(f"  {i}. {status_icon} {task.action}")
                 print(f"     Agent: {task.assigned_to}")
                 if task.dependencies:

@@ -114,7 +114,7 @@ class Plan(BaseModel):
         
         status_counts = {
             "pending": sum(1 for t in self.tasks if t.status == "pending"),
-            "in_progress": sum(1 for t in self.tasks if t.status == "in_progress"),
+            "running": sum(1 for t in self.tasks if t.status == "running"),
             "completed": sum(1 for t in self.tasks if t.status == "completed"),
             "failed": sum(1 for t in self.tasks if t.status == "failed"),
             "cancelled": sum(1 for t in self.tasks if t.status == "cancelled"),

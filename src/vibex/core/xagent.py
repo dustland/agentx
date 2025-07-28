@@ -1246,7 +1246,7 @@ Respond with a JSON object following this schema:
             logger.info(f"Executing task: {next_task.action}")
             
             # Mark task as in progress and send start event
-            next_task.status = "in_progress"
+            next_task.status = "running"
             await self._persist_plan()
             
             # Send task start event
@@ -1254,7 +1254,7 @@ Respond with a JSON object following this schema:
                 from ..server.streaming import send_task_update
                 await send_task_update(
                     project_id=self.project_id,
-                    status="in_progress",
+                    status="running",
                     result={"task": next_task.action, "task_id": next_task.id}
                 )
             except ImportError:
@@ -1372,14 +1372,14 @@ Respond with a JSON object following this schema:
         
         # Mark all tasks as in_progress to prevent re-execution and send start events
         for task in actionable_tasks:
-            task.status = "in_progress"
+            task.status = "running"
             
             # Send task start event
             try:
                 from ..server.streaming import send_task_update
                 await send_task_update(
                     project_id=self.project_id,
-                    status="in_progress",
+                    status="running",
                     result={"task": task.action, "task_id": task.id}
                 )
             except ImportError:
@@ -1511,6 +1511,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                 from vibex.core.message_builder import StreamingMessageBuilder
                 
                 logger.info(f"[TASK] Streaming response for task: {task.action}")
+                logger.info(f"[TASK] Project ID: {self.project_id}, Agent: {agent.name if hasattr(agent, 'name') else task.assigned_to}")
                 
                 # Create a message builder for streaming
                 builder = StreamingMessageBuilder(role="assistant")
@@ -1555,6 +1556,8 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                             tool_call_id = chunk.get("tool_call_id", generate_short_id())
                             
                             logger.info(f"[TASK] Tool call during task: {tool_name}")
+                            logger.info(f"[TASK] Tool args: {json.dumps(tool_args)[:200]}...")
+                            logger.info(f"[TASK] Current parts count: {len(builder.parts)}")
                             
                             part_index = builder.add_tool_call(
                                 tool_call_id=tool_call_id,
@@ -1562,6 +1565,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                                 args=tool_args
                             )
                             
+                            logger.info(f"[TASK] Sending tool call part_complete event: part_index={part_index}")
                             await event_stream_manager.send_event(
                                 self.project_id,
                                 "part_complete",
@@ -1571,6 +1575,7 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                                     "part": builder.parts[part_index].model_dump(by_alias=True)
                                 }
                             )
+                            logger.info(f"[TASK] Tool call part_complete event sent successfully")
                         
                         elif chunk_type == "tool_result":
                             # Tool result chunk
@@ -1615,11 +1620,13 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
                 response = message.content
                 
                 # Send message complete event
+                logger.info(f"[TASK] Sending message_complete event: message_id={message.id}, parts={len(message.parts)}")
                 await event_stream_manager.send_event(
                     self.project_id,
                     "message_complete",
                     {"message": message.model_dump(by_alias=True)}
                 )
+                logger.info(f"[TASK] Message complete event sent successfully")
                 
                 # Persist the message
                 await self.chat_storage.save_message(self.project_id, message)

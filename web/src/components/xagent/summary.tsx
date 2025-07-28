@@ -38,7 +38,7 @@ interface PlanTask {
   action: string;
   agent: string;
   dependencies: string[];
-  status: "pending" | "in_progress" | "completed" | "failed";
+  status: "pending" | "running" | "completed" | "failed";
   on_failure: string;
 }
 
@@ -60,7 +60,7 @@ export function Summary({ xagentId }: SummaryProps) {
       case "completed":
         return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
       case "running":
-      case "in_progress":
+      case "running":
         return <PlayCircle className="h-4 w-4 text-blue-500" />;
       case "failed":
         return <XCircle className="h-4 w-4 text-red-500" />;
@@ -74,7 +74,7 @@ export function Summary({ xagentId }: SummaryProps) {
       case "completed":
         return "default";
       case "running":
-      case "in_progress":
+      case "running":
         return "secondary";
       case "failed":
         return "destructive";
@@ -270,7 +270,7 @@ export function Summary({ xagentId }: SummaryProps) {
                     const count = planData.tasks.filter(
                       (t) =>
                         t.status === status ||
-                        (status === "running" && t.status === "in_progress")
+                        (status === "running" && t.status === "running")
                     ).length;
                     return (
                       <div
