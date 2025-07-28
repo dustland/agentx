@@ -91,7 +91,7 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 # Create startup script inline
 RUN echo '#!/bin/bash\n\
 echo "Starting VibeX services..."\n\
-cd /app && uv run prod &\n\
+cd /app && BACKEND_PORT=7770 uv run prod &\n\
 BACKEND_PID=$!\n\
 cd /app/web && PORT=${PORT:-8080} pnpm run start &\n\
 FRONTEND_PID=$!\n\

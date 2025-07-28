@@ -467,8 +467,8 @@ def prod():
         import uvicorn
         import os
 
-        # Use PORT environment variable if available (for Railway/Heroku)
-        port = int(os.environ.get("PORT", 7770))
+        # Use BACKEND_PORT if set, otherwise default to 7770
+        port = int(os.environ.get("BACKEND_PORT", 7770))
         
         print(f"🌐 Production server starting at http://localhost:{port}")
         print("🚀 Running with 4 workers for concurrent requests")
