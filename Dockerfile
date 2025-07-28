@@ -59,7 +59,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y nodejs \
     && npm install -g pnpm \
     && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && ln -s /root/.cargo/bin/uv /usr/local/bin/uv \
     && rm -rf /var/lib/apt/lists/*
+
+# Set PATH to include uv
+ENV PATH="/root/.cargo/bin:$PATH"
 
 # Copy Python dependencies from the python-base stage
 COPY --from=python-base /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
@@ -75,8 +79,7 @@ COPY --from=web-builder /app/web/next.config.ts ./web/next.config.ts
 # Copy application source code
 COPY . .
 
-# Make the startup script executable
-RUN chmod +x /app/scripts/railway-start.sh
+# No startup script needed - running directly
 
 # Expose the ports the applications run on
 # Railway typically uses 8080 for the main service
