@@ -307,13 +307,13 @@ export function Summary({ xagentId }: SummaryProps) {
                         <AccordionTrigger className="py-4 hover:no-underline group">
                           <div className="flex items-center gap-4 flex-1">
                             <div className="flex items-center gap-3">
+                              {getStatusIcon(task.status)}
                               <Badge
                                 variant="outline"
                                 className="flex items-center justify-center rounded-full text-xs"
                               >
                                 #{index + 1}
                               </Badge>
-                              {getStatusIcon(task.status)}
                             </div>
                             <div className="flex-1 text-left">
                               <div className="font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">

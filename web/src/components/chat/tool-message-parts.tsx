@@ -537,7 +537,8 @@ export function ToolResult({
     <GenericMessagePart
       variant={part.isError ? "error" : "default"}
       statusIcon={part.isError ? <XCircle className="w-4 h-4 text-destructive" /> : <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-500" />}
-      title={getResultSummary()}
+      title={part.toolName}
+      summary={getResultSummary()}
       badges={badges}
       actions={fileActions}
       expandable={resultString.length > 100 && !shouldHideExpanded()}
