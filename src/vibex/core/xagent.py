@@ -32,7 +32,9 @@ from vibex.core.config import TeamConfig, BrainConfig, AgentConfig
 from vibex.core.handoff_evaluator import HandoffEvaluator, HandoffContext
 from vibex.core.message import (
     MessageQueue, ConversationHistory, Message, TaskStep, TextPart,
+    ToolCallPart, ToolResultPart, StepStartPart, ReasoningPart
 )
+from vibex.core.message_builder import StreamingMessageBuilder
 from vibex.core.plan import Plan
 from vibex.core.task import Task, TaskStatus
 from vibex.tool.manager import ToolManager
@@ -65,7 +67,8 @@ class XAgentResponse:
         metadata: Optional[Dict[str, Any]] = None,
         user_message: Optional['Message'] = None,
         assistant_message: Optional['Message'] = None,
-        message_id: Optional[str] = None
+        message_id: Optional[str] = None,
+        parts: Optional[List[Any]] = None
     ):
         self.text = text
         self.artifacts = artifacts or []
@@ -76,6 +79,7 @@ class XAgentResponse:
         self.user_message = user_message
         self.assistant_message = assistant_message
         self.message_id = message_id
+        self.parts = parts or []
 
 
 class XAgent(Agent):
@@ -632,7 +636,11 @@ class XAgent(Agent):
         
         # Persist assistant response to chat history
         if response and response.text:
-            assistant_message = Message.assistant_message(response.text)
+            # Create assistant message with parts if available
+            assistant_message = Message.assistant_message(
+                response.text, 
+                parts=response.parts if hasattr(response, 'parts') and response.parts else None
+            )
             # Use consistent message ID if available from streaming
             if hasattr(response, 'message_id') and response.message_id:
                 assistant_message.id = response.message_id
@@ -643,92 +651,236 @@ class XAgent(Agent):
             if hasattr(self, 'chat_storage'):
                 asyncio.create_task(self.chat_storage.save_message(self.project_id, assistant_message))
             
+            # Send complete message with parts via SSE
+            try:
+                from ..server.streaming import send_message_object
+                asyncio.create_task(send_message_object(self.project_id, assistant_message))
+            except ImportError:
+                pass
+            
             # Add messages to response
             response.user_message = message
             response.assistant_message = assistant_message
                 
         return response
 
-    async def _stream_full_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None) -> tuple[str, str]:
+    async def _stream_full_response(self, messages: List[Dict[str, Any]], system_prompt: Optional[str] = None) -> tuple[str, str, List[Any]]:
         """Stream full response using Brain's streaming capabilities.
         
         Returns:
-            tuple: (accumulated_text, message_id) where message_id is used for both streaming and final message
+            tuple: (accumulated_text, message_id, parts) where message_id is used for both streaming and final message
         """
-        # Generate message ID ONCE and use for both streaming and final message
-        message_id = generate_short_id()
-        accumulated_text = ""
+        # Create message builder
+        builder = StreamingMessageBuilder(role="assistant")
+        message_id = builder.message_id
         
         logger.info(f"[STREAMING] Starting streaming response for task {self.project_id} with message_id {message_id}")
         
         try:
-            # Import streaming function (avoid circular import)
-            from ..server.streaming import send_stream_chunk
+            # Import streaming functions (avoid circular import)
+            from ..server.streaming import (
+                send_tool_call_start, send_tool_call_result,
+                send_message_part, event_stream_manager
+            )
             
-            # Stream directly using Brain's stream_response method
-            async for chunk in self.brain.stream_response(
+            # Send message start event
+            logger.info(f"[STREAMING] Sending message_start event: message_id={message_id}, role=assistant")
+            await event_stream_manager.send_event(
+                self.project_id,
+                "message_start",
+                {"message_id": message_id, "role": "assistant"}
+            )
+            
+            # Use the agent's streaming loop
+            async for chunk in self.stream_response(
                 messages=messages,
                 system_prompt=system_prompt
             ):
-                # Handle different chunk types from Brain
-                chunk_type = chunk.get("type")
-                
-                if chunk_type == "text-delta":
-                    # Handle text content chunks
-                    chunk_text = chunk.get("content", "")
-                    if chunk_text:  # Only process non-empty chunks
-                        accumulated_text += chunk_text
-                        logger.debug(f"[STREAMING] Received text chunk: '{chunk_text[:50]}{'...' if len(chunk_text) > 50 else ''}' (length: {len(chunk_text)})")
+                # Handle different chunk types from Agent
+                if isinstance(chunk, dict):
+                    chunk_type = chunk.get("type")
+                    
+                    if chunk_type == "content":
+                        # Handle text content chunks
+                        chunk_text = chunk.get("content", "")
+                        if chunk_text:  # Only process non-empty chunks
+                            builder.add_text_delta(chunk_text)
+                            logger.debug(f"[STREAMING] Received text chunk: '{chunk_text[:50]}{'...' if len(chunk_text) > 50 else ''}' (length: {len(chunk_text)})")
+                            
+                            # Send text delta event
+                            try:
+                                part_index = len(builder.parts) - 1 if builder.parts else 0
+                                logger.debug(f"[STREAMING] Sending part_delta for text: message_id={message_id}, part_index={part_index}, delta_length={len(chunk_text)}")
+                                await event_stream_manager.send_event(
+                                    self.project_id,
+                                    "part_delta",
+                                    {
+                                        "message_id": message_id,
+                                        "part_index": part_index,  # Current text part index
+                                        "delta": chunk_text,
+                                        "type": "text"
+                                    }
+                                )
+
+                            except Exception as e:
+                                logger.error(f"[STREAMING] Error sending text chunk: {e}")
+                    
+                    elif chunk_type == "tool_call":
+                        # Tool call being executed
+                        tool_name = chunk.get("name", "unknown")
+                        tool_args = chunk.get("arguments", {})
+                        tool_call_id = generate_short_id()
                         
-                        # Send streaming chunk via SSE using consistent message_id
+                        logger.info(f"[STREAMING] Tool call started: {tool_name}")
+                        
+                        # Parse args if string
+                        parsed_args = json.loads(tool_args) if isinstance(tool_args, str) else tool_args
+                        
+                        # Add tool call part and get its index
+                        part_index = builder.add_tool_call(
+                            tool_call_id=tool_call_id,
+                            tool_name=tool_name,
+                            args=parsed_args
+                        )
+                        
+                        logger.info(f"[STREAMING] Added tool call part: tool={tool_name}, part_index={part_index}, tool_call_id={tool_call_id}")
+                        
+                        # Send part complete event for tool call
                         try:
+                            tool_call_part = builder.parts[part_index]
+                            logger.info(f"[STREAMING] Sending part_complete for tool call: {tool_call_part.model_dump(by_alias=True)}")
+                            await event_stream_manager.send_event(
+                                self.project_id,
+                                "part_complete",
+                                {
+                                    "message_id": message_id,
+                                    "part_index": part_index,
+                                    "part": tool_call_part.model_dump(by_alias=True)
+                                }
+                            )
+                            # Legacy event
+                            logger.info(f"[STREAMING] Sending legacy tool_call_start event")
+                            await send_tool_call_start(
+                                project_id=self.project_id,
+                                tool_call_id=tool_call_id,
+                                tool_name=tool_name,
+                                args=parsed_args
+                            )
+                        except Exception as e:
+                            logger.error(f"[STREAMING] Error sending tool call start: {e}")
+                    
+                    elif chunk_type == "tool_result":
+                        # Tool result received
+                        tool_name = chunk.get("name", "unknown")
+                        success = chunk.get("success", False)
+                        result_content = chunk.get("content", "")
+                        
+                        logger.info(f"[STREAMING] Tool result: {tool_name} - success: {success}")
+                        
+                        # Find corresponding tool call ID
+                        tool_call_id = None
+                        for tc_id, tc_part in builder.pending_tool_calls.items():
+                            if tc_part.toolName == tool_name:
+                                tool_call_id = tc_id
+                                break
+                        
+                        if not tool_call_id:
+                            tool_call_id = generate_short_id()
+                        
+                        # Add tool result part
+                        part_index = builder.add_tool_result(
+                            tool_call_id=tool_call_id,
+                            tool_name=tool_name,
+                            result=result_content,
+                            is_error=not success
+                        )
+                        
+                        logger.info(f"[STREAMING] Added tool result part: tool={tool_name}, part_index={part_index}, tool_call_id={tool_call_id}, result_length={len(str(result_content))}")
+                        
+                        # Send part complete event for tool result
+                        try:
+                            tool_result_part = builder.parts[part_index]
+                            logger.info(f"[STREAMING] Sending part_complete for tool result: {tool_result_part.model_dump(by_alias=True)[:200]}...")
+                            await event_stream_manager.send_event(
+                                self.project_id,
+                                "part_complete",
+                                {
+                                    "message_id": message_id,
+                                    "part_index": part_index,
+                                    "part": tool_result_part.model_dump(by_alias=True)
+                                }
+                            )
+                            # Legacy event
+                            logger.info(f"[STREAMING] Sending legacy tool_call_result event")
+                            await send_tool_call_result(
+                                project_id=self.project_id,
+                                tool_call_id=tool_call_id,
+                                tool_name=tool_name,
+                                result=result_content,
+                                is_error=not success
+                            )
+                        except Exception as e:
+                            logger.error(f"[STREAMING] Error sending tool result: {e}")
+                    
+                    elif chunk_type == "error":
+                        # Handle error chunks
+                        error_content = chunk.get("content", "Unknown error")
+                        logger.error(f"[STREAMING] Error chunk received: {error_content}")
+                        
+                        # Add error part
+                        part_index = builder.add_error(error_content)
+                        
+                        try:
+                            error_part = builder.parts[part_index]
+                            await event_stream_manager.send_event(
+                                self.project_id,
+                                "part_complete",
+                                {
+                                    "message_id": message_id,
+                                    "part_index": part_index,
+                                    "part": error_part.model_dump(by_alias=True)
+                                }
+                            )
+                            # Legacy error event
                             await send_stream_chunk(
                                 project_id=self.project_id,
-                                chunk=chunk_text,
+                                chunk="",
                                 message_id=message_id,
-                                is_final=False
+                                is_final=True,
+                                error=error_content
                             )
-                            logger.debug(f"[STREAMING] Sent text chunk via SSE (message_id: {message_id})")
                         except Exception as e:
-                            logger.error(f"[STREAMING] Error sending text chunk: {e}")
-                
-                elif chunk_type == "tool_call_start":
-                    # Tool call started - could send tool event here if needed
-                    logger.info(f"[STREAMING] Tool call started: {chunk.get('name', 'unknown')}")
-                
-                elif chunk_type == "tool_call_result":
-                    # Tool call completed - could send tool result here if needed
-                    logger.info(f"[STREAMING] Tool call result: {chunk.get('name', 'unknown')}")
-                
-                elif chunk_type == "error":
-                    # Handle error chunks
-                    error_content = chunk.get("content", "Unknown error")
-                    logger.error(f"[STREAMING] Error chunk received: {error_content}")
-                    accumulated_text += f"\n\nError: {error_content}"
-                    
-                    try:
-                        await send_stream_chunk(
-                            project_id=self.project_id,
-                            chunk="",
-                            message_id=message_id,
-                            is_final=True,
-                            error=error_content
-                        )
-                    except Exception as e:
-                        logger.error(f"[STREAMING] Error sending error chunk: {e}")
-                    break
+                            logger.error(f"[STREAMING] Error sending error chunk: {e}")
+                        break
+                elif isinstance(chunk, str):
+                    # Handle plain string chunks (backward compatibility)
+                    builder.add_text_delta(chunk)
             
-            # Send final chunk to indicate streaming is complete
+            # Build final message
+            message = builder.build()
+            accumulated_text = message.content
+            parts = message.parts
+            
+            # Send message complete event
             try:
+                logger.info(f"[STREAMING] Sending message_complete event: message_id={message.id}, parts_count={len(message.parts)}, content_length={len(message.content)}")
+                await event_stream_manager.send_event(
+                    self.project_id,
+                    "message_complete",
+                    {
+                        "message": message.model_dump(by_alias=True)
+                    }
+                )
+                # Legacy final chunk
                 await send_stream_chunk(
                     project_id=self.project_id,
                     chunk="",
                     message_id=message_id,
                     is_final=True
                 )
-                logger.info(f"[STREAMING] Sent final chunk for message_id {message_id}")
+                logger.info(f"[STREAMING] Sent message complete for {message_id} with {len(parts)} parts")
             except Exception as e:
-                logger.error(f"[STREAMING] Error sending final chunk: {e}")
+                logger.error(f"[STREAMING] Error sending final events: {e}")
                 
         except Exception as e:
             logger.error(f"Streaming failed: {e}")
@@ -752,7 +904,7 @@ class XAgent(Agent):
             )
             accumulated_text = response.content or ""
         
-        return accumulated_text, message_id
+        return accumulated_text, message_id, parts
 
     async def _analyze_message_impact(self, message: Message) -> Dict[str, Any]:
         """
@@ -950,7 +1102,7 @@ Plan status: {len([t for t in self.plan.tasks if t.status == 'pending'])} pendin
 Respond naturally to the user's message. Be concise and helpful."""
         
         # Get response from brain
-        response_text, msg_id = await self._stream_full_response(messages, system_prompt)
+        response_text, msg_id, parts = await self._stream_full_response(messages, system_prompt)
         
         return XAgentResponse(
             text=response_text,
@@ -1340,27 +1492,162 @@ Original user request: {self.initial_prompt or "No initial prompt provided"}{out
             }
         ]
 
-        # Execute with the specialist agent
-        response = await agent.generate_response(
-            messages=briefing
-        )
+        # Check if we should stream the response
+        # Enable streaming if we're in a streaming context (e.g., API call)
+        stream_mode = hasattr(self, '_stream_mode') and self._stream_mode
         
-        # Send agent response as message
+        # Also check if event_stream_manager is available (indicates we're in API context)
         try:
-            from ..server.streaming import send_message_object
-            from vibex.core.message import Message
-            agent_message = Message.assistant_message(response)
-            await send_message_object(self.project_id, agent_message)
-            # Persist the message
-            await self.chat_storage.save_message(self.project_id, agent_message)
-            
-            # Send task completion status
-            completion_message = Message.system_message(f"Completed task: {task.action}")
-            await send_message_object(self.project_id, completion_message)
-            await self.chat_storage.save_message(self.project_id, completion_message)
+            from ..server.streaming import event_stream_manager
+            if event_stream_manager and self.project_id:
+                stream_mode = True
         except ImportError:
-            # Streaming not available in this context
-            pass
+            stream_mode = False
+        
+        if stream_mode:
+            # Use streaming for real-time updates
+            try:
+                from ..server.streaming import event_stream_manager
+                from vibex.core.message_builder import StreamingMessageBuilder
+                
+                logger.info(f"[TASK] Streaming response for task: {task.action}")
+                
+                # Create a message builder for streaming
+                builder = StreamingMessageBuilder(role="assistant")
+                message_id = builder.message_id
+                
+                # Send message start event
+                await event_stream_manager.send_event(
+                    self.project_id,
+                    "message_start",
+                    {"message_id": message_id, "role": "assistant"}
+                )
+                
+                # Stream the response
+                response_parts = []
+                async for chunk in agent.stream_response(messages=briefing):
+                    response_parts.append(chunk)
+                    
+                    # Handle different chunk types
+                    if isinstance(chunk, dict):
+                        chunk_type = chunk.get("type", "content")
+                        
+                        if chunk_type == "content":
+                            # Text content
+                            text = chunk.get("content", "")
+                            if text:
+                                builder.add_text_delta(text)
+                                await event_stream_manager.send_event(
+                                    self.project_id,
+                                    "part_delta",
+                                    {
+                                        "message_id": message_id,
+                                        "part_index": len(builder.parts) - 1 if builder.parts else 0,
+                                        "delta": text,
+                                        "type": "text"
+                                    }
+                                )
+                        
+                        elif chunk_type == "tool_call":
+                            # Tool call chunk
+                            tool_name = chunk.get("name", "unknown")
+                            tool_args = chunk.get("args", {})
+                            tool_call_id = chunk.get("tool_call_id", generate_short_id())
+                            
+                            logger.info(f"[TASK] Tool call during task: {tool_name}")
+                            
+                            part_index = builder.add_tool_call(
+                                tool_call_id=tool_call_id,
+                                tool_name=tool_name,
+                                args=tool_args
+                            )
+                            
+                            await event_stream_manager.send_event(
+                                self.project_id,
+                                "part_complete",
+                                {
+                                    "message_id": message_id,
+                                    "part_index": part_index,
+                                    "part": builder.parts[part_index].model_dump(by_alias=True)
+                                }
+                            )
+                        
+                        elif chunk_type == "tool_result":
+                            # Tool result chunk
+                            tool_name = chunk.get("name", "unknown")
+                            result = chunk.get("content", "")
+                            success = chunk.get("success", False)
+                            
+                            # Find tool call ID
+                            tool_call_id = None
+                            for tc_id, tc_part in builder.pending_tool_calls.items():
+                                if tc_part.toolName == tool_name:
+                                    tool_call_id = tc_id
+                                    break
+                            
+                            if not tool_call_id:
+                                tool_call_id = generate_short_id()
+                            
+                            part_index = builder.add_tool_result(
+                                tool_call_id=tool_call_id,
+                                tool_name=tool_name,
+                                result=result,
+                                is_error=not success
+                            )
+                            
+                            await event_stream_manager.send_event(
+                                self.project_id,
+                                "part_complete",
+                                {
+                                    "message_id": message_id,
+                                    "part_index": part_index,
+                                    "part": builder.parts[part_index].model_dump(by_alias=True)
+                                }
+                            )
+                    
+                    elif isinstance(chunk, str):
+                        # Plain string chunk
+                        response_parts.append(chunk)
+                        builder.add_text_delta(chunk)
+                
+                # Build final message
+                message = builder.build()
+                response = message.content
+                
+                # Send message complete event
+                await event_stream_manager.send_event(
+                    self.project_id,
+                    "message_complete",
+                    {"message": message.model_dump(by_alias=True)}
+                )
+                
+                # Persist the message
+                await self.chat_storage.save_message(self.project_id, message)
+                
+            except Exception as e:
+                logger.error(f"[TASK] Error during streaming: {e}")
+                # Fall back to non-streaming
+                response = await agent.generate_response(messages=briefing)
+        else:
+            # Non-streaming execution
+            response = await agent.generate_response(messages=briefing)
+            
+            # Send agent response as message
+            try:
+                from ..server.streaming import send_message_object
+                from vibex.core.message import Message
+                agent_message = Message.assistant_message(response)
+                await send_message_object(self.project_id, agent_message)
+                # Persist the message
+                await self.chat_storage.save_message(self.project_id, agent_message)
+                
+                # Send task completion status
+                completion_message = Message.system_message(f"Completed task: {task.action}")
+                await send_message_object(self.project_id, completion_message)
+                await self.chat_storage.save_message(self.project_id, completion_message)
+            except ImportError:
+                # Streaming not available in this context
+                pass
 
         # Evaluate if handoff should occur
         if self.handoff_evaluator:

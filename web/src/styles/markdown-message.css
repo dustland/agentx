@@ -1,6 +1,10 @@
 /* Clean, simple markdown styles for chat messages */
 .markdown-message {
   @apply text-foreground text-sm leading-relaxed;
+  /* Prevent content from expanding beyond container */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 /* Headers - minimal styling */
@@ -42,10 +46,15 @@
 
 .markdown-message pre {
   @apply bg-muted/50 p-2 rounded overflow-x-auto mb-2 text-xs;
+  max-width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .markdown-message pre code {
   @apply bg-transparent p-0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Links - simple styling */
@@ -60,6 +69,19 @@
 /* Blockquotes - subtle */
 .markdown-message blockquote {
   @apply border-l-2 border-muted-foreground/20 pl-2 my-2 italic text-muted-foreground;
+}
+
+/* Tables - ensure they don't break layout */
+.markdown-message table {
+  @apply mb-2 text-sm;
+  max-width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+.markdown-message th,
+.markdown-message td {
+  @apply px-2 py-1 border border-muted;
 }
 
 /* Remove excessive spacing */

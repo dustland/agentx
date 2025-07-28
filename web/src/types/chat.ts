@@ -1,9 +1,12 @@
+import type { MessagePart } from "@/components/chat/message-parts";
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: Date;
   status?: "streaming" | "complete" | "error";
+  parts?: MessagePart[];
   metadata?: {
     agentId?: string;
     agentName?: string;

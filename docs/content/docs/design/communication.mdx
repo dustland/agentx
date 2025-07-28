@@ -37,7 +37,7 @@ class Message(BaseModel):
 
 ### 2.2. The `Part` Objects
 
-These are the building blocks of a `Message`.
+These are the building blocks of a `Message`. Following the Vercel AI SDK pattern, we use camelCase for field names to ensure frontend compatibility.
 
 #### `TextPart`
 
@@ -55,33 +55,58 @@ A structured request from an agent to call a specific tool with a given set of a
 
 ```python
 class ToolCallPart(BaseModel):
-    type: Literal["tool_call"] = "tool_call"
-    tool_call_id: str = Field(default_factory=lambda: f"tc_{uuid.uuid4().hex}")
-    tool_name: str
+    type: Literal["tool-call"] = "tool-call"
+    toolCallId: str = Field(default_factory=lambda: f"tc_{uuid.uuid4().hex}")
+    toolName: str
     args: Dict[str, Any]
 ```
 
 #### `ToolResultPart`
 
-The successful result of a tool execution. It is explicitly linked back to the originating call by its `tool_call_id`.
+The result of a tool execution. It is explicitly linked back to the originating call by its `toolCallId`.
 
 ```python
 class ToolResultPart(BaseModel):
-    type: Literal["tool_result"] = "tool_result"
-    tool_call_id: str
+    type: Literal["tool-result"] = "tool-result"
+    toolCallId: str
+    toolName: str
     result: Any  # The structured output from the tool
+    isError: bool = False  # Indicates if this is an error result
 ```
 
-#### `ToolErrorPart`
+#### Extended Part Types
 
-Used when a tool call fails, either due to a validation error or an execution error. This is the key to the self-correction loop.
+Beyond the core types, VibeX supports additional part types for richer agent interactions:
 
 ```python
-class ToolErrorPart(BaseModel):
-    type: Literal["tool_error"] = "tool_error"
-    tool_call_id: str
-    error_type: Literal["VALIDATION", "EXECUTION"]
-    message: str # A human-readable error message for the LLM
+# For image content
+class ImagePart(BaseModel):
+    type: Literal["image"] = "image"
+    image: Union[str, bytes]  # URL, base64, or binary data
+    mimeType: Optional[str] = None
+
+# For file attachments
+class FilePart(BaseModel):
+    type: Literal["file"] = "file"
+    data: Union[str, bytes]
+    mimeType: str
+
+# For multi-step operations
+class StepStartPart(BaseModel):
+    type: Literal["step-start"] = "step-start"
+    stepId: str
+    stepName: Optional[str] = None
+
+# For agent reasoning transparency
+class ReasoningPart(BaseModel):
+    type: Literal["reasoning"] = "reasoning"
+    content: str
+
+# For error handling
+class ErrorPart(BaseModel):
+    type: Literal["error"] = "error"
+    error: str
+    errorCode: Optional[str] = None
 ```
 
 ## 3. Example Message Flows
@@ -122,9 +147,9 @@ The agent's message contains both explanatory text and a `ToolCallPart`.
       "text": "Sure, I can write that file for you. I will now call the tool."
     },
     {
-      "type": "tool_call",
-      "tool_call_id": "tc_123",
-      "tool_name": "write_file",
+      "type": "tool-call",
+      "toolCallId": "tc_123",
+      "toolName": "write_file",
       "args": { "path": "/hello.txt", "content": "Hello, world!" }
     }
   ]
@@ -139,9 +164,11 @@ A new message is created containing the `ToolResultPart`. This is sent back to t
   "role": "assistant",
   "parts": [
     {
-      "type": "tool_result",
-      "tool_call_id": "tc_123",
-      "result": { "status": "success", "message": "File written successfully." }
+      "type": "tool-result",
+      "toolCallId": "tc_123",
+      "toolName": "write_file",
+      "result": { "status": "success", "message": "File written successfully." },
+      "isError": false
     }
   ]
 }
@@ -173,9 +200,9 @@ This flow demonstrates how `ToolErrorPart` enables the agent to fix its own mist
   "role": "assistant",
   "parts": [
     {
-      "type": "tool_call",
-      "tool_call_id": "tc_456",
-      "tool_name": "write_file",
+      "type": "tool-call",
+      "toolCallId": "tc_456",
+      "toolName": "write_file",
       "args": { "content": "This call is missing the path." }
     }
   ]
@@ -190,10 +217,11 @@ Instead of executing the tool, the system provides a structured validation error
   "role": "assistant",
   "parts": [
     {
-      "type": "tool_error",
-      "tool_call_id": "tc_456",
-      "error_type": "VALIDATION",
-      "message": "Validation failed for tool 'write_file': Missing required argument 'path'."
+      "type": "tool-result",
+      "toolCallId": "tc_456",
+      "toolName": "write_file",
+      "result": "Validation failed for tool 'write_file': Missing required argument 'path'.",
+      "isError": true
     }
   ]
 }
@@ -211,9 +239,9 @@ The error message is now part of the agent's context. Its `Brain` sees the mista
       "text": "My apologies, I missed a required parameter. I will correct it now."
     },
     {
-      "type": "tool_call",
-      "tool_call_id": "tc_789",
-      "tool_name": "write_file",
+      "type": "tool-call",
+      "toolCallId": "tc_789",
+      "toolName": "write_file",
       "args": {
         "path": "/corrected.txt",
         "content": "This call should now be valid."
@@ -284,9 +312,9 @@ The UI can immediately show that a tool is being used.
   "id": "msg_abc",
   "parts": [
     {
-      "type": "tool_call",
-      "tool_call_id": "tc_123",
-      "tool_name": "write_file",
+      "type": "tool-call",
+      "toolCallId": "tc_123",
+      "toolName": "write_file",
       "args": { "path": "/hello.txt", "content": "Hello, world!" }
     }
   ]
@@ -302,9 +330,11 @@ The UI knows the tool call has completed successfully _before_ the agent has for
   "id": "msg_abc",
   "parts": [
     {
-      "type": "tool_result",
-      "tool_call_id": "tc_123",
-      "result": { "status": "success", "message": "File written successfully." }
+      "type": "tool-result",
+      "toolCallId": "tc_123",
+      "toolName": "write_file",
+      "result": { "status": "success", "message": "File written successfully." },
+      "isError": false
     }
   ]
 }
@@ -323,3 +353,172 @@ The `id` field links these text chunks back to the same logical message.
 ```
 
 This progressive, part-based streaming model gives a UI all the information it needs to render a rich, real-time view of the agent's work.
+
+## 5. Message Building and Streaming Workflow
+
+### 5.1. The StreamingMessageBuilder
+
+To ensure consistent message structure during streaming, VibeX uses a `StreamingMessageBuilder` that accumulates parts as they are generated:
+
+```python
+from vibex.core.message_builder import StreamingMessageBuilder
+
+# Initialize builder for a new assistant message
+builder = StreamingMessageBuilder(role="assistant")
+
+# Add text as it streams
+builder.add_text_delta("Let me check ")
+builder.add_text_delta("the weather ")
+builder.add_text_delta("for you.\n")
+
+# Finalize text and add tool call
+builder.finalize_text_part()  # Creates TextPart from accumulated text
+part_index = builder.add_tool_call(
+    tool_call_id="tc_weather_123",
+    tool_name="get_weather",
+    args={"location": "Tokyo"}
+)
+
+# Add tool result
+part_index = builder.add_tool_result(
+    tool_call_id="tc_weather_123",
+    tool_name="get_weather",
+    result={"temperature": 72, "condition": "sunny"},
+    is_error=False
+)
+
+# Add final text
+builder.add_text_delta("The weather in Tokyo is 72°F and sunny.")
+
+# Build complete message
+message = builder.build()
+```
+
+### 5.2. Streaming Events Protocol
+
+VibeX emits a series of SSE (Server-Sent Events) to communicate message construction progress:
+
+#### Event Types
+
+1. **`message_start`**: Signals the beginning of a new message
+   ```json
+   {
+     "event": "message_start",
+     "data": {
+       "message_id": "msg_abc123",
+       "role": "assistant"
+     }
+   }
+   ```
+
+2. **`part_delta`**: Incremental updates to a part (typically text)
+   ```json
+   {
+     "event": "part_delta",
+     "data": {
+       "message_id": "msg_abc123",
+       "part_index": 0,
+       "type": "text",
+       "delta": "Let me check "
+     }
+   }
+   ```
+
+3. **`part_complete`**: A part has been finalized
+   ```json
+   {
+     "event": "part_complete",
+     "data": {
+       "message_id": "msg_abc123",
+       "part_index": 1,
+       "part": {
+         "type": "tool-call",
+         "toolCallId": "tc_weather_123",
+         "toolName": "get_weather",
+         "args": {"location": "Tokyo"}
+       }
+     }
+   }
+   ```
+
+4. **`message_complete`**: The entire message is ready
+   ```json
+   {
+     "event": "message_complete",
+     "data": {
+       "message": {
+         "id": "msg_abc123",
+         "role": "assistant",
+         "content": "Let me check the weather for you.\nThe weather in Tokyo is 72°F and sunny.",
+         "parts": [
+           {"type": "text", "text": "Let me check the weather for you.\n"},
+           {"type": "tool-call", "toolCallId": "tc_weather_123", "toolName": "get_weather", "args": {"location": "Tokyo"}},
+           {"type": "tool-result", "toolCallId": "tc_weather_123", "toolName": "get_weather", "result": {"temperature": 72, "condition": "sunny"}, "isError": false},
+           {"type": "text", "text": "The weather in Tokyo is 72°F and sunny."}
+         ]
+       }
+     }
+   }
+   ```
+
+### 5.3. Frontend State Management
+
+The frontend maintains a streaming message state that progressively builds the UI:
+
+```typescript
+interface StreamingMessage {
+  id: string;
+  role: string;
+  parts: MessagePart[];
+  status: 'streaming' | 'complete';
+  currentPartIndex?: number;
+}
+
+// Handle streaming events
+switch (event.type) {
+  case "message_start":
+    // Initialize new streaming message
+    streamingMessages.set(data.message_id, {
+      id: data.message_id,
+      role: data.role,
+      parts: [],
+      status: 'streaming'
+    });
+    break;
+    
+  case "part_delta":
+    // Update existing part or create new one
+    const message = streamingMessages.get(data.message_id);
+    if (data.type === "text") {
+      if (!message.parts[data.part_index]) {
+        message.parts[data.part_index] = { type: "text", text: "" };
+      }
+      message.parts[data.part_index].text += data.delta;
+    }
+    break;
+    
+  case "part_complete":
+    // Replace part with complete version
+    message.parts[data.part_index] = data.part;
+    break;
+    
+  case "message_complete":
+    // Finalize message and trigger persistence
+    streamingMessages.set(data.message.id, {
+      ...data.message,
+      status: 'complete'
+    });
+    break;
+}
+```
+
+### 5.4. Benefits of This Architecture
+
+1. **Progressive Rendering**: UI updates smoothly as content streams
+2. **Structured Data**: Maintains proper message/part relationships
+3. **Tool Transparency**: Shows tool calls and results inline with text
+4. **Error Recovery**: Failed tool calls don't break the message flow
+5. **Multi-modal Support**: Easily extends to images, files, and other content types
+6. **Backward Compatible**: The `content` field provides plain text fallback
+
+This architecture ensures that every piece of agent activity is captured, structured, and communicated in real-time, embodying the Vibe-X philosophy of transparency and user empowerment.

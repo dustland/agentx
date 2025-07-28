@@ -7,7 +7,21 @@ import { ChatInput } from "./input";
 import { MessageBubble } from "./message-bubble";
 import { useXAgentContext } from "@/contexts/xagent";
 
-export function ChatLayout() {
+interface Artifact {
+  path: string;
+  type: "file" | "directory";
+  size?: number;
+  content?: string;
+  created_at?: string;
+  modified_at?: string;
+  displayPath?: string;
+}
+
+interface ChatLayoutProps {
+  onArtifactSelect?: ((artifact: Artifact) => void) | null;
+}
+
+export function ChatLayout({ onArtifactSelect }: ChatLayoutProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -15,7 +29,7 @@ export function ChatLayout() {
   const { xagent, messages, isLoading, isSendingMessage, handleSubmit } =
     useXAgentContext();
 
-  // Auto-scroll to bottom when new messages arrive or during streaming
+  // Auto-scroll to bottom during active streaming with content changes
   useEffect(() => {
     const scrollToBottom = () => {
       if (scrollAreaRef.current) {
@@ -28,24 +42,35 @@ export function ChatLayout() {
       }
     };
 
-    const hasStreamingMessages = messages.some(
-      (msg) => msg.status === "streaming"
-    );
-
-    if (hasStreamingMessages) {
-      // More frequent scrolling during streaming
-      const interval = setInterval(scrollToBottom, 50); // Scroll every 50ms during streaming
-      return () => clearInterval(interval);
-    } else {
-      // Single scroll for new messages or when streaming ends
-      const timer = setTimeout(scrollToBottom, 10);
-      return () => clearTimeout(timer);
+    const lastMessage = messages[messages.length - 1];
+    const isStreaming = lastMessage?.status === "streaming";
+    
+    if (isStreaming) {
+      // Only scroll during streaming when content is actively changing
+      scrollToBottom();
     }
+    // Don't set up interval, just scroll when content changes
   }, [
-    messages.length,
-    messages.length > 0 ? messages[messages.length - 1]?.content?.length : 0,
-    isSendingMessage,
-  ]); // Trigger on message count, last message content length, and streaming state
+    messages.length > 0 ? messages[messages.length - 1]?.content : null,
+    messages.length > 0 ? messages[messages.length - 1]?.parts?.length : null,
+  ]); // Only trigger on last message content/parts changes
+
+  // Scroll to bottom on initial message load
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (scrollAreaRef.current) {
+          const scrollElement = scrollAreaRef.current.querySelector(
+            "[data-radix-scroll-area-viewport]"
+          );
+          if (scrollElement) {
+            scrollElement.scrollTop = scrollElement.scrollHeight;
+          }
+        }
+      }, 100);
+    }
+  }, [messages.length > 0, isLoading]); // Only trigger when messages first appear
 
   // Stop function for cancelling ongoing operations
   const handleStop = useCallback(() => {
@@ -54,7 +79,7 @@ export function ChatLayout() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-w-0">
       {/* Message List */}
       {messages.length === 0 ? (
         isLoading ? (
@@ -77,19 +102,22 @@ export function ChatLayout() {
           </div>
         )
       ) : (
-        <ScrollArea className="flex-1 overflow-hidden" ref={scrollAreaRef}>
-          <div className="p-4 space-y-3">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                onRetry={() => {
-                  // TODO: Implement retry functionality
-                  console.log("Retry message", message.id);
-                }}
-              />
-            ))}
-            <div ref={scrollRef} />
+        <ScrollArea className="flex-1 overflow-hidden min-w-0" ref={scrollAreaRef}>
+          <div className="max-w-full overflow-hidden">
+            <div className="p-4 space-y-3 min-w-0">
+              {messages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  onRetry={() => {
+                    // TODO: Implement retry functionality
+                    console.log("Retry message", message.id);
+                  }}
+                  onArtifactSelect={onArtifactSelect}
+                />
+              ))}
+              <div ref={scrollRef} />
+            </div>
           </div>
         </ScrollArea>
       )}

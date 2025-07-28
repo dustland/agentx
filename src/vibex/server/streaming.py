@@ -7,7 +7,7 @@ import json
 from typing import AsyncGenerator, Dict, Any, Optional
 from datetime import datetime
 from ..utils.logger import get_logger
-from ..core.message import Message, StreamChunk
+from ..core.message import Message
 from ..storage.chat_history import chat_history_manager
 
 logger = get_logger(__name__)
@@ -162,25 +162,7 @@ async def send_tool_call(project_id: str, xagent_id: str, tool_name: str, parame
         }
     )
 
-async def send_streaming_chunk(project_id: str, taskspace_path: str, chunk: StreamChunk):
-    """Send a streaming message chunk and handle persistence."""
-    # Send to live stream for real-time UI updates
-    await event_stream_manager.send_event(
-        project_id,
-        "message_chunk",
-        {
-            "step_id": chunk.step_id,
-            "agent_name": chunk.agent_name,
-            "text": chunk.text,
-            "is_final": chunk.is_final,
-            "token_count": chunk.token_count,
-            "timestamp": chunk.timestamp.isoformat()
-        }
-    )
-    
-    # Handle persistence (accumulate chunks, persist only when complete)
-    storage = chat_history_manager.get_storage(taskspace_path)
-    await storage.handle_streaming_chunk(project_id, chunk)
+
 
 async def send_complete_message(project_id: str, taskspace_path: str, message: Message):
     """Send a complete message and persist it."""
@@ -217,23 +199,7 @@ async def send_message_object(project_id: str, message: Message):
         message_dict
     )
 
-async def send_stream_chunk(project_id: str, chunk: str, message_id: str, is_final: bool = False, error: Optional[str] = None):
-    """Send a streaming text chunk for real-time UI updates."""
-    chunk_data = {
-        "message_id": message_id,
-        "chunk": chunk,
-        "is_final": is_final,
-        "timestamp": datetime.now().isoformat()
-    }
-    
-    if error:
-        chunk_data["error"] = error
-    
-    await event_stream_manager.send_event(
-        project_id,
-        "stream_chunk",
-        chunk_data
-    )
+
 
 async def send_tool_call_start(project_id: str, tool_call_id: str, tool_name: str, args: Dict[str, Any]):
     """Send a tool call start event for streaming."""
@@ -258,6 +224,35 @@ async def send_tool_call_result(project_id: str, tool_call_id: str, tool_name: s
             "tool_name": tool_name,
             "result": result,
             "is_error": is_error,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+async def send_message_part(project_id: str, message_id: str, part: Any):
+    """Send a message part event for streaming."""
+    from ..core.message import TextPart, ToolCallPart, ToolResultPart, MonologuePart, GuardrailPart
+    
+    # Determine part type and send appropriate event
+    part_dict = part.model_dump() if hasattr(part, 'model_dump') else part
+    
+    await event_stream_manager.send_event(
+        project_id,
+        "message_part",
+        {
+            "message_id": message_id,
+            "part": part_dict,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+async def send_tool_call_delta(project_id: str, tool_call_id: str, args_delta: str):
+    """Send a tool call delta for streaming partial arguments."""
+    await event_stream_manager.send_event(
+        project_id,
+        "tool_call_delta",
+        {
+            "tool_call_id": tool_call_id,
+            "args_delta": args_delta,
             "timestamp": datetime.now().isoformat()
         }
     )

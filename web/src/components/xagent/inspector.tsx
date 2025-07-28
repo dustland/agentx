@@ -118,14 +118,14 @@ export function Inspector({
           </div>
           <div>
             <h4 className="text-sm font-medium mb-2">Parameters</h4>
-            <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">
+            <pre className="text-xs bg-muted p-3 rounded overflow-x-auto max-w-full">
               {JSON.stringify(selectedToolCall.parameters, null, 2)}
             </pre>
           </div>
           {selectedToolCall.result && (
             <div>
               <h4 className="text-sm font-medium mb-2">Result</h4>
-              <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">
+              <pre className="text-xs bg-muted p-3 rounded overflow-x-auto max-w-full">
                 {typeof selectedToolCall.result === "string"
                   ? selectedToolCall.result
                   : JSON.stringify(selectedToolCall.result, null, 2)}
@@ -162,7 +162,10 @@ export function Inspector({
                   margin: 0,
                   fontSize: "0.875rem",
                   borderRadius: "0.375rem",
+                  maxWidth: "100%",
+                  overflow: "auto",
                 }}
+                wrapLongLines={false}
               >
                 {artifactContent || ""}
               </SyntaxHighlighter>

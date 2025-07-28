@@ -35,9 +35,14 @@ interface ToolCall {
 interface WorkspaceProps {
   xagentId: string;
   onToolCallSelect?: (handler: (toolCall: ToolCall) => void) => void;
+  onArtifactHandlerRegister?: (handler: (artifact: Artifact) => void) => void;
 }
 
-export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
+export function Workspace({
+  xagentId,
+  onToolCallSelect,
+  onArtifactHandlerRegister,
+}: WorkspaceProps) {
   const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(
     null
   );
@@ -60,6 +65,13 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
     setSelectedArtifact(artifact);
     setActiveTab("inspector");
   };
+
+  // Register the artifact selection handler
+  useEffect(() => {
+    if (onArtifactHandlerRegister) {
+      onArtifactHandlerRegister(handleArtifactSelect);
+    }
+  }, [onArtifactHandlerRegister]);
 
   return (
     <div className="h-full flex flex-col px-2 py-3">
@@ -95,12 +107,12 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
           </CardHeader>
 
           {/* Summary Tab */}
-          <TabsContent value="plan" className="flex-1 m-0 min-h-0">
+          <TabsContent value="plan" className="flex-1 m-0 min-h-0 overflow-hidden">
             <Summary xagentId={xagentId} />
           </TabsContent>
 
           {/* Artifacts Tab */}
-          <TabsContent value="artifacts" className="flex-1 m-0 min-h-0">
+          <TabsContent value="artifacts" className="flex-1 m-0 min-h-0 overflow-hidden">
             <Artifacts
               xagentId={xagentId}
               onArtifactSelect={handleArtifactSelect}
@@ -108,7 +120,7 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
           </TabsContent>
 
           {/* Viewer Tab */}
-          <TabsContent value="inspector" className="flex-1 m-0 min-h-0">
+          <TabsContent value="inspector" className="flex-1 m-0 min-h-0 overflow-hidden">
             <Inspector
               selectedArtifact={selectedArtifact}
               selectedToolCall={selectedToolCall}
@@ -117,12 +129,12 @@ export function Workspace({ xagentId, onToolCallSelect }: WorkspaceProps) {
           </TabsContent>
 
           {/* Memory Tab */}
-          <TabsContent value="memory" className="flex-1 m-0 min-h-0">
+          <TabsContent value="memory" className="flex-1 m-0 min-h-0 overflow-hidden">
             <Memory xagentId={xagentId} />
           </TabsContent>
 
           {/* Logs Tab */}
-          <TabsContent value="logs" className="flex-1 m-0 min-h-0">
+          <TabsContent value="logs" className="flex-1 m-0 min-h-0 overflow-hidden">
             {activeTab === "logs" && <Logs xagentId={xagentId} />}
           </TabsContent>
         </Tabs>

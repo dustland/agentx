@@ -1,25 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
-import { cn } from "@/lib/utils";
+import { Check, Copy, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, RotateCcw, Loader2 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { cn } from "@/lib/utils";
+import { MessageParts } from "./message-parts";
 import { TypingIndicator } from "../typing-indicator";
+import ReactMarkdown from "react-markdown";
+import type { ChatMessage } from "@/types/chat";
 
-interface MessageBubbleProps {
-  message: {
-    id: string;
-    role: "user" | "assistant" | "system";
-    content: string;
-    timestamp: Date;
-    status?: "streaming" | "complete" | "error";
-    metadata?: any;
-  };
-  onRetry?: () => void;
+interface Artifact {
+  path: string;
+  type: "file" | "directory";
+  size?: number;
+  content?: string;
+  created_at?: string;
+  modified_at?: string;
+  displayPath?: string;
 }
 
-export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
+interface MessageBubbleProps {
+  message: ChatMessage;
+  onRetry?: () => void;
+  onArtifactSelect?: ((artifact: Artifact) => void) | null;
+}
+
+export function MessageBubble({
+  message,
+  onRetry,
+  onArtifactSelect,
+}: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
   const isUser = message.role === "user";
   const isAssistant = message.role === "assistant";
@@ -33,7 +43,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
 
   return (
     <div
-      className={cn("group relative", isUser ? "flex justify-end" : "w-full")}
+      className={cn("group relative", isUser ? "flex justify-end" : "")}
     >
       <div
         className={cn(
@@ -45,27 +55,61 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                 "px-4 py-3",
                 "hover:shadow-sm",
               ]
-            : ["w-full", "py-3"],
+            : [
+                "max-w-full", // Changed from "w-full" to "max-w-full"
+                "py-3",
+              ],
           "transition-all duration-200",
           message.status === "error" && "text-destructive"
         )}
       >
         {/* Content */}
-        <div className="text-foreground">
-          {isAssistant ? (
-            <div className="markdown-message">
-              <ReactMarkdown>{message.content}</ReactMarkdown>
+        <div className="text-foreground overflow-hidden min-w-0">
+          {/* Show message parts if available */}
+          {message.parts && message.parts.length > 0 ? (
+            <div className="min-w-0 max-w-full">
+              <MessageParts
+                parts={message.parts}
+                isStreaming={isStreaming}
+                onArtifactSelect={onArtifactSelect}
+              />
             </div>
           ) : (
-            <div className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-              {message.content}
-            </div>
+            <>
+              {/* Fallback to regular content display */}
+              {isAssistant ? (
+                <div className="markdown-message overflow-hidden min-w-0 max-w-full" style={{ maxWidth: "100%" }}>
+                  <ReactMarkdown
+                    components={{
+                      // Override table to ensure it doesn't break layout
+                      table: ({ node, ...props }) => (
+                        <div className="overflow-x-auto max-w-full">
+                          <table {...props} className="min-w-full" />
+                        </div>
+                      ),
+                      // Override pre to ensure code blocks don't break layout
+                      pre: ({ node, ...props }) => (
+                        <pre {...props} className="overflow-x-auto max-w-full" />
+                      ),
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <div className="text-sm leading-relaxed whitespace-pre-wrap break-words overflow-x-auto min-w-0 max-w-full">
+                  {message.content}
+                </div>
+              )}
+              {/* Only show TypingIndicator for messages without parts */}
+              {isStreaming && <TypingIndicator />}
+            </>
           )}
-          {isStreaming && <TypingIndicator />}
         </div>
 
-        {/* Tool Usage */}
-        {message.metadata?.toolCalls &&
+        {/* Tool Usage - Only show if no message parts (backward compatibility) */}
+        {!message.parts &&
+          message.metadata?.toolCalls &&
           message.metadata.toolCalls.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
               {message.metadata.toolCalls.map((tool: any, idx: number) => (
@@ -123,7 +167,7 @@ export function MessageBubble({ message, onRetry }: MessageBubbleProps) {
                 className="h-7 px-2 text-xs"
                 onClick={onRetry}
               >
-                <RotateCcw className="h-3 w-3" />
+                <XCircle className="h-3 w-3" />
               </Button>
             )}
           </div>

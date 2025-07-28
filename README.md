@@ -144,9 +144,14 @@ uv run test
 # Run development server with auto-reload
 uv run dev
 
+# Run development server with automatic cleanup (recommended)
+./scripts/dev.sh
+
 # Monitor tasks and events
 uv run monitor
 ```
+
+> **💡 Tip**: Use `./scripts/dev.sh` instead of `uv run dev` to automatically kill any existing processes on port 7770 before starting the development server. This prevents "Address already in use" errors.
 
 ### API Documentation
 

@@ -137,8 +137,8 @@ class ResearchTool(Tool):
                                 )
                             )
                             
-                            if result and result.markdown_v2 and result.markdown_v2.raw_markdown:
-                                content = result.markdown_v2.raw_markdown.strip()
+                            if result and result.markdown and result.markdown.raw_markdown:
+                                content = result.markdown.raw_markdown.strip()
                                 
                                 # Only save if we got meaningful content
                                 if len(content) > 500:  # Minimum content threshold
@@ -240,7 +240,7 @@ class ResearchTool(Tool):
                     "starting_urls": urls_to_crawl,
                     "strategy": "direct_extraction",
                     "crawl4ai_version": "0.7.0",
-                    "extraction_method": "markdown_v2",
+                    "extraction_method": "markdown",
                     "failed_urls": failed_urls if failed_urls else None,
                     "browser_errors": browser_errors if browser_errors else None
                 }

@@ -7,11 +7,12 @@ from .message import (
     ToolResultPart,
     ArtifactPart,
     ImagePart,
-    AudioPart,
-    MemoryPart,
-    GuardrailPart,
+    FilePart,
+    StepStartPart,
+    ReasoningPart,
+    ErrorPart,
     Artifact,
-    StreamChunk,
+
     StreamError,
     StreamComplete
 )
@@ -38,11 +39,12 @@ __all__ = [
     "ToolResultPart",
     "ArtifactPart",
     "ImagePart",
-    "AudioPart",
-    "MemoryPart",
-    "GuardrailPart",
+    "FilePart",
+    "StepStartPart",
+    "ReasoningPart",
+    "ErrorPart",
     "Artifact",
-    "StreamChunk",
+
     "StreamError",
     "StreamComplete",
     # Project and Planning

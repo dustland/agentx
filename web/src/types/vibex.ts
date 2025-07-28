@@ -169,7 +169,6 @@ export interface SendMessageRequest {
 // Streaming event types
 export type StreamEventType =
   | "message" // Complete Message object
-  | "stream_chunk" // Streaming text chunks
   | "agent_message" // Legacy format (deprecated)
   | "tool_call" // Tool call events
   | "tool_call_start"

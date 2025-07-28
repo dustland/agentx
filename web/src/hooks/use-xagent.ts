@@ -70,6 +70,7 @@ export function useXAgent(xagentId: string) {
         timestamp: new Date(msg.timestamp),
         status: "complete" as const,
         metadata: msg.metadata,
+        parts: msg.parts || undefined, // Include parts if available
       })),
     [messagesQuery.data]
   );
@@ -92,10 +93,40 @@ export function useXAgent(xagentId: string) {
     messages.forEach((msg) => {
       messageMap.set(msg.id, msg);
     });
+    
+    // Log streaming messages for debugging
+    if (streamingMessages.size > 0) {
+      console.log("[useXAgent] Active streaming messages:", Array.from(streamingMessages.entries()).map(([id, msg]) => ({
+        id,
+        status: msg.status,
+        parts_count: msg.parts?.length,
+        content_length: msg.content?.length
+      })));
+    }
 
-    // Add streaming messages (override real ones if same ID)
+    // Add streaming messages, but only if they don't conflict with real messages
     Array.from(streamingMessages.values()).forEach((msg) => {
-      messageMap.set(msg.id, msg);
+      const realMessage = messageMap.get(msg.id);
+
+      // If there's a real message with the same ID and it's complete, skip the streaming version
+      if (realMessage && realMessage.status === "complete") {
+        return;
+      }
+
+      // If there's a real message with similar content, skip the streaming version
+      const isDuplicate = Array.from(messageMap.values()).some((realMsg) => {
+        return (
+          realMsg.content &&
+          msg.content &&
+          realMsg.content.trim() === msg.content.trim() &&
+          Math.abs(realMsg.timestamp.getTime() - msg.timestamp.getTime()) <
+            10000
+        ); // Within 10 seconds
+      });
+
+      if (!isDuplicate) {
+        messageMap.set(msg.id, msg);
+      }
     });
 
     // Add optimistic messages if they don't already exist
@@ -134,76 +165,121 @@ export function useXAgent(xagentId: string) {
         console.log("[useXAgent] Event type:", data.event);
         console.log("[useXAgent] Event data:", data.data);
 
-        if (data.event === "stream_chunk") {
-          // Handle streaming message chunks
-          // The data.data is a JSON string that needs to be parsed
-          let chunkData;
-          try {
-            chunkData =
-              typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-          } catch (e) {
-            console.error("[useXAgent] Failed to parse chunk data:", e);
-            return;
-          }
-          const messageId = `streaming-${chunkData.message_id || Date.now()}`;
-
+        // Handle new message part streaming events
+        if (data.event === "message_start") {
+          const { message_id, role } = data.data;
+          console.log("[useXAgent] message_start event:", { message_id, role });
           setStreamingMessages((prev) => {
             const updated = new Map(prev);
-            const existing = updated.get(messageId);
+            updated.set(message_id, {
+              id: message_id,
+              role: role as "assistant" | "user" | "system",
+              content: "",
+              parts: [],
+              timestamp: new Date(),
+              status: "streaming",
+            });
+            return updated;
+          });
+          return;
+        }
 
-            if (existing) {
-              // Append to existing streaming message
-              const newMessage = {
-                ...existing,
-                content: existing.content + (chunkData.chunk || ""),
-                status: (chunkData.is_final ? "complete" : "streaming") as
-                  | "complete"
-                  | "streaming",
-              };
-              console.log(
-                "[useXAgent] Updating streaming message:",
-                newMessage
-              );
-              updated.set(messageId, newMessage);
-            } else {
-              // Create new streaming message
-              const newMessage = {
-                id: messageId,
-                role: "assistant" as const,
-                content: chunkData.chunk || "",
-                timestamp: new Date(chunkData.timestamp || Date.now()),
-                status: (chunkData.is_final ? "complete" : "streaming") as
-                  | "complete"
-                  | "streaming",
-                metadata: {
-                  messageId: chunkData.message_id,
-                } as any,
-              };
-              console.log(
-                "[useXAgent] Creating new streaming message:",
-                newMessage
-              );
-              updated.set(messageId, newMessage);
+        if (data.event === "part_delta") {
+          const { message_id, part_index, delta, type } = data.data;
+          console.log("[useXAgent] part_delta event:", { message_id, part_index, delta_length: delta?.length, type });
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            const message = updated.get(message_id);
+            if (message) {
+              // Ensure parts array exists and has enough slots
+              if (!message.parts) {
+                message.parts = [];
+              }
+              while (message.parts.length <= part_index) {
+                message.parts.push({ type: "text", text: "" });
+              }
+
+              // Update the specific part
+              const part = message.parts[part_index];
+              if (part.type === "text") {
+                part.text += delta;
+              }
+
+              // Rebuild content from parts
+              message.content = message.parts
+                .filter((p: any) => p.type === "text")
+                .map((p: any) => p.text)
+                .join("");
+
+              updated.set(message_id, { ...message });
             }
+            return updated;
+          });
+          return;
+        }
 
+        if (data.event === "part_complete") {
+          const { message_id, part_index, part } = data.data;
+          console.log("[useXAgent] part_complete event:", { message_id, part_index, part_type: part?.type, part });
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            const message = updated.get(message_id);
+            if (message) {
+              // Ensure parts array exists and has enough slots
+              if (!message.parts) {
+                message.parts = [];
+              }
+              while (message.parts.length <= part_index) {
+                message.parts.push({ type: "text", text: "" });
+              }
+
+              // Replace the part at the index
+              message.parts[part_index] = part;
+              updated.set(message_id, { ...message });
+            }
+            return updated;
+          });
+          return;
+        }
+
+        if (data.event === "message_complete") {
+          const { message } = data.data;
+          console.log("[useXAgent] message_complete event:", { 
+            message_id: message.id, 
+            parts_count: message.parts?.length,
+            content_length: message.content?.length,
+            message
+          });
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            const existingMessage = updated.get(message.id);
+            if (existingMessage) {
+              // Update with complete message data
+              updated.set(message.id, {
+                ...message,
+                timestamp: new Date(message.timestamp),
+                status: "complete",
+              });
+            }
             return updated;
           });
 
-          // If final chunk, invalidate messages to get the persisted version
-          if (chunkData.is_final) {
-            setTimeout(() => {
-              queryClient.invalidateQueries({
-                queryKey: xagentKeys.messages(xagentId),
-              });
-              // Clear streaming message once real message is loaded
-              setStreamingMessages((prev) => {
-                const updated = new Map(prev);
-                updated.delete(messageId);
-                return updated;
-              });
-            }, 1000);
-          }
-        } else if (data.event === "message") {
+          // Invalidate messages query after a delay
+          setTimeout(() => {
+            queryClient.invalidateQueries({
+              queryKey: xagentKeys.messages(xagentId),
+            });
+            // Remove streaming message
+            setStreamingMessages((prev) => {
+              const updated = new Map(prev);
+              updated.delete(message.id);
+              return updated;
+            });
+          }, 1000);
+          return;
+        }
+
+        if (data.event === "message") {
           // Handle complete message events
           let messageData;
           try {
@@ -215,6 +291,89 @@ export function useXAgent(xagentId: string) {
           }
           queryClient.invalidateQueries({
             queryKey: xagentKeys.messages(xagentId),
+          });
+        } else if (data.event === "tool_call_start") {
+          // Handle tool call start events
+          console.log("[useXAgent] Tool call start received:", data.data);
+          // Update streaming messages with tool call info
+          const toolData = data.data;
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            // Find the latest streaming message and add tool call part
+            const latestMessage = Array.from(updated.values()).find(
+              (msg) => msg.status === "streaming"
+            );
+            if (latestMessage) {
+              const updatedMessage = {
+                ...latestMessage,
+                parts: [
+                  ...(latestMessage.parts || []),
+                  {
+                    type: "tool_call",
+                    tool_call_id: toolData.tool_call_id,
+                    tool_name: toolData.tool_name,
+                    args: toolData.args,
+                    status: "running",
+                  },
+                ],
+              };
+              updated.set(latestMessage.id, updatedMessage);
+            }
+            return updated;
+          });
+        } else if (data.event === "tool_call_result") {
+          // Handle tool call result events
+          console.log("[useXAgent] Tool call result received:", data.data);
+          const toolData = data.data;
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            // Find the message with this tool call and update it
+            updated.forEach((msg, id) => {
+              if (msg.parts) {
+                const partIndex = msg.parts.findIndex(
+                  (p: any) =>
+                    p.type === "tool_call" &&
+                    p.tool_call_id === toolData.tool_call_id
+                );
+                if (partIndex !== -1) {
+                  const updatedParts = [...msg.parts];
+                  updatedParts[partIndex] = {
+                    ...updatedParts[partIndex],
+                    status: toolData.is_error ? "failed" : "completed",
+                  };
+                  // Add tool result part
+                  updatedParts.push({
+                    type: "tool_result",
+                    tool_call_id: toolData.tool_call_id,
+                    tool_name: toolData.tool_name,
+                    result: toolData.result,
+                    is_error: toolData.is_error,
+                  });
+                  updated.set(id, {
+                    ...msg,
+                    parts: updatedParts,
+                  });
+                }
+              }
+            });
+            return updated;
+          });
+        } else if (data.event === "message_part") {
+          // Handle message part events
+          console.log("[useXAgent] Message part received:", data.data);
+          const partData = data.data;
+          setStreamingMessages((prev) => {
+            const updated = new Map(prev);
+            const messageId = `streaming-${partData.message_id || Date.now()}`;
+            const existing = updated.get(messageId);
+
+            if (existing) {
+              updated.set(messageId, {
+                ...existing,
+                parts: [...(existing.parts || []), partData.part],
+              });
+            }
+            return updated;
           });
         } else if (data.event === "task_update") {
           // Handle task status updates - these should refresh the summary
@@ -280,13 +439,14 @@ export function useXAgent(xagentId: string) {
 
   const handleSubmit = useCallback(
     (message: string, mode?: "chat" | "agent") => {
-      if (!message.trim()) return;
-
-      // Add optimistic message
+      // Allow empty messages for continuing execution
+      const trimmedMessage = message.trim();
+      
+      // Add optimistic message (even if empty)
       const optimisticMsg: ChatMessage = {
         id: `optimistic-${Date.now()}`,
         role: "user",
-        content: message.trim(),
+        content: trimmedMessage,
         timestamp: new Date(),
         status: "complete",
       };
@@ -294,13 +454,13 @@ export function useXAgent(xagentId: string) {
       setOptimisticMessages((prev) => [...prev, optimisticMsg]);
       setInput(""); // Clear input immediately
 
-      // Send the actual message
-      sendMessage.mutate(message.trim(), {
+      // Send the actual message (empty messages are allowed)
+      sendMessage.mutate(trimmedMessage, {
         onError: (error) => {
           console.error("Failed to send message:", error);
           // Remove the optimistic message on error
           setOptimisticMessages((prev) =>
-            prev.filter((msg) => msg.content !== message.trim())
+            prev.filter((msg) => msg.content !== trimmedMessage)
           );
         },
       });

@@ -29,36 +29,40 @@ class Artifact(BaseModel):
 
 # --- TaskStep and its Parts ---
 
+# Message Parts - Following Vercel AI SDK structure
 class MessagePart(BaseModel):
-    """
-    A union of all possible content types that can be part of a message.
-    This allows for rich, multi-modal messages (e.g., text with images).
-
-    """
-    pass
+    """Base class for message parts."""
+    type: str
+    
+    class Config:
+        # Ensure all fields are included in serialization
+        extra = "forbid"
 
 class TextPart(MessagePart):
-    """Text content part with language and confidence support."""
+    """Text content part."""
     type: Literal["text"] = "text"
     text: str
-    language: Optional[str] = None  # For multilingual support
-    confidence: Optional[float] = None  # LLM confidence score
 
 class ToolCallPart(MessagePart):
-    """Tool call request part - conversation representation."""
-    type: Literal["tool_call"] = "tool_call"
-    tool_call_id: str
-    tool_name: str
+    """Tool call part - represents a tool invocation."""
+    type: Literal["tool-call"] = "tool-call"
+    toolCallId: str
+    toolName: str
     args: Dict[str, Any]
-    expected_output_type: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
 
 class ToolResultPart(MessagePart):
-    """Tool execution result part."""
-    type: Literal["tool_result"] = "tool_result"
-    tool_call_id: str
-    tool_name: str
+    """Tool result part - represents the result of a tool execution."""
+    type: Literal["tool-result"] = "tool-result"
+    toolCallId: str
+    toolName: str
     result: Any
-    is_error: bool = False
+    isError: bool = False
+    
+    class Config:
+        populate_by_name = True
 
 class ArtifactPart(MessagePart):
     """Artifact reference part."""
@@ -66,50 +70,46 @@ class ArtifactPart(MessagePart):
     artifact: Artifact
 
 class ImagePart(MessagePart):
-    """Image content part with metadata."""
+    """Image content part."""
     type: Literal["image"] = "image"
-    image_url: str  # Can be data URL or artifact reference
-    alt_text: Optional[str] = None
-    dimensions: Optional[Dict[str, int]] = None  # width, height
-    format: Optional[str] = None  # png, jpg, etc.
+    image: Union[str, bytes]  # URL, base64, or binary data
+    mimeType: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
 
-class AudioPart(MessagePart):
-    """Audio content part with metadata."""
-    type: Literal["audio"] = "audio"
-    audio_url: str  # Can be data URL or artifact reference
-    transcript: Optional[str] = None
-    duration_seconds: Optional[float] = None
-    format: Optional[str] = None  # mp3, wav, etc.
-    sample_rate: Optional[int] = None
+class FilePart(MessagePart):
+    """File content part."""
+    type: Literal["file"] = "file"
+    data: Union[str, bytes]  # URL, base64, or binary data
+    mimeType: str
+    
+    class Config:
+        populate_by_name = True
 
-class MemoryReference(BaseModel):
-    """Memory reference with relevance scoring."""
-    memory_id: str
-    memory_type: str  # "short_term", "long_term", "semantic", "episodic"
-    relevance_score: Optional[float] = None
-    retrieval_query: Optional[str] = None
+# Extended parts for agent-specific features
+class StepStartPart(MessagePart):
+    """Step boundary marker for multi-step operations."""
+    type: Literal["step-start"] = "step-start"
+    stepId: str
+    stepName: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
 
-class MemoryPart(MessagePart):
-    """Memory operation part."""
-    type: Literal["memory"] = "memory"
-    operation: str  # "store", "retrieve", "search", "consolidate"
-    references: List[MemoryReference]
-    content: Optional[Dict[str, Any]] = None
+class ReasoningPart(MessagePart):
+    """Agent reasoning/thinking part."""
+    type: Literal["reasoning"] = "reasoning"
+    content: str
 
-class GuardrailCheck(BaseModel):
-    """Individual guardrail check result."""
-    check_id: str
-    check_type: str  # "input_validation", "content_filter", "rate_limit", "policy"
-    status: str  # "passed", "failed", "warning"
-    message: Optional[str] = None
-    policy_violated: Optional[str] = None
-    severity: Optional[str] = None  # "low", "medium", "high", "critical"
-
-class GuardrailPart(MessagePart):
-    """Guardrail check results part."""
-    type: Literal["guardrail"] = "guardrail"
-    checks: List[GuardrailCheck]
-    overall_status: str  # "passed", "failed", "warning"
+class ErrorPart(MessagePart):
+    """Error message part."""
+    type: Literal["error"] = "error"
+    error: str
+    errorCode: Optional[str] = None
+    
+    class Config:
+        populate_by_name = True
 
 # --- Standard Chat Message Format (compatible with Vercel AI SDK) ---
 
@@ -122,34 +122,61 @@ class Message(BaseModel):
     id: str = Field(default_factory=generate_short_id)
     role: Literal["system", "user", "assistant", "tool"] = "user"
     content: str = ""  # Backward compatibility - text content
-    parts: List[MessagePart] = Field(default_factory=list)  # Modern structured content
+    parts: List[Union[
+        TextPart, 
+        ToolCallPart, 
+        ToolResultPart, 
+        ArtifactPart, 
+        ImagePart, 
+        FilePart, 
+        StepStartPart, 
+        ReasoningPart, 
+        ErrorPart
+    ]] = Field(default_factory=list)  # Modern structured content
     timestamp: datetime = Field(default_factory=datetime.now)
 
     @classmethod
     def user_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create a user message."""
+        if parts is None:
+            parts = [TextPart(text=content)] if content else []
         return cls(
             role="user",
             content=content,
-            parts=parts or [TextPart(text=content)]
+            parts=parts
         )
 
     @classmethod
     def assistant_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create an assistant message."""
+        if parts is None:
+            parts = [TextPart(text=content)] if content else []
         return cls(
             role="assistant",
             content=content,
-            parts=parts or [TextPart(text=content)]
+            parts=parts
         )
 
     @classmethod
     def system_message(cls, content: str, parts: Optional[List[MessagePart]] = None) -> "Message":
         """Create a system message."""
+        if parts is None:
+            parts = [TextPart(text=content)] if content else []
         return cls(
             role="system",
             content=content,
-            parts=parts or [TextPart(text=content)]
+            parts=parts
+        )
+    
+    @classmethod
+    def tool_message(cls, tool_results: List[ToolResultPart]) -> "Message":
+        """Create a tool message."""
+        # Combine results into content for backward compatibility
+        content = "\n".join([str(r.result) for r in tool_results])
+        return cls(
+            role="tool",
+            content=content,
+            parts=tool_results
         )
 
 class UserMessage(Message):
@@ -222,20 +249,7 @@ class ConversationHistory(BaseModel):
 
 # --- Streaming Models ---
 
-class StreamChunk(BaseModel):
-    """
-    Token-by-token message streaming from LLM.
 
-    This is Channel 1 of the dual-channel system - provides low-latency
-    UI updates for "typing" effect. This is message streaming, not events.
-    """
-    type: Literal["content_chunk"] = "content_chunk"
-    step_id: str  # Links to the TaskStep being generated
-    agent_name: str
-    text: str
-    is_final: bool = False  # True for the last chunk of a response
-    token_count: Optional[int] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class StreamError(BaseModel):
     """

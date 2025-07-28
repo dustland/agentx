@@ -11,11 +11,37 @@ import {
 import { XAgentProvider, useXAgentContext } from "@/contexts/xagent";
 import { useAppStore } from "@/store/app";
 
+// Define the Artifact interface to match workspace
+interface Artifact {
+  path: string;
+  type: "file" | "directory";
+  size?: number;
+  content?: string;
+  created_at?: string;
+  modified_at?: string;
+  displayPath?: string;
+}
+
+interface ToolCall {
+  id: string;
+  xagent_id: string;
+  tool_name: string;
+  parameters: any;
+  result?: any;
+  timestamp: string;
+  status: "pending" | "completed" | "error";
+}
+
 function XAgentPageContent({ id }: { id: string }) {
   const { initialMessage, setInitialMessage } = useAppStore();
 
   // Use the XAgent context for all functionality
   const { messages, isMessagesLoading, handleSubmit } = useXAgentContext();
+
+  // State for workspace artifact selection
+  const [workspaceArtifactHandler, setWorkspaceArtifactHandler] = useState<
+    ((artifact: Artifact) => void) | null
+  >(null);
 
   // Send initial message if present
   useEffect(() => {
@@ -34,9 +60,17 @@ function XAgentPageContent({ id }: { id: string }) {
 
   // Callback registration function for tool call selection
   const registerToolCallHandler = useCallback(
-    (handler: (toolCall: any) => void) => {
+    (handler: (toolCall: ToolCall) => void) => {
       // Store the handler if needed, or just use it directly
       // For now, we don't need to do anything with selected tool calls
+    },
+    []
+  );
+
+  // Callback registration function for artifact selection
+  const registerArtifactHandler = useCallback(
+    (handler: (artifact: Artifact) => void) => {
+      setWorkspaceArtifactHandler(() => handler);
     },
     []
   );
@@ -47,12 +81,20 @@ function XAgentPageContent({ id }: { id: string }) {
         direction="horizontal"
         className="flex-1 overflow-hidden"
       >
-        <ResizablePanel defaultSize={55} minSize={30}>
-          <ChatLayout />
+        <ResizablePanel defaultSize={55} minSize={30} className="min-w-0 overflow-hidden">
+          <div className="h-full w-full overflow-hidden">
+            <ChatLayout onArtifactSelect={workspaceArtifactHandler} />
+          </div>
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />
-        <ResizablePanel defaultSize={45} minSize={20}>
-          <Workspace xagentId={id} onToolCallSelect={registerToolCallHandler} />
+        <ResizablePanel defaultSize={45} minSize={20} className="min-w-0 overflow-hidden">
+          <div className="h-full w-full overflow-hidden">
+            <Workspace
+              xagentId={id}
+              onToolCallSelect={registerToolCallHandler}
+              onArtifactHandlerRegister={registerArtifactHandler}
+            />
+          </div>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

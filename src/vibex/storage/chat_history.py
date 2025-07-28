@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from ..core.message import Message, ConversationHistory, TaskStep, StreamChunk
+from ..core.message import Message, ConversationHistory, TaskStep
 from ..utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -29,7 +29,7 @@ class ChatHistoryStorage:
         # History folder at same level as artifacts/ and logs/
         self.history_dir = self.project_path / "history"
         self.history_file = self.history_dir / "messages.jsonl"
-        self.temp_streaming_messages: Dict[str, Dict] = {}  # Track incomplete streaming messages
+
         
     async def save_message(self, project_id: str, message: Message) -> None:
         """Save a complete message to persistent storage."""
@@ -83,51 +83,7 @@ class ChatHistoryStorage:
         except Exception as e:
             logger.error(f"Failed to save task {task.step_id} for project {project_id}: {e}")
     
-    async def handle_streaming_chunk(self, project_id: str, chunk: StreamChunk) -> None:
-        """Handle streaming message chunks - accumulate but don't persist until complete."""
-        step_id = chunk.step_id
-        
-        # Initialize or update streaming message
-        if step_id not in self.temp_streaming_messages:
-            self.temp_streaming_messages[step_id] = {
-                "agent_name": chunk.agent_name,
-                "content": "",
-                "chunks": [],
-                "start_time": chunk.timestamp,
-                "project_id": project_id
-            }
-        
-        # Accumulate content
-        self.temp_streaming_messages[step_id]["content"] += chunk.text
-        self.temp_streaming_messages[step_id]["chunks"].append({
-            "text": chunk.text,
-            "timestamp": chunk.timestamp.isoformat(),
-            "token_count": chunk.token_count
-        })
-        
-        # If this is the final chunk, create and save the complete message
-        if chunk.is_final:
-            await self._finalize_streaming_message(project_id, step_id)
-    
-    async def _finalize_streaming_message(self, project_id: str, step_id: str) -> None:
-        """Convert accumulated streaming chunks into a final message and persist it."""
-        if step_id not in self.temp_streaming_messages:
-            logger.warning(f"No streaming message found for step {step_id}")
-            return
-        
-        streaming_data = self.temp_streaming_messages[step_id]
-        
-        # Create final message
-        final_message = Message.assistant_message(
-            content=streaming_data["content"]
-        )
-        final_message.id = step_id  # Use step_id as message_id for consistency
-        
-        # Save the complete message
-        await self.save_message(project_id, final_message)
-        
-        # Clean up streaming data
-        del self.temp_streaming_messages[step_id]
+
         
         logger.debug(f"Finalized streaming message for step {step_id}")
     

@@ -137,17 +137,6 @@ export class VibexClient {
     };
 
     // Handle specific event types
-    eventSource.addEventListener("stream_chunk", (event) => {
-      console.log("[SSE] Stream chunk event received:", event);
-      try {
-        const data = JSON.parse(event.data);
-        console.log("[SSE] Stream chunk data:", data);
-        onUpdate({ event: "stream_chunk", data });
-      } catch (error) {
-        console.error("Error parsing stream chunk data:", error);
-        onError(error);
-      }
-    });
 
     eventSource.addEventListener("message", (event) => {
       console.log("[SSE] Message event received:", event);
@@ -205,6 +194,100 @@ export class VibexClient {
         onUpdate({ event: "project_update", data });
       } catch (error) {
         console.error("Error parsing project update data:", error);
+        onError(error);
+      }
+    });
+
+    // Tool call streaming events
+    eventSource.addEventListener("tool_call_start", (event) => {
+      console.log("[SSE] Tool call start event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Tool call start data:", data);
+        onUpdate({ event: "tool_call_start", data });
+      } catch (error) {
+        console.error("Error parsing tool call start data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("tool_call_result", (event) => {
+      console.log("[SSE] Tool call result event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Tool call result data:", data);
+        onUpdate({ event: "tool_call_result", data });
+      } catch (error) {
+        console.error("Error parsing tool call result data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("tool_call_delta", (event) => {
+      console.log("[SSE] Tool call delta event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Tool call delta data:", data);
+        onUpdate({ event: "tool_call_delta", data });
+      } catch (error) {
+        console.error("Error parsing tool call delta data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("message_part", (event) => {
+      console.log("[SSE] Message part event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        console.log("[SSE] Message part data:", data);
+        onUpdate({ event: "message_part", data });
+      } catch (error) {
+        console.error("Error parsing message part data:", error);
+        onError(error);
+      }
+    });
+
+    // New message part streaming events
+    eventSource.addEventListener("message_start", (event) => {
+      console.log("[SSE] Message start event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        onUpdate({ event: "message_start", data });
+      } catch (error) {
+        console.error("Error parsing message start data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("part_delta", (event) => {
+      console.log("[SSE] Part delta event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        onUpdate({ event: "part_delta", data });
+      } catch (error) {
+        console.error("Error parsing part delta data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("part_complete", (event) => {
+      console.log("[SSE] Part complete event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        onUpdate({ event: "part_complete", data });
+      } catch (error) {
+        console.error("Error parsing part complete data:", error);
+        onError(error);
+      }
+    });
+
+    eventSource.addEventListener("message_complete", (event) => {
+      console.log("[SSE] Message complete event received:", event);
+      try {
+        const data = JSON.parse(event.data);
+        onUpdate({ event: "message_complete", data });
+      } catch (error) {
+        console.error("Error parsing message complete data:", error);
         onError(error);
       }
     });
