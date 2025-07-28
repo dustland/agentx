@@ -76,25 +76,21 @@ function XAgentPageContent({ id }: { id: string }) {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-screen">
+    <div className="h-screen w-full flex flex-col">
       <ResizablePanelGroup
         direction="horizontal"
-        className="flex-1 overflow-hidden"
+        className="flex-1 min-h-0 w-full"
       >
-        <ResizablePanel defaultSize={55} minSize={30} className="min-w-0 overflow-hidden">
-          <div className="h-full w-full overflow-hidden">
-            <ChatLayout onArtifactSelect={workspaceArtifactHandler} />
-          </div>
+        <ResizablePanel defaultSize={55} minSize={30}>
+          <ChatLayout onArtifactSelect={workspaceArtifactHandler} />
         </ResizablePanel>
         <ResizableHandle className="!bg-transparent" />
-        <ResizablePanel defaultSize={45} minSize={20} className="min-w-0 overflow-hidden">
-          <div className="h-full w-full overflow-hidden">
-            <Workspace
-              xagentId={id}
-              onToolCallSelect={registerToolCallHandler}
-              onArtifactHandlerRegister={registerArtifactHandler}
-            />
-          </div>
+        <ResizablePanel defaultSize={45} minSize={20}>
+          <Workspace
+            xagentId={id}
+            onToolCallSelect={registerToolCallHandler}
+            onArtifactHandlerRegister={registerArtifactHandler}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

@@ -43,7 +43,10 @@ export function MessageBubble({
 
   return (
     <div
-      className={cn("group relative", isUser ? "flex justify-end" : "")}
+      className={cn(
+        "group relative border-b border-border/50 last:border-b-0",
+        isUser ? "flex justify-end" : ""
+      )}
     >
       <div
         className={cn(
@@ -52,12 +55,12 @@ export function MessageBubble({
             ? [
                 "max-w-[85%] md:max-w-[75%] lg:max-w-[65%]",
                 "bg-card rounded-xl border border-border",
-                "px-4 py-3",
+                "px-4 py-3 mb-4",
                 "hover:shadow-sm",
               ]
             : [
-                "max-w-full", // Changed from "w-full" to "max-w-full"
-                "py-3",
+                "max-w-full",
+                "py-3 pb-4",
               ],
           "transition-all duration-200",
           message.status === "error" && "text-destructive"
@@ -136,35 +139,26 @@ export function MessageBubble({
             </div>
           )}
 
-        {/* Action buttons */}
+        {/* Action buttons - absolute positioned */}
         {isAssistant && (
-          <div
-            className={cn(
-              "flex items-center gap-1 mt-2",
-              "opacity-0 group-hover:opacity-100 transition-all duration-200"
-            )}
-          >
+          <div className="absolute -top-1 -right-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-2 text-xs"
+              className="h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border"
               onClick={handleCopy}
             >
               {copied ? (
-                <>
-                  <Check className="h-3 w-3" />
-                </>
+                <Check className="h-3 w-3" />
               ) : (
-                <>
-                  <Copy className="h-3 w-3" />
-                </>
+                <Copy className="h-3 w-3" />
               )}
             </Button>
             {message.status === "error" && onRetry && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="h-6 w-6 p-0 bg-background/80 backdrop-blur-sm border"
                 onClick={onRetry}
               >
                 <XCircle className="h-3 w-3" />

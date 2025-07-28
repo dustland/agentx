@@ -104,7 +104,7 @@ export function ChatLayout({ onArtifactSelect }: ChatLayoutProps) {
       ) : (
         <ScrollArea className="flex-1 overflow-hidden min-w-0" ref={scrollAreaRef}>
           <div className="max-w-full overflow-hidden">
-            <div className="p-4 space-y-3 min-w-0">
+            <div className="p-4 space-y-0 min-w-0">
               {messages.map((message) => (
                 <MessageBubble
                   key={message.id}

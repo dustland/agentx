@@ -21,6 +21,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { useLogs } from "@/hooks/use-xagent";
 
 interface LogsProps {
@@ -290,8 +295,8 @@ export function Logs({ xagentId }: LogsProps) {
           />
         </Button>
       </div>
-      <div className="h-full overflow-y-auto overflow-x-hidden" ref={scrollRef}>
-        <div className="p-4 space-y-1">
+      <div className="h-full overflow-y-auto overflow-x-auto" ref={scrollRef}>
+        <div className="p-4 space-y-1 min-w-0">
           {/* Show truncation warning if logs are limited */}
           {logs && logs.length > displayLimit && tailMode && (
             <div className="text-xs text-muted-foreground text-center py-2 border-b mb-2">
@@ -316,11 +321,12 @@ export function Logs({ xagentId }: LogsProps) {
             const isDebug = parsed.level === "DEBUG";
 
             const getLogIcon = () => {
-              if (isError) return <AlertCircle className="w-4 h-4" />;
-              if (isWarning) return <AlertTriangle className="w-4 h-4" />;
-              if (isInfo) return <Info className="w-4 h-4" />;
-              if (isDebug) return <Search className="w-4 h-4" />;
-              return <FileText className="w-4 h-4" />;
+              if (isError) return <AlertCircle className="w-4 h-4 shrink-0" />;
+              if (isWarning)
+                return <AlertTriangle className="w-4 h-4 shrink-0" />;
+              if (isInfo) return <Info className="w-4 h-4 shrink-0" />;
+              if (isDebug) return <Search className="w-4 h-4 shrink-0" />;
+              return <FileText className="w-4 h-4 shrink-0" />;
             };
 
             const getLogColor = () => {
@@ -342,25 +348,57 @@ export function Logs({ xagentId }: LogsProps) {
             return (
               <div
                 key={idx}
-                className="flex items-start gap-2 text-xs font-mono"
+                className="flex items-start gap-2 text-xs font-mono hover:bg-muted/50 py-0.5 px-2 -mx-2 rounded"
               >
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={`flex-shrink-0 mt-0.5 ${getLogColor()}`}>
-                        {getLogIcon()}
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div
+                      className={`flex items-center gap-2 flex-1 ${getLogColor()} font-mono truncate cursor-pointer`}
+                    >
+                      {/* Show timestamp and logger info inline for structure */}
+                      {getLogIcon()}
+                      {parsed.timestamp && (
+                        <span className="">
+                          {parsed.timestamp.split(" ")[1]}{" "}
+                          {/* Show only time */}
+                        </span>
+                      )}
+                      <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                        {parsed.message}
+                      </span>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    className="w-[600px] max-w-[90vw]"
+                    align="start"
+                  >
+                    <div className="space-y-2">
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        {parsed.timestamp && (
+                          <div>
+                            <span className="font-semibold">Time:</span>{" "}
+                            {parsed.timestamp}
+                          </div>
+                        )}
+                        {parsed.logger && (
+                          <div>
+                            <span className="font-semibold">Logger:</span>{" "}
+                            {parsed.logger}
+                          </div>
+                        )}
+                        <div>
+                          <span className="font-semibold">Level:</span>{" "}
+                          <span className={getLogColor()}>{parsed.level}</span>
+                        </div>
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <pre className="text-xs whitespace-pre-wrap">
-                        {tooltipContent}
-                      </pre>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <span className={`flex-1 ${getLogColor()}`}>
-                  {parsed.message}
-                </span>
+                      <div className="pt-2 border-t">
+                        <pre className="text-xs whitespace-pre-wrap break-all bg-muted p-2 rounded">
+                          {parsed.message}
+                        </pre>
+                      </div>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
             );
           })}
