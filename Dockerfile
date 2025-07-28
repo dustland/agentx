@@ -58,11 +58,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && npm install -g pnpm \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && ln -s /root/.cargo/bin/uv /usr/local/bin/uv \
     && rm -rf /var/lib/apt/lists/*
 
-# Set PATH to include uv
+# Install uv properly
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:$PATH"
 
 # Copy Python dependencies from the python-base stage
@@ -90,4 +89,4 @@ EXPOSE 8080 7770
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Run the production server directly
-CMD ["uv", "run", "prod"] 
+CMD ["/root/.cargo/bin/uv", "run", "prod"] 
