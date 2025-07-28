@@ -67,7 +67,7 @@ class Agent:
         # Tool management (injected by TaskExecutor for task isolation)
         self.tool_manager = tool_manager
 
-        logger.debug(f"🤖 Agent '{self.name}' initialized with {len(self.tools)} tools")
+        logger.debug(f"Agent '{self.name}' initialized with {len(self.tools)} tools")
 
     def _initialize_brain(self, config: AgentConfig) -> Brain:
         """Initialize the brain with the agent's configuration."""
@@ -283,7 +283,7 @@ class Agent:
 
         for round_num in range(max_tool_rounds):
             # Always show conversation state
-            print(f"🧠 AGENT ROUND {round_num + 1} | Agent: {self.name} | Messages: {len(conversation)}")
+            print(f"AGENT ROUND {round_num + 1} | Agent: {self.name} | Messages: {len(conversation)}")
 
             # Truncate conversation history if needed
             max_tokens = self.get_max_context_tokens()
@@ -298,7 +298,7 @@ class Agent:
 
             # Always show LLM response
             if llm_response.content:
-                print(f"💬 AGENT RESPONSE | Agent: {self.name} | Content: {llm_response.content[:200]}{'...' if len(llm_response.content) > 200 else ''}")
+                print(f"AGENT RESPONSE | Agent: {self.name} | Content: {llm_response.content[:200]}{'...' if len(llm_response.content) > 200 else ''}")
 
             # Check if brain wants to call tools
             if llm_response.tool_calls:
@@ -393,7 +393,7 @@ class Agent:
                 yield {
                     "type": "tool_calls_start",
                     "count": len(tool_calls_detected),
-                    "content": f"\n🔧 Executing {len(tool_calls_detected)} tool(s)...\n"
+                    "content": f"\nExecuting {len(tool_calls_detected)} tool(s)...\n"
                 }
 
                 # Add assistant message with tool calls
@@ -434,7 +434,7 @@ class Agent:
                         "type": "tool_call",
                         "name": tool_call.function.name,
                         "arguments": tool_call.function.arguments,
-                        "content": f"🔧 Calling {tool_call.function.name}..."
+                        "content": f"Calling {tool_call.function.name}..."
                     }
 
                     try:
@@ -448,7 +448,7 @@ class Agent:
                             "type": "tool_result",
                             "name": tool_call.function.name,
                             "success": True,
-                            "content": f"✅ {tool_call.function.name}: {tool_result_content[:100]}{'...' if len(tool_result_content) > 100 else ''}"
+                            "content": tool_result_content
                         }
 
                     except Exception as e:
@@ -464,7 +464,7 @@ class Agent:
                             "type": "tool_result",
                             "name": tool_call.function.name,
                             "success": False,
-                            "content": f"❌ {tool_call.function.name} failed: {str(e)}"
+                            "content": f"Tool {tool_call.function.name} failed: {str(e)}"
                         }
 
                 conversation.extend(tool_messages)
@@ -476,7 +476,7 @@ class Agent:
                 return
 
         # Max rounds exceeded
-        yield {"type": "warning", "content": "\n⚠️ Reached maximum tool execution limit."}
+        yield {"type": "warning", "content": "\nReached maximum tool execution limit."}
 
     async def _generate_response_non_streaming(
         self,

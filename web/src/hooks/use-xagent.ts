@@ -467,6 +467,7 @@ export function useXAgent(xagentId: string) {
         content: trimmedMessage,
         timestamp: new Date(),
         status: "complete",
+        parts: trimmedMessage ? [{ type: "text", text: trimmedMessage }] : [],
       };
 
       setOptimisticMessages((prev) => [...prev, optimisticMsg]);

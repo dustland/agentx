@@ -40,10 +40,10 @@ class MemoryTool(Tool):
                 importance=importance
             )
 
-            return {"success": True, "message": f"✅ Memory added successfully (ID: {memory_id})"}
+            return {"success": True, "memory_id": memory_id, "message": f"Memory added successfully (ID: {memory_id})"}
 
         except Exception as e:
-            return {"success": False, "error": f"❌ Failed to add memory: {str(e)}"}
+            return {"success": False, "error": f"Failed to add memory: {str(e)}"}
 
     async def _search_memory(self, query: str, limit: int = 5, **kwargs) -> dict:
         """Search for relevant memories using semantic similarity."""
@@ -54,7 +54,7 @@ class MemoryTool(Tool):
             )
 
             if not results:
-                return {"success": True, "message": "🔍 No relevant memories found for your query."}
+                return {"success": True, "results": [], "message": "No relevant memories found for your query."}
 
             # Format results for display
             formatted_results = []
@@ -63,11 +63,19 @@ class MemoryTool(Tool):
                 timestamp = memory.timestamp.strftime("%Y-%m-%d %H:%M:%S")
                 formatted_results.append(f"{i}. {content} (created: {timestamp})")
 
-            message = f"🔍 Found {len(results)} relevant memories:\n\n" + "\n".join(formatted_results)
-            return {"success": True, "message": message}
+            return {
+                "success": True,
+                "results": [{
+                    "content": memory.content,
+                    "timestamp": memory.timestamp.isoformat(),
+                    "metadata": getattr(memory, "metadata", {})
+                } for memory in results],
+                "count": len(results),
+                "message": f"Found {len(results)} relevant memories"
+            }
 
         except Exception as e:
-            return {"success": False, "error": f"❌ Failed to search memories: {str(e)}"}
+            return {"success": False, "error": f"Failed to search memories: {str(e)}"}
 
     async def _list_memories(self, limit: int = 10, **kwargs) -> dict:
         """List recent memories."""
@@ -75,7 +83,7 @@ class MemoryTool(Tool):
             memories = self.memory.get_recent(limit=limit)
 
             if not memories:
-                return {"success": True, "message": f"📝 No memories found for agent: {self.memory.agent.name}"}
+                return {"success": True, "memories": [], "message": f"No memories found for agent: {self.memory.agent.name}"}
 
             # Format memories for display
             formatted_memories = []
@@ -84,45 +92,50 @@ class MemoryTool(Tool):
                 timestamp = memory.timestamp.strftime("%Y-%m-%d %H:%M:%S")
                 formatted_memories.append(f"{i}. {content} (created: {timestamp})")
 
-            message = f"📝 Recent memories for {self.memory.agent.name}:\n\n" + "\n".join(formatted_memories)
-            return {"success": True, "message": message}
+            return {
+                "success": True,
+                "memories": [{
+                    "content": memory.content,
+                    "timestamp": memory.timestamp.isoformat(),
+                    "metadata": getattr(memory, "metadata", {})
+                } for memory in memories],
+                "count": len(memories),
+                "agent_name": self.memory.agent.name,
+                "message": f"Retrieved {len(memories)} recent memories"
+            }
 
         except Exception as e:
-            return {"success": False, "error": f"❌ Failed to list memories: {str(e)}"}
+            return {"success": False, "error": f"Failed to list memories: {str(e)}"}
 
     async def _get_memory_stats(self, **kwargs) -> dict:
         """Get statistics about the memory system."""
         try:
             stats = self.memory.get_stats()
 
-            stats_lines = [
-                f"📊 Memory System Statistics:",
-                f"",
-                f"Agent: {self.memory.agent.name}",
-                f"Total memories: {stats.get('total_memories', 0)}",
-                f"Memory types: {stats.get('memory_types', {})}",
-                f"Average importance: {stats.get('average_importance', 0):.2f}",
-            ]
-
-            if stats.get('oldest_memory'):
-                stats_lines.append(f"Oldest memory: {stats['oldest_memory']}")
-            if stats.get('newest_memory'):
-                stats_lines.append(f"Newest memory: {stats['newest_memory']}")
-
-            message = "\n".join(stats_lines)
-            return {"success": True, "message": message}
+            return {
+                "success": True,
+                "stats": {
+                    "agent_name": self.memory.agent.name,
+                    "total_memories": stats.get('total_memories', 0),
+                    "memory_types": stats.get('memory_types', {}),
+                    "average_importance": stats.get('average_importance', 0),
+                    "oldest_memory": stats.get('oldest_memory'),
+                    "newest_memory": stats.get('newest_memory')
+                },
+                "message": "Memory statistics retrieved successfully"
+            }
 
         except Exception as e:
-            return {"success": False, "error": f"❌ Failed to get memory stats: {str(e)}"}
+            return {"success": False, "error": f"Failed to get memory stats: {str(e)}"}
 
     async def _clear_memories(self, **kwargs) -> dict:
         """Clear all memories for the current agent."""
         try:
             self.memory.clear()
-            return {"success": True, "message": f"✅ Successfully cleared all memories for {self.memory.agent.name}"}
+            return {"success": True, "agent_name": self.memory.agent.name, "message": f"Successfully cleared all memories for {self.memory.agent.name}"}
 
         except Exception as e:
-            return {"success": False, "error": f"❌ Failed to clear memories: {str(e)}"}
+            return {"success": False, "error": f"Failed to clear memories: {str(e)}"}
 
 def create_memory_tools(memory: MemoryBackend) -> list[MemoryTool]:
     """Factory function to create memory tools."""

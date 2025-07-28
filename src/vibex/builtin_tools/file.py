@@ -60,7 +60,11 @@ class FileTool(Tool):
                 # Return ToolResult with user-friendly content for LLM + structured data
                 return ToolResult(
                     success=True,
-                    result=f"✅ Successfully wrote {len(content)} characters to {filename}",
+                    result={
+                        "path": filename,
+                        "size": len(content),
+                        "message": f"Successfully wrote {len(content)} characters to {filename}"
+                    },
                     metadata={
                         "filename": filename,
                         "size": len(content),
@@ -71,7 +75,7 @@ class FileTool(Tool):
             else:
                 return ToolResult(
                     success=False,
-                    result=f"❌ Failed to write file: {result.error}",
+                    result={"error": f"Failed to write file: {result.error}"},
                     error=result.error
                 )
 
@@ -79,7 +83,7 @@ class FileTool(Tool):
             logger.error(f"Error writing file {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Failed to write file: {str(e)}",
+                result={"error": f"Failed to write file: {str(e)}"},
                 error=str(e)
             )
 
@@ -109,10 +113,8 @@ class FileTool(Tool):
                 if read_result.success:
                     # Extract content from the result
                     content_str = read_result.result
-                    if content_str.startswith(f"📄 Contents of {filename}:"):
-                        existing_content = content_str.split("\n\n", 1)[1] if "\n\n" in content_str else ""
-                    else:
-                        existing_content = content_str
+                    # Extract content directly from result
+                    existing_content = read_result.result
                     file_exists = True
             except:
                 # File doesn't exist, that's fine
@@ -132,7 +134,13 @@ class FileTool(Tool):
                 logger.info(f"Successfully {action} file: {filename}")
                 return ToolResult(
                     success=True,
-                    result=f"✅ Successfully {action} {filename}",
+                    result={
+                        "message": f"Successfully {action} {filename}",
+                        "filename": filename,
+                        "action": action,
+                        "appended_size": len(content),
+                        "total_size": len(new_content)
+                    },
                     metadata={
                         "filename": filename,
                         "action": action,
@@ -147,7 +155,7 @@ class FileTool(Tool):
             logger.error(f"Error appending to file {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error appending to file: {str(e)}",
+                result={"error": f"Error appending to file: {str(e)}"},
                 error=str(e)
             )
 
@@ -164,14 +172,14 @@ class FileTool(Tool):
             if content is None:
                 return ToolResult(
                     success=False,
-                    result=f"❌ File not found: {filename}",
+                    result={"error": f"File not found: {filename}"},
                     error=f"File not found: {filename}"
                 )
 
             logger.info(f"Read file artifact: {filename}")
             return ToolResult(
                 success=True,
-                result=f"📄 Contents of {filename}:\n\n{content}",
+                result=content,
                 metadata={
                     "filename": filename,
                     "size": len(content),
@@ -184,7 +192,7 @@ class FileTool(Tool):
             logger.error(f"Error reading file {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error reading file: {str(e)}",
+                result={"error": f"Error reading file: {str(e)}"},
                 error=str(e)
             )
 
@@ -197,7 +205,7 @@ class FileTool(Tool):
             if not artifacts:
                 return ToolResult(
                     success=True,
-                    result="📂 Project files:\n\nNo files found in project.",
+                    result={"files": [], "count": 0, "message": "No files found in project"},
                     metadata={"files": [], "count": 0}
                 )
 
@@ -209,19 +217,12 @@ class FileTool(Tool):
                     files_by_name[name] = []
                 files_by_name[name].append(artifact)
 
-            file_list = []
             files_metadata = []
             for name, versions in files_by_name.items():
                 latest_version = sorted(versions, key=lambda x: x.get("created_at", ""))[-1]
                 size = latest_version.get("size", 0)
                 version_count = len(versions)
                 created_at = latest_version.get("created_at", "unknown")
-
-                file_entry = f"  📄 {name} ({size} bytes"
-                if version_count > 1:
-                    file_entry += f", {version_count} versions"
-                file_entry += f", created: {created_at})"
-                file_list.append(file_entry)
 
                 # Add structured data for programmatic access
                 files_metadata.append({
@@ -235,7 +236,7 @@ class FileTool(Tool):
             logger.info(f"Listed {len(files_by_name)} file artifacts")
             return ToolResult(
                 success=True,
-                result=f"📂 Project files:\n\n" + "\n".join(file_list),
+                result={"files": files_metadata, "count": len(files_by_name)},
                 metadata={
                     "files": files_metadata,
                     "count": len(files_by_name)
@@ -246,7 +247,7 @@ class FileTool(Tool):
             logger.error(f"Error listing files: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error listing files: {str(e)}",
+                result={"error": f"Error listing files: {str(e)}"},
                 error=str(e)
             )
 
@@ -270,10 +271,7 @@ class FileTool(Tool):
                     created_at = latest.get("created_at", "unknown")
                     version_count = len(file_artifacts)
 
-                    info = f"✅ File exists: {filename} ({size} bytes, created: {created_at}"
-                    if version_count > 1:
-                        info += f", {version_count} versions"
-                    info += ")"
+                    info = {"exists": True, "filename": filename, "size": size, "created_at": created_at, "version_count": version_count}
 
                     logger.info(f"File exists: {filename}")
                     return ToolResult(
@@ -290,13 +288,13 @@ class FileTool(Tool):
                 else:
                     return ToolResult(
                         success=True,
-                        result=f"✅ File exists: {filename}",
+                        result={"exists": True, "filename": filename},
                         metadata={"filename": filename, "exists": True}
                     )
             else:
                 return ToolResult(
                     success=True,
-                    result=f"❌ File does not exist: {filename}",
+                    result={"exists": False, "filename": filename},
                     metadata={"filename": filename, "exists": False}
                 )
 
@@ -304,7 +302,7 @@ class FileTool(Tool):
             logger.error(f"Error checking file {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error checking file: {str(e)}",
+                result={"error": f"Error checking file: {str(e)}"},
                 error=str(e)
             )
 
@@ -323,20 +321,20 @@ class FileTool(Tool):
                     logger.info(f"Deleted file artifact version: {filename} (version: {version})")
                     return ToolResult(
                         success=True,
-                        result=f"✅ Successfully deleted {filename} version {version}",
+                        result={"deleted": True, "filename": filename, "version": version},
                         metadata={"filename": filename, "version": version}
                     )
                 else:
                     logger.info(f"Deleted file artifact: {filename}")
                     return ToolResult(
                         success=True,
-                        result=f"✅ Successfully deleted {filename}",
+                        result={"deleted": True, "filename": filename},
                         metadata={"filename": filename}
                     )
             else:
                 return ToolResult(
                     success=False,
-                    result=f"❌ Failed to delete file: {result.error}",
+                    result={"error": f"Failed to delete file: {result.error}"},
                     error=result.error
                 )
 
@@ -344,7 +342,7 @@ class FileTool(Tool):
             logger.error(f"Error deleting file {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error deleting file: {str(e)}",
+                result={"error": f"Error deleting file: {str(e)}"},
                 error=str(e)
             )
 
@@ -360,7 +358,7 @@ class FileTool(Tool):
             if not versions:
                 return ToolResult(
                     success=False,
-                    result=f"❌ No versions found for file: {filename}",
+                    result={"error": f"No versions found for file: {filename}"},
                     error=f"No versions found for file: {filename}"
                 )
 
@@ -371,7 +369,7 @@ class FileTool(Tool):
             if not file_artifacts:
                 return ToolResult(
                     success=False,
-                    result=f"❌ No artifact metadata found for file: {filename}",
+                    result={"error": f"No artifact metadata found for file: {filename}"},
                     error=f"No artifact metadata found for file: {filename}"
                 )
 
@@ -395,7 +393,7 @@ class FileTool(Tool):
             logger.info(f"Retrieved {len(versions)} versions for {filename}")
             return ToolResult(
                 success=True,
-                result=f"📋 Version history for {filename}:\n\n" + "\n".join(version_list),
+                result={"filename": filename, "versions": versions_metadata, "count": len(versions)},
                 metadata={
                     "filename": filename,
                     "versions": versions_metadata,
@@ -407,7 +405,7 @@ class FileTool(Tool):
             logger.error(f"Error getting versions for {filename}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error getting versions: {str(e)}",
+                result={"error": f"Error getting versions: {str(e)}"},
                 error=str(e)
             )
 
@@ -420,19 +418,15 @@ class FileTool(Tool):
             if isinstance(summary, dict) and "error" in summary:
                 return ToolResult(
                     success=False,
-                    result=f"❌ Error getting project summary: {summary['error']}",
+                    result={"error": f"Error getting project summary: {summary['error']}"},
                     error=summary['error']
                 )
 
             # Format the summary nicely
             if isinstance(summary, dict):
-                lines = ["📊 Project Summary:\n"]
-                for key, value in summary.items():
-                    if key != "error":
-                        lines.append(f"  {key}: {value}")
-                result_text = "\n".join(lines)
+                result_text = summary
             else:
-                result_text = f"📊 Project Summary:\n\n{summary}"
+                result_text = {"summary": summary}
 
             logger.info("Retrieved project summary")
             return ToolResult(
@@ -445,7 +439,7 @@ class FileTool(Tool):
             logger.error(f"Error getting project summary: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error getting project summary: {str(e)}",
+                result={"error": f"Error getting project summary: {str(e)}"},
                 error=str(e)
             )
 
@@ -463,20 +457,20 @@ class FileTool(Tool):
                     logger.info(f"Directory already exists: {path}")
                     return ToolResult(
                         success=True,
-                        result=f"ℹ️ Directory already exists: {path}",
+                        result={"exists": True, "path": path},
                         metadata={"path": path, "already_exists": True}
                     )
                 else:
                     logger.info(f"Created directory: {path}")
                     return ToolResult(
                         success=True,
-                        result=f"✅ Successfully created directory: {path}",
+                        result={"created": True, "path": path},
                         metadata={"path": path, "created": True}
                     )
             else:
                 return ToolResult(
                     success=False,
-                    result=f"❌ Failed to create directory: {result.error}",
+                    result={"error": f"Failed to create directory: {result.error}"},
                     error=result.error
                 )
 
@@ -484,7 +478,7 @@ class FileTool(Tool):
             logger.error(f"Error creating directory {path}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error creating directory: {str(e)}",
+                result={"error": f"Error creating directory: {str(e)}"},
                 error=str(e)
             )
 
@@ -504,23 +498,20 @@ class FileTool(Tool):
                 display_path = directory_path if directory_path else "project root"
                 return ToolResult(
                     success=True,
-                    result=f"📂 Directory '{display_path}' is empty",
+                    result={"path": directory_path, "items": [], "count": 0},
                     metadata={"path": directory_path, "items": [], "count": 0}
                 )
 
-            items = []
             items_metadata = []
             for file_info in files:
                 # Check if it's a directory (ends with /) or file
                 if file_info.path.endswith('/'):
-                    items.append(f"📁 {file_info.path}")
                     items_metadata.append({
                         "name": file_info.path,
                         "type": "directory",
                         "size": 0
                     })
                 else:
-                    items.append(f"📄 {file_info.path} ({file_info.size} bytes)")
                     items_metadata.append({
                         "name": file_info.path,
                         "type": "file",
@@ -531,7 +522,7 @@ class FileTool(Tool):
             logger.info(f"Listed directory: {display_path}")
             return ToolResult(
                 success=True,
-                result=f"📂 Contents of '{display_path}':\n\n" + "\n".join(items),
+                result={"path": directory_path, "items": items_metadata, "count": len(items)},
                 metadata={
                     "path": directory_path,
                     "items": items_metadata,
@@ -543,7 +534,7 @@ class FileTool(Tool):
             logger.error(f"Error listing directory {path}: {e}")
             return ToolResult(
                 success=False,
-                result=f"❌ Error listing directory: {str(e)}",
+                result={"error": f"Error listing directory: {str(e)}"},
                 error=str(e)
             )
 

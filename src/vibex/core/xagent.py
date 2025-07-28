@@ -222,7 +222,7 @@ class XAgent(Agent):
                 agents=self.specialist_agents
             )
 
-        logger.info("✅ XAgent initialized and ready for conversation")
+        logger.info("XAgent initialized and ready for conversation")
         
         # Start the message consumer
         self._start_message_consumer()
@@ -533,7 +533,7 @@ class XAgent(Agent):
                             break
                         except Exception as e:
                             logger.error(f"Error during step: {e}")
-                            execution_results.append(f"❌ Error: {str(e)}")
+                            execution_results.append(f"Error: {str(e)}")
                             break
                         
                         # Check if execution was interrupted
@@ -591,7 +591,7 @@ class XAgent(Agent):
                             execution_results.append("⏸️ Execution interrupted")
                         except Exception as e:
                             logger.error(f"Error during initial step: {e}")
-                            execution_results.append(f"❌ Error: {str(e)}")
+                            execution_results.append(f"Error: {str(e)}")
                         
                         # Only continue if no new messages
                         while (self.plan and 
@@ -613,7 +613,7 @@ class XAgent(Agent):
                                 break
                             except Exception as e:
                                 logger.error(f"Error during step execution: {e}")
-                                execution_results.append(f"❌ Error: {str(e)}")
+                                execution_results.append(f"Error: {str(e)}")
                                 break
                         
                         # Append execution results to the response
@@ -1237,7 +1237,7 @@ Respond with a JSON object following this schema:
         if not next_task:
             if self.plan.has_failed_tasks():
                 self.is_complete_flag = True
-                return "❌ Cannot continue: some tasks have failed"
+                return "Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
 
@@ -1290,9 +1290,18 @@ Respond with a JSON object following this schema:
                     )
                 except ImportError:
                     pass
-                return f"✅ {next_task.action}: {result}\n\n🎉 All tasks completed successfully!"
+                return {
+                    "task": next_task.action,
+                    "result": result,
+                    "status": "completed",
+                    "all_tasks_completed": True
+                }
             else:
-                return f"✅ {next_task.action}: {result}"
+                return {
+                    "task": next_task.action,
+                    "result": result,
+                    "status": "completed"
+                }
 
         except Exception as e:
             logger.error(f"Task failed: {next_task.action} - {e}")
@@ -1312,9 +1321,9 @@ Respond with a JSON object following this schema:
                 pass
 
             if next_task.on_failure == "halt":
-                return f"❌ {next_task.action}: Failed - {e}\n\nTask execution halted."
+                return f"{next_task.action}: Failed - {e}\n\nTask execution halted."
             else:
-                return f"⚠️ {next_task.action}: Failed but continuing - {e}"
+                return f"{next_task.action}: Failed but continuing - {e}"
 
     async def _execute_plan_steps(self) -> str:
         """Execute the current plan step by step (for compatibility)."""
@@ -1359,7 +1368,7 @@ Respond with a JSON object following this schema:
         
         if not actionable_tasks:
             if self.plan.has_failed_tasks():
-                return "❌ Cannot continue: some tasks have failed"
+                return "Cannot continue: some tasks have failed"
             else:
                 return "⏳ No actionable tasks available (waiting for dependencies)"
 
@@ -1408,17 +1417,17 @@ Respond with a JSON object following this schema:
                     failed_tasks.append(task)
                     
                     if task.on_failure == "halt":
-                        completion_messages.append(f"❌ {task.action}: Failed - {result}")
+                        completion_messages.append(f"{task.action}: Failed - {result}")
                         # Mark remaining tasks as failed too
                         for remaining_task in actionable_tasks[i+1:]:
                             remaining_task.status = "failed"
                         break
                     else:
-                        completion_messages.append(f"⚠️ {task.action}: Failed but continuing - {result}")
+                        completion_messages.append(f"{task.action}: Failed but continuing - {result}")
                 else:
                     # Task succeeded
                     task.status = "completed"
-                    completion_messages.append(f"✅ {task.action}: {result}")
+                    completion_messages.append(f"{task.action}: {result}")
             
             # Persist plan after parallel execution
             await self._persist_plan()
@@ -1439,7 +1448,7 @@ Respond with a JSON object following this schema:
             for task in actionable_tasks:
                 task.status = "pending"  # Reset to allow retry
             await self._persist_plan()
-            return f"❌ Parallel execution failed: {e}"
+            return f"Parallel execution failed: {e}"
 
     async def _execute_single_task(self, task: Task) -> str:
         """Execute a single task using the appropriate specialist agent."""
