@@ -391,9 +391,13 @@ export default function TasksLayout({
                                 <MoreHorizontal className="h-3 w-3" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40">
+                            <DropdownMenuContent
+                              side="bottom"
+                              align="start"
+                              className="w-40"
+                            >
                               <DropdownMenuItem
-                                className="text-xs cursor-pointer"
+                                className="cursor-pointer"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   // TODO: Implement rename functionality
@@ -403,18 +407,18 @@ export default function TasksLayout({
                                   );
                                 }}
                               >
-                                <Edit className="h-3 w-3 mr-2" />
+                                <Edit className="h-3 w-3" />
                                 Rename
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-xs cursor-pointer text-destructive"
+                                className="cursor-pointer text-destructive"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteXAgent(xagent.xagent_id);
                                 }}
                               >
-                                <Trash2 className="h-3 w-3 mr-2" />
+                                <Trash2 className="h-3 w-3 text-destructive" />
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>

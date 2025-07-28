@@ -9,6 +9,7 @@ import { useCallback } from "react";
 import { useAppStore } from "@/store/app";
 import { Card } from "@/components/ui/card";
 import { useXAgents } from "@/hooks/use-xagent";
+import { Badge } from "@/components/ui/badge";
 
 export default function HomePage() {
   const router = useRouter();
@@ -169,9 +170,9 @@ export default function HomePage() {
                 return (
                   <Card
                     key={goal.id}
-                    className="group rounded-2xl p-4 hover:border-foreground/30 transition-all duration-200 relative"
+                    className="group flex flex-col rounded-2xl p-4 hover:border-foreground/30 transition-all duration-200 relative"
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex-1">
                       <h3 className="font-medium text-sm text-foreground">
                         {goal.title}
                       </h3>
@@ -181,7 +182,10 @@ export default function HomePage() {
                     </div>
 
                     {/* Start Button - appears on hover */}
-                    <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div className="flex justify-between pt-4">
+                      <Badge variant="outline" className="text-xs">
+                        {goal.config}
+                      </Badge>
                       <Button
                         size="sm"
                         variant="default"
