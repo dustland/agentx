@@ -61,15 +61,7 @@ export function useXAgent(xagentId: string) {
       (Array.isArray(messagesQuery.data)
         ? messagesQuery.data
         : messagesQuery.data?.messages || []
-      ).map((msg: any) => {
-        console.log("[useXAgent] Transforming message:", {
-          id: msg.id || msg.message_id,
-          role: msg.role,
-          hasParts: !!msg.parts,
-          partsCount: msg.parts?.length,
-          parts: msg.parts
-        });
-        return {
+      ).map((msg: any) => ({
           id: msg.id || msg.message_id || nanoid(),
           role: msg.role as "user" | "assistant" | "system",
           content:
@@ -80,8 +72,7 @@ export function useXAgent(xagentId: string) {
           status: "complete" as const,
           metadata: msg.metadata,
           parts: msg.parts || undefined, // Include parts if available
-        };
-      }),
+      })),
     [messagesQuery.data]
   );
 
@@ -316,13 +307,6 @@ export function useXAgent(xagentId: string) {
             console.error("[useXAgent] Failed to parse message data:", e);
             return;
           }
-          console.log("[useXAgent] Received complete message:", {
-            id: messageData.id || messageData.message_id,
-            role: messageData.role,
-            hasParts: !!messageData.parts,
-            partsCount: messageData.parts?.length,
-            parts: messageData.parts
-          });
           queryClient.invalidateQueries({
             queryKey: xagentKeys.messages(xagentId),
           });
