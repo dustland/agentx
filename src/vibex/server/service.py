@@ -285,7 +285,8 @@ class XAgentService:
                                 role=message.get("role", ""),
                                 content=message.get("content", ""),
                                 timestamp=datetime.fromisoformat(message.get("timestamp", datetime.now().isoformat())),
-                                metadata={}
+                                metadata=message.get("metadata", {}),
+                                parts=message.get("parts", None)
                             ))
                         except (json.JSONDecodeError, ValueError) as e:
                             logger.warning(f"Failed to parse message line: {line}, error: {e}")

@@ -78,6 +78,7 @@ class MessageInfo(BaseModel):
     content: str = Field(description="The message content")
     timestamp: datetime = Field(description="When the message was created")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
+    parts: Optional[List[Dict[str, Any]]] = Field(default=None, description="Message parts for structured content")
 
 
 class ArtifactInfo(BaseModel):

@@ -34,6 +34,17 @@ export function MessageBubble({
   const isUser = message.role === "user";
   const isAssistant = message.role === "assistant";
   const isStreaming = message.status === "streaming";
+  
+  // Debug message structure
+  console.log('[MessageBubble] Message structure:', {
+    id: message.id,
+    role: message.role,
+    hasContent: !!message.content,
+    contentLength: message.content?.length,
+    hasParts: !!message.parts,
+    partsCount: message.parts?.length,
+    parts: message.parts
+  });
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
