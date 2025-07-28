@@ -9,6 +9,7 @@ WORKDIR /app/web
 # Copy package files first for better caching
 COPY web/package.json web/pnpm-lock.yaml ./
 
+
 # Install pnpm and dependencies
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile --prefer-offline
@@ -87,5 +88,17 @@ EXPOSE 8080 7770
 # This ensures that process signals are handled correctly.
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Run the production server directly
-CMD ["uv", "run", "prod"] 
+# Create startup script inline
+RUN echo '#!/bin/bash\n\
+echo "Starting VibeX services..."\n\
+cd /app && uv run prod &\n\
+BACKEND_PID=$!\n\
+cd /app/web && PORT=${PORT:-8080} pnpm run start &\n\
+FRONTEND_PID=$!\n\
+wait $BACKEND_PID $FRONTEND_PID' > /start.sh && chmod +x /start.sh
+
+# Expose both ports
+EXPOSE 7770 8080
+
+# Run both services
+CMD ["/start.sh"] 
