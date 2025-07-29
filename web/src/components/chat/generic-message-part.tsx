@@ -2,11 +2,7 @@
 
 import React, { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import {
-  ChevronRight,
-  ChevronDown,
-  LucideIcon,
-} from "lucide-react";
+import { ChevronRight, ChevronDown, LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,21 +18,21 @@ export interface GenericMessagePartProps {
     variant?: "default" | "secondary" | "destructive" | "outline";
     className?: string;
   }>;
-  
+
   // Status
   status?: "pending" | "running" | "completed" | "failed";
   statusIcon?: ReactNode;
   statusClassName?: string;
-  
+
   // Expandable content
   expandable?: boolean;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
   expandedContent?: ReactNode;
-  
+
   // Actions
   actions?: ReactNode;
-  
+
   // Styling
   variant?: "default" | "success" | "error" | "muted";
   className?: string;
@@ -70,11 +66,11 @@ export function GenericMessagePart({
   contentClassName,
 }: GenericMessagePartProps) {
   const showExpandButton = expandable && expandedContent;
-  
+
   return (
     <div
       className={cn(
-        "rounded-md border my-2",
+        "rounded-lg border my-2",
         variantStyles[variant],
         className
       )}
@@ -87,26 +83,31 @@ export function GenericMessagePart({
             {statusIcon}
           </div>
         )}
-        
+
         {/* Tool Icon */}
         {Icon && (
-          <div className={cn("flex-shrink-0 text-muted-foreground", iconClassName)}>
+          <div
+            className={cn("flex-shrink-0 text-muted-foreground", iconClassName)}
+          >
             <Icon className="w-3 h-3" />
           </div>
         )}
-        
+
         {/* Title */}
-        <span className={cn("font-mono text-sm font-medium", titleClassName)}>
+        <Badge
+          variant="outline"
+          className={cn("text-sm font-medium", titleClassName)}
+        >
           {title}
-        </span>
-        
+        </Badge>
+
         {/* Summary */}
         {summary && (
           <span className="text-sm text-muted-foreground flex-1 min-w-0 truncate">
             {summary}
           </span>
         )}
-        
+
         {/* Badges */}
         {badges && badges.length > 0 && (
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -121,7 +122,7 @@ export function GenericMessagePart({
             ))}
           </div>
         )}
-        
+
         {/* Expand button */}
         {showExpandButton && (
           <Button
@@ -138,25 +139,20 @@ export function GenericMessagePart({
           </Button>
         )}
       </div>
-      
+
       {/* Actions (like file links) */}
       {actions && (
         <div className="px-3 pb-2 border-t border-border/50">
-          <div className="mt-2">
-            {actions}
-          </div>
+          <div className="mt-2">{actions}</div>
         </div>
       )}
-      
+
       {/* Expanded content */}
       {expanded && expandedContent && (
-        <div className={cn(
-          "px-3 pb-3 border-t border-border",
-          contentClassName
-        )}>
-          <div className="mt-2">
-            {expandedContent}
-          </div>
+        <div
+          className={cn("px-3 pb-3 border-t border-border", contentClassName)}
+        >
+          <div className="mt-2">{expandedContent}</div>
         </div>
       )}
     </div>
