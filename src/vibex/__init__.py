@@ -21,7 +21,7 @@ from vibex.core.agent import Agent
 from .core.xagent import XAgent
 from .config.team_loader import load_team_config
 
-__version__ = "0.30.0"
+__version__ = "0.30.1"
 
 __all__ = [
     # Main API - primary entry points (v2.0)
